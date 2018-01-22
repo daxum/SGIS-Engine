@@ -52,6 +52,13 @@ public:
 	 */
 	static void setViewport(GLFWwindow* window, int width, int height);
 
+	/**
+	 * The error callback for glfw. Never call this directly.
+	 * @param error The glfw error code.
+	 * @param description A description of the error.
+	 */
+	static void glfwError(int error, const char* description);
+
 private:
 	//A map to store texture data
 	std::unordered_map<std::string, GLuint> textureMap;

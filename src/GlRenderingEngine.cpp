@@ -6,7 +6,7 @@ GlRenderingEngine::GlRenderingEngine() :
 	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap)),
 	textureMap() {
 
-	//TODO: glfw error callback
+	glfwSetErrorCallback(GlRenderingEngine::glfwError);
 
 	if (!glfwInit()) {
 		throw std::runtime_error("Couldn't initialize glfw");
@@ -101,4 +101,8 @@ void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 
 	//TODO: Update projection matrix
+}
+
+void GlRenderingEngine::glfwError(int errorCode, const char* description) {
+	//TODO: logging
 }
