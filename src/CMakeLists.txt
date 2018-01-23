@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.1)
 project(SGIS-Engine)
 
+find_package(glfw3 3.2 REQUIRED)
+
 add_library(Engine
 	Engine.cpp
 	TextureLoader.cpp
 	GlRenderingEngine.cpp
 	GlTextureLoader.cpp
+	ExtraMath.cpp
 	gl_core_4_1.c
 )
 
@@ -19,3 +22,4 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 endif()
 
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(Engine glfw GL)
