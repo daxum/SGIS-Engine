@@ -22,6 +22,8 @@ void Engine::run(GameInterface& game) {
 	//Pre-loading of a splash screen might go here
 
 	//Load resources
+	renderer->loadDefaultShaders(config.shaderPath);
+
 	game.loadTextures(renderer->getTextureLoader());
 
 	//Enter game loop

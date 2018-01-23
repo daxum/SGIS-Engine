@@ -9,6 +9,8 @@ add_library(Engine
 	GlRenderingEngine.cpp
 	GlTextureLoader.cpp
 	ExtraMath.cpp
+	GlShader.cpp
+	GlShaderLoader.cpp
 	gl_core_4_1.c
 )
 

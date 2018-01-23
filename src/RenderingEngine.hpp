@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include "TextureLoader.hpp"
+#include "ShaderLoader.hpp"
 
 //A generic rendering engine. Provides the base interfaces, like resource loading
 //and rendering, but leaves the implementation to api-specific subclasses, like
@@ -18,9 +19,11 @@ public:
 	 * Constructs the base rendering engine and initializes some parts of
 	 * the rendering api.
 	 * @param tl The texture loader this engine should use.
+	 * @param sl The shader loader this engine should use.
 	 * @throw runtime_error if initialization failed.
 	 */
-	RenderingEngine(std::shared_ptr<TextureLoader> tl) : texLoader(tl) {}
+	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl) :
+		texLoader(tl), shaderLoader(sl) {}
 
 	/**
 	 * Destroys any api-agnostic resources the engine might
@@ -42,6 +45,13 @@ public:
 	virtual void init(int windowWidth, int windowHeight, std::string windowTitle) = 0;
 
 	/**
+	 * Loads any default shaders for the game engine, from the folder
+	 * specified by path. See EngineConfig.hpp for the format of path.
+	 * @param path The path to the folder containing the default shaders.
+	 */
+	 virtual void loadDefaultShaders(std::string path) = 0;
+
+	/**
 	 * Gets the texture loader for this rendering engine, which is
 	 * used to transfer textures from the disk to the GPU. Some loaders
 	 * might also have the option of storing loaded textures in RAM.
@@ -50,13 +60,17 @@ public:
 	std::shared_ptr<TextureLoader> getTextureLoader() { return texLoader; }
 
 	/**
+	 * Gets the shader loader for this rendering engine, which is used
+	 * to load shader programs and sometimes to set up the rending pipeline.
+	 * @return The shader loader for this rendering engine.
+	 */
+	std::shared_ptr<ShaderLoader> getShaderLoader() { return shaderLoader; }
+
+	/**
 	 * Returns the api-specific model loader for this rendering engine.
 	 * Not currently implemented.
 	 */
 	void getModelLoader() {}
-
-	//TODO: custom shader loader - also need a way to specify uniforms and
-	//such for them from world info.
 
 	/**
 	 * Indicates whether the window was closed by the user, and the
@@ -73,4 +87,5 @@ public:
 
 protected:
 	std::shared_ptr<TextureLoader> texLoader;
+	std::shared_ptr<ShaderLoader> shaderLoader;
 };

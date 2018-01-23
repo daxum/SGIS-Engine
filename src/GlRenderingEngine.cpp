@@ -1,9 +1,11 @@
 #include <vector>
 #include "GlRenderingEngine.hpp"
 #include "GlTextureLoader.hpp"
+#include "GlShaderLoader.hpp"
 
 GlRenderingEngine::GlRenderingEngine() :
-	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap)),
+	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap),
+					std::make_shared<GlShaderLoader>(shaderMap)),
 	textureMap() {
 
 	glfwSetErrorCallback(GlRenderingEngine::glfwError);
@@ -87,6 +89,10 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_CULL_FACE);
+}
+
+void GlRenderingEngine::loadDefaultShaders(std::string path) {
+	shaderLoader->loadShader("basic", path + "glsl/basicShader.vert", path + "glsl/basicShader.frag", nullptr);
 }
 
 bool GlRenderingEngine::windowClosed() {

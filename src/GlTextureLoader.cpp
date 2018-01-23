@@ -37,7 +37,7 @@ void GlTextureLoader::loadTexture(std::string name, std::string filename, Filter
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
-	textureMap.insert(make_pair(name, texture));
+	textureMap.insert(std::make_pair(name, texture));
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

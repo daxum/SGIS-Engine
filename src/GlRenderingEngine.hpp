@@ -5,6 +5,7 @@
 #include <memory>
 #include "RenderingEngine.hpp"
 #include "CombinedGl.h"
+#include "GlShader.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -30,6 +31,12 @@ public:
 	 * @throw runtime_error if initialization failed.
 	 */
 	void init(int windowWidth, int windowHeight, std::string windowTitle);
+
+	/**
+	 * Loads all default glsl shaders from the provided folder.
+	 * @param path The path to the folder containing the default shaders.
+	 */
+	 void loadDefaultShaders(std::string path);
 
 	/**
 	 * Indicates whether the window was closed by the user, and the
@@ -62,6 +69,8 @@ public:
 private:
 	//A map to store texture data
 	std::unordered_map<std::string, GLuint> textureMap;
+	//A map to store the shaders used by the engine
+	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
 	//The window created by glfw
 	GLFWwindow* window;
 };
