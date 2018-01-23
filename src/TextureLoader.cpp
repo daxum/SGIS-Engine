@@ -27,5 +27,11 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 		texData.data.reset(imageData, ImageDeleter());
 	}
 
+	//If width and height are not equal, or they are not powers of two, the texture is malformed.
+	//Report a warning if this occurs.
+	if ((texData.width & (texData.width - 1)) || texData.width != texData.height) {
+		//TODO: warning
+	}
+
 	return texData;
 }
