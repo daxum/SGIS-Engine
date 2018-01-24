@@ -36,7 +36,14 @@ public:
 	 * Loads all default glsl shaders from the provided folder.
 	 * @param path The path to the folder containing the default shaders.
 	 */
-	 void loadDefaultShaders(std::string path);
+	void loadDefaultShaders(std::string path);
+
+	/**
+	 * Renders the passed in object. This clears the color and depth buffers,
+	 * draws the object(s), and presents the image.
+	 * @param partialTicks The time since the last game update.
+	 */
+	void render(float partialTicks);
 
 	/**
 	 * Indicates whether the window was closed by the user, and the

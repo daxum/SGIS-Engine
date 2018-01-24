@@ -60,6 +60,7 @@ void Engine::run(GameInterface& game) {
 		}
 
 		//Render the game.
+		renderer->render((float)lag / config.physicsTimestep);
 	}
 
 	//Clean up resources, exit game

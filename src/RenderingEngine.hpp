@@ -73,6 +73,13 @@ public:
 	void getModelLoader() {}
 
 	/**
+	 * Renders the passed in object (Not yet implemented).
+	 * @param partialTicks The time between game updates, in milliseconds.
+	 *     Used for interpolation.
+	 */
+	virtual void render(float partialTicks) = 0;
+
+	/**
 	 * Indicates whether the window was closed by the user, and the
 	 * game should stop.
 	 * @return Whether to terminate the game due to a closed window.

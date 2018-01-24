@@ -89,10 +89,17 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_CULL_FACE);
+
+	glClearColor(0.0, 0.2, 0.5, 1.0);
 }
 
 void GlRenderingEngine::loadDefaultShaders(std::string path) {
 	shaderLoader->loadShader("basic", path + "glsl/basicShader.vert", path + "glsl/basicShader.frag", nullptr);
+}
+
+void GlRenderingEngine::render(float partialTicks) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glfwSwapBuffers(window);
 }
 
 bool GlRenderingEngine::windowClosed() {
