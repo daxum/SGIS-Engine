@@ -2,7 +2,7 @@
 The engine for SGIS
 
 ---
-#Building
+# Building
 
 These instructions (and the program in general, actually) have only been tested on Linux:
 
