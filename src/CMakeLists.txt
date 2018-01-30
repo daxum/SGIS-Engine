@@ -11,6 +11,7 @@ add_library(Engine
 	ExtraMath.cpp
 	GlShader.cpp
 	GlShaderLoader.cpp
+	ModelLoader.cpp
 	gl_core_4_1.c
 )
 
