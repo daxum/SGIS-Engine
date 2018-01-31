@@ -24,6 +24,7 @@
 #include "RenderingEngine.hpp"
 #include "CombinedGl.h"
 #include "GlShader.hpp"
+#include "GlMemoryManager.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -49,6 +50,11 @@ public:
 	 * @throw runtime_error if initialization failed.
 	 */
 	void init(int windowWidth, int windowHeight, std::string windowTitle);
+
+	/**
+	 * Uploads data to gpu and sets some state stuff.
+	 */
+	void finishLoad();
 
 	/**
 	 * Loads all default glsl shaders from the provided folder.
@@ -98,4 +104,7 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
 	//The window created by glfw
 	GLFWwindow* window;
+
+	//The memory manager, for buffer management and such.
+	GlMemoryManager memoryManager;
 };

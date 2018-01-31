@@ -111,6 +111,10 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glClearColor(0.0, 0.2, 0.5, 1.0);
 }
 
+void GlRenderingEngine::finishLoad() {
+	memoryManager.upload();
+}
+
 void GlRenderingEngine::loadDefaultShaders(std::string path) {
 	shaderLoader->loadShader("basic", path + "glsl/basicShader.vert", path + "glsl/basicShader.frag", nullptr);
 }

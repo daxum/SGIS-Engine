@@ -63,6 +63,12 @@ public:
 	virtual void init(int windowWidth, int windowHeight, std::string windowTitle) = 0;
 
 	/**
+	 * To be called to put the engine in a renderable state - uploads models to the gpu,
+	 * and similar things.
+	 */
+	virtual void finishLoad() = 0;
+
+	/**
 	 * Loads any default shaders for the game engine, from the folder
 	 * specified by path. See EngineConfig.hpp for the format of path.
 	 * @param path The path to the folder containing the default shaders.

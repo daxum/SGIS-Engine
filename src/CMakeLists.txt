@@ -12,6 +12,7 @@ add_library(Engine
 	GlShader.cpp
 	GlShaderLoader.cpp
 	ModelLoader.cpp
+	GlMemoryManager.cpp
 	gl_core_4_1.c
 )
 
