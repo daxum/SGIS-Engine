@@ -43,6 +43,9 @@ void Engine::run(GameInterface& game) {
 	renderer->loadDefaultShaders(config.shaderPath);
 
 	game.loadTextures(renderer->getTextureLoader());
+	game.loadModels(renderer->getModelLoader());
+
+	renderer->finishLoad();
 
 	//Enter game loop
 	double currentTime = ExMath::getTimeMillis();

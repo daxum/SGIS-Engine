@@ -22,6 +22,7 @@
 #include <string>
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
+#include "ModelLoader.hpp"
 
 //A generic rendering engine. Provides the base interfaces, like resource loading
 //and rendering, but leaves the implementation to api-specific subclasses, like
@@ -40,8 +41,8 @@ public:
 	 * @param sl The shader loader this engine should use.
 	 * @throw runtime_error if initialization failed.
 	 */
-	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl) :
-		texLoader(tl), shaderLoader(sl) {}
+	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<ModelLoader> ml) :
+		texLoader(tl), shaderLoader(sl), modelLoader(ml) {}
 
 	/**
 	 * Destroys any api-agnostic resources the engine might
@@ -91,10 +92,11 @@ public:
 	std::shared_ptr<ShaderLoader> getShaderLoader() { return shaderLoader; }
 
 	/**
-	 * Returns the api-specific model loader for this rendering engine.
-	 * Not currently implemented.
+	 * Gets the model loader for this rendering engine, which is used to upload
+	 * model data to the gpu.
+	 * @return The model loader for this rendering engine.
 	 */
-	void getModelLoader() {}
+	std::shared_ptr<ModelLoader> getModelLoader() { return modelLoader; }
 
 	/**
 	 * Renders the passed in object (Not yet implemented).
@@ -119,4 +121,5 @@ public:
 protected:
 	std::shared_ptr<TextureLoader> texLoader;
 	std::shared_ptr<ShaderLoader> shaderLoader;
+	std::shared_ptr<ModelLoader> modelLoader;
 };

@@ -20,10 +20,12 @@
 #include "GlRenderingEngine.hpp"
 #include "GlTextureLoader.hpp"
 #include "GlShaderLoader.hpp"
+#include "GlModelLoader.hpp"
 
 GlRenderingEngine::GlRenderingEngine() :
 	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap),
-					std::make_shared<GlShaderLoader>(shaderMap)),
+					std::make_shared<GlShaderLoader>(shaderMap),
+					std::make_shared<GlModelLoader>(modelMap, memoryManager)),
 	textureMap() {
 
 	glfwSetErrorCallback(GlRenderingEngine::glfwError);

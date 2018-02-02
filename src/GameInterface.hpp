@@ -20,6 +20,7 @@
 
 #include <memory>
 #include "TextureLoader.hpp"
+#include "ModelLoader.hpp"
 
 //The engine uses the game interface for all communications
 //with the game, such as for loading resources.
@@ -44,9 +45,9 @@ public:
 	 * Called by the engine to load the game's models.
 	 * Like textures, all model loading must be done in
 	 * this function.
-	 * Not currently implemented.
+	 * @param loader The model loader used to load the models.
 	 */
-	virtual void loadModels() = 0;
+	virtual void loadModels(std::shared_ptr<ModelLoader> loader) = 0;
 
 	/**
 	 * Called by the engine to load all of the game's guis.

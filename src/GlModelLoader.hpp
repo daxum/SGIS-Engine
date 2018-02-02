@@ -18,9 +18,32 @@
 
 #pragma once
 
+#include <unordered_map>
+#include <string>
+
 #include "ModelLoader.hpp"
+#include "GlMemoryManager.hpp"
 
 class GlModelLoader : public ModelLoader {
 public:
-	//TODO
+	/**
+	 * Initializes the model loader.
+	 * @param modelMap The location where references to loaded models will be stored.
+	 * @param memoryManager The place where model data will be sent to be uploaded to the gpu.
+	 */
+	GlModelLoader(std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager);
+
+	/**
+	 * Loads a model from disk to the gpu.
+	 * @param name The name the model will be stored under.
+	 * @param filename The filename to load the model from.
+	 * @throw runtime_error if model loading failed.
+	 */
+	void loadModel(std::string name, std::string filename);
+
+private:
+	//The map to store loaded model data in
+	std::unordered_map<std::string, Model>& models;
+	//The memory manager to upload model data to.
+	GlMemoryManager& memoryManager;
 };

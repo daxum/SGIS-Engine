@@ -24,24 +24,7 @@
 #include <Vertex.hpp>
 
 #include "CombinedGl.h"
-
-//The type of mesh, affects mesh storage
-enum class MeshType {
-	//Static meshes will be uploaded to gpu memory, for fast access by the gpu. Their buffers
-	//will never be mapped. In addition, their vertices may be combined with the vertices of other
-	//static meshes to save memory.
-	STATIC
-};
-
-//Contains the data needed to draw a mesh, such as offsets in the index buffer
-struct MeshData {
-	//The type of this mesh - determines which buffer to use
-	MeshType type;
-	//The starting position (byte offset) in the index buffer
-	uint32_t indexStart;
-	//The number of indices in the mesh
-	uint32_t indexCount;
-};
+#include "Model.hpp"
 
 class GlMemoryManager {
 public:

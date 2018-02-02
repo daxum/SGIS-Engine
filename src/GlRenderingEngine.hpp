@@ -25,6 +25,7 @@
 #include "CombinedGl.h"
 #include "GlShader.hpp"
 #include "GlMemoryManager.hpp"
+#include "Model.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -102,6 +103,8 @@ private:
 	std::unordered_map<std::string, GLuint> textureMap;
 	//A map to store the shaders used by the engine
 	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
+	//A map to store loaded model information
+	std::unordered_map<std::string, Model> modelMap;
 	//The window created by glfw
 	GLFWwindow* window;
 
