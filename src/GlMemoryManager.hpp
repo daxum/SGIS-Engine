@@ -25,14 +25,16 @@
 
 #include "CombinedGl.h"
 #include "Model.hpp"
+#include "Logger.hpp"
 
 class GlMemoryManager {
 public:
 	/**
 	 * Initializes the memory manager - this does NOT allocate any
 	 * gpu memory.
+	 * @param logger The logger with which to log.
 	 */
-	GlMemoryManager() {}
+	GlMemoryManager(Logger& logger) : logger(logger) {}
 
 	/**
 	 * Frees any allocated gpu memory.
@@ -62,6 +64,8 @@ public:
 	void bindBuffer(MeshType type);
 
 private:
+	//Just a logger
+	Logger& logger;
 	//Whether init has been called.
 	bool initialized;
 

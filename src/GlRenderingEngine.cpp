@@ -28,7 +28,8 @@ GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConf
 					std::make_shared<GlShaderLoader>(shaderMap),
 					std::make_shared<GlModelLoader>(loaderLogger, modelMap, memoryManager)),
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
-	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile) {
+	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),
+	memoryManager(logger) {
 
 	glfwSetErrorCallback(GlRenderingEngine::glfwError);
 

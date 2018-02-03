@@ -21,6 +21,8 @@ MeshData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std
 	switch (type) {
 		case MeshType::STATIC:
 			//STATIC: all static meshes are combined into one unmodifiable buffer in gpu memory
+			logger.info("Adding mesh to static data...");
+
 			for (const uint32_t i : indices) {
 				const Vertex& vertex = vertices[i];
 
@@ -49,6 +51,12 @@ void GlMemoryManager::upload() {
 	}
 
 	//Static mesh data
+	logger.info("Uploading static mesh data...");
+	//Don't ask.
+	logger.debug(std::string("Static mesh stats:") +
+				 "\n\tVertices:   " + std::to_string(staticVertices.size()) +
+				 "\n\tIndices:    " + std::to_string(staticIndices.size()) +
+				 "\n\tTotal size: " + std::to_string(staticVertices.size() * sizeof(Vertex) + staticIndices.size() * sizeof(uint32_t)) + " bytes");
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vertexBuffer);
@@ -56,8 +64,12 @@ void GlMemoryManager::upload() {
 
 	glBindVertexArray(vao);
 
+	logger.debug("Creating " + std::to_string(staticVertices.size() * sizeof(Vertex)) + " byte vertex buffer for static data.");
+
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, staticVertices.size() * sizeof(Vertex), staticVertices.data(), GL_STATIC_DRAW);
+
+	logger.debug("Creating " + std::to_string(staticIndices.size() * sizeof(uint32_t)) + " byte index buffer for static data.");
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, staticIndices.size() * sizeof(uint32_t), staticIndices.data(), GL_STATIC_DRAW);
@@ -74,6 +86,10 @@ void GlMemoryManager::upload() {
 	glBindVertexArray(0);
 
 	//Delete mesh caches
+	logger.info("Deleting mesh caches... (will save around " + std::to_string(staticVertices.size() * sizeof(Vertex) +
+				staticIndices.size() * sizeof(uint32_t) + staticUniqueVertices.size() * sizeof(Vertex) +
+				staticUniqueVertices.size() * sizeof(uint32_t)) + " bytes)");
+
 	std::vector<Vertex>().swap(staticVertices);
 	std::vector<uint32_t>().swap(staticIndices);
 	std::unordered_map<Vertex, uint32_t>().swap(staticUniqueVertices);
