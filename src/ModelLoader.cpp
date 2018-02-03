@@ -25,12 +25,15 @@
 std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 	std::shared_ptr<ModelData> data = std::make_shared<ModelData>();
 
+	logger.debug("Loading model \"" + filename + "\".");
+
 	tinyobj::attrib_t attributes;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string error;
 
 	if (!tinyobj::LoadObj(&attributes, &shapes, &materials, &error, filename.c_str())) {
+		logger.fatal("Failed to load model \"" + filename + "\"!");
 		throw std::runtime_error(error);
 	}
 
@@ -65,6 +68,11 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 			data->indices.push_back(uniqueVertices[vertex]);
 		}
 	}
+
+	logger.debug("File \"" + filename + "\" loaded from disk. Stats:" +
+				 "\n\tVertices:          " + std::to_string(data->vertices.size()) +
+				 "\n\tIndices:           " + std::to_string(data->indices.size()) +
+				 "\n\tTotal loaded size: " + std::to_string(data->vertices.size() * sizeof(Vertex) + data->indices.size() * sizeof(uint32_t)) + " bytes");
 
 	//TODO: Materials
 

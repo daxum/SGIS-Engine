@@ -26,7 +26,7 @@
 GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
 					std::make_shared<GlShaderLoader>(shaderMap),
-					std::make_shared<GlModelLoader>(modelMap, memoryManager)),
+					std::make_shared<GlModelLoader>(loaderLogger, modelMap, memoryManager)),
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile) {
 
@@ -61,7 +61,7 @@ GlRenderingEngine::~GlRenderingEngine() {
 
 	glfwTerminate();
 
-	logger.info("Destroyed rendering engine.");
+	logger.info("Destroyed OpenGL rendering engine.");
 }
 
 void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string windowTitle) {

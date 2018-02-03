@@ -54,13 +54,13 @@ void Engine::run(GameInterface& game) {
 	logger.info("Beginning resource loading...");
 
 	renderer->loadDefaultShaders(config.shaderPath);
-	logger.info("Loaded shaders.");
+	logger.info("Finshed loading shaders.");
 
 	game.loadTextures(renderer->getTextureLoader());
-	logger.info("Loaded textures.");
+	logger.info("Finished loading textures.");
 
 	game.loadModels(renderer->getModelLoader());
-	logger.info("Loaded models.");
+	logger.info("Finished loading models.");
 
 	renderer->finishLoad();
 	logger.info("Load complete.");

@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "Vertex.hpp"
+#include "Logger.hpp"
 
 struct ModelData {
 	//The vertices in the model's mesh
@@ -35,9 +36,9 @@ struct ModelData {
 class ModelLoader {
 public:
 	/**
-	 * Constructs a model loader. Does nothing.
+	 * Constructs a model loader. Sets the logger.
 	 */
-	ModelLoader() {}
+	ModelLoader(Logger& logger) : logger(logger) {}
 
 	/**
 	 * Virtual destructor, does nothing.
@@ -52,6 +53,8 @@ public:
 	virtual void loadModel(std::string name, std::string filename) = 0;
 
 protected:
+	//The logger
+	Logger& logger;
 	/**
 	 * Loads a model from disk (currently only .obj is supported).
 	 * @param filename The filename of the model to load.

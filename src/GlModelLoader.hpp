@@ -31,7 +31,7 @@ public:
 	 * @param modelMap The location where references to loaded models will be stored.
 	 * @param memoryManager The place where model data will be sent to be uploaded to the gpu.
 	 */
-	GlModelLoader(std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager);
+	GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager);
 
 	/**
 	 * Loads a model from disk to the gpu.

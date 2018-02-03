@@ -19,7 +19,8 @@
 #include <memory>
 #include "GlModelLoader.hpp"
 
-GlModelLoader::GlModelLoader(std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
+GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
+	ModelLoader(logger),
 	models(modelMap),
 	memoryManager(memoryManager) {
 
@@ -30,4 +31,5 @@ void GlModelLoader::loadModel(std::string name, std::string filename) {
 	//Always static for now
 	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
 	models.insert(std::make_pair(name, Model(mesh)));
+	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
