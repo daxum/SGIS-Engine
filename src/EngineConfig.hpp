@@ -61,6 +61,10 @@ struct EngineConfig {
 	//Note that the shader names will be appended to this, so the directory
 	//should specified as "path/to/shaders/" and not "path/to/shaders".
 	std::string shaderPath;
-	//General logging for engine
+	//General logging for engine.
 	LogConfig generalLog;
+	//General renderer logger.
+	LogConfig rendererLog;
+	//Loader logger
+	LogConfig loaderLog;
 };

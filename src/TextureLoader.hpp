@@ -20,6 +20,7 @@
 
 #include <string>
 #include <memory>
+#include "Logger.hpp"
 
 //Returned when loading from disk
 struct TextureData {
@@ -48,10 +49,10 @@ enum class Filter {
 class TextureLoader {
 public:
 	/**
-	 * Creates a texture loader. This doesn't really do anything at
-	 * the moment.
+	 * Creates a texture loader. Just sets the logger.
+	 * @param logger The logger to send messages to.
 	 */
-	TextureLoader() {}
+	TextureLoader(Logger& logger) : logger(logger) {}
 
 	/**
 	 * Destroys a texture loader. This doesn't do much right now,
@@ -76,6 +77,9 @@ public:
 	virtual void loadTexture(std::string name, std::string filename, Filter minFilter, Filter magFilter, bool mipmap) = 0;
 
 protected:
+	//The logger for the loader.
+	Logger& logger;
+
 	/**
 	 * Loads the provided texture from disk, and returns a pointer to its data.
 	 * @param filename The filename of the texture to load.

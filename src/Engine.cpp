@@ -27,7 +27,7 @@ Engine::Engine(const EngineConfig& config) :
 	switch(config.renderer) {
 		case Renderer::OPEN_GL:
 			logger.info("Using OpenGL renderer.");
-			renderer.reset(new GlRenderingEngine());
+			renderer.reset(new GlRenderingEngine(config.rendererLog, config.loaderLog));
 			break;
 		default:
 			logger.fatal("Unknown renderer requested!");

@@ -27,9 +27,10 @@ class GlTextureLoader : public TextureLoader {
 public:
 	/**
 	 * Creates a GlTextureLoader, ready for loading textures.
+	 * @param logger Logger to use to log logs in a log file. Log.
 	 * @param texMap The map where loaded textures are stored.
 	 */
-	GlTextureLoader(std::unordered_map<std::string, GLuint>& texMap) : textureMap(texMap) {}
+	GlTextureLoader(Logger& logger, std::unordered_map<std::string, GLuint>& texMap);
 
 	/**
 	 * Loads a texture from disk and uploads it to the GPU after storing it in the

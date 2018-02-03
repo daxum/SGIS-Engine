@@ -30,6 +30,8 @@ struct ImageDeleter {
 TextureData TextureLoader::loadFromDisk(std::string filename) {
 	TextureData texData = {};
 
+	logger.debug("Loading \"" + filename + "\".");
+
 	//Channels is currently unused, but will be set with the amount of channels the image originally had
 	//if it's ever needed.
 	int channels = 0;
@@ -37,7 +39,7 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 	unsigned char* imageData = stbi_load(filename.c_str(), &texData.width, &texData.height, &channels, 4);
 
 	if (imageData == nullptr) {
-		//TODO: missing data
+		logger.error("Couldn't load texture \"" + filename + "\" - file doesn't exist.");
 		texData.loadSuccess = false;
 	}
 	else {
@@ -48,8 +50,11 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 	//If width and height are not equal, or they are not powers of two, the texture is malformed.
 	//Report a warning if this occurs.
 	if ((texData.width & (texData.width - 1)) || texData.width != texData.height) {
-		//TODO: warning
+		logger.warn("Malformed texture \"" + filename + "\" has dimensions " + std::to_string(texData.width) + " x " +
+					std::to_string(texData.height) + ". Dimensions must be equal powers of two.");
 	}
+
+	logger.debug("Loaded " + std::to_string(texData.width) + " x " + std::to_string(texData.height) + " texture \"" + filename + "\".");
 
 	return texData;
 }

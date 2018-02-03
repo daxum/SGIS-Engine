@@ -26,6 +26,7 @@
 #include "GlShader.hpp"
 #include "GlMemoryManager.hpp"
 #include "Model.hpp"
+#include "Logger.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -33,9 +34,11 @@ public:
 	/**
 	 * Constructs a GlRenderingEngine and initializes small parts of
 	 * glfw - it just calls the init function and sets the error callback.
+	 * @param rendererLog The logger config for the rendering engine.
+	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if glfw initialization failed.
 	 */
-	GlRenderingEngine();
+	GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog);
 
 	/**
 	 * Destroys the window and terminates glfw
@@ -99,6 +102,10 @@ public:
 	static void glfwError(int error, const char* description);
 
 private:
+	//The general rendering logger
+	Logger logger;
+	//The loader logger
+	Logger loaderLogger;
 	//A map to store texture data
 	std::unordered_map<std::string, GLuint> textureMap;
 	//A map to store the shaders used by the engine

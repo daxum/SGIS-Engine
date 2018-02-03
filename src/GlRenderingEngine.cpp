@@ -17,16 +17,18 @@
  ******************************************************************************/
 
 #include <vector>
+#include "EngineConfig.hpp"
 #include "GlRenderingEngine.hpp"
 #include "GlTextureLoader.hpp"
 #include "GlShaderLoader.hpp"
 #include "GlModelLoader.hpp"
 
-GlRenderingEngine::GlRenderingEngine() :
-	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap),
+GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog) :
+	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
 					std::make_shared<GlShaderLoader>(shaderMap),
 					std::make_shared<GlModelLoader>(modelMap, memoryManager)),
-	textureMap() {
+	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
+	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile) {
 
 	glfwSetErrorCallback(GlRenderingEngine::glfwError);
 
@@ -58,6 +60,8 @@ GlRenderingEngine::~GlRenderingEngine() {
 	}
 
 	glfwTerminate();
+
+	logger.info("Destroyed rendering engine.");
 }
 
 void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string windowTitle) {
@@ -79,6 +83,8 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	glfwMakeContextCurrent(window);
 
+	logger.info("Created window and context.");
+
 	//Load OpenGL functions
 
 	int loadStatus = ogl_LoadFunctions();
@@ -86,6 +92,8 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	if (loadStatus != 1) {
 		throw new std::runtime_error("OpenGl function loading failed");
 	}
+
+	logger.info("Loaded all OpenGL functions.");
 
 	//Set callbacks
 
@@ -111,6 +119,8 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glEnable(GL_CULL_FACE);
 
 	glClearColor(0.0, 0.2, 0.5, 1.0);
+
+	logger.info("OpenGL initialization complete.");
 }
 
 void GlRenderingEngine::finishLoad() {
@@ -141,5 +151,5 @@ void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
 }
 
 void GlRenderingEngine::glfwError(int errorCode, const char* description) {
-	//TODO: logging
+	throw std::runtime_error("GLFW error! " + std::to_string(errorCode) + ": " + description);
 }

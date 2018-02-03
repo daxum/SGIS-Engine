@@ -19,10 +19,16 @@
 #include <stdexcept>
 #include "GlTextureLoader.hpp"
 
+GlTextureLoader::GlTextureLoader(Logger& logger, std::unordered_map<std::string, GLuint>& texMap) :
+	TextureLoader(logger),
+	textureMap(texMap) {
+
+}
+
 void GlTextureLoader::loadTexture(std::string name, std::string filename, Filter minFilter, Filter magFilter, bool mipmap ) {
 	if (textureMap.count(name) != 0) {
 		//Duplicate texture, skip it.
-		//TODO: warning message
+		logger.warn("Attempted to load duplicate texture \"" + filename + "\".");
 		return;
 	}
 
@@ -41,7 +47,7 @@ void GlTextureLoader::loadTexture(std::string name, std::string filename, Filter
 
 	//Don't abort if image loading failed - the missing texture should be perfectly usable
 	if (!texData.loadSuccess) {
-		//TODO: warning
+		logger.warn("Using missing texture data for \"" + filename + "\".");
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texData.width, texData.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData.data.get());
@@ -58,4 +64,6 @@ void GlTextureLoader::loadTexture(std::string name, std::string filename, Filter
 	textureMap.insert(std::make_pair(name, texture));
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	logger.debug("Uploaded texture \"" + name + "\".");
 }
