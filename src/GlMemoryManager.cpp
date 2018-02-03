@@ -80,3 +80,10 @@ void GlMemoryManager::upload() {
 
 	initialized = true;
 }
+
+void GlMemoryManager::bindBuffer(MeshType type) {
+	switch (type) {
+		case MeshType::STATIC: glBindVertexArray(vao); break;
+		default: throw std::runtime_error("Missing type in GlMemoryManager::bindBuffer!");
+	}
+}

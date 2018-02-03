@@ -55,6 +55,12 @@ public:
 	 */
 	void upload();
 
+	/**
+	 * Binds the specified buffer for drawing.
+	 * @param type The buffer to bind.
+	 */
+	void bindBuffer(MeshType type);
+
 private:
 	//Whether init has been called.
 	bool initialized;

@@ -1,20 +1,20 @@
 #version 410 core
 
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 inNormal;
-layout (location = 2) in vec2 inputTexCoords;
+layout (location = 0) in vec3 posIn;
+layout (location = 1) in vec3 normIn;
+layout (location = 2) in vec2 texIn;
 
-out vec2 texCoords;
-out vec3 normal;
 out vec3 pos;
+out vec3 norm;
+out vec2 tex;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
 void main() {
-	texCoords = inputTexCoords;
-	normal = inNormal;
-	pos = vec3(model * vec4(position, 1.0));
-	gl_Position = projection * view * model * vec4(position, 1.0);
+	pos = posIn;
+	norm = normIn;
+	tex = texIn;
+	gl_Position = projection * view * model * vec4(pos, 1.0);
 }
