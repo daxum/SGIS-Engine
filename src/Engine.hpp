@@ -22,6 +22,7 @@
 #include "GameInterface.hpp"
 #include "RenderingEngine.hpp"
 #include "EngineConfig.hpp"
+#include "Logger.hpp"
 
 class Engine {
 public:
@@ -57,6 +58,8 @@ public:
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
 	const EngineConfig config;
+	//The place the engine logs messages to.
+	Logger logger;
 	//The rendering engine. The graphics api to be used is set
 	//before run is called, during engine configuration.
 	std::shared_ptr<RenderingEngine> renderer;

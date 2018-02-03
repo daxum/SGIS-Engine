@@ -19,10 +19,30 @@
 #pragma once
 
 #include <string>
+#include <memory>
+#include <cstdint>
+#include <iostream>
 
-//List of available rendering engines
+//List of available rendering engines.
 enum class Renderer {
 	OPEN_GL
+};
+
+//Used to avoid passing references in the config.
+enum class LogType {
+	STDOUT,
+	FILE
+};
+
+//Specifies logging information for the different subsystems.
+struct LogConfig {
+	//The type of output for the logger.
+	LogType type;
+	//Only used for LogType FILE
+	std::string outputFile;
+	//The level mask - can be {DEBUG|INFO|WARN|ERROR|FATAL}
+	//If a bit is unset, that level will be disabled.
+	uint32_t mask;
 };
 
 struct EngineConfig {
@@ -41,4 +61,6 @@ struct EngineConfig {
 	//Note that the shader names will be appended to this, so the directory
 	//should specified as "path/to/shaders/" and not "path/to/shaders".
 	std::string shaderPath;
+	//General logging for engine
+	LogConfig generalLog;
 };

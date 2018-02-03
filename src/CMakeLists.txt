@@ -15,6 +15,7 @@ add_library(Engine
 	GlMemoryManager.cpp
 	GlModelLoader.cpp
 	Model.cpp
+	Logger.cpp
 	gl_core_4_1.c
 )
 

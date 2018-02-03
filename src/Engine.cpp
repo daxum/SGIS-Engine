@@ -21,11 +21,17 @@
 #include "ExtraMath.hpp"
 
 Engine::Engine(const EngineConfig& config) :
-	config(config) {
+	config(config),
+	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile) {
 
 	switch(config.renderer) {
-		case Renderer::OPEN_GL: renderer.reset(new GlRenderingEngine()); break;
-		default: throw std::runtime_error("Incomplete switch in Engine::Engine()");
+		case Renderer::OPEN_GL:
+			logger.info("Using OpenGL renderer.");
+			renderer.reset(new GlRenderingEngine());
+			break;
+		default:
+			logger.fatal("Unknown renderer requested!");
+			throw std::runtime_error("Incomplete switch in Engine::Engine()");
 	}
 }
 
@@ -34,20 +40,34 @@ Engine::~Engine() {
 }
 
 void Engine::run(GameInterface& game) {
+	logger.info("Initializing engine...");
+
 	//Initialize renderer
+	logger.info("Initializing renderer...");
+
 	renderer->init(config.windowWidth, config.windowHeight, config.windowTitle);
+	logger.info("Renderer initialization complete.");
 
 	//Pre-loading of a splash screen might go here
 
 	//Load resources
+	logger.info("Beginning resource loading...");
+
 	renderer->loadDefaultShaders(config.shaderPath);
+	logger.info("Loaded shaders.");
 
 	game.loadTextures(renderer->getTextureLoader());
+	logger.info("Loaded textures.");
+
 	game.loadModels(renderer->getModelLoader());
+	logger.info("Loaded models.");
 
 	renderer->finishLoad();
+	logger.info("Load complete.");
 
 	//Enter game loop
+	logger.info("Starting game...");
+
 	double currentTime = ExMath::getTimeMillis();
 	double lag = 0.0;
 
@@ -76,7 +96,7 @@ void Engine::run(GameInterface& game) {
 
 		//Running very slow - slow == bad!
 		if (loops >= 10) {
-			//TODO: warning
+			logger.warn("Runnning " + std::to_string(lag) + "ms behind.");
 			lag = 0.0;
 		}
 
@@ -85,6 +105,7 @@ void Engine::run(GameInterface& game) {
 	}
 
 	//Clean up resources, exit game
+	logger.info("Exit called, shutting down.");
 }
 
 void Engine::exit() {
