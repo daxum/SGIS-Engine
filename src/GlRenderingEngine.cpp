@@ -25,7 +25,7 @@
 
 GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
-					std::make_shared<GlShaderLoader>(shaderMap),
+					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap),
 					std::make_shared<GlModelLoader>(loaderLogger, modelMap, memoryManager)),
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),

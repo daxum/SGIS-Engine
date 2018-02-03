@@ -20,6 +20,8 @@
 
 #include <string>
 
+#include "Logger.hpp"
+
 //A generic shader loader. This only really exists for
 //completeness sake, as shaders aren't currently loaded from
 //outside the engine. As such, there probably won't be any
@@ -27,14 +29,14 @@
 class ShaderLoader {
 public:
 	/**
-	 * Default constructor. Does nothing.
+	 * Default constructor. Sets up logging.
 	 */
-	ShaderLoader() {}
+	ShaderLoader(Logger& logger) : logger(logger) {}
 
 	/**
 	 * Destructor. Here for subclasses.
 	 */
-	 virtual ~ShaderLoader() {}
+	virtual ~ShaderLoader() {}
 
 	/**
 	 * Loads the shaders from disk and constructs a program object from them.
@@ -47,5 +49,8 @@ public:
 	 *     create the shader (ie. vulkan would probably need state information here, as this
 	 *     might create an entire pipeline).
 	 */
-	 virtual void loadShader(std::string name, std::string vertex, std::string fragment, const void* flags) = 0;
+	virtual void loadShader(std::string name, std::string vertex, std::string fragment, const void* flags) = 0;
+
+protected:
+	Logger& logger;
 };

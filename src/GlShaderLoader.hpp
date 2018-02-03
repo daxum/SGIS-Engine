@@ -29,7 +29,7 @@ public:
 	/**
 	 * Constructs a GlShaderLoader that stores loaded shaders in the provided map.
 	 */
-	GlShaderLoader(std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap);
+	GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap);
 
 	/**
 	 * Loads a program object using the given shader files.

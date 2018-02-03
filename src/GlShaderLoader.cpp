@@ -20,19 +20,24 @@
 #include <fstream>
 #include "GlShaderLoader.hpp"
 
-GlShaderLoader::GlShaderLoader(std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap) :
+GlShaderLoader::GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap) :
+	ShaderLoader(logger),
 	shaderMap(shaderMap) {
 
 }
 
 void GlShaderLoader::loadShader(std::string name, std::string vertexPath, std::string fragmentPath, const void* flags) {
 	if (shaderMap.count(name) > 0) {
-		//TODO: duplicate warning
+		logger.warn("Tried to load duplicate shader \"" + name + "\".");
 		return;
 	}
 
+	logger.debug("Constructing shader from \"" + vertexPath + "\" and \"" + fragmentPath + "\".");
+
 	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(vertexPath, fragmentPath));
 	shaderMap.insert(std::make_pair(name, shader));
+
+	logger.debug("Shader \"" + name + "\" loaded.");
 }
 
 GLuint GlShaderLoader::createProgram(std::string vertexName, std::string fragmentName) {
@@ -54,7 +59,18 @@ GLuint GlShaderLoader::createProgram(std::string vertexName, std::string fragmen
 
 	glLinkProgram(shaderProgram);
 
-	//TODO: Log link errors.
+	int linked = 0;
+
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linked);
+
+	if (linked == 0) {
+		char infoLog[1024];
+		glGetProgramInfoLog(shaderProgram, 1024, nullptr, infoLog);
+		logger.fatal(std::string("Program linking failed\n------------ Program Link Log ------------\n") +
+					 infoLog + "\n---------------- End Log -----------------\n");
+
+		throw std::runtime_error("Linking failed for program using \"" + vertexName + "\" and \"" + fragmentName + "\"");
+	}
 
 	//Delete leftover shader objects
 
@@ -82,12 +98,26 @@ GLuint GlShaderLoader::createShader(std::string filename, GLenum type) {
 	//Apparently that function takes a const GLchar* const* (const pointer to const char?), which is
 	//an abomination of a type that can't be converted to directly from the c_str() function call,
 	//due to how '&' works.
-	const char* source = loadShaderSource(filename).c_str();
+	std::string sourceStr = loadShaderSource(filename);
+	const char* source = sourceStr.c_str();
 
 	glShaderSource(shader, 1, &source, nullptr);
 	glCompileShader(shader);
 
-	//No need to get compilation logs, all shaders will be validated beforehand with the spir-v compiler.
+	//Check if compilation somehow failed.
+
+	GLint status = 0;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+
+	if (status == 0) {
+		char infoLog[1024];
+		glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
+
+		logger.fatal("Failed to compile shader \"" + filename + "\"\n--------- Shader Compilation Log ---------\n" +
+					 infoLog + "\n---------------- End Log -----------------\n");
+
+		throw std::runtime_error("Failed to compile shader \"" + filename + "\"");
+	}
 
 	return shader;
 }
