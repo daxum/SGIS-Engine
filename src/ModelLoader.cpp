@@ -50,14 +50,14 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 			};
 
 			vertex.normal = {
-				attributes.normals[3 * index.vertex_index],
-				attributes.normals[3 * index.vertex_index + 1],
-				attributes.normals[3 * index.vertex_index + 2]
+				attributes.normals[3 * index.normal_index],
+				attributes.normals[3 * index.normal_index + 1],
+				attributes.normals[3 * index.normal_index + 2]
 			};
 
 			vertex.texCoords = {
-				attributes.texcoords[3 * index.vertex_index],
-				attributes.texcoords[3 * index.vertex_index + 1]
+				attributes.texcoords[2 * index.texcoord_index],
+				attributes.texcoords[2 * index.texcoord_index + 1]
 			};
 
 			if (uniqueVertices.count(vertex) == 0) {

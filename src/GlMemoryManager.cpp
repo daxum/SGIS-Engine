@@ -6,7 +6,7 @@ GlMemoryManager::~GlMemoryManager() {
 	glDeleteBuffers(1, &vertexBuffer);
 	glDeleteBuffers(1, &indexBuffer);
 }
-#include <iostream>
+
 MeshData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, MeshType type) {
 	if (initialized) {
 		throw std::runtime_error("Cannot add meshes after initialization!");
