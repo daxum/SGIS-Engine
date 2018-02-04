@@ -6,7 +6,7 @@ GlMemoryManager::~GlMemoryManager() {
 	glDeleteBuffers(1, &vertexBuffer);
 	glDeleteBuffers(1, &indexBuffer);
 }
-
+#include <iostream>
 MeshData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, MeshType type) {
 	if (initialized) {
 		throw std::runtime_error("Cannot add meshes after initialization!");
@@ -14,9 +14,9 @@ MeshData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std
 
 	MeshData data = {};
 	data.type = type;
-	data.indexStart = indices.size() * sizeof(uint32_t);
+	data.indexStart = staticIndices.size() * sizeof(uint32_t);
 
-	uint32_t indexStartSize = indices.size();
+	uint32_t indexStartSize = staticIndices.size();
 
 	switch (type) {
 		case MeshType::STATIC:
@@ -40,7 +40,7 @@ MeshData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std
 		default: throw std::runtime_error("Missing mesh type!");
 	}
 
-	data.indexCount = indices.size() - indexStartSize;
+	data.indexCount = staticIndices.size() - indexStartSize;
 
 	return data;
 }
