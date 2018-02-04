@@ -21,12 +21,16 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+
+#include <glm/glm.hpp>
+
 #include "RenderingEngine.hpp"
 #include "CombinedGl.h"
 #include "GlShader.hpp"
 #include "GlMemoryManager.hpp"
 #include "Model.hpp"
 #include "Logger.hpp"
+#include "Camera.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -84,6 +88,14 @@ public:
 	 * Just calls glfwPollEvents() and returns.
 	 */
 	void pollEvents();
+
+	/**
+	 * Sets the projection matrix. Only intended to be called from setViewport.
+	 * @param width The width of the window.
+	 * @param height The height of the window.
+	 */
+	void setProjection(int width, int height);
+
 	/**
 	 * Sets the window viewport with OpenGL. This is a callback
 	 * function for glfw, and should only be called directly once,
@@ -102,6 +114,10 @@ public:
 	static void glfwError(int error, const char* description);
 
 private:
+	//Projection matrix.
+	glm::mat4 projection;
+	//Just the camera. Does camera things.
+	Camera camera;
 	//The general rendering logger
 	Logger logger;
 	//The loader logger

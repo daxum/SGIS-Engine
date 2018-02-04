@@ -6,10 +6,10 @@ in vec2 tex;
 
 out vec4 outColor;
 
-//uniform sampler2D texture0;
-//uniform vec3 color;
+uniform sampler2D tex0;
+uniform vec3 color;
 //uniform vec3 cameraPos;
 
 void main() {
-	outColor = vec4(1.0, 1.0, 1.0, 1.0);
+	outColor = texture(tex0, tex) * vec4(color, 1.0);
 }

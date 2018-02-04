@@ -17,11 +17,19 @@
  ******************************************************************************/
 
 #include <vector>
+
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "EngineConfig.hpp"
 #include "GlRenderingEngine.hpp"
 #include "GlTextureLoader.hpp"
 #include "GlShaderLoader.hpp"
 #include "GlModelLoader.hpp"
+
+namespace {
+	//Bit of a hack for static callbacks
+	GlRenderingEngine* renderer = nullptr;
+}
 
 GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
@@ -30,6 +38,12 @@ GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConf
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),
 	memoryManager(logger) {
+
+	if (renderer != nullptr) {
+		throw std::runtime_error("GlRenderingEngine initialized more than once!");
+	}
+
+	renderer = this;
 
 	glfwSetErrorCallback(GlRenderingEngine::glfwError);
 
@@ -61,6 +75,7 @@ GlRenderingEngine::~GlRenderingEngine() {
 	}
 
 	glfwTerminate();
+	renderer = nullptr;
 
 	logger.info("Destroyed OpenGL rendering engine.");
 }
@@ -145,10 +160,13 @@ void GlRenderingEngine::pollEvents() {
 	glfwPollEvents();
 }
 
+void GlRenderingEngine::setProjection(int width, int height) {
+	projection = glm::perspective(PI / 4.0f, (float)width / height, 0.1f, 100000.0f);
+}
+
 void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
-
-	//TODO: Update projection matrix
+	renderer->setProjection(width, height);
 }
 
 void GlRenderingEngine::glfwError(int errorCode, const char* description) {
