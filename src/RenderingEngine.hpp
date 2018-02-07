@@ -109,6 +109,18 @@ public:
 	virtual void render(float partialTicks) = 0;
 
 	/**
+	 * Called clearBuffers for lack of a better name. Clears the depth and stencil
+	 * buffers, but not the color buffer.
+	 */
+	virtual void clearBuffers() = 0;
+
+	/**
+	 * Called when drawing is done and the results can be displayed on the screen.
+	 * Also sets up the pipeline for the next frame.
+	 */
+	virtual void present() = 0;
+
+	/**
 	 * Indicates whether the window was closed by the user, and the
 	 * game should stop.
 	 * @return Whether to terminate the game due to a closed window.

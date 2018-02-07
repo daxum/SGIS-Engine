@@ -135,6 +135,7 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glEnable(GL_CULL_FACE);
 
 	glClearColor(0.0, 0.2, 0.5, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	logger.info("OpenGL initialization complete.");
 }
@@ -148,8 +149,16 @@ void GlRenderingEngine::loadDefaultShaders(std::string path) {
 }
 
 void GlRenderingEngine::render(float partialTicks) {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Not implemented.
+}
+
+void GlRenderingEngine::clearBuffers() {
+	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
+void GlRenderingEngine::present() {
 	glfwSwapBuffers(window);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 bool GlRenderingEngine::windowClosed() {

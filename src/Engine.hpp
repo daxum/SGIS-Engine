@@ -20,6 +20,7 @@
 
 #include <memory>
 #include "GameInterface.hpp"
+#include "DisplayEngine.hpp"
 #include "RenderingEngine.hpp"
 #include "EngineConfig.hpp"
 #include "Logger.hpp"
@@ -60,6 +61,9 @@ private:
 	const EngineConfig config;
 	//The place the engine logs messages to.
 	Logger logger;
+	//The display manager. Handles rendering, updating, and input for multiple "screens" (game world, huds, menus, etc) at once.
+	//Name seems a bit misleading.
+	DisplayEngine display;
 	//The rendering engine. The graphics api to be used is set
 	//before run is called, during engine configuration.
 	std::shared_ptr<RenderingEngine> renderer;

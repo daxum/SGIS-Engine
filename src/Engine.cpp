@@ -22,7 +22,8 @@
 
 Engine::Engine(const EngineConfig& config) :
 	config(config),
-	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile) {
+	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
+	stopped(false) {
 
 	switch(config.renderer) {
 		case Renderer::OPEN_GL:
@@ -89,7 +90,7 @@ void Engine::run(GameInterface& game) {
 		//Catch up to the current time, but don't go into a catch-up death spiral.
 		uint32_t loops = 0;
 		while(lag >= config.physicsTimestep && loops < 10) {
-			//TODO: update
+			display.update();
 			lag -= config.physicsTimestep;
 			loops++;
 		}
@@ -101,7 +102,7 @@ void Engine::run(GameInterface& game) {
 		}
 
 		//Render the game.
-		renderer->render((float)lag / config.physicsTimestep);
+		display.render((float)lag / config.physicsTimestep, renderer);
 	}
 
 	//Clean up resources, exit game

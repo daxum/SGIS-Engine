@@ -78,6 +78,16 @@ public:
 	void render(float partialTicks);
 
 	/**
+	 * Clears the depth and stencil buffers.
+	 */
+	virtual void clearBuffers();
+
+	/**
+	 * Swaps the buffers and clears for the next frame.
+	 */
+	virtual void present();
+
+	/**
 	 * Indicates whether the window was closed by the user, and the
 	 * game should stop.
 	 * @return Whether to terminate the game due to a closed window.

@@ -17,6 +17,7 @@ add_library(Engine
 	Model.cpp
 	Logger.cpp
 	Camera.cpp
+	DisplayEngine.cpp
 	gl_core_4_1.c
 )
 
