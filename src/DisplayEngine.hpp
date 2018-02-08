@@ -31,7 +31,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	DisplayEngine() {}
+	DisplayEngine();
 
 	/**
 	 * Destructor
@@ -94,6 +94,5 @@ private:
 
 	//Set when popScreen is called during updating, breaks out of the update loop
 	//to avoid updating invalid screens.
-	//Probably going to be removed later, and just stop when stack is empty.
 	bool popped;
 };

@@ -19,6 +19,11 @@
 #include "DisplayEngine.hpp"
 #include "Screen.hpp"
 
+DisplayEngine::DisplayEngine() :
+	popped(false) {
+
+}
+
 void DisplayEngine::pushScreen(std::shared_ptr<Screen> screen) {
 	screenStack.emplace();
 	screenStack.top().push_back(screen);
