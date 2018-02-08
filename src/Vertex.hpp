@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <string>
+
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -34,6 +36,12 @@ struct Vertex {
 		return pos == other.pos && normal == other.normal && texCoords == other.texCoords;
 	}
 };
+
+inline std::string vertToString(const Vertex& v) {
+	return "(" + std::to_string(v.pos.x) + ", " + std::to_string(v.pos.y) + ", " + std::to_string(v.pos.z) + ") (" +
+		   std::to_string(v.normal.x) + ", " + std::to_string(v.normal.y) + ", " + std::to_string(v.normal.z) + ") (" +
+		   std::to_string(v.texCoords.x) + ", " + std::to_string(v.texCoords.y) + ")";
+}
 
 namespace std {
     template<> struct hash<Vertex> {
