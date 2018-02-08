@@ -34,7 +34,7 @@ public:
 	 * gpu memory.
 	 * @param logger The logger with which to log.
 	 */
-	GlMemoryManager(Logger& logger) : logger(logger) {}
+	GlMemoryManager(Logger& logger);
 
 	/**
 	 * Frees any allocated gpu memory.

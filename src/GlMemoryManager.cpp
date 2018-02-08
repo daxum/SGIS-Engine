@@ -1,6 +1,12 @@
 #include <stdexcept>
 #include "GlMemoryManager.hpp"
 
+GlMemoryManager::GlMemoryManager(Logger& logger) :
+	logger(logger),
+	initialized(false) {
+
+}
+
 GlMemoryManager::~GlMemoryManager() {
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vertexBuffer);
