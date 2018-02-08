@@ -50,12 +50,6 @@ public:
 	 */
 	void run(GameInterface& game);
 
-	/**
-	 * Stops the game engine in preparation for shutting down.
-	 * This mostly just exits the main game loop.
-	 */
-	void exit();
-
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
 	const EngineConfig config;

@@ -85,6 +85,13 @@ public:
 	 */
 	void render(float partialTicks, std::shared_ptr<RenderingEngine> renderer);
 
+	/**
+	 * Returns whether the screen stack is empty, which should only happen when the game
+	 * wants to exit.
+	 * @return whether to stop the engine.
+	 */
+	bool shouldExit();
+
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
 	//and the second contains all screens that are currently being rendered.

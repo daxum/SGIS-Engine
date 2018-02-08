@@ -84,3 +84,7 @@ void DisplayEngine::render(float partialTicks, std::shared_ptr<RenderingEngine> 
 
 	renderer->present();
 }
+
+bool DisplayEngine::shouldExit() {
+	return screenStack.empty();
+}

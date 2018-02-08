@@ -109,10 +109,6 @@ void Engine::run(GameInterface& game) {
 	logger.info("Exit called, shutting down.");
 }
 
-void Engine::exit() {
-	stopped = true;
-}
-
 bool Engine::shouldExit() {
-	return stopped || renderer->windowClosed();
+	return display.shouldExit() || renderer->windowClosed();
 }
