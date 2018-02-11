@@ -18,12 +18,14 @@
 
 #pragma once
 
+#include "DisplayEngine.hpp"
+
 class Screen {
 public:
 	/**
 	 * Constructor
 	 */
-	Screen();
+	Screen(DisplayEngine& display) : display(display) {}
 
 	/**
 	 * Virtual destructor
@@ -40,5 +42,9 @@ public:
 	 * Currently not implemented, but this will eventually return all the information required
 	 * to render the screen (models for objects, post-processing steps, etc).
 	 */
-	virtual void getRenderData() {};
+	virtual void getRenderData() = 0;
+
+protected:
+	//The display engine that manages this screen.
+	DisplayEngine& display;
 };
