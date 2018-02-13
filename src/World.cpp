@@ -16,20 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <memory>
-#include "GlModelLoader.hpp"
+#include "World.hpp"
 
-GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
-	ModelLoader(logger),
-	models(modelMap),
-	memoryManager(memoryManager) {
+World::World(DisplayEngine& display) :
+	Screen(display) {
 
 }
 
-void GlModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
+void World::addObject(std::shared_ptr<Object> object) {
+	objects.push_back(object);
+	renderData.addObject(object->getRenderData());
+}
+
+void World::removeObject(uint32_t id) {
+	for (size_t i; i < objects.size(); i++) {
+		if (id == objects[i]->id) {
+			objects.erase(objects.begin() + i);
+			renderData.removeObject(id);
+			return;
+		}
+	}
 }

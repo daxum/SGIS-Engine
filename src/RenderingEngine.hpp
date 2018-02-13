@@ -23,6 +23,7 @@
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
 #include "ModelLoader.hpp"
+#include "ScreenRenderData.hpp"
 
 //A generic rendering engine. Provides the base interfaces, like resource loading
 //and rendering, but leaves the implementation to api-specific subclasses, like
@@ -102,11 +103,12 @@ public:
 	std::shared_ptr<ModelLoader> getModelLoader() { return modelLoader; }
 
 	/**
-	 * Renders the passed in object (Not yet implemented).
+	 * Renders the passed in object.
+	 * @param data The stuff to render.
 	 * @param partialTicks The time between game updates, in milliseconds.
 	 *     Used for interpolation.
 	 */
-	virtual void render(float partialTicks) = 0;
+	virtual void render(ScreenRenderData& data, float partialTicks) = 0;
 
 	/**
 	 * Called clearBuffers for lack of a better name. Clears the depth and stencil

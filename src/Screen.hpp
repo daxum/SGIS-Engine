@@ -39,12 +39,15 @@ public:
 	virtual void update() = 0;
 
 	/**
-	 * Currently not implemented, but this will eventually return all the information required
-	 * to render the screen (models for objects, post-processing steps, etc).
+	 * Gets all the information required to render the screen (models for objects, post-processing steps, etc).
+	 * @return Rendering data that can be used by RenderingEngine to produce a picture.
 	 */
-	virtual void getRenderData() = 0;
+	ScreenRenderData& getRenderData() { return renderData; }
 
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
+
+	//Information on how to render this screen.
+	ScreenRenderData renderData;
 };

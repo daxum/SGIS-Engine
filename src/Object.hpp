@@ -16,20 +16,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#pragma once
+
 #include <memory>
-#include "GlModelLoader.hpp"
+#include <string>
+#include <cstdint>
 
-GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
-	ModelLoader(logger),
-	models(modelMap),
-	memoryManager(memoryManager) {
+class ObjectRenderData;
 
-}
+//An object in a world. Stores rendering, physics, etc.
+class Object {
+public:
+	//A unique id for this object. Unless over 4 billion objects somehow get created.
+	const uint32_t id;
 
-void GlModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
-}
+	/**
+	 * Creates an object.
+	 * @param model The name of the model to use when rendering.
+	 */
+	Object(std::string model);
+
+	/**
+	 * General purpose update function. Leave unused unless absolutely necessary!
+	 */
+	virtual void update() {}
+
+	/**
+	 * Returns model used and similar data.
+	 */
+	std::shared_ptr<ObjectRenderData> getRenderData() { return renderData; }
+
+private:
+	std::shared_ptr<ObjectRenderData> renderData;
+};

@@ -148,8 +148,40 @@ void GlRenderingEngine::loadDefaultShaders(std::string path) {
 	shaderLoader->loadShader("basic", path + "glsl/basicShader.vert", path + "glsl/basicShader.frag", nullptr);
 }
 
-void GlRenderingEngine::render(float partialTicks) {
-	//Not implemented.
+void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
+	//Use basic shader for everything for now
+	std::shared_ptr<GlShader> shader = shaderMap.at("basic");
+	shader->use();
+
+	shader->setUniformMat4("projection", projection);
+	shader->setUniformMat4("view", camera.getView());
+
+	//No color yet
+	shader->setUniformVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
+
+	//All models use the static buffer at this time
+	memoryManager.bindBuffer(MeshType::STATIC);
+
+	for (auto object : data.objects) {
+		glm::mat4 modelMat;
+
+		modelMat = glm::translate(modelMat, object->getTranslation());
+
+		glm::vec3 rotation = object->getRotation();
+		modelMat = glm::rotate(modelMat, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		modelMat = glm::scale(modelMat, object->getScale());
+
+		shader->setUniformMat4("model", modelMat);
+
+		Model& model = modelMap.at(object->getModel());
+
+		glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
+
+		glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
+	}
 }
 
 void GlRenderingEngine::clearBuffers() {

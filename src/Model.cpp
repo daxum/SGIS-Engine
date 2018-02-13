@@ -17,14 +17,9 @@
  ******************************************************************************/
 
 #include "Model.hpp"
-#include "CombinedGl.h"
 
-Model::Model(MeshData meshData) :
-	mesh(meshData) {
+Model::Model(MeshData meshData, std::string texture) :
+	mesh(meshData),
+	texture(texture) {
 
-}
-
-void Model::draw() {
-	//Double cast to suppress warnings
-	glDrawElements(GL_TRIANGLES, mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)mesh.indexStart);
 }

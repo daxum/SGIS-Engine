@@ -16,20 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <memory>
-#include "GlModelLoader.hpp"
+#include <mutex>
 
-GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
-	ModelLoader(logger),
-	models(modelMap),
-	memoryManager(memoryManager) {
+#include "Object.hpp"
+#include "ObjectRenderData.hpp"
 
+namespace {
+	std::mutex idLock;
+	uint32_t nextId = 0;
+
+	uint32_t getNextId() {
+		idLock.lock();
+		uint32_t id = nextId++;
+		idLock.unlock();
+
+		return id;
+	}
 }
+Object::Object(std::string model) :
+	id(getNextId()),
+	renderData(std::make_shared<ObjectRenderData>(this, model)) {
 
-void GlModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
+
 }

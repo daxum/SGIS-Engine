@@ -16,20 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <memory>
-#include "GlModelLoader.hpp"
+#include "ScreenRenderData.hpp"
 
-GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
-	ModelLoader(logger),
-	models(modelMap),
-	memoryManager(memoryManager) {
-
+void ScreenRenderData::addObject(std::shared_ptr<ObjectRenderData> object) {
+	objects.push_back(object);
 }
 
-void GlModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
+void ScreenRenderData::removeObject(uint32_t id) {
+	for (size_t i = 0; i < objects.size(); i++) {
+		if (id == objects[i]->id) {
+			objects.erase(objects.begin() + i);
+			return;
+		}
+	}
 }

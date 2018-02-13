@@ -16,20 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#pragma once
+
+#include <vector>
 #include <memory>
-#include "GlModelLoader.hpp"
+#include <cstdint>
 
-GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
-	ModelLoader(logger),
-	models(modelMap),
-	memoryManager(memoryManager) {
+#include "ObjectRenderData.hpp"
 
-}
+//Stores all the rendering data for the screen, sorted for hopefully optimal
+//rendering. This includes objects, map stuff, effects, etc.
+class ScreenRenderData {
+public:
+	/**
+	 * Adds an object to be rendered.
+	 * @param object The new object to be rendered.
+	 */
+	void addObject(std::shared_ptr<ObjectRenderData> object);
 
-void GlModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
-}
+	/**
+	 * Removes the object from the rendering list.
+	 * @param id The id of the object to be removed.
+	 */
+	void removeObject(uint32_t id);
+
+	//Just keep everything in a massive list for now.
+	std::vector<std::shared_ptr<ObjectRenderData>> objects;
+};

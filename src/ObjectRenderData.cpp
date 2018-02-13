@@ -16,20 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <memory>
-#include "GlModelLoader.hpp"
+#include "ObjectRenderData.hpp"
 
-GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
-	ModelLoader(logger),
-	models(modelMap),
-	memoryManager(memoryManager) {
+ObjectRenderData::ObjectRenderData(Object* parent, std::string model) :
+	id(parent->id),
+	parent(parent),
+	model(model) {
 
 }
 
-void GlModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
+glm::vec3 ObjectRenderData::getTranslation() {
+	return glm::vec3(0.0f, 0.0f, 0.0f);
+}
+
+glm::vec3 ObjectRenderData::getRotation() {
+	return glm::vec3(0.0f, 0.0f, 0.0f);
+}
+
+glm::vec3 ObjectRenderData::getScale() {
+	return glm::vec3(1.0f, 1.0f, 1.0f);
 }

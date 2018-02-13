@@ -73,9 +73,10 @@ public:
 	/**
 	 * Renders the passed in object. This clears the color and depth buffers,
 	 * draws the object(s), and presents the image.
+	 * @param data The data to render.
 	 * @param partialTicks The time since the last game update.
 	 */
-	void render(float partialTicks);
+	void render(ScreenRenderData& data, float partialTicks);
 
 	/**
 	 * Clears the depth and stencil buffers.

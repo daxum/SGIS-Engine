@@ -16,20 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <memory>
-#include "GlModelLoader.hpp"
+#pragma once
 
-GlModelLoader::GlModelLoader(Logger& logger, std::unordered_map<std::string, Model>& modelMap, GlMemoryManager& memoryManager) :
-	ModelLoader(logger),
-	models(modelMap),
-	memoryManager(memoryManager) {
+#include <vector>
+#include <cstdint>
+#include "Screen.hpp"
+#include "Object.hpp"
 
-}
+class World : public Screen {
+public:
+	/**
+	 * Creates a world with nothing in it.
+	 * @param display The display that stores this world.
+	 */
+	World(DisplayEngine& display);
 
-void GlModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	MeshData mesh = memoryManager.addMesh(data->vertices, data->indices, MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
-}
+	/**
+	 * Updates all objects in the world. Will probably be extended to have
+	 * some sort of "update hooks" later for pre/post update stuff.
+	 */
+	void update() {}
+
+	/**
+	 * Adds an object to the world. The passed in object should be copy-constructable.
+	 * @param object The object to add. The world will use a copy of this object
+	 */
+	void addObject(std::shared_ptr<Object> object);
+
+	/**
+	 * Removes an object from the world.
+	 * @param id The id of the object to remove.
+	 */
+	void removeObject(uint32_t id);
+
+private:
+	//Stores everything that is in this world
+	std::vector<std::shared_ptr<Object>> objects;
+};

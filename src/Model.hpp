@@ -19,6 +19,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 //The type of mesh, affects mesh storage
 enum class MeshType {
@@ -44,15 +45,11 @@ public:
 	/**
 	 * Constructs a model using the given mesh
 	 * @param meshData This model's mesh information
+	 * @param texture The name of the texture to use
 	 */
-	Model(MeshData meshData);
-
-	/**
-	 * Draws the model - this assumes that buffers and textures are already bound,
-	 * and proper uniforms are set.
-	 */
-	void draw();
+	Model(MeshData meshData, std::string texture);
 
 	//The mesh this model uses
 	const MeshData mesh;
+	const std::string texture;
 };

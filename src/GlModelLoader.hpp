@@ -39,7 +39,7 @@ public:
 	 * @param filename The filename to load the model from.
 	 * @throw runtime_error if model loading failed.
 	 */
-	void loadModel(std::string name, std::string filename);
+	void loadModel(std::string name, std::string filename, /*Temporary -> */ std::string texture);
 
 private:
 	//The map to store loaded model data in

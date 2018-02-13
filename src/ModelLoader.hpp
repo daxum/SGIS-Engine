@@ -50,7 +50,7 @@ public:
 	 * @param name The name to store the loaded model under.
 	 * @param filename The filename for the model to load.
 	 */
-	virtual void loadModel(std::string name, std::string filename) = 0;
+	virtual void loadModel(std::string name, std::string filename, std::string texture) = 0;
 
 protected:
 	//The logger
