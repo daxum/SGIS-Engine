@@ -37,11 +37,6 @@ public:
 	Object(std::string model);
 
 	/**
-	 * General purpose update function. Leave unused unless absolutely necessary!
-	 */
-	virtual void update() {}
-
-	/**
 	 * Returns model used and similar data.
 	 */
 	std::shared_ptr<ObjectRenderData> getRenderData() { return renderData; }
