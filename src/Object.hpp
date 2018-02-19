@@ -42,5 +42,6 @@ public:
 	std::shared_ptr<ObjectRenderData> getRenderData() { return renderData; }
 
 private:
+	//Has to be pointer or else vector throws a fit.
 	std::shared_ptr<ObjectRenderData> renderData;
 };
