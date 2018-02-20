@@ -26,14 +26,26 @@ World::World(DisplayEngine& display) :
 
 void World::addObject(std::shared_ptr<Object> object) {
 	objects.push_back(object);
-	renderData.addObject(object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME));
+
+	//Temporary fix, need component system for world too.
+	std::shared_ptr<RenderComponent> objectRender = object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
+
+	if (objectRender) {
+		renderData.addObject(objectRender);
+	}
 }
 
 void World::removeObject(std::shared_ptr<Object> object) {
 	for (size_t i; i < objects.size(); i++) {
 		if (object == objects[i]) {
 			objects.erase(objects.begin() + i);
-			renderData.removeObject(object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME));
+
+			std::shared_ptr<RenderComponent> objectRender = object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
+
+			if (objectRender) {
+				renderData.removeObject(objectRender);
+			}
+
 			return;
 		}
 	}
