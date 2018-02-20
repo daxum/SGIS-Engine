@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "World.hpp"
-#include "ObjectRenderData.hpp"
+#include "RenderComponent.hpp"
 
 World::World(DisplayEngine& display) :
 	Screen(display) {
@@ -26,14 +26,14 @@ World::World(DisplayEngine& display) :
 
 void World::addObject(std::shared_ptr<Object> object) {
 	objects.push_back(object);
-	renderData.addObject(object->getRenderData());
+	renderData.addObject(object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME));
 }
 
 void World::removeObject(std::shared_ptr<Object> object) {
 	for (size_t i; i < objects.size(); i++) {
 		if (object == objects[i]) {
 			objects.erase(objects.begin() + i);
-			renderData.removeObject(object->getRenderData());
+			renderData.removeObject(object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME));
 			return;
 		}
 	}

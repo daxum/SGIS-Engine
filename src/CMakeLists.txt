@@ -19,8 +19,7 @@ add_library(Engine
 	Camera.cpp
 	DisplayEngine.cpp
 	World.cpp
-	Object.cpp
-	ObjectRenderData.cpp
+	RenderComponent.cpp
 	ScreenRenderData.cpp
 	gl_core_4_1.c
 )

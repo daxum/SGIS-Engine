@@ -21,25 +21,32 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 
-class ObjectRenderData;
+//Stupid circular dependencies.
+class Component;
 
 //An object in a world. Stores rendering, physics, etc.
 class Object {
 public:
 	/**
 	 * Creates an object.
-	 * @param model The name of the model to use when rendering.
 	 * @param pos The starting position of the object.
 	 */
-	Object(std::string model, glm::vec3 pos);
+	Object(glm::vec3 pos) : pos(pos) {}
 
 	/**
 	 * Returns model used and similar data.
+	 * @param name The name of the component.
+	 * @return A pointer to the component for this object, will be null if the component isn't found.
 	 */
-	std::shared_ptr<ObjectRenderData> getRenderData() { return renderData; }
+	template<typename T>
+	std::shared_ptr<T> getComponent(std::string name) {
+		//This has so many ways to go wrong...
+		return std::static_pointer_cast<T>(components[name]);
+	}
 
 	/**
 	 * Returns the position of this object
@@ -59,8 +66,8 @@ public:
 	void move(glm::vec3 amount) { pos += amount; }
 
 private:
-	//Has to be pointer or else vector throws a fit.
-	std::shared_ptr<ObjectRenderData> renderData;
+	//The map of components for this object. Component names should be in Component.hpp.
+	std::unordered_map<std::string, std::shared_ptr<Component>> components;
 
 	//The position of the object in the world.
 	glm::vec3 pos;

@@ -16,13 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <mutex>
+#pragma once
+
+#include <string>
 
 #include "Object.hpp"
-#include "ObjectRenderData.hpp"
 
-Object::Object(std::string model, glm::vec3 pos) :
-	renderData(std::make_shared<ObjectRenderData>(this, model)),
-	pos(pos) {
+//The below strings are the names of the engine-provided components.
+const std::string RENDER_COMPONENT_NAME = "render";
 
-}
+//A "piece" of an object. Used to implement rendering, physics, and other stuff.
+class Component {
+public:
+	/**
+	 * Creates a component with the provided parent object
+	 * @param parent The owner of the component
+	 */
+	Component(Object& parent) : parent(parent) {}
+
+protected:
+	//The parent object.
+	Object& parent;
+};

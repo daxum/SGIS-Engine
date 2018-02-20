@@ -16,22 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "ObjectRenderData.hpp"
+#include "RenderComponent.hpp"
 
-ObjectRenderData::ObjectRenderData(Object* parent, std::string model) :
-	parent(parent),
+RenderComponent::RenderComponent(Object& parent, std::string model) :
+	Component(parent),
 	model(model) {
 
 }
 
-glm::vec3 ObjectRenderData::getTranslation() {
-	return parent->position();
+glm::vec3 RenderComponent::getTranslation() {
+	return parent.position();
 }
 
-glm::vec3 ObjectRenderData::getRotation() {
+glm::vec3 RenderComponent::getRotation() {
 	return glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
-glm::vec3 ObjectRenderData::getScale() {
+glm::vec3 RenderComponent::getScale() {
 	return glm::vec3(1.0f, 1.0f, 1.0f);
 }

@@ -20,18 +20,19 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
-#include "Object.hpp"
+#include "Component.hpp"
 #include "RenderData.hpp"
 
-//Describes how to render an object.
-class ObjectRenderData : public RenderData {
+//Describes how to render an object. This looks like multi-inheritance,
+//but RenderData is basically an interface, so it should be fine.
+class RenderComponent : public RenderData, public Component {
 public:
 	/**
 	 * Creates rendering data for the passed in object.
 	 * @param parent The object this rendering data is for.
 	 * @param model The name of the model to use to render this object.
 	 */
-	ObjectRenderData(Object* parent, std::string model);
+	RenderComponent(Object& parent, std::string model);
 
 	/**
 	 * Returns the translation of this object.
@@ -58,9 +59,6 @@ public:
 	std::string getModel() { return model; }
 
 private:
-	//The object this rendering data is for.
-	Object* parent;
-
 	//Which model to use for this object.
 	std::string model;
 };
