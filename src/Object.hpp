@@ -49,6 +49,16 @@ public:
 	}
 
 	/**
+	 * Adds a component to the object. This should usually be done before the object is
+	 * added to the world.
+	 * @param name The name of the component type.
+	 * @param component The component to add.
+	 */
+	void addComponent(std::string name, std::shared_ptr<Component> component) {
+		components[name] = component;
+	}
+
+	/**
 	 * Returns the position of this object
 	 */
 	glm::vec3 position() { return pos; }
