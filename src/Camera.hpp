@@ -28,7 +28,7 @@ public:
 	 * @param startLook The place where the camera is looking
 	 * @param startup Which direction is "up" - should almost always be (0, 1, 0)
 	 */
-	Camera(glm::vec3 startPos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 startLook = glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3 startUp = glm::vec3(0.0f, 1.0f, 0.0f));
+	Camera(glm::vec3 startPos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 startLook = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 startUp = glm::vec3(0.0f, 1.0f, 0.0f));
 
 	/**
 	 * Moves the camera to the given position
