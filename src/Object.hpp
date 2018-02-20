@@ -22,26 +22,46 @@
 #include <string>
 #include <cstdint>
 
+#include <glm/glm.hpp>
+
 class ObjectRenderData;
 
 //An object in a world. Stores rendering, physics, etc.
 class Object {
 public:
-	//A unique id for this object. Unless over 4 billion objects somehow get created.
-	const uint32_t id;
-
 	/**
 	 * Creates an object.
 	 * @param model The name of the model to use when rendering.
+	 * @param pos The starting position of the object.
 	 */
-	Object(std::string model);
+	Object(std::string model, glm::vec3 pos);
 
 	/**
 	 * Returns model used and similar data.
 	 */
 	std::shared_ptr<ObjectRenderData> getRenderData() { return renderData; }
 
+	/**
+	 * Returns the position of this object
+	 */
+	glm::vec3 position() { return pos; }
+
+	/**
+	 * Moves the object to the given position.
+	 * @param newPos The new position of the object.
+	 */
+	void moveTo(glm::vec3 newPos) { pos = newPos; }
+
+	/**
+	 * Moves the object by the given amount.
+	 * @param amount The amount to move the object by.
+	 */
+	void move(glm::vec3 amount) { pos += amount; }
+
 private:
 	//Has to be pointer or else vector throws a fit.
 	std::shared_ptr<ObjectRenderData> renderData;
+
+	//The position of the object in the world.
+	glm::vec3 pos;
 };

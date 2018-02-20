@@ -21,11 +21,11 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 #include "Object.hpp"
+#include "RenderData.hpp"
 
 //Describes how to render an object.
-class ObjectRenderData {
+class ObjectRenderData : public RenderData {
 public:
-	const uint32_t id;
 	/**
 	 * Creates rendering data for the passed in object.
 	 * @param parent The object this rendering data is for.

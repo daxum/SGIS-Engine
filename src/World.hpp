@@ -20,8 +20,10 @@
 
 #include <vector>
 #include <cstdint>
+
 #include "Screen.hpp"
 #include "Object.hpp"
+#include "Map.hpp"
 
 class World : public Screen {
 public:
@@ -39,7 +41,7 @@ public:
 
 	/**
 	 * Adds an object to the world. The passed in object should be copy-constructable.
-	 * @param object The object to add. The world will use a copy of this object
+	 * @param object The object to add. The world will use a copy of this object.
 	 */
 	void addObject(std::shared_ptr<Object> object);
 
@@ -47,9 +49,19 @@ public:
 	 * Removes an object from the world.
 	 * @param id The id of the object to remove.
 	 */
-	void removeObject(uint32_t id);
+	void removeObject(std::shared_ptr<Object> object);
+
+	/**
+	 * Sets the world's map to the passed in map.
+	 * @param newMap The new map for the world to use.
+	 */
+	void setMap(std::shared_ptr<Map> newMap);
 
 private:
 	//Stores everything that is in this world
 	std::vector<std::shared_ptr<Object>> objects;
+
+	//A map for the world. Used for collision detection and general
+	//mappyness. Without it everything is suddenly in space!
+	std::shared_ptr<Map> map;
 };

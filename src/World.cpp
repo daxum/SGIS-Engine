@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "World.hpp"
+#include "ObjectRenderData.hpp"
 
 World::World(DisplayEngine& display) :
 	Screen(display) {
@@ -28,12 +29,26 @@ void World::addObject(std::shared_ptr<Object> object) {
 	renderData.addObject(object->getRenderData());
 }
 
-void World::removeObject(uint32_t id) {
+void World::removeObject(std::shared_ptr<Object> object) {
 	for (size_t i; i < objects.size(); i++) {
-		if (id == objects[i]->id) {
+		if (object == objects[i]) {
 			objects.erase(objects.begin() + i);
-			renderData.removeObject(id);
+			renderData.removeObject(object->getRenderData());
 			return;
 		}
 	}
+}
+
+void World::setMap(std::shared_ptr<Map> newMap) {
+	//Out with the old...
+	if (map) {
+		renderData.removeObject(map->getRenderData());
+	}
+
+	//And in with the new!
+	if (newMap) {
+		renderData.addObject(newMap->getRenderData());
+	}
+
+	map = newMap;
 }

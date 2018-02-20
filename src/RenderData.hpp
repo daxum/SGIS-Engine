@@ -16,13 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <mutex>
+#pragma once
 
-#include "Object.hpp"
-#include "ObjectRenderData.hpp"
+#include <cstdint>
+#include <glm/glm.hpp>
 
-Object::Object(std::string model, glm::vec3 pos) :
-	renderData(std::make_shared<ObjectRenderData>(this, model)),
-	pos(pos) {
+//Describes how to render an arbitrary thing.
+class RenderData {
+public:
+	virtual ~RenderData() {}
 
-}
+	/**
+	 * Returns the translation.
+	 * @return A translation vector.
+	 */
+	virtual glm::vec3 getTranslation() = 0;
+
+	/**
+	 * Returns the rotation.
+	 * @return A rotation vector.
+	 */
+	virtual glm::vec3 getRotation() = 0;
+
+	/**
+	 * Returns the scale.
+	 * @return The scale.
+	 */
+	virtual glm::vec3 getScale() = 0;
+
+	/**
+	 * Returns the name of the model to be used in rendering.
+	 * @return The model name.
+	 */
+	virtual std::string getModel() = 0;
+};
+

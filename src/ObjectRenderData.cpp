@@ -19,14 +19,13 @@
 #include "ObjectRenderData.hpp"
 
 ObjectRenderData::ObjectRenderData(Object* parent, std::string model) :
-	id(parent->id),
 	parent(parent),
 	model(model) {
 
 }
 
 glm::vec3 ObjectRenderData::getTranslation() {
-	return glm::vec3(0.0f, 0.0f, 0.0f);
+	return parent->position();
 }
 
 glm::vec3 ObjectRenderData::getRotation() {

@@ -16,13 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <mutex>
+#pragma once
 
-#include "Object.hpp"
-#include "ObjectRenderData.hpp"
+#include <string>
+#include <memory>
+#include <glm/glm.hpp>
 
-Object::Object(std::string model, glm::vec3 pos) :
-	renderData(std::make_shared<ObjectRenderData>(this, model)),
-	pos(pos) {
+#include "RenderData.hpp"
 
-}
+//Represents a map in a world, used mostly for collision detection.
+class Map {
+public:
+	/**
+	 * Destructor
+	 */
+	virtual ~Map() {}
+
+	/**
+	 * Returns the height at the given position. Might need tweaking later
+	 * for overhangs/caves, but good enough for now.
+	 */
+	virtual float getHeight(glm::vec3 pos) = 0;
+
+	/**
+	 * Returns the render data for this map. Might be expanded to a vector
+	 * later.
+	 * @return A pointer to this map's rendering data.
+	 */
+	virtual std::shared_ptr<RenderData> getRenderData() = 0;
+};

@@ -131,6 +131,7 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	setViewport(nullptr, width, height);
 
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_CULL_FACE);
 

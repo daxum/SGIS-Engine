@@ -22,7 +22,7 @@
 #include <memory>
 #include <cstdint>
 
-#include "ObjectRenderData.hpp"
+#include "RenderData.hpp"
 #include "Camera.hpp"
 
 //Stores all the rendering data for the screen, sorted for hopefully optimal
@@ -33,16 +33,16 @@ public:
 	 * Adds an object to be rendered.
 	 * @param object The new object to be rendered.
 	 */
-	void addObject(std::shared_ptr<ObjectRenderData> object);
+	void addObject(std::shared_ptr<RenderData> object);
 
 	/**
 	 * Removes the object from the rendering list.
 	 * @param id The id of the object to be removed.
 	 */
-	void removeObject(uint32_t id);
+	void removeObject(std::shared_ptr<RenderData> object);
 
 	//Just keep everything in a massive list for now.
-	std::vector<std::shared_ptr<ObjectRenderData>> objects;
+	std::vector<std::shared_ptr<RenderData>> objects;
 
 	//Just the camera. Does camera things.
 	Camera camera;

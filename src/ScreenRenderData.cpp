@@ -18,13 +18,13 @@
 
 #include "ScreenRenderData.hpp"
 
-void ScreenRenderData::addObject(std::shared_ptr<ObjectRenderData> object) {
+void ScreenRenderData::addObject(std::shared_ptr<RenderData> object) {
 	objects.push_back(object);
 }
 
-void ScreenRenderData::removeObject(uint32_t id) {
+void ScreenRenderData::removeObject(std::shared_ptr<RenderData> object) {
 	for (size_t i = 0; i < objects.size(); i++) {
-		if (id == objects[i]->id) {
+		if (object == objects[i]) {
 			objects.erase(objects.begin() + i);
 			return;
 		}
