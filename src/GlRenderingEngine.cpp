@@ -154,7 +154,7 @@ void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
 	shader->use();
 
 	shader->setUniformMat4("projection", projection);
-	shader->setUniformMat4("view", camera.getView());
+	shader->setUniformMat4("view", data.camera.getView());
 
 	//No color yet
 	shader->setUniformVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));

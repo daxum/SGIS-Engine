@@ -63,6 +63,9 @@ void Engine::run(GameInterface& game) {
 	game.loadModels(renderer->getModelLoader());
 	logger.info("Finished loading models.");
 
+	game.loadScreens(display);
+	logger.info("Finished loading screens.");
+
 	renderer->finishLoad();
 	logger.info("Load complete.");
 

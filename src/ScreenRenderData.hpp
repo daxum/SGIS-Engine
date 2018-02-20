@@ -23,6 +23,7 @@
 #include <cstdint>
 
 #include "ObjectRenderData.hpp"
+#include "Camera.hpp"
 
 //Stores all the rendering data for the screen, sorted for hopefully optimal
 //rendering. This includes objects, map stuff, effects, etc.
@@ -42,4 +43,7 @@ public:
 
 	//Just keep everything in a massive list for now.
 	std::vector<std::shared_ptr<ObjectRenderData>> objects;
+
+	//Just the camera. Does camera things.
+	Camera camera;
 };

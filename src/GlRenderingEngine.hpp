@@ -30,7 +30,6 @@
 #include "GlMemoryManager.hpp"
 #include "Model.hpp"
 #include "Logger.hpp"
-#include "Camera.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -127,8 +126,6 @@ public:
 private:
 	//Projection matrix.
 	glm::mat4 projection;
-	//Just the camera. Does camera things.
-	Camera camera;
 	//The general rendering logger
 	Logger logger;
 	//The loader logger

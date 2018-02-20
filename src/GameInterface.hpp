@@ -21,6 +21,7 @@
 #include <memory>
 #include "TextureLoader.hpp"
 #include "ModelLoader.hpp"
+#include "DisplayEngine.hpp"
 
 //The engine uses the game interface for all communications
 //with the game, such as for loading resources.
@@ -50,17 +51,10 @@ public:
 	virtual void loadModels(std::shared_ptr<ModelLoader> loader) = 0;
 
 	/**
-	 * Called by the engine to load all of the game's guis.
-	 * These are things like the start screen and options screens.
-	 * The starting menu is also defined here (ie. what the engine
-	 * opens after startup finishes).
-	 * Not currently implemented.
+	 * Loads different screens for the game, such as guis, huds, worlds,
+	 * menus, etc. This should also push the first screen to be displayed onto
+	 * the display's screen stack.
+	 * @param display The display engine to add the screens to.
 	 */
-	virtual void loadMenus() = 0;
-
-	/**
-	 * Called by the engine to load the game's map data. This is currently
-	 * not implemented, and is never called.
-	 */
-	virtual void loadMaps() = 0;
+	virtual void loadScreens(DisplayEngine& display) = 0;
 };
