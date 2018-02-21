@@ -25,6 +25,8 @@
 #include "Object.hpp"
 #include "Map.hpp"
 
+class AIComponent;
+
 class World : public Screen {
 public:
 	/**
@@ -37,7 +39,7 @@ public:
 	 * Updates all objects in the world. Will probably be extended to have
 	 * some sort of "update hooks" later for pre/post update stuff.
 	 */
-	void update() {}
+	void update();
 
 	/**
 	 * Adds an object to the world. The passed in object should be copy-constructable.
@@ -57,9 +59,21 @@ public:
 	 */
 	void setMap(std::shared_ptr<Map> newMap);
 
+	/**
+	 * Returns whether the given key is pressed. Will most likely be
+	 * expanded into an event system later so that ai and similar can tell when
+	 * a key is first pressed without constantly polling everything.
+	 * @param key The key to query.
+	 * @return Whether the key is pressed.
+	 */
+	bool isKeyPressed(Key key) { return display.isKeyPressed(key); }
+
 private:
 	//Stores everything that is in this world
 	std::vector<std::shared_ptr<Object>> objects;
+
+	//Just store this here for now. Will be moved to its own subsystem later!
+	std::vector<std::shared_ptr<AIComponent>> aiObjects;
 
 	//A map for the world. Used for collision detection and general
 	//mappyness. Without it everything is suddenly in space!

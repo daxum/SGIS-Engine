@@ -18,26 +18,26 @@
 
 #pragma once
 
-#include <string>
+#include "Component.hpp"
+#include "World.hpp"
 
-#include "Object.hpp"
-
-//The below strings are the names of the engine-provided components.
-const std::string RENDER_COMPONENT_NAME = "render";
-const std::string AI_COMPONENT_NAME = "ai";
-
-//A "piece" of an object. Used to implement rendering, physics, and other stuff.
-class Component {
+class AIComponent : public Component {
 public:
 	/**
-	 * Creates a component with the provided parent object
-	 * @param parent The owner of the component
+	 * Creates an AIComponent with the given object as its parent.
+	 * @param parent The object this AIComponent is for.
 	 */
-	Component(Object& parent) : parent(parent) {}
+	AIComponent(Object& parent) : Component(parent) {}
 
-	virtual ~Component() {}
+	virtual ~AIComponent() {}
 
-protected:
-	//The parent object.
-	Object& parent;
+	/**
+	 * Updates this component using the provided world. It is important to
+	 * note that to allow threading, the world should be treated as read-only
+	 * at all times, and only ai-specific parts of the parent object should be
+	 * modified in this function. Similarly, ai parts of other objects should not
+	 * be modified (or even read) here. This will become more explicit later.
+	 * @param world The world the parent object is in.
+	 */
+	virtual void update(World* world) = 0;
 };

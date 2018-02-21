@@ -18,10 +18,23 @@
 
 #include "World.hpp"
 #include "RenderComponent.hpp"
+#include "AIComponent.hpp"
 
 World::World(DisplayEngine& display) :
 	Screen(display) {
 
+}
+
+void World::update() {
+	for (std::shared_ptr<AIComponent> ai : aiObjects) {
+		ai->update(this);
+	}
+
+	//"Physics engine"
+	for (std::shared_ptr<Object> object : objects) {
+		object->move(object->getVelocity());
+		object->setVeloctity(object->getVelocity() * 0.98f);
+	}
 }
 
 void World::addObject(std::shared_ptr<Object> object) {
@@ -29,9 +42,14 @@ void World::addObject(std::shared_ptr<Object> object) {
 
 	//Temporary fix, need component system for world too.
 	std::shared_ptr<RenderComponent> objectRender = object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
+	std::shared_ptr<AIComponent> objectAI = object->getComponent<AIComponent>(AI_COMPONENT_NAME);
 
 	if (objectRender) {
 		renderData.addObject(objectRender);
+	}
+
+	if (objectAI) {
+		aiObjects.push_back(objectAI);
 	}
 }
 
@@ -41,9 +59,19 @@ void World::removeObject(std::shared_ptr<Object> object) {
 			objects.erase(objects.begin() + i);
 
 			std::shared_ptr<RenderComponent> objectRender = object->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
+			std::shared_ptr<AIComponent> objectAI = object->getComponent<AIComponent>(AI_COMPONENT_NAME);
 
 			if (objectRender) {
 				renderData.removeObject(objectRender);
+			}
+
+			if (objectAI) {
+				for (size_t i; i < aiObjects.size(); i++) {
+					if (objectAI == aiObjects[i]) {
+						aiObjects.erase(aiObjects.begin() + i);
+						break;
+					}
+				}
 			}
 
 			return;

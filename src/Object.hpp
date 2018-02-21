@@ -35,7 +35,7 @@ public:
 	 * Creates an object.
 	 * @param pos The starting position of the object.
 	 */
-	Object(glm::vec3 pos) : pos(pos) {}
+	Object(glm::vec3 pos) : pos(pos), velocity(0.0f, 0.0f, 0.0f) {}
 
 	/**
 	 * Returns model used and similar data.
@@ -64,6 +64,11 @@ public:
 	glm::vec3 position() { return pos; }
 
 	/**
+	 * Returns the velocity of the object
+	 */
+	glm::vec3 getVelocity() { return velocity; }
+
+	/**
 	 * Moves the object to the given position.
 	 * @param newPos The new position of the object.
 	 */
@@ -75,10 +80,25 @@ public:
 	 */
 	void move(glm::vec3 amount) { pos += amount; }
 
+	/**
+	 * Sets the objects velocity
+	 * @param amount The new velocity of the object.
+	 */
+	void setVeloctity(glm::vec3 amount) { velocity = amount; }
+
+	/**
+	 * Adds the specified velocity to the object. Can be negative.
+	 * @param amount The amount of velocity to add.
+	 */
+	void addVelocity(glm::vec3 amount) { velocity += amount; }
+
 private:
 	//The map of components for this object. Component names should be in Component.hpp.
 	std::unordered_map<std::string, std::shared_ptr<Component>> components;
 
 	//The position of the object in the world.
 	glm::vec3 pos;
+
+	//The velocity of the object
+	glm::vec3 velocity;
 };

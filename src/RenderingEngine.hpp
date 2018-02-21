@@ -45,6 +45,7 @@ public:
 	 * the rendering api.
 	 * @param tl The texture loader this engine should use.
 	 * @param sl The shader loader this engine should use.
+	 * @param ml The model loader this engine should use.
 	 * @throw runtime_error if initialization failed.
 	 */
 	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<ModelLoader> ml) :
