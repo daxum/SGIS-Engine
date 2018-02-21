@@ -54,7 +54,7 @@ void World::addObject(std::shared_ptr<Object> object) {
 }
 
 void World::removeObject(std::shared_ptr<Object> object) {
-	for (size_t i; i < objects.size(); i++) {
+	for (size_t i = 0; i < objects.size(); i++) {
 		if (object == objects[i]) {
 			objects.erase(objects.begin() + i);
 
@@ -66,9 +66,9 @@ void World::removeObject(std::shared_ptr<Object> object) {
 			}
 
 			if (objectAI) {
-				for (size_t i; i < aiObjects.size(); i++) {
-					if (objectAI == aiObjects[i]) {
-						aiObjects.erase(aiObjects.begin() + i);
+				for (size_t j = 0; j < aiObjects.size(); j++) {
+					if (objectAI == aiObjects[j]) {
+						aiObjects.erase(aiObjects.begin() + j);
 						break;
 					}
 				}
