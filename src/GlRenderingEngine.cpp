@@ -21,6 +21,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "EngineConfig.hpp"
+#include "DisplayEngine.hpp"
+#include "GlfwKeyTranslator.hpp"
 #include "GlRenderingEngine.hpp"
 #include "GlTextureLoader.hpp"
 #include "GlShaderLoader.hpp"
@@ -29,6 +31,7 @@
 namespace {
 	//Bit of a hack for static callbacks
 	GlRenderingEngine* renderer = nullptr;
+	DisplayEngine* display = nullptr;
 }
 
 GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog) :
@@ -76,11 +79,14 @@ GlRenderingEngine::~GlRenderingEngine() {
 
 	glfwTerminate();
 	renderer = nullptr;
+	display = nullptr;
 
 	logger.info("Destroyed OpenGL rendering engine.");
 }
 
-void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string windowTitle) {
+void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* displayEngine) {
+	display = displayEngine;
+
 	//Create the window
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -114,9 +120,9 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	//Set callbacks
 
 	glfwSetFramebufferSizeCallback(window, GlRenderingEngine::setViewport);
+	glfwSetKeyCallback(window, GlRenderingEngine::keyPress);
 	/*
 	//Other callbacks - might be moved elsewhere to accommodate engine
-	glfwSetKeyCallback(window, keyCallback);
 	glfwSetScrollCallback(window, mouseScroll);
 	glfwSetCursorPosCallback(window, cursorMove);
 	glfwSetMouseButtonCallback(window, mouseClick);
@@ -213,4 +219,17 @@ void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
 
 void GlRenderingEngine::glfwError(int errorCode, const char* description) {
 	throw std::runtime_error("GLFW error! " + std::to_string(errorCode) + ": " + description);
+}
+
+void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	KeyAction nativeAction;
+
+	switch (action) {
+		case GLFW_PRESS: nativeAction = KeyAction::PRESS; break;
+		case GLFW_REPEAT: nativeAction = KeyAction::REPEAT; break;
+		case GLFW_RELEASE: nativeAction = KeyAction::RELEASE; break;
+		default: nativeAction = KeyAction::UNKNOWN; break;
+	}
+
+	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
 }

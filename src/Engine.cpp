@@ -46,7 +46,7 @@ void Engine::run(GameInterface& game) {
 	//Initialize renderer
 	logger.info("Initializing renderer...");
 
-	renderer->init(config.windowWidth, config.windowHeight, config.windowTitle);
+	renderer->init(config.windowWidth, config.windowHeight, config.windowTitle, &display);
 	logger.info("Renderer initialization complete.");
 
 	//Pre-loading of a splash screen might go here

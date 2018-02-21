@@ -87,3 +87,43 @@ void DisplayEngine::render(float partialTicks, std::shared_ptr<RenderingEngine> 
 bool DisplayEngine::shouldExit() {
 	return screenStack.empty();
 }
+
+void DisplayEngine::onKeyAction(Key key, KeyAction action) {
+	//If pressed, notify all relevent screens and update key map.
+	if (action == KeyAction::PRESS) {
+		keyMap[key] = true;
+
+		if (screenStack.empty()) {
+			return;
+		}
+
+		//Iterate from the top screen to the bottom one so they can properly claim inputs
+		for (size_t i = screenStack.top().size() - 1; i >= 0; i--) {
+			bool stop = screenStack.top()[i]->onKeyPressed(key);
+
+			//The screen stack could have been popped here as well.
+			if (stop || popped) {
+				break;
+			}
+		}
+
+		popped = false;
+	}
+	//If released, just update key map.
+	else if (action == KeyAction::RELEASE) {
+		keyMap[key] = false;
+	}
+
+	//No action for repeated key presses (KeyAction::REPEAT, eg. the key is held down and gets multiple press events) for now.
+}
+
+bool DisplayEngine::isKeyPressed(Key key) {
+	//Theoretically, operator[] default-initializes missing members for maps, but
+	//not sure if it can be trusted to consistently initialize booleans to false.
+	//(Old MSVC might initialize to true?)
+	if (keyMap.count(key) == 0) {
+		keyMap[key] = false;
+	}
+
+	return keyMap[key];
+}

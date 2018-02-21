@@ -54,9 +54,10 @@ public:
 	 * @param windowWidth The width of the created window.
 	 * @param windowHeight The height of the created window.
 	 * @param windowTitle The title of the created window.
+	 * @param display The display to set the input callbacks to.
 	 * @throw runtime_error if initialization failed.
 	 */
-	void init(int windowWidth, int windowHeight, std::string windowTitle);
+	void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display);
 
 	/**
 	 * Uploads data to gpu and sets some state stuff.
@@ -122,6 +123,16 @@ public:
 	 * @param description A description of the error.
 	 */
 	static void glfwError(int error, const char* description);
+
+	/**
+	 * Another glfw callback.
+	 * @param window The window for the key press.
+	 * @param key The key that was pressed.
+	 * @param scancode The platform-specific key that was pressed.
+	 * @param action What the key did (press, repeat, or release).
+	 * @param mods Whether things like the shift key were pressed.
+	 */
+	static void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 private:
 	//Projection matrix.

@@ -25,6 +25,8 @@
 #include "ModelLoader.hpp"
 #include "ScreenRenderData.hpp"
 
+class DisplayEngine;
+
 //A generic rendering engine. Provides the base interfaces, like resource loading
 //and rendering, but leaves the implementation to api-specific subclasses, like
 //a GlRenderingEngine, or a VulkanRenderingEngine (or maybe even a DxRenderingEngine.
@@ -63,9 +65,10 @@ public:
 	 * @param windowWidth The width of the created window.
 	 * @param windowHeight The height of the created window.
 	 * @param windowTitle The title of the created window.
+	 * @param display The display for the engine, used to set input callbacks.
 	 * @throw runtime_error if initialization failed.
 	 */
-	virtual void init(int windowWidth, int windowHeight, std::string windowTitle) = 0;
+	virtual void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display) = 0;
 
 	/**
 	 * To be called to put the engine in a renderable state - uploads models to the gpu,

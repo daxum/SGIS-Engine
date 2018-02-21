@@ -39,6 +39,13 @@ public:
 	virtual void update() = 0;
 
 	/**
+	 * Called whenever a key is pressed.
+	 * @param key The key that was pressed
+	 * @return Whether to stop passing the event to screens below this one.
+	 */
+	virtual bool onKeyPressed(Key key) { return false; }
+
+	/**
 	 * Gets all the information required to render the screen (models for objects, post-processing steps, etc).
 	 * @return Rendering data that can be used by RenderingEngine to produce a picture.
 	 */

@@ -21,8 +21,10 @@
 #include <stack>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include "RenderingEngine.hpp"
+#include "KeyList.hpp"
 
 class Screen;
 
@@ -92,12 +94,34 @@ public:
 	 */
 	bool shouldExit();
 
+	/**
+	 * Called from the rendering engine's callback whenever a key is pressed.
+	 * @param key The key that was pressed.
+	 */
+	void onKeyAction(Key key, KeyAction action);
+
+	/**
+	 * Similar to the above, but different in several important ways -
+	 * this is meant for polling key state, for detecting if a key is
+	 * held down at the given moment. The above is used for notifications
+	 * when a key is first pressed, but not when it is released or held down.
+	 * This is necessary for the case where a screen is changed while a key
+	 * is held down, and then the key is released, so that the original screen
+	 * doesn't still think the key is pressed because it missed the release event.
+	 * @param key The key to check state for.
+	 * @return Whether the key is pressed.
+	 */
+	bool isKeyPressed(Key key);
+
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
 	//and the second contains all screens that are currently being rendered.
 	//The outer stack is referred to above as the "screen stack", and the inner one
 	//(which is actually a vector) as the "overlay stack".
 	std::stack<std::vector<std::shared_ptr<Screen>>> screenStack;
+
+	//Stores which keys are currently pressed.
+	std::unordered_map<Key, bool> keyMap;
 
 	//Set when popScreen is called during updating, breaks out of the update loop
 	//to avoid updating invalid screens.
