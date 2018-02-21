@@ -98,8 +98,9 @@ void DisplayEngine::onKeyAction(Key key, KeyAction action) {
 		}
 
 		//Iterate from the top screen to the bottom one so they can properly claim inputs
-		for (size_t i = screenStack.top().size() - 1; i >= 0; i--) {
-			bool stop = screenStack.top()[i]->onKeyPressed(key);
+		//The loop has weird parameters to prevent unsigned underflow.
+		for (size_t i = screenStack.top().size(); i >= 1; i--) {
+			bool stop = screenStack.top()[i - 1]->onKeyPressed(key);
 
 			//The screen stack could have been popped here as well.
 			if (stop || popped) {
