@@ -81,7 +81,7 @@ public:
 	void move(glm::vec3 amount) { pos += amount; }
 
 	/**
-	 * Sets the objects velocity
+	 * Sets the object's velocity
 	 * @param amount The new velocity of the object.
 	 */
 	void setVeloctity(glm::vec3 amount) { velocity = amount; }
