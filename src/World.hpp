@@ -59,15 +59,6 @@ public:
 	 */
 	void setMap(std::shared_ptr<Map> newMap);
 
-	/**
-	 * Returns whether the given key is pressed. Will most likely be
-	 * expanded into an event system later so that ai and similar can tell when
-	 * a key is first pressed without constantly polling everything.
-	 * @param key The key to query.
-	 * @return Whether the key is pressed.
-	 */
-	bool isKeyPressed(Key key) { return display.isKeyPressed(key); }
-
 private:
 	//Stores everything that is in this world
 	std::vector<std::shared_ptr<Object>> objects;
