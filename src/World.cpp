@@ -32,8 +32,8 @@ void World::update() {
 
 	//"Physics engine"
 	for (std::shared_ptr<Object> object : objects) {
-		object->move(object->getVelocity());
-		object->setVeloctity(object->getVelocity() * 0.98f);
+		object->pos += object->velocity;
+		object->velocity *= 0.98f;
 	}
 }
 

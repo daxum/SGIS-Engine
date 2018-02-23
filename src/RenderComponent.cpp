@@ -25,7 +25,7 @@ RenderComponent::RenderComponent(Object& parent, std::string model) :
 }
 
 glm::vec3 RenderComponent::getTranslation() {
-	return parent.position();
+	return parent.pos;
 }
 
 glm::vec3 RenderComponent::getRotation() {
