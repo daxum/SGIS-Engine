@@ -158,6 +158,11 @@ void GlRenderingEngine::loadDefaultShaders(std::string path) {
 }
 
 void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
+	//Don't render without a render component.
+	if (!data.componentManager) {
+		return;
+	}
+
 	//Use basic shader for everything for now
 	std::shared_ptr<GlShader> shader = shaderMap.at("basic");
 	shader->use();
