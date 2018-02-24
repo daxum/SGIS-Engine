@@ -27,6 +27,8 @@
 #include "GlTextureLoader.hpp"
 #include "GlShaderLoader.hpp"
 #include "GlModelLoader.hpp"
+#include "RenderComponentManager.hpp"
+#include "RenderComponent.hpp"
 
 namespace {
 	//Bit of a hack for static callbacks
@@ -169,25 +171,12 @@ void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);
 
-	for (auto object : data.objects) {
-		glm::mat4 modelMat;
+	//Render map first
+	renderObject(shader, data.mapData);
 
-		modelMat = glm::translate(modelMat, object->getTranslation());
-
-		glm::vec3 rotation = object->getRotation();
-		modelMat = glm::rotate(modelMat, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-		modelMat = glm::rotate(modelMat, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-		modelMat = glm::rotate(modelMat, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-		modelMat = glm::scale(modelMat, object->getScale());
-
-		shader->setUniformMat4("model", modelMat);
-
-		Model& model = modelMap.at(object->getModel());
-
-		glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
-
-		glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
+	//Render all objects
+	for (std::shared_ptr<Component> object : data.componentManager->getRenderComponents()) {
+		renderObject(shader, std::static_pointer_cast<RenderComponent>(object));
 	}
 }
 
@@ -232,4 +221,27 @@ void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int 
 	}
 
 	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
+}
+
+void GlRenderingEngine::renderObject(std::shared_ptr<GlShader> shader, std::shared_ptr<RenderData> data) {
+	//TODO: matrices should be combined before being sent to gpu.
+
+	glm::mat4 modelMat;
+
+	modelMat = glm::translate(modelMat, data->getTranslation());
+
+	glm::vec3 rotation = data->getRotation();
+	modelMat = glm::rotate(modelMat, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMat = glm::rotate(modelMat, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMat = glm::rotate(modelMat, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	modelMat = glm::scale(modelMat, data->getScale());
+
+	shader->setUniformMat4("model", modelMat);
+
+	Model& model = modelMap.at(data->getModel());
+
+	glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
+
+	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
 }

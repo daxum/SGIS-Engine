@@ -16,28 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#include "AIComponentManager.hpp"
+#include "AIComponent.hpp"
 
-#include "Component.hpp"
-#include "Screen.hpp"
-
-class AIComponent : public Component {
-public:
-	/**
-	 * Creates an AIComponent with the given object as its parent.
-	 * @param parent The object this AIComponent is for.
-	 */
-	AIComponent(Object& parent) : Component(parent) {}
-
-	virtual ~AIComponent() {}
-
-	/**
-	 * Updates this component using the provided world. It is important to
-	 * note that to allow threading, the world should be treated as read-only
-	 * at all times, and only ai-specific parts of the parent object should be
-	 * modified in this function. Similarly, ai parts of other objects should not
-	 * be modified (or even read) here. This will become more explicit later.
-	 * @param world The world the parent object is in.
-	 */
-	virtual void update(Screen* screen) = 0;
-};
+void AIComponentManager::update(Screen* screen) {
+	for (std::shared_ptr<Component> comp : components) {
+		std::static_pointer_cast<AIComponent>(comp)->update(screen);
+	}
+}

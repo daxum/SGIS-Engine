@@ -20,29 +20,21 @@
 
 #include <vector>
 #include <memory>
-#include <cstdint>
 
 #include "RenderData.hpp"
 #include "Camera.hpp"
+
+class RenderComponentManager;
 
 //Stores all the rendering data for the screen, sorted for hopefully optimal
 //rendering. This includes objects, map stuff, effects, etc.
 class ScreenRenderData {
 public:
-	/**
-	 * Adds an object to be rendered.
-	 * @param object The new object to be rendered.
-	 */
-	void addObject(std::shared_ptr<RenderData> object);
+	//The RenderComponentManager for this screen.
+	std::shared_ptr<RenderComponentManager> componentManager;
 
-	/**
-	 * Removes the object from the rendering list.
-	 * @param id The id of the object to be removed.
-	 */
-	void removeObject(std::shared_ptr<RenderData> object);
-
-	//Just keep everything in a massive list for now.
-	std::vector<std::shared_ptr<RenderData>> objects;
+	//Maps have turned very problematic...
+	std::shared_ptr<RenderData> mapData;
 
 	//Just the camera. Does camera things.
 	Camera camera;

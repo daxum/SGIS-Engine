@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <cstdint>
 #include <glm/glm.hpp>
 
 //Describes how to render an arbitrary thing.

@@ -42,10 +42,8 @@ public:
 	 * @param name The name of the component.
 	 * @return A pointer to the component for this object, will be null if the component isn't found.
 	 */
-	template<typename T>
-	std::shared_ptr<T> getComponent(std::string name) {
-		//This has so many ways to go wrong...
-		return std::static_pointer_cast<T>(components[name]);
+	std::shared_ptr<Component> getComponent(std::string name) {
+		return components[name];
 	}
 
 	/**

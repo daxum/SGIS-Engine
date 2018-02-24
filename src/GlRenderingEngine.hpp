@@ -152,4 +152,11 @@ private:
 
 	//The memory manager, for buffer management and such.
 	GlMemoryManager memoryManager;
+
+	/**
+	 * Renders the object onto the screen.
+	 * @param shader The shader used for rendering.
+	 * @param data The object to render.
+	 */
+	void renderObject(std::shared_ptr<GlShader> shader, std::shared_ptr<RenderData> data);
 };

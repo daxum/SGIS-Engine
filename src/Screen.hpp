@@ -18,7 +18,13 @@
 
 #pragma once
 
-#include "DisplayEngine.hpp"
+#include "KeyList.hpp"
+#include "Map.hpp"
+#include "ScreenRenderData.hpp"
+#include "Object.hpp"
+
+class DisplayEngine;
+class ComponentManager;
 
 class Screen {
 public:
@@ -28,28 +34,16 @@ public:
 	Screen(DisplayEngine& display) : display(display) {}
 
 	/**
-	 * Virtual destructor
+	 * Updates all the component managers from first added to last.
 	 */
-	virtual ~Screen() {}
+	void update();
 
 	/**
-	 * Updates the screen. This can mean updating a game world, doing animations in a
-	 * gui, or nothing at all. This will be called from the bottom of the active screen stack up.
-	 */
-	virtual void update() = 0;
-
-	/**
-	 * Called whenever a key is pressed.
+	 * Called whenever a key is pressed. Useless right now, but will be updated for an event system later.
 	 * @param key The key that was pressed
 	 * @return Whether to stop passing the event to screens below this one.
 	 */
-	virtual bool onKeyPressed(Key key) { return false; }
-
-	/**
-	 * Gets all the information required to render the screen (models for objects, post-processing steps, etc).
-	 * @return Rendering data that can be used by RenderingEngine to produce a picture.
-	 */
-	ScreenRenderData& getRenderData() { return renderData; }
+	bool onKeyPressed(Key key) { return false; }
 
 	/**
 	 * Returns whether the given key is pressed. Will most likely be
@@ -58,7 +52,43 @@ public:
 	 * @param key The key to query.
 	 * @return Whether the key is pressed.
 	 */
-	bool isKeyPressed(Key key) { return display.isKeyPressed(key); }
+	bool isKeyPressed(Key key);
+
+	/**
+	 * Gets all the information required to render the screen (models for objects, post-processing steps, etc).
+	 * @return Rendering data that can be used by RenderingEngine to produce a picture.
+	 */
+	ScreenRenderData& getRenderData() { return renderData; }
+
+	/**
+	 * Adds the given manager to the list of managers for this screen. Some things to note:
+	 *  - Only one manager for each type should exist. Duplicates might work, but won't do anything useful.
+	 *  - Managers will be updated in the order they are added.
+	 *  - Objects that existed before the addition of the manager will not (currently) be added to it.
+	 *  - Render components will be automatically added to the screen's render data. Adding more render components will
+	 *      overwrite old ones, and the old ones will become functionally useless.
+	 * @param manager The manager to add.
+	 */
+	void addComponentManager(std::shared_ptr<ComponentManager> manager);
+
+	/**
+	 * Adds an object to the screen, and adds all its components to their respective component managers.
+	 * @param object The object to add.
+	 */
+	void addObject(std::shared_ptr<Object> object);
+
+	/**
+	 * Removes an object.
+	 * @param object The object to remove.
+	 */
+	void removeObject(std::shared_ptr<Object> object);
+
+	/**
+	 * Sets the screen's map to the passed in map.
+	 * Maps really need to work better, this is very messy.
+	 * @param newMap The new map for the screen to use.
+	 */
+	void setMap(std::shared_ptr<Map> newMap);
 
 protected:
 	//The display engine that manages this screen.
@@ -66,4 +96,16 @@ protected:
 
 	//Information on how to render this screen.
 	ScreenRenderData renderData;
+
+	//The various managers for the components in this screen.
+	std::vector<std::shared_ptr<ComponentManager>> managers;
+
+	//All objects that have been added to the screen.
+	std::vector<std::shared_ptr<Object>> objects;
+
+	//The indices of the objects in the object vector, for fast removal.
+	std::unordered_map<std::shared_ptr<Object>, size_t> objectIndices;
+
+	//A map used for collision detection and having a floor.
+	std::shared_ptr<Map> map;
 };

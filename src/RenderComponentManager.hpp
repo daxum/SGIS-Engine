@@ -16,17 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "ScreenRenderData.hpp"
+#pragma once
 
-void ScreenRenderData::addObject(std::shared_ptr<RenderData> object) {
-	objects.push_back(object);
-}
+#include "ComponentManager.hpp"
 
-void ScreenRenderData::removeObject(std::shared_ptr<RenderData> object) {
-	for (size_t i = 0; i < objects.size(); i++) {
-		if (object == objects[i]) {
-			objects.erase(objects.begin() + i);
-			return;
-		}
-	}
-}
+class RenderComponentManager : public ComponentManager {
+public:
+	/**
+	 * Constructor, sets name.
+	 */
+	RenderComponentManager() : ComponentManager(RENDER_COMPONENT_NAME) {}
+
+	/**
+	 * RenderComponents don't update.
+	 */
+	void update(Screen* screen) {}
+
+	/**
+	 * Called by the renderer to get all render components
+	 * @return A list of all render components (needs casting).
+	 */
+	std::vector<std::shared_ptr<Component>> getRenderComponents() { return components; }
+};

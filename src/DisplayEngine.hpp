@@ -25,8 +25,7 @@
 
 #include "RenderingEngine.hpp"
 #include "KeyList.hpp"
-
-class Screen;
+#include "Screen.hpp"
 
 class DisplayEngine {
 public:
