@@ -67,8 +67,12 @@ void Screen::removeObject(std::shared_ptr<Object> object) {
 		return;
 	}
 
-	//Switch with last, pop, and clear map.
+	//Switch with last, pop, and update map.
 	objects[objectIndices[object]] = objects.back();
+
+	//Set moved element's new index.
+	objectIndices[objects.back()] = objectIndices[object];
+
 	objects.pop_back();
 	objectIndices.erase(object);
 

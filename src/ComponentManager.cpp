@@ -31,6 +31,10 @@ void ComponentManager::removeComponent(std::shared_ptr<Component> comp) {
 
 	//Order doesn't really matter, so move the last element to where this one was and pop the vector.
 	components[entryIndices[comp]] = components.back();
+
+	//update moved element's index
+	entryIndices[components.back()] = entryIndices[comp];
+
 	components.pop_back();
 
 	//clear entry from map
