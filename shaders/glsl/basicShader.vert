@@ -8,13 +8,12 @@ out vec3 pos;
 out vec3 norm;
 out vec2 tex;
 
-uniform mat4 model;
-uniform mat4 view;
+uniform mat4 modelView;
 uniform mat4 projection;
 
 void main() {
 	pos = posIn;
 	norm = normIn;
 	tex = texIn;
-	gl_Position = projection * view * model * vec4(pos, 1.0);
+	gl_Position = projection * modelView * vec4(pos, 1.0);
 }

@@ -30,6 +30,7 @@
 #include "GlMemoryManager.hpp"
 #include "Model.hpp"
 #include "Logger.hpp"
+#include "MatrixStack.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -158,5 +159,5 @@ private:
 	 * @param shader The shader used for rendering.
 	 * @param data The object to render.
 	 */
-	void renderObject(std::shared_ptr<GlShader> shader, std::shared_ptr<RenderData> data);
+	void renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderData> data);
 };

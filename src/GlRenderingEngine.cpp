@@ -168,7 +168,10 @@ void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
 	shader->use();
 
 	shader->setUniformMat4("projection", projection);
-	shader->setUniformMat4("view", data.camera.getView());
+
+	MatrixStack matStack;
+
+	matStack.multiply(data.camera.getView());
 
 	//No color yet
 	shader->setUniformVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
@@ -177,11 +180,11 @@ void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
 	memoryManager.bindBuffer(MeshType::STATIC);
 
 	//Render map first
-	renderObject(shader, data.mapData);
+	renderObject(matStack, shader, data.mapData);
 
 	//Render all objects
 	for (std::shared_ptr<Component> object : data.componentManager->getRenderComponents()) {
-		renderObject(shader, std::static_pointer_cast<RenderComponent>(object));
+		renderObject(matStack, shader, std::static_pointer_cast<RenderComponent>(object));
 	}
 }
 
@@ -228,25 +231,20 @@ void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int 
 	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
 }
 
-void GlRenderingEngine::renderObject(std::shared_ptr<GlShader> shader, std::shared_ptr<RenderData> data) {
-	//TODO: matrices should be combined before being sent to gpu.
+void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderData> data) {
+	matStack.push();
 
-	glm::mat4 modelMat;
+	matStack.translate(data->getTranslation());
+	matStack.rotate(data->getRotation());
+	matStack.scale(data->getScale());
 
-	modelMat = glm::translate(modelMat, data->getTranslation());
-
-	glm::vec3 rotation = data->getRotation();
-	modelMat = glm::rotate(modelMat, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-	modelMat = glm::rotate(modelMat, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-	modelMat = glm::rotate(modelMat, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-	modelMat = glm::scale(modelMat, data->getScale());
-
-	shader->setUniformMat4("model", modelMat);
+	shader->setUniformMat4("modelView", matStack.top());
 
 	Model& model = modelMap.at(data->getModel());
 
 	glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
 
 	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
+
+	matStack.pop();
 }

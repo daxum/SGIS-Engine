@@ -24,6 +24,7 @@ add_library(Engine
 	AIComponentManager.cpp
 	PhysicsComponentManager.cpp
 	AxisAlignedBB.cpp
+	MatrixStack.cpp
 	gl_core_4_1.c
 )
 
