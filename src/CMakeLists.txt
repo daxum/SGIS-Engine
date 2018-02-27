@@ -23,6 +23,7 @@ add_library(Engine
 	ComponentManager.cpp
 	AIComponentManager.cpp
 	PhysicsComponentManager.cpp
+	AxisAlignedBB.cpp
 	gl_core_4_1.c
 )
 

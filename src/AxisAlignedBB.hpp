@@ -16,22 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "RenderComponent.hpp"
+#pragma once
 
-RenderComponent::RenderComponent(Object& parent, std::string model) :
-	Component(parent),
-	model(model) {
+#include <glm/glm.hpp>
 
-}
+struct AxisAlignedBB {
+	glm::vec3 min;
+	glm::vec3 max;
 
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.box.getCenter();
-}
+	AxisAlignedBB(glm::vec3 min, glm::vec3 max);
 
-glm::vec3 RenderComponent::getRotation() {
-	return glm::vec3(0.0f, 0.0f, 0.0f);
-}
+	bool intersects(const AxisAlignedBB& other) const;
+	bool contains(const AxisAlignedBB& other) const;
 
-glm::vec3 RenderComponent::getScale() {
-	return glm::vec3(1.0f, 1.0f, 1.0f);
-}
+	glm::vec3 getCenter() const;
+	float getArea() const;
+	float xLength() const;
+	float yLength() const;
+	float zLength() const;
+
+	void translate(glm::vec3 dist);
+	void scale(glm::vec3 amount);
+
+	static AxisAlignedBB interpolate(const AxisAlignedBB& start, const AxisAlignedBB& finish, float percent);
+};

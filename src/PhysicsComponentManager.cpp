@@ -24,7 +24,7 @@ void PhysicsComponentManager::update(Screen* screen) {
 		Object& object = std::static_pointer_cast<PhysicsComponent>(comp)->getObject();
 
 		//Actual physics engine to come at later date.
-		object.pos += object.velocity;
+		object.box.translate(object.velocity);
 		object.velocity *= 0.98f;
 	}
 }

@@ -24,6 +24,8 @@
 
 #include <glm/glm.hpp>
 
+#include "AxisAlignedBB.hpp"
+
 //Stupid circular dependencies.
 class Component;
 
@@ -32,9 +34,9 @@ class Object {
 public:
 	/**
 	 * Creates an object.
-	 * @param pos The starting position of the object.
+	 * @param box The object's bounding box. Might be moved elsewhere later.
 	 */
-	Object(glm::vec3 pos) : pos(pos), velocity(0.0f, 0.0f, 0.0f) {}
+	Object(AxisAlignedBB box) : box(box), velocity(0.0f, 0.0f, 0.0f) {}
 
 	/**
 	 * Retrieves the component with the requested name, or null if it doesn't exist.
@@ -55,8 +57,8 @@ public:
 		components[name] = component;
 	}
 
-	//The position of the object in the world.
-	glm::vec3 pos;
+	//The object's bounding box.
+	AxisAlignedBB box;
 
 	//The velocity of the object
 	glm::vec3 velocity;
