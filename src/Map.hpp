@@ -23,6 +23,7 @@
 #include <glm/glm.hpp>
 
 #include "RenderData.hpp"
+#include "AxisAlignedBB.hpp"
 
 //Represents a map in a world, used mostly for collision detection.
 class Map {
@@ -37,6 +38,12 @@ public:
 	 * for overhangs/caves, but good enough for now.
 	 */
 	virtual float getHeight(glm::vec3 pos) = 0;
+
+	/**
+	 * Returns the outer edge of the map, which only certain things can go past.
+	 * @return The border of the map.
+	 */
+	virtual const AxisAlignedBB& getBorder() = 0;
 
 	/**
 	 * Returns the render data for this map. Might be expanded to a vector

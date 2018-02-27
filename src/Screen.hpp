@@ -90,6 +90,11 @@ public:
 	 */
 	void setMap(std::shared_ptr<Map> newMap);
 
+	/**
+	 * @return The map for this screen.
+	 */
+	std::shared_ptr<Map> getMap() { return map; }
+
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
