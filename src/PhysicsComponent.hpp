@@ -16,29 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#include "Component.hpp"
 
-#include <string>
-
-#include "Object.hpp"
-
-//The below strings are the names of the engine-provided components.
-const std::string RENDER_COMPONENT_NAME = "render";
-const std::string AI_COMPONENT_NAME = "ai";
-const std::string PHYSICS_COMPONENT_NAME = "physics";
-
-//A "piece" of an object. Used to implement rendering, physics, and other stuff.
-class Component {
+class PhysicsComponent : public Component {
 public:
 	/**
-	 * Creates a component with the provided parent object
-	 * @param parent The owner of the component
+	 * Creates a PhysicsComponent with the provided object as its parent
 	 */
-	Component(Object& parent) : parent(parent) {}
+	PhysicsComponent(Object& object) : Component(object) {}
 
-	virtual ~Component() {}
-
-protected:
-	//The parent object.
-	Object& parent;
+	/**
+	 * Gets the object associated with this physics component.
+	 * Used by the physics engine for direct access to the position,
+	 * velocity, etc.
+	 * @return The object that owns this component.
+	 */
+	Object& getObject() { return parent; }
 };

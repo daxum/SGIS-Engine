@@ -22,6 +22,7 @@ add_library(Engine
 	RenderComponent.cpp
 	ComponentManager.cpp
 	AIComponentManager.cpp
+	PhysicsComponentManager.cpp
 	gl_core_4_1.c
 )
 

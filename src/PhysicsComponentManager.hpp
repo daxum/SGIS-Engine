@@ -18,27 +18,15 @@
 
 #pragma once
 
-#include <string>
+#include "ComponentManager.hpp"
 
-#include "Object.hpp"
-
-//The below strings are the names of the engine-provided components.
-const std::string RENDER_COMPONENT_NAME = "render";
-const std::string AI_COMPONENT_NAME = "ai";
-const std::string PHYSICS_COMPONENT_NAME = "physics";
-
-//A "piece" of an object. Used to implement rendering, physics, and other stuff.
-class Component {
+class PhysicsComponentManager : public ComponentManager {
 public:
+	PhysicsComponentManager() : ComponentManager(AI_COMPONENT_NAME) {}
+
 	/**
-	 * Creates a component with the provided parent object
-	 * @param parent The owner of the component
+	 * Updates all physics components.
+	 * @param screen The screen that owns this PhysicsComponentManager.
 	 */
-	Component(Object& parent) : parent(parent) {}
-
-	virtual ~Component() {}
-
-protected:
-	//The parent object.
-	Object& parent;
+	void update(Screen* screen);
 };

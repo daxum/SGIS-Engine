@@ -16,29 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#include "PhysicsComponentManager.hpp"
+#include "PhysicsComponent.hpp"
 
-#include <string>
+void PhysicsComponentManager::update(Screen* screen) {
+	for (std::shared_ptr<Component> comp : components) {
+		Object& object = std::static_pointer_cast<PhysicsComponent>(comp)->getObject();
 
-#include "Object.hpp"
-
-//The below strings are the names of the engine-provided components.
-const std::string RENDER_COMPONENT_NAME = "render";
-const std::string AI_COMPONENT_NAME = "ai";
-const std::string PHYSICS_COMPONENT_NAME = "physics";
-
-//A "piece" of an object. Used to implement rendering, physics, and other stuff.
-class Component {
-public:
-	/**
-	 * Creates a component with the provided parent object
-	 * @param parent The owner of the component
-	 */
-	Component(Object& parent) : parent(parent) {}
-
-	virtual ~Component() {}
-
-protected:
-	//The parent object.
-	Object& parent;
-};
+		//Actual physics engine to come at later date.
+		object.pos += object.velocity;
+		object.velocity *= 0.98f;
+	}
+}

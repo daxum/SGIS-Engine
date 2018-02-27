@@ -26,12 +26,6 @@ void Screen::update() {
 		manager->update(this);
 		//TODO: object removal needs to be deferred to around here. Basically, in between update steps, or after updating is complete.
 	}
-
-	//TEMPORARY "physics engine" for testing. Will move into component manager later.
-	for (std::shared_ptr<Object> object : objects) {
-		object->pos += object->velocity;
-		object->velocity *= 0.98f;
-	}
 }
 
 bool Screen::isKeyPressed(Key key) {
