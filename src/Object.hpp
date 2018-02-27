@@ -20,7 +20,6 @@
 
 #include <memory>
 #include <string>
-#include <cstdint>
 #include <unordered_map>
 
 #include <glm/glm.hpp>
@@ -38,7 +37,7 @@ public:
 	Object(glm::vec3 pos) : pos(pos), velocity(0.0f, 0.0f, 0.0f) {}
 
 	/**
-	 * Returns model used and similar data.
+	 * Retrieves the component with the requested name, or null if it doesn't exist.
 	 * @param name The name of the component.
 	 * @return A pointer to the component for this object, will be null if the component isn't found.
 	 */
