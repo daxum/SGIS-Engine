@@ -6,14 +6,14 @@ find_package(glfw3 3.2 REQUIRED)
 add_library(Engine
 	Engine.cpp
 	TextureLoader.cpp
-	GlRenderingEngine.cpp
-	GlTextureLoader.cpp
+	GlRenderer/GlRenderingEngine.cpp
+	GlRenderer/GlTextureLoader.cpp
 	ExtraMath.cpp
-	GlShader.cpp
-	GlShaderLoader.cpp
+	GlRenderer/GlShader.cpp
+	GlRenderer/GlShaderLoader.cpp
 	ModelLoader.cpp
-	GlMemoryManager.cpp
-	GlModelLoader.cpp
+	GlRenderer/GlMemoryManager.cpp
+	GlRenderer/GlModelLoader.cpp
 	Model.cpp
 	Logger.cpp
 	Camera.cpp
@@ -26,7 +26,7 @@ add_library(Engine
 	AxisAlignedBB.cpp
 	MatrixStack.cpp
 	UpdateComponentManager.cpp
-	gl_core_4_1.c
+	GlRenderer/gl_core_4_1.c
 )
 
 set_target_properties(Engine PROPERTIES

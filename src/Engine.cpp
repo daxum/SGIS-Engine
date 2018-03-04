@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "Engine.hpp"
-#include "GlRenderingEngine.hpp"
+#include "GlRenderer/GlRenderingEngine.hpp"
 #include "ExtraMath.hpp"
 
 Engine::Engine(const EngineConfig& config) :
