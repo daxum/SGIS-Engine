@@ -72,7 +72,7 @@ public:
 	void addComponentManager(std::shared_ptr<ComponentManager> manager);
 
 	/**
-	 * Adds an object to the screen, and adds all its components to their respective component managers.
+	 * Queues an object and its components to be added to the screen.
 	 * @param object The object to add.
 	 */
 	void addObject(std::shared_ptr<Object> object);
@@ -111,6 +111,9 @@ protected:
 	//Objects to be removed at the end of the update.
 	std::vector<std::shared_ptr<Object>> removalList;
 
+	//Objects to be added after an update.
+	std::vector<std::shared_ptr<Object>> additionList;
+
 	//The indices of the objects in the object vector, for fast removal.
 	std::unordered_map<std::shared_ptr<Object>, size_t> objectIndices;
 
@@ -121,4 +124,9 @@ protected:
 	 * Deletes the provided object from this screen.
 	 */
 	void deleteObject(std::shared_ptr<Object> object);
+
+	/**
+	 * Adds the provided object to the object list.
+	 */
+	void addObjectToList(std::shared_ptr<Object> object);
 };

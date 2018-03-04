@@ -22,6 +22,14 @@
 #include "RenderComponentManager.hpp"
 
 void Screen::update() {
+	//Add queued objects
+	for (std::shared_ptr<Object> object : additionList) {
+		addObjectToList(object);
+	}
+
+	additionList.clear();
+
+	//Update components
 	for (std::shared_ptr<ComponentManager> manager : managers) {
 		manager->update(this);
 	}
@@ -47,18 +55,7 @@ void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
 }
 
 void Screen::addObject(std::shared_ptr<Object> object) {
-	//Add to main list
-	objectIndices[object] = objects.size();
-	objects.push_back(object);
-
-	//Add any components to managers
-	for (std::shared_ptr<ComponentManager> manager : managers) {
-		std::shared_ptr<Component> comp = object->getComponent(manager->name);
-
-		if (comp) {
-			manager->addComponent(comp);
-		}
-	}
+	additionList.push_back(object);
 }
 
 void Screen::removeObject(std::shared_ptr<Object> object) {
@@ -91,6 +88,21 @@ void Screen::deleteObject(std::shared_ptr<Object> object) {
 
 		if (comp) {
 			manager->removeComponent(comp);
+		}
+	}
+}
+
+void Screen::addObjectToList(std::shared_ptr<Object> object) {
+	//Add to main list
+	objectIndices[object] = objects.size();
+	objects.push_back(object);
+
+	//Add any components to managers
+	for (std::shared_ptr<ComponentManager> manager : managers) {
+		std::shared_ptr<Component> comp = object->getComponent(manager->name);
+
+		if (comp) {
+			manager->addComponent(comp);
 		}
 	}
 }
