@@ -24,8 +24,14 @@
 void Screen::update() {
 	for (std::shared_ptr<ComponentManager> manager : managers) {
 		manager->update(this);
-		//TODO: object removal needs to be deferred to around here. Basically, in between update steps, or after updating is complete.
 	}
+
+	//Remove queued objects
+	for (std::shared_ptr<Object> object : removalList) {
+		deleteObject(object);
+	}
+
+	removalList.clear();
 }
 
 bool Screen::isKeyPressed(Key key) {
@@ -56,6 +62,15 @@ void Screen::addObject(std::shared_ptr<Object> object) {
 }
 
 void Screen::removeObject(std::shared_ptr<Object> object) {
+	removalList.push_back(object);
+}
+
+void Screen::setMap(std::shared_ptr<Map> newMap) {
+	renderData.mapData = newMap->getRenderData();
+	map = newMap;
+}
+
+void Screen::deleteObject(std::shared_ptr<Object> object) {
 	if (objectIndices.count(object) == 0) {
 		//Object not found.
 		return;
@@ -78,9 +93,4 @@ void Screen::removeObject(std::shared_ptr<Object> object) {
 			manager->removeComponent(comp);
 		}
 	}
-}
-
-void Screen::setMap(std::shared_ptr<Map> newMap) {
-	renderData.mapData = newMap->getRenderData();
-	map = newMap;
 }

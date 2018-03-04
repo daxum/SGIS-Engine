@@ -78,7 +78,7 @@ public:
 	void addObject(std::shared_ptr<Object> object);
 
 	/**
-	 * Removes an object.
+	 * Queues an object for removal at the end of the tick.
 	 * @param object The object to remove.
 	 */
 	void removeObject(std::shared_ptr<Object> object);
@@ -108,9 +108,17 @@ protected:
 	//All objects that have been added to the screen.
 	std::vector<std::shared_ptr<Object>> objects;
 
+	//Objects to be removed at the end of the update.
+	std::vector<std::shared_ptr<Object>> removalList;
+
 	//The indices of the objects in the object vector, for fast removal.
 	std::unordered_map<std::shared_ptr<Object>, size_t> objectIndices;
 
 	//A map used for collision detection and having a floor.
 	std::shared_ptr<Map> map;
+
+	/**
+	 * Deletes the provided object from this screen.
+	 */
+	void deleteObject(std::shared_ptr<Object> object);
 };
