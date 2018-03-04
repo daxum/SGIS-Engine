@@ -16,20 +16,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <glm/glm.hpp>
+
 #include "Component.hpp"
+#include "AxisAlignedBB.hpp"
 
 class PhysicsComponent : public Component {
 public:
 	/**
-	 * Creates a PhysicsComponent with the provided object as its parent
+	 * Creates a PhysicsComponent with the provided object as its parent.
+	 * @param object The parent of this component.
+	 * @param box The bounding box of this object.
 	 */
-	PhysicsComponent(Object& object) : Component(object) {}
+	PhysicsComponent(Object& object, std::shared_ptr<AxisAlignedBB> box) : Component(object) {
+		parent.setState("velocity", std::make_shared<glm::vec3>(0.0, 0.0, 0.0));
+		parent.setState("box", box);
+	}
 
 	/**
-	 * Gets the object associated with this physics component.
-	 * Used by the physics engine for direct access to the position,
-	 * velocity, etc.
-	 * @return The object that owns this component.
+	 * Returns a reference to the box for the object. This SHOULD NOT be stored anywhere
+	 * where it might be dereferenced after the object is removed.
+	 * @return The box for the object.
 	 */
-	Object& getObject() { return parent; }
+	AxisAlignedBB& getBox() { return *(parent.getState<AxisAlignedBB>("box")); }
+
+	/**
+	 * Returns a reference to the velocity of the object. This also should not be stored anywhere
+	 * where it might be dereferenced after the object is removed.
+	 * @return The velocity of the object.
+	 */
+	glm::vec3& getVelocity() { return *(parent.getState<glm::vec3>("velocity")); }
 };

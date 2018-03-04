@@ -17,15 +17,20 @@
  ******************************************************************************/
 
 #include "RenderComponent.hpp"
+#include "AxisAlignedBB.hpp"
 
 RenderComponent::RenderComponent(Object& parent, std::string model) :
 	Component(parent),
 	model(model) {
 
+	//Only here to avoid null pointer dereferences.
+	if (!parent.getState<AxisAlignedBB>("box")) {
+		parent.setState("box", std::make_shared<AxisAlignedBB>(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0)));
+	}
 }
 
 glm::vec3 RenderComponent::getTranslation() {
-	return parent.box.getCenter();
+	return parent.getState<AxisAlignedBB>("box")->getCenter();
 }
 
 glm::vec3 RenderComponent::getRotation() {

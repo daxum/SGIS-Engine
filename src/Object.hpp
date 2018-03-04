@@ -22,10 +22,6 @@
 #include <string>
 #include <unordered_map>
 
-#include <glm/glm.hpp>
-
-#include "AxisAlignedBB.hpp"
-
 //Stupid circular dependencies.
 class Component;
 
@@ -34,9 +30,8 @@ class Object {
 public:
 	/**
 	 * Creates an object.
-	 * @param box The object's bounding box. Might be moved elsewhere later.
 	 */
-	Object(AxisAlignedBB box) : box(box), velocity(0.0f, 0.0f, 0.0f) {}
+	Object() {}
 
 	/**
 	 * Retrieves the component with the requested name, or null if it doesn't exist.
@@ -57,13 +52,31 @@ public:
 		components[name] = component;
 	}
 
-	//The object's bounding box.
-	AxisAlignedBB box;
+	/**
+	 * Sets the name in this object's state map to the provided value.
+	 * @param name The name to store the value under.
+	 * @param value The value to store.
+	 */
+	template<typename T>
+	void setState(std::string name, std::shared_ptr<T> value) {
+		state[name] = value;
+	}
 
-	//The velocity of the object
-	glm::vec3 velocity;
+	/**
+	 * Retrieves the value in this object's state map for the provided name.
+	 * @param name The name to retrieve.
+	 * @return The value for the given name, will be null if the name isn't present.
+	 */
+	template<typename T>
+	std::shared_ptr<T> getState(std::string name) {
+		return std::static_pointer_cast<T>(state[name]);
+	}
 
 private:
 	//The map of components for this object. Component names should be in Component.hpp.
 	std::unordered_map<std::string, std::shared_ptr<Component>> components;
+
+	//At this point we're just reimplementing subclasses. Oh well.
+	//Stores information used by the various components for the object.
+	std::unordered_map<std::string, std::shared_ptr<void>> state;
 };
