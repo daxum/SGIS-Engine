@@ -16,30 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
-#include "Object.hpp"
+#pragma once
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color) :
-	Component(parent, RENDER_COMPONENT_NAME),
-	model(model) {
+#include "Component.hpp"
+#include "Screen.hpp"
 
-	parent.ensureState("box", std::make_shared<AxisAlignedBB>(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0)));
-	parent.setState("color", std::make_shared<glm::vec3>(color));
-}
+class UpdateComponent : public Component {
+public:
+	UpdateComponent(Object& parent) : Component(parent, UPDATE_COMPONENT_NAME) {}
 
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.getState<AxisAlignedBB>("box")->getCenter();
-}
+	virtual ~UpdateComponent() {}
 
-glm::vec3 RenderComponent::getRotation() {
-	return glm::vec3(0.0f, 0.0f, 0.0f);
-}
-
-glm::vec3 RenderComponent::getScale() {
-	return glm::vec3(1.0f, 1.0f, 1.0f);
-}
-
-glm::vec3 RenderComponent::getColor() {
-	return *(parent.getState<glm::vec3>("color"));
-}
+	/**
+	 * Does an update. This will never be called concurrently.
+	 * @param screen The screen this component is a part of.
+	 */
+	virtual void update(Screen* screen) = 0;
+};

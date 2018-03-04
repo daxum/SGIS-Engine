@@ -27,7 +27,7 @@ public:
 	 * Creates an AIComponent with the given object as its parent.
 	 * @param parent The object this AIComponent is for.
 	 */
-	AIComponent(Object& parent) : Component(parent) {}
+	AIComponent(Object& parent) : Component(parent, AI_COMPONENT_NAME) {}
 
 	virtual ~AIComponent() {}
 

@@ -173,9 +173,6 @@ void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
 
 	matStack.multiply(data.camera.getView());
 
-	//No color yet
-	shader->setUniformVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
-
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);
 
@@ -239,6 +236,7 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 	matStack.scale(data->getScale());
 
 	shader->setUniformMat4("modelView", matStack.top());
+	shader->setUniformVec3("color", data->getColor());
 
 	Model& model = modelMap.at(data->getModel());
 

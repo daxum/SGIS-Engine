@@ -48,5 +48,11 @@ public:
 	 * @return The model name.
 	 */
 	virtual std::string getModel() = 0;
+
+	/**
+	 * Returns the color.
+	 * @return The color.
+	 */
+	virtual glm::vec3 getColor() = 0;
 };
 

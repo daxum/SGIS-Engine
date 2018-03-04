@@ -16,30 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
-#include "Object.hpp"
+#include "UpdateComponentManager.hpp"
+#include "UpdateComponent.hpp"
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color) :
-	Component(parent, RENDER_COMPONENT_NAME),
-	model(model) {
-
-	parent.ensureState("box", std::make_shared<AxisAlignedBB>(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0)));
-	parent.setState("color", std::make_shared<glm::vec3>(color));
-}
-
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.getState<AxisAlignedBB>("box")->getCenter();
-}
-
-glm::vec3 RenderComponent::getRotation() {
-	return glm::vec3(0.0f, 0.0f, 0.0f);
-}
-
-glm::vec3 RenderComponent::getScale() {
-	return glm::vec3(1.0f, 1.0f, 1.0f);
-}
-
-glm::vec3 RenderComponent::getColor() {
-	return *(parent.getState<glm::vec3>("color"));
+void UpdateComponentManager::update(Screen* screen) {
+	for (std::shared_ptr<Component> comp : components) {
+		std::static_pointer_cast<UpdateComponent>(comp)->update(screen);
+	}
 }

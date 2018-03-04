@@ -20,6 +20,7 @@
 
 #include "Component.hpp"
 #include "AxisAlignedBB.hpp"
+#include "Object.hpp"
 
 class PhysicsComponent : public Component {
 public:
@@ -28,8 +29,8 @@ public:
 	 * @param object The parent of this component.
 	 * @param box The bounding box of this object.
 	 */
-	PhysicsComponent(Object& object, std::shared_ptr<AxisAlignedBB> box) : Component(object) {
-		parent.setState("velocity", std::make_shared<glm::vec3>(0.0, 0.0, 0.0));
+	PhysicsComponent(Object& object, std::shared_ptr<AxisAlignedBB> box) : Component(object, PHYSICS_COMPONENT_NAME) {
+		parent.ensureState("velocity", std::make_shared<glm::vec3>(0.0, 0.0, 0.0));
 		parent.setState("box", box);
 	}
 

@@ -22,8 +22,7 @@
 #include <string>
 #include <unordered_map>
 
-//Stupid circular dependencies.
-class Component;
+#include "Component.hpp"
 
 //An object in a world. Stores rendering, physics, etc.
 class Object {
@@ -45,11 +44,10 @@ public:
 	/**
 	 * Adds a component to the object. This should usually be done before the object is
 	 * added to the world.
-	 * @param name The name of the component type.
 	 * @param component The component to add.
 	 */
-	void addComponent(std::string name, std::shared_ptr<Component> component) {
-		components[name] = component;
+	void addComponent(std::shared_ptr<Component> component) {
+		components[component->name] = component;
 	}
 
 	/**
@@ -60,6 +58,19 @@ public:
 	template<typename T>
 	void setState(std::string name, std::shared_ptr<T> value) {
 		state[name] = value;
+	}
+
+	/**
+	 * Ensures that the state with the given name is present.
+	 * If it is not, creates it with the given value.
+	 * @param name The name to check.
+	 * @param defaultValue The value to set it to if it's missing.
+	 */
+	template<typename T>
+	void ensureState(std::string name, std::shared_ptr<T> defaultValue) {
+		if (!state[name]) {
+			state[name] = defaultValue;
+		}
 	}
 
 	/**

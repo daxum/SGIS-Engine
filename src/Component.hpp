@@ -20,21 +20,24 @@
 
 #include <string>
 
-#include "Object.hpp"
+class Object;
 
 //The below strings are the names of the engine-provided components.
 const std::string RENDER_COMPONENT_NAME = "render";
 const std::string AI_COMPONENT_NAME = "ai";
 const std::string PHYSICS_COMPONENT_NAME = "physics";
+const std::string UPDATE_COMPONENT_NAME = "update";
 
 //A "piece" of an object. Used to implement rendering, physics, and other stuff.
 class Component {
 public:
+	const std::string name;
+
 	/**
 	 * Creates a component with the provided parent object
 	 * @param parent The owner of the component
 	 */
-	Component(Object& parent) : parent(parent) {}
+	Component(Object& parent, std::string name) : name(name), parent(parent) {}
 
 	virtual ~Component() {}
 
