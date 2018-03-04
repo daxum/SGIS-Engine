@@ -37,6 +37,7 @@ struct AxisAlignedBB {
 
 	void translate(glm::vec3 dist);
 	void scale(glm::vec3 amount);
+	void scaleAll(float amount);
 
 	static AxisAlignedBB interpolate(const AxisAlignedBB& start, const AxisAlignedBB& finish, float percent);
 };

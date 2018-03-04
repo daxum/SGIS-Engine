@@ -73,6 +73,10 @@ void AxisAlignedBB::scale(glm::vec3 amount) {
 	max += diff;
 }
 
+void AxisAlignedBB::scaleAll(float amount) {
+	scale(glm::vec3(amount, amount, amount));
+}
+
 AxisAlignedBB AxisAlignedBB::interpolate(const AxisAlignedBB& start, const AxisAlignedBB& finish, float percent) {
 	return AxisAlignedBB(glm::vec3(ExMath::interpolate(start.min.x, finish.min.x, percent),
 								   ExMath::interpolate(start.min.y, finish.min.y, percent),
