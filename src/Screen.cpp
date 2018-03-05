@@ -21,7 +21,7 @@
 #include "ComponentManager.hpp"
 #include "RenderComponentManager.hpp"
 
-void Screen::update() {
+void Screen::update(double time, double timestep) {
 	//Add queued objects
 	for (std::shared_ptr<Object> object : additionList) {
 		addObjectToList(object);
@@ -30,7 +30,18 @@ void Screen::update() {
 	additionList.clear();
 
 	//Update components
+	bool updateFixed = false;
+
+	if ((time - lastUpdate) >= timestep) {
+		updateFixed = true;
+		lastUpdate = time;
+	}
+
 	for (std::shared_ptr<ComponentManager> manager : managers) {
+		if (manager->fixedStep && !updateFixed) {
+			continue;
+		}
+
 		manager->update(this);
 	}
 

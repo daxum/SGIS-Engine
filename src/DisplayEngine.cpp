@@ -46,7 +46,7 @@ std::shared_ptr<Screen> DisplayEngine::getTop() {
 	return screenStack.top().back();
 }
 
-void DisplayEngine::update() {
+void DisplayEngine::update(double time, double timestep) {
 	if (screenStack.empty()) {
 		return;
 	}
@@ -56,7 +56,7 @@ void DisplayEngine::update() {
 	//container you're looping over tends to behave strangely,
 	//due to the iterators not getting updated.
 	for (size_t i = 0; i < screenStack.top().size(); i++) {
-		screenStack.top()[i]->update();
+		screenStack.top()[i]->update(time, timestep);
 
 		//If the screen stack was popped in the last update, screenStack.top() now points
 		//to a different overlay stack, so we should stop updating for this tick.
