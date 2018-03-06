@@ -30,15 +30,12 @@ public:
 	//The name of the components this manager manages (AIComponents would have name AI_COMPONENT_NAME, for example)
 	const std::string name;
 
-	//Whether this manager needs a fixed timestep.
-	bool fixedStep;
-
 	/**
 	 * Creates a manager for components with the given name. Name should
 	 * be unique for all managers in the same screen.
 	 * @param name The name of this ComponentManager.
 	 */
-	ComponentManager(std::string name) : name(name), fixedStep(true) {}
+	ComponentManager(std::string name) : name(name) {}
 
 	/**
 	 * Virtual destructor

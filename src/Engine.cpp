@@ -72,17 +72,40 @@ void Engine::run(GameInterface& game) {
 	//Enter game loop
 	logger.info("Starting game...");
 
-	double time = ExMath::getTimeMillis();
+	double currentTime = ExMath::getTimeMillis();
+	double lag = 0.0;
 
 	while (!shouldExit()) {
 		//Poll for window / input events
 		renderer->pollEvents();
 
-		display.update(time, config.timestep);
-		time = ExMath::getTimeMillis();
+		//Calculate time since last frame, capping at 100 milliseconds.
+		double newTime = ExMath::getTimeMillis();
+		double frameTime = newTime - currentTime;
+
+		if (frameTime > 100.0) {
+			frameTime = 100.0;
+		}
+
+		currentTime = newTime;
+		lag += frameTime;
+
+		//Catch up to the current time, but don't go into a catch-up death spiral.
+		uint32_t loops = 0;
+		while(lag >= config.physicsTimestep && loops < 10) {
+			display.update();
+			lag -= config.physicsTimestep;
+			loops++;
+		}
+
+		//Running very slow - slow == bad!
+		if (loops >= 10) {
+			logger.warn("Runnning " + std::to_string(lag) + "ms behind.");
+			lag = 0.0;
+		}
 
 		//Render the game.
-		display.render(0.0, renderer);
+		display.render((float)lag / config.physicsTimestep, renderer);
 	}
 
 	//Clean up resources, exit game

@@ -76,10 +76,8 @@ public:
 	 * from bottom to top.
 	 * Only intended to be called from the Engine, not from screens.
 	 * Possibly make this private and have a friend class later?
-	 * @param time The time since the last update.
-	 * @param timestep The time a tick takes for fixed step components.
 	 */
-	void update(double time, double timestep);
+	void update();
 
 	/**
 	 * Renders all screens in the overlay stack, from bottom to top.

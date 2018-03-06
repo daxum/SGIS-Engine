@@ -31,14 +31,12 @@ public:
 	/**
 	 * Constructor
 	 */
-	Screen(DisplayEngine& display) : lastUpdate(0.0), display(display) {}
+	Screen(DisplayEngine& display) : display(display) {}
 
 	/**
 	 * Updates all the component managers from first added to last.
-	 * @param time The time since the last update.
-	 * @param timestep The time between updates.
 	 */
-	void update(double time, double timestep);
+	void update();
 
 	/**
 	 * Called whenever a key is pressed. Useless right now, but will be updated for an event system later.
@@ -98,9 +96,6 @@ public:
 	std::shared_ptr<Map> getMap() { return map; }
 
 protected:
-	//The time the fixed-step managers were last updated.
-	double lastUpdate;
-
 	//The display engine that manages this screen.
 	DisplayEngine& display;
 
