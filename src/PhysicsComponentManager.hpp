@@ -22,7 +22,7 @@
 
 class PhysicsComponentManager : public ComponentManager {
 public:
-	PhysicsComponentManager() : ComponentManager(AI_COMPONENT_NAME) {}
+	PhysicsComponentManager() : ComponentManager(PHYSICS_COMPONENT_NAME) {}
 
 	/**
 	 * Updates all physics components.
