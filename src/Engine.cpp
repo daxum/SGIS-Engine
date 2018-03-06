@@ -99,6 +99,7 @@ void Engine::run(GameInterface& game) {
 		}
 
 		//Running very slow - slow == bad!
+		//TODO: This doesn't seem to work quite right. Needs testing later.
 		if (loops >= 10) {
 			logger.warn("Runnning " + std::to_string(lag) + "ms behind.");
 			lag = 0.0;

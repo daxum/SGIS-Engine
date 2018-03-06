@@ -19,17 +19,17 @@
 #include "RenderComponent.hpp"
 #include "AxisAlignedBB.hpp"
 #include "Object.hpp"
+#include "PhysicsComponent.hpp"
 
 RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color) :
 	Component(parent, RENDER_COMPONENT_NAME),
-	model(model) {
+	model(model),
+	color(color) {
 
-	parent.ensureState("box", std::make_shared<AxisAlignedBB>(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0)));
-	parent.setState("color", std::make_shared<glm::vec3>(color));
 }
 
 glm::vec3 RenderComponent::getTranslation() {
-	return parent.getState<AxisAlignedBB>("box")->getCenter();
+	return parent.getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getBox().getCenter();
 }
 
 glm::vec3 RenderComponent::getRotation() {
@@ -41,5 +41,5 @@ glm::vec3 RenderComponent::getScale() {
 }
 
 glm::vec3 RenderComponent::getColor() {
-	return *(parent.getState<glm::vec3>("color"));
+	return color;
 }

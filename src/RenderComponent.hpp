@@ -67,4 +67,7 @@ public:
 private:
 	//Which model to use for this object.
 	std::string model;
+
+	//The color of the object
+	glm::vec3 color;
 };

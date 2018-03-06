@@ -84,7 +84,7 @@ void Screen::deleteObject(std::shared_ptr<Object> object) {
 
 	//Remove components
 	for (std::shared_ptr<ComponentManager> manager : managers) {
-		std::shared_ptr<Component> comp = object->getComponent(manager->name);
+		std::shared_ptr<Component> comp = object->getComponent<Component>(manager->name);
 
 		if (comp) {
 			manager->removeComponent(comp);
@@ -99,7 +99,7 @@ void Screen::addObjectToList(std::shared_ptr<Object> object) {
 
 	//Add any components to managers
 	for (std::shared_ptr<ComponentManager> manager : managers) {
-		std::shared_ptr<Component> comp = object->getComponent(manager->name);
+		std::shared_ptr<Component> comp = object->getComponent<Component>(manager->name);
 
 		if (comp) {
 			manager->addComponent(comp);

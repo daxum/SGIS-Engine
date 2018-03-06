@@ -37,8 +37,9 @@ public:
 	 * @param name The name of the component.
 	 * @return A pointer to the component for this object, will be null if the component isn't found.
 	 */
-	std::shared_ptr<Component> getComponent(std::string name) {
-		return components[name];
+	template <typename T>
+	std::shared_ptr<T> getComponent(std::string name) {
+		return std::static_pointer_cast<T>(components[name]);
 	}
 
 	/**
@@ -50,44 +51,7 @@ public:
 		components[component->name] = component;
 	}
 
-	/**
-	 * Sets the name in this object's state map to the provided value.
-	 * @param name The name to store the value under.
-	 * @param value The value to store.
-	 */
-	template<typename T>
-	void setState(std::string name, std::shared_ptr<T> value) {
-		state[name] = value;
-	}
-
-	/**
-	 * Ensures that the state with the given name is present.
-	 * If it is not, creates it with the given value.
-	 * @param name The name to check.
-	 * @param defaultValue The value to set it to if it's missing.
-	 */
-	template<typename T>
-	void ensureState(std::string name, std::shared_ptr<T> defaultValue) {
-		if (!state[name]) {
-			state[name] = defaultValue;
-		}
-	}
-
-	/**
-	 * Retrieves the value in this object's state map for the provided name.
-	 * @param name The name to retrieve.
-	 * @return The value for the given name, will be null if the name isn't present.
-	 */
-	template<typename T>
-	std::shared_ptr<T> getState(std::string name) {
-		return std::static_pointer_cast<T>(state[name]);
-	}
-
 private:
 	//The map of components for this object. Component names should be in Component.hpp.
 	std::unordered_map<std::string, std::shared_ptr<Component>> components;
-
-	//At this point we're just reimplementing subclasses. Oh well.
-	//Stores information used by the various components for the object.
-	std::unordered_map<std::string, std::shared_ptr<void>> state;
 };
