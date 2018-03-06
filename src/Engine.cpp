@@ -92,9 +92,9 @@ void Engine::run(GameInterface& game) {
 
 		//Catch up to the current time, but don't go into a catch-up death spiral.
 		uint32_t loops = 0;
-		while(lag >= config.physicsTimestep && loops < 10) {
+		while(lag >= config.timestep && loops < 10) {
 			display.update();
-			lag -= config.physicsTimestep;
+			lag -= config.timestep;
 			loops++;
 		}
 
@@ -105,7 +105,7 @@ void Engine::run(GameInterface& game) {
 		}
 
 		//Render the game.
-		display.render((float)lag / config.physicsTimestep, renderer);
+		display.render((float)lag / config.timestep, renderer);
 	}
 
 	//Clean up resources, exit game
