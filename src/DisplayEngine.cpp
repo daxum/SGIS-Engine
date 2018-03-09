@@ -19,7 +19,8 @@
 #include "DisplayEngine.hpp"
 #include "Screen.hpp"
 
-DisplayEngine::DisplayEngine() :
+DisplayEngine::DisplayEngine(ModelManager& modelManager) :
+	modelManager(modelManager),
 	popped(false) {
 
 }

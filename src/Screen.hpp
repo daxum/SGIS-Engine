@@ -22,6 +22,7 @@
 #include "Map.hpp"
 #include "ScreenRenderData.hpp"
 #include "Object.hpp"
+#include "ModelManager.hpp"
 
 class DisplayEngine;
 class ComponentManager;
@@ -94,6 +95,11 @@ public:
 	 * @return The map for this screen.
 	 */
 	std::shared_ptr<Map> getMap() { return map; }
+
+	/**
+	 * Retrieves the model manager from the display
+	 */
+	ModelManager& getModelManager();
 
 protected:
 	//The display engine that manages this screen.

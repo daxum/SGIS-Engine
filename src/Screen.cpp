@@ -106,3 +106,7 @@ void Screen::addObjectToList(std::shared_ptr<Object> object) {
 		}
 	}
 }
+
+ModelManager& Screen::getModelManager() {
+	return display.getModelManager();
+}

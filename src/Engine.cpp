@@ -23,6 +23,7 @@
 Engine::Engine(const EngineConfig& config) :
 	config(config),
 	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
+	display(modelManager),
 	modelManager(config.loaderLog, renderer),
 	stopped(false) {
 

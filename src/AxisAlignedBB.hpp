@@ -24,6 +24,8 @@ struct AxisAlignedBB {
 	glm::vec3 min;
 	glm::vec3 max;
 
+	AxisAlignedBB() : min(0.0, 0.0, 0.0), max(0.0, 0.0, 0.0) {}
+
 	AxisAlignedBB(glm::vec3 min, glm::vec3 max);
 
 	bool intersects(const AxisAlignedBB& other) const;
