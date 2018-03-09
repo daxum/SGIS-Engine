@@ -19,8 +19,17 @@
 #include <stdexcept>
 #include <unordered_map>
 #include "ModelLoader.hpp"
+#include "RenderingEngine.hpp"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+
+void ModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
+	std::shared_ptr<ModelData> data = loadFromDisk(filename);
+	//Always static for now
+	MeshRenderData mesh = renderer->addMesh(*(data.get()), MeshType::STATIC);
+	models.insert(std::make_pair(name, Model(mesh, texture)));
+	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
+}
 
 std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 	std::shared_ptr<ModelData> data = std::make_shared<ModelData>();

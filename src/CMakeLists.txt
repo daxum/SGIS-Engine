@@ -10,7 +10,6 @@ add_library(Engine
 	GlRenderer/GlShaderLoader.cpp
 	ModelLoader.cpp
 	GlRenderer/GlMemoryManager.cpp
-	GlRenderer/GlModelLoader.cpp
 	Model.cpp
 	Logger.cpp
 	Camera.cpp

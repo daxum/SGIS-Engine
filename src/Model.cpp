@@ -18,7 +18,7 @@
 
 #include "Model.hpp"
 
-Model::Model(MeshData meshData, std::string texture) :
+Model::Model(MeshRenderData meshData, std::string texture) :
 	mesh(meshData),
 	texture(texture) {
 

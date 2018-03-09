@@ -22,9 +22,13 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
+#include <unordered_map>
 
 #include "Vertex.hpp"
 #include "Logger.hpp"
+#include "Model.hpp"
+
+class RenderingEngine;
 
 struct ModelData {
 	//The vertices in the model's mesh
@@ -36,9 +40,12 @@ struct ModelData {
 class ModelLoader {
 public:
 	/**
-	 * Constructs a model loader. Sets the logger.
+	 * Constructs a model loader.
+	 * @param renderer The rendering engine to upload models to.
+	 * @param modelMap The map to store loaded models in.
+	 * @param logger The logger to use.
 	 */
-	ModelLoader(Logger& logger) : logger(logger) {}
+	ModelLoader(std::shared_ptr<RenderingEngine>& renderer, std::unordered_map<std::string, Model>& modelMap, Logger& logger) : logger(logger), renderer(renderer), models(modelMap) {}
 
 	/**
 	 * Virtual destructor, does nothing.
@@ -50,11 +57,20 @@ public:
 	 * @param name The name to store the loaded model under.
 	 * @param filename The filename for the model to load.
 	 */
-	virtual void loadModel(std::string name, std::string filename, std::string texture) = 0;
+	void loadModel(std::string name, std::string filename, std::string texture);
 
 protected:
 	//The logger
 	Logger& logger;
+
+	//The rendering engine used. Keeping a reference is rather silly and
+	//mostly undesired, but it solves the initialization order problem in Engine.
+	//Hopefully can find a better way later.
+	std::shared_ptr<RenderingEngine>& renderer;
+
+	//A map to load models to.
+	std::unordered_map<std::string, Model>& models;
+
 	/**
 	 * Loads a model from disk (currently only .obj is supported).
 	 * @param filename The filename of the model to load.

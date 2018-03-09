@@ -24,6 +24,7 @@
 #include "ShaderLoader.hpp"
 #include "ModelLoader.hpp"
 #include "ScreenRenderData.hpp"
+#include "Model.hpp"
 
 class DisplayEngine;
 
@@ -45,11 +46,10 @@ public:
 	 * the rendering api.
 	 * @param tl The texture loader this engine should use.
 	 * @param sl The shader loader this engine should use.
-	 * @param ml The model loader this engine should use.
 	 * @throw runtime_error if initialization failed.
 	 */
-	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<ModelLoader> ml) :
-		texLoader(tl), shaderLoader(sl), modelLoader(ml) {}
+	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl) :
+		texLoader(tl), shaderLoader(sl) {}
 
 	/**
 	 * Destroys any api-agnostic resources the engine might
@@ -70,6 +70,14 @@ public:
 	 * @throw runtime_error if initialization failed.
 	 */
 	virtual void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display) = 0;
+
+	/**
+	 * Adds a mesh to the rendering engine.
+	 * @param data The model data to add.
+	 * @param type The type of the mesh to add.
+	 * @return the data needed to render the mesh.
+	 */
+	virtual MeshRenderData addMesh(ModelData& data, MeshType type) = 0;
 
 	/**
 	 * To be called to put the engine in a renderable state - uploads models to the gpu,
@@ -98,13 +106,6 @@ public:
 	 * @return The shader loader for this rendering engine.
 	 */
 	std::shared_ptr<ShaderLoader> getShaderLoader() { return shaderLoader; }
-
-	/**
-	 * Gets the model loader for this rendering engine, which is used to upload
-	 * model data to the gpu.
-	 * @return The model loader for this rendering engine.
-	 */
-	std::shared_ptr<ModelLoader> getModelLoader() { return modelLoader; }
 
 	/**
 	 * Renders the passed in object.
@@ -142,5 +143,4 @@ public:
 protected:
 	std::shared_ptr<TextureLoader> texLoader;
 	std::shared_ptr<ShaderLoader> shaderLoader;
-	std::shared_ptr<ModelLoader> modelLoader;
 };

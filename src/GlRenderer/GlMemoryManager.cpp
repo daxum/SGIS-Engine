@@ -13,12 +13,12 @@ GlMemoryManager::~GlMemoryManager() {
 	glDeleteBuffers(1, &indexBuffer);
 }
 
-MeshData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, MeshType type) {
+MeshRenderData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, MeshType type) {
 	if (initialized) {
 		throw std::runtime_error("Cannot add meshes after initialization!");
 	}
 
-	MeshData data = {};
+	MeshRenderData data = {};
 	data.type = type;
 	data.indexStart = staticIndices.size() * sizeof(uint32_t);
 

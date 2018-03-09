@@ -23,12 +23,13 @@
 Engine::Engine(const EngineConfig& config) :
 	config(config),
 	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
+	modelManager(config.loaderLog, renderer),
 	stopped(false) {
 
 	switch(config.renderer) {
 		case Renderer::OPEN_GL:
 			logger.info("Using OpenGL renderer.");
-			renderer.reset(new GlRenderingEngine(config.rendererLog, config.loaderLog));
+			renderer.reset(new GlRenderingEngine(modelManager, config.rendererLog, config.loaderLog));
 			break;
 		default:
 			logger.fatal("Unknown renderer requested!");
@@ -60,7 +61,7 @@ void Engine::run(GameInterface& game) {
 	game.loadTextures(renderer->getTextureLoader());
 	logger.info("Finished loading textures.");
 
-	game.loadModels(renderer->getModelLoader());
+	game.loadModels(modelManager.getLoader());
 	logger.info("Finished loading models.");
 
 	game.loadScreens(display);

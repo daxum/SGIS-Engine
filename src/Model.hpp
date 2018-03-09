@@ -30,7 +30,7 @@ enum class MeshType {
 };
 
 //Contains the data needed to draw a mesh, such as offsets in the index buffer
-struct MeshData {
+struct MeshRenderData {
 	//The type of this mesh - determines which buffer to use
 	MeshType type;
 	//The starting position (byte offset) in the index buffer
@@ -47,9 +47,9 @@ public:
 	 * @param meshData This model's mesh information
 	 * @param texture The name of the texture to use
 	 */
-	Model(MeshData meshData, std::string texture);
+	Model(MeshRenderData meshData, std::string texture);
 
 	//The mesh this model uses
-	const MeshData mesh;
+	const MeshRenderData mesh;
 	const std::string texture;
 };

@@ -26,7 +26,6 @@
 #include "GlRenderingEngine.hpp"
 #include "GlTextureLoader.hpp"
 #include "GlShaderLoader.hpp"
-#include "GlModelLoader.hpp"
 #include "RenderComponentManager.hpp"
 #include "RenderComponent.hpp"
 
@@ -36,12 +35,12 @@ namespace {
 	DisplayEngine* display = nullptr;
 }
 
-GlRenderingEngine::GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog) :
+GlRenderingEngine::GlRenderingEngine(ModelManager& modelManager, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
-					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap),
-					std::make_shared<GlModelLoader>(loaderLogger, modelMap, memoryManager)),
+					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap)),
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),
+	modelManager(modelManager),
 	memoryManager(logger) {
 
 	if (renderer != nullptr) {
@@ -149,6 +148,10 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	logger.info("OpenGL initialization complete.");
 }
 
+MeshRenderData GlRenderingEngine::addMesh(ModelData& data, MeshType type) {
+	return memoryManager.addMesh(data.vertices, data.indices, type);
+}
+
 void GlRenderingEngine::finishLoad() {
 	memoryManager.upload();
 }
@@ -238,7 +241,7 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 	shader->setUniformMat4("modelView", matStack.top());
 	shader->setUniformVec3("color", data->getColor());
 
-	Model& model = modelMap.at(data->getModel());
+	Model& model = modelManager.getModel(data->getModel());
 
 	glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
 

@@ -48,7 +48,7 @@ public:
 	 * this function.
 	 * @param loader The model loader used to load the models.
 	 */
-	virtual void loadModels(std::shared_ptr<ModelLoader> loader) = 0;
+	virtual void loadModels(ModelLoader& loader) = 0;
 
 	/**
 	 * Loads different screens for the game, such as guis, huds, worlds,

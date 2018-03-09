@@ -49,7 +49,7 @@ public:
 	 * @return a MeshData struct that can be used for drawing.
 	 * @throw runtime_error if the memory manager has already been initialized.
 	 */
-	MeshData addMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, MeshType type);
+	MeshRenderData addMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, MeshType type);
 
 	/**
 	 * Uploads data to gpu to prepare for drawing.

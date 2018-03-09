@@ -23,6 +23,7 @@
 #include "DisplayEngine.hpp"
 #include "RenderingEngine.hpp"
 #include "EngineConfig.hpp"
+#include "ModelManager.hpp"
 #include "Logger.hpp"
 
 class Engine {
@@ -61,6 +62,8 @@ private:
 	//The rendering engine. The graphics api to be used is set
 	//before run is called, during engine configuration.
 	std::shared_ptr<RenderingEngine> renderer;
+	//Manages all models loaded by the game
+	ModelManager modelManager;
 	//Set by the exit function to terminate the main game loop.
 	bool stopped;
 

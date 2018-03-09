@@ -31,6 +31,7 @@
 #include "Model.hpp"
 #include "Logger.hpp"
 #include "MatrixStack.hpp"
+#include "ModelManager.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -38,11 +39,12 @@ public:
 	/**
 	 * Constructs a GlRenderingEngine and initializes small parts of
 	 * glfw - it just calls the init function and sets the error callback.
+	 * @param modelManager A reference to the object that stores model data.
 	 * @param rendererLog The logger config for the rendering engine.
 	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if glfw initialization failed.
 	 */
-	GlRenderingEngine(const LogConfig& rendererLog, const LogConfig& loaderLog);
+	GlRenderingEngine(ModelManager& modelManager, const LogConfig& rendererLog, const LogConfig& loaderLog);
 
 	/**
 	 * Destroys the window and terminates glfw
@@ -59,6 +61,15 @@ public:
 	 * @throw runtime_error if initialization failed.
 	 */
 	void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display);
+
+	/**
+	 * Adds a mesh to the rendering engine. The opengl version
+	 * adds it to its memory manager.
+	 * @param data The model data to add.
+	 * @param type The type of the mesh to add.
+	 * @return the data needed to render the mesh.
+	 */
+	MeshRenderData addMesh(ModelData& data, MeshType type);
 
 	/**
 	 * Uploads data to gpu and sets some state stuff.
@@ -146,8 +157,8 @@ private:
 	std::unordered_map<std::string, GLuint> textureMap;
 	//A map to store the shaders used by the engine
 	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
-	//A map to store loaded model information
-	std::unordered_map<std::string, Model> modelMap;
+	//The object that stores all the models.
+	ModelManager& modelManager;
 	//The window created by glfw
 	GLFWwindow* window;
 
