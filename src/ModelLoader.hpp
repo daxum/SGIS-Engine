@@ -27,6 +27,7 @@
 #include "Vertex.hpp"
 #include "Logger.hpp"
 #include "Model.hpp"
+#include "AxisAlignedBB.hpp"
 
 class RenderingEngine;
 
@@ -78,4 +79,11 @@ protected:
 	 * @throw runtime_error if model loading failed.
 	 */
 	std::shared_ptr<ModelData> loadFromDisk(std::string filename);
+
+	/**
+	 * Calculates a bounding box for a model's mesh.
+	 * @param data The model data to calculate a box for.
+	 * @return a box for the mesh.
+	 */
+	AxisAlignedBB calculateBox(std::shared_ptr<ModelData> data);
 };

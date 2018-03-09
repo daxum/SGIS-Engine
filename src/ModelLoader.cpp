@@ -27,7 +27,12 @@ void ModelLoader::loadModel(std::string name, std::string filename, std::string 
 	std::shared_ptr<ModelData> data = loadFromDisk(filename);
 	//Always static for now
 	MeshRenderData mesh = renderer->addMesh(*(data.get()), MeshType::STATIC);
-	models.insert(std::make_pair(name, Model(mesh, texture)));
+
+	AxisAlignedBB box = calculateBox(data);
+	logger.debug("Calculated box [" + std::to_string(box.min.x) + ", " + std::to_string(box.min.y) + ", " + std::to_string(box.min.z) + " | " +
+				 std::to_string(box.max.x) + ", " + std::to_string(box.max.y) + ", " + std::to_string(box.max.z) + "] for model " + filename);
+
+	models.insert(std::make_pair(name, Model(mesh, box, texture)));
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 
@@ -86,4 +91,28 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 	//TODO: Materials
 
 	return data;
+}
+
+AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) {
+	if (data->vertices.size() == 0) {
+		logger.warn("Zero vertex mesh loaded?!");
+		return AxisAlignedBB(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
+	}
+
+	glm::vec3 max(data->vertices[0].pos.x, data->vertices[0].pos.y, data->vertices[0].pos.z);
+	glm::vec3 min(max);
+
+	for (size_t i = 1; i < data->vertices.size(); i++) {
+		const glm::vec3& current = data->vertices[i].pos;
+
+		max.x = std::max(max.x, current.x);
+		max.y = std::max(max.y, current.y);
+		max.z = std::max(max.z, current.z);
+
+		min.x = std::min(min.x, current.x);
+		min.y = std::min(min.y, current.y);
+		min.z = std::min(min.z, current.z);
+	}
+
+	return AxisAlignedBB(min, max);
 }

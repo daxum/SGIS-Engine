@@ -18,8 +18,9 @@
 
 #include "Model.hpp"
 
-Model::Model(MeshRenderData meshData, std::string texture) :
+Model::Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture) :
 	mesh(meshData),
-	texture(texture) {
+	texture(texture),
+	meshBox(meshBox) {
 
 }

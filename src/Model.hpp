@@ -21,6 +21,8 @@
 #include <cstdint>
 #include <string>
 
+#include "AxisAlignedBB.hpp"
+
 //The type of mesh, affects mesh storage
 enum class MeshType {
 	//Static meshes will be uploaded to gpu memory, for fast access by the gpu. Their buffers
@@ -45,11 +47,13 @@ public:
 	/**
 	 * Constructs a model using the given mesh
 	 * @param meshData This model's mesh information
+	 * @param meshBox The axis aligned bounding box for this model's mesh.
 	 * @param texture The name of the texture to use
 	 */
-	Model(MeshRenderData meshData, std::string texture);
+	Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture);
 
 	//The mesh this model uses
 	const MeshRenderData mesh;
 	const std::string texture;
+	const AxisAlignedBB meshBox;
 };
