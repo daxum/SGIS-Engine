@@ -18,15 +18,27 @@
 
 #pragma once
 
+#include <btBulletDynamicsCommon.h>
+
 #include "ComponentManager.hpp"
 
 class PhysicsComponentManager : public ComponentManager {
 public:
-	PhysicsComponentManager() : ComponentManager(PHYSICS_COMPONENT_NAME) {}
+	PhysicsComponentManager();
 
 	/**
 	 * Updates all physics components.
 	 * @param screen The screen that owns this PhysicsComponentManager.
 	 */
 	void update(Screen* screen);
+
+private:
+	//World for physics stuff.
+	btDiscreteDynamicsWorld world;
+
+	//Stuff needed by bullet
+	btDefaultCollisionConfiguration collision;
+	btCollisionDispatcher dispatcher;
+	btDbvtBroadphase broadphase;
+	btSequentialImpulseConstraintSolver solver;
 };
