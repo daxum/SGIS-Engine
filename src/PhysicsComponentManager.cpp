@@ -31,7 +31,7 @@ void PhysicsComponentManager::update(Screen* screen) {
 		glm::vec3& velocity = physics->getVelocity();
 
 		box.translate(velocity);
-		velocity *= 0.98f;
+		velocity *= 0.95f;
 
 		//Temporary bounds checking - find a better way later.
 		glm::vec3 correction;
