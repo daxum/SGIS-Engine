@@ -9,7 +9,6 @@ These instructions (and the program in general, actually) have only been tested 
 1. First, make sure that the following are installed, or modify CMakeLists.txt to use local copies (replace `find_package()` with `add_subdirectory()`)
 	* [GLFW](http://www.glfw.org)
 	* [glm](https://glm.g-truc.net)
-	* [bullet](https://github.com/bulletphysics/bullet3)
 2. From the top of the repository, do:
 
 	`cd src`

@@ -20,16 +20,37 @@
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
 
-PhysicsComponentManager::PhysicsComponentManager() :
-	ComponentManager(PHYSICS_COMPONENT_NAME),
-	world(&dispatcher, &broadphase, &solver, &collision),
-	collision(),
-	dispatcher(&collision),
-	broadphase(),
-	solver() {
-
-	world.setGravity(btVector3(0.0, -9.80665, 0.0));
-}
 void PhysicsComponentManager::update(Screen* screen) {
-	world.stepSimulation(1.0f / 60.0f);
+	const AxisAlignedBB& border = screen->getMap()->getBorder();
+
+	for (std::shared_ptr<Component> comp : components) {
+		std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
+
+		//Actual physics engine to come at later date.
+		AxisAlignedBB& box = physics->getBox();
+		glm::vec3& velocity = physics->getVelocity();
+
+		box.translate(velocity);
+		velocity *= 0.98f;
+
+		//Temporary bounds checking - find a better way later.
+		glm::vec3 correction;
+
+		if (box.min.x < border.min.x || box.max.x > border.max.x) {
+			correction.x = ExMath::minMagnitude(border.min.x - box.min.x, border.max.x - box.max.x);
+			velocity.x = 0.0f;
+		}
+
+		if (box.min.y < border.min.y || box.max.y > border.max.y) {
+			correction.y = ExMath::minMagnitude(border.min.y - box.min.y, border.max.y - box.max.y);
+			velocity.y = 0.0f;
+		}
+
+		if (box.min.z < border.min.z || box.max.z > border.max.z) {
+			correction.z = ExMath::minMagnitude(border.min.z - box.min.z, border.max.z - box.max.z);
+			velocity.z = 0.0f;
+		}
+
+		box.translate(correction);
+	}
 }
