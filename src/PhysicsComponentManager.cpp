@@ -20,37 +20,41 @@
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
 
-void PhysicsComponentManager::update(Screen* screen) {
-	const AxisAlignedBB& border = screen->getMap()->getBorder();
+PhysicsComponentManager::PhysicsComponentManager() :
+	ComponentManager(PHYSICS_COMPONENT_NAME),
+	conf(new btDefaultCollisionConfiguration()),
+	broadphase(new btDbvtBroadphase()),
+	solver(new btSequentialImpulseConstraintSolver()) {
 
+	dispatcher = new btCollisionDispatcher(conf);
+	world = new  btDiscreteDynamicsWorld(dispatcher, broadphase, solver, nullptr);
+}
+
+PhysicsComponentManager::~PhysicsComponentManager() {
+	delete world;
+	delete solver;
+	delete broadphase;
+	delete dispatcher;
+	delete conf;
+}
+
+void PhysicsComponentManager::update(Screen* screen) {
 	for (std::shared_ptr<Component> comp : components) {
 		std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
-
-		//Actual physics engine to come at later date.
-		AxisAlignedBB& box = physics->getBox();
-		glm::vec3& velocity = physics->getVelocity();
-
-		box.translate(velocity);
-		velocity *= 0.95f;
-
-		//Temporary bounds checking - find a better way later.
-		glm::vec3 correction;
-
-		if (box.min.x < border.min.x || box.max.x > border.max.x) {
-			correction.x = ExMath::minMagnitude(border.min.x - box.min.x, border.max.x - box.max.x);
-			velocity.x = 0.0f;
-		}
-
-		if (box.min.y < border.min.y || box.max.y > border.max.y) {
-			correction.y = ExMath::minMagnitude(border.min.y - box.min.y, border.max.y - box.max.y);
-			velocity.y = 0.0f;
-		}
-
-		if (box.min.z < border.min.z || box.max.z > border.max.z) {
-			correction.z = ExMath::minMagnitude(border.min.z - box.min.z, border.max.z - box.max.z);
-			velocity.z = 0.0f;
-		}
-
-		box.translate(correction);
+		physics->update();
 	}
+
+	world->stepSimulation(1.0f/60.0f);
+}
+
+void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
+	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
+
+	world->addRigidBody(physics->getBody());
+}
+
+void PhysicsComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
+	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
+
+	world->removeRigidBody(physics->getBody());
 }

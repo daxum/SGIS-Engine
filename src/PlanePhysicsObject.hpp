@@ -14,33 +14,20 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ *****************************************************************************/
 
-#include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
-#include "Object.hpp"
-#include "PhysicsComponent.hpp"
+#pragma once
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color, glm::vec3 renderScale) :
-	Component(parent, RENDER_COMPONENT_NAME),
-	model(model),
-	color(color),
-	scale(renderScale) {
+#include "PhysicsObject.hpp"
 
-}
+class PlanePhysicsObject : public PhysicsObject {
+public:
+	PlanePhysicsObject() : PhysicsObject() {
+		shape = new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0);
+		state = new btDefaultMotionState();
 
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getTranslation();
-}
+		btRigidBody::btRigidBodyConstructionInfo info(0.0, state, shape);
 
-glm::vec3 RenderComponent::getRotation() {
-	return  parent.getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getRotation();
-}
-
-glm::vec3 RenderComponent::getScale() {
-	return scale;
-}
-
-glm::vec3 RenderComponent::getColor() {
-	return color;
-}
+		body = new btRigidBody(info);
+	}
+};

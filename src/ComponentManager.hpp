@@ -66,4 +66,18 @@ protected:
 
 	//Stores all the components managed by this manager.
 	std::vector<std::shared_ptr<Component>> components;
+
+	/**
+	 * Called immediately after a component is added to the manager's
+	 * internal list.
+	 * @param comp The component that was added.
+	 */
+	virtual void onComponentAdd(std::shared_ptr<Component> comp) {}
+
+	/**
+	 * Called immediately after a component is removed from the manager's
+	 * internal list.
+	 * @param comp The component that was removed.
+	 */
+	virtual void onComponentRemove(std::shared_ptr<Component> comp) {}
 };

@@ -14,33 +14,25 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ *****************************************************************************/
 
-#include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
-#include "Object.hpp"
-#include "PhysicsComponent.hpp"
+#pragma once
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color, glm::vec3 renderScale) :
-	Component(parent, RENDER_COMPONENT_NAME),
-	model(model),
-	color(color),
-	scale(renderScale) {
+#include "PhysicsObject.hpp"
 
-}
+class BoxPhysicsObject : public PhysicsObject {
+public:
+	BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f)) : PhysicsObject() {
+		shape = new btBoxShape(btVector3(aabb.xLength() / 2.0f, aabb.yLength() / 2.0f, aabb.zLength() / 2.0f));
+		state = new btDefaultMotionState();
 
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getTranslation();
-}
+		btTransform initialTransform;
+		initialTransform.setIdentity();
+		initialTransform.setOrigin(btVector3(position.x, position.y, position.z));
+		state->setWorldTransform(initialTransform);
 
-glm::vec3 RenderComponent::getRotation() {
-	return  parent.getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getRotation();
-}
+		btRigidBody::btRigidBodyConstructionInfo info(1.0, state, shape);
 
-glm::vec3 RenderComponent::getScale() {
-	return scale;
-}
-
-glm::vec3 RenderComponent::getColor() {
-	return color;
-}
+		body = new btRigidBody(info);
+	}
+};

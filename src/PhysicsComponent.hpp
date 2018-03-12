@@ -21,34 +21,52 @@
 #include <glm/glm.hpp>
 
 #include "Component.hpp"
-#include "AxisAlignedBB.hpp"
 #include "Object.hpp"
+#include "PhysicsObject.hpp"
 
 class PhysicsComponent : public Component {
 public:
 	/**
 	 * Creates a PhysicsComponent with the provided object as its parent.
 	 * @param object The parent of this component.
-	 * @param box The bounding box of this object.
+	 * @param physics The PhysicsObject that defines this object in the physics engine.
 	 */
-	PhysicsComponent(Object& object, AxisAlignedBB box) : Component(object, PHYSICS_COMPONENT_NAME), box(box), velocity(0.0, 0.0, 0.0) {}
+	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics) : Component(object, PHYSICS_COMPONENT_NAME), physics(physics), acceleration(2.0f) {}
 
 	/**
-	 * Returns a reference to the box for the object. This SHOULD NOT be stored anywhere
-	 * where it might be dereferenced after the object is removed.
-	 * @return The box for the object.
+	 * Returns the physics body associated with this component.
+	 * Should only be called from the ComponentManager.
 	 */
-	AxisAlignedBB& getBox() { return box; }
+	btRigidBody* getBody() { return physics->getBody(); }
 
 	/**
-	 * Returns a reference to the velocity of the object. This also should not be stored anywhere
-	 * where it might be dereferenced after the object is removed.
-	 * @return The velocity of the object.
+	 * Applies velocity changes and such to the internal object.
 	 */
-	glm::vec3& getVelocity() { return velocity; }
+	void update();
+
+	/**
+	 * Used by rendering.
+	 */
+	glm::vec3 getTranslation();
+
+	/**
+	 * Also used by rendering.
+	 */
+	glm::vec3 getRotation();
+
+	/**
+	 * Sets the target velocity of the object, mostly called from the ai.
+	 */
+	void setVelocity(glm::vec3 v);
+
+	/**
+	 * Sets the acceleration, determines how quickly the object reaches the set velocity.
+	 */
+	void setAcceleration(float accel);
 
 private:
-	AxisAlignedBB box;
+	std::shared_ptr<PhysicsObject> physics;
 
-	glm::vec3 velocity;
+	btVector3 velocity;
+	float acceleration;
 };

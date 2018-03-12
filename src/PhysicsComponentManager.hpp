@@ -18,15 +18,34 @@
 
 #pragma once
 
+#include <btBulletDynamicsCommon.h>
 #include "ComponentManager.hpp"
 
 class PhysicsComponentManager : public ComponentManager {
 public:
-	PhysicsComponentManager() : ComponentManager(PHYSICS_COMPONENT_NAME) {}
+	PhysicsComponentManager();
+	~PhysicsComponentManager();
 
 	/**
 	 * Updates all physics components.
 	 * @param screen The screen that owns this PhysicsComponentManager.
 	 */
 	void update(Screen* screen);
+
+private:
+	btDiscreteDynamicsWorld* world;
+	btDefaultCollisionConfiguration* conf;
+	btCollisionDispatcher* dispatcher;
+	btBroadphaseInterface* broadphase;
+	btSequentialImpulseConstraintSolver* solver;
+
+	/**
+	 * Overridden from ComponentManager.
+	 */
+	void onComponentAdd(std::shared_ptr<Component> comp);
+
+	/**
+	 * Overridden from ComponentManager.
+	 */
+	void onComponentRemove(std::shared_ptr<Component> comp);
 };

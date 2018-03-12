@@ -32,7 +32,7 @@ public:
 	 * @param parent The object this rendering data is for.
 	 * @param model The name of the model to use to render this object.
 	 */
-	RenderComponent(Object& parent, std::string model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0));
+	RenderComponent(Object& parent, std::string model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Returns the translation of this object.
@@ -70,4 +70,7 @@ private:
 
 	//The color of the object
 	glm::vec3 color;
+
+	//The scale of the object's model.
+	glm::vec3 scale;
 };

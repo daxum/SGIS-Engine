@@ -1,4 +1,5 @@
 find_package(glfw3 3.2 REQUIRED)
+find_package(Bullet REQUIRED)
 
 add_library(Engine
 	Engine.cpp
@@ -22,6 +23,7 @@ add_library(Engine
 	AxisAlignedBB.cpp
 	MatrixStack.cpp
 	UpdateComponentManager.cpp
+	PhysicsComponent.cpp
 	GlRenderer/gl_core_4_1.c
 )
 
@@ -34,5 +36,5 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	target_compile_options(Engine PRIVATE "-Wall")
 endif()
 
-target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Engine glfw GL)
+target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${BULLET_INCLUDE_DIRS})
+target_link_libraries(Engine glfw GL ${BULLET_LIBRARIES})

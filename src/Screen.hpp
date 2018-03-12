@@ -85,18 +85,6 @@ public:
 	void removeObject(std::shared_ptr<Object> object);
 
 	/**
-	 * Sets the screen's map to the passed in map.
-	 * Maps really need to work better, this is very messy.
-	 * @param newMap The new map for the screen to use.
-	 */
-	void setMap(std::shared_ptr<Map> newMap);
-
-	/**
-	 * @return The map for this screen.
-	 */
-	std::shared_ptr<Map> getMap() { return map; }
-
-	/**
 	 * Retrieves the model manager from the display
 	 */
 	ModelManager& getModelManager();
@@ -122,9 +110,6 @@ protected:
 
 	//The indices of the objects in the object vector, for fast removal.
 	std::unordered_map<std::shared_ptr<Object>, size_t> objectIndices;
-
-	//A map used for collision detection and having a floor.
-	std::shared_ptr<Map> map;
 
 	/**
 	 * Deletes the provided object from this screen.

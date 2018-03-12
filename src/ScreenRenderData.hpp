@@ -33,9 +33,6 @@ public:
 	//The RenderComponentManager for this screen.
 	std::shared_ptr<RenderComponentManager> componentManager;
 
-	//Maps have turned very problematic...
-	std::shared_ptr<RenderData> mapData;
-
 	//Just the camera. Does camera things.
 	Camera camera;
 };

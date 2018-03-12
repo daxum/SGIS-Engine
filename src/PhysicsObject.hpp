@@ -16,31 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
-#include "Object.hpp"
-#include "PhysicsComponent.hpp"
+#pragma once
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color, glm::vec3 renderScale) :
-	Component(parent, RENDER_COMPONENT_NAME),
-	model(model),
-	color(color),
-	scale(renderScale) {
+#include <btBulletDynamicsCommon.h>
 
-}
+//A wrapper for bullet physics objects for easier deletion.
+//Only meant to be subclassed from within the engine.
+class PhysicsObject {
+public:
+	/**
+	 * Constructs the object with the given bullet stuff.
+	 * Doesn't actually set the member variables - Subclasses have
+	 * to do that themselves.
+	 */
+	PhysicsObject() {}
 
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getTranslation();
-}
+	/**
+	 * Deletes the objects.
+	 */
+	virtual ~PhysicsObject() {
+		delete body;
+		delete shape;
+		delete state;
+	}
 
-glm::vec3 RenderComponent::getRotation() {
-	return  parent.getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getRotation();
-}
+	/**
+	 * Returns the physics body, only to be called from the PhysicsComponent.
+	 */
+	btRigidBody* getBody() { return body; }
 
-glm::vec3 RenderComponent::getScale() {
-	return scale;
-}
+	/**
+	 * Returns the motion state, mostly used for rendering.
+	 */
+	btMotionState* getMotionState() { return state; }
 
-glm::vec3 RenderComponent::getColor() {
-	return color;
-}
+protected:
+	btRigidBody* body;
+	btCollisionShape* shape;
+	btMotionState* state;
+};

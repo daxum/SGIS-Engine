@@ -21,6 +21,7 @@
 void ComponentManager::addComponent(std::shared_ptr<Component> comp) {
 	entryIndices[comp] = components.size();
 	components.push_back(comp);
+	onComponentAdd(comp);
 }
 
 void ComponentManager::removeComponent(std::shared_ptr<Component> comp) {
@@ -39,4 +40,6 @@ void ComponentManager::removeComponent(std::shared_ptr<Component> comp) {
 
 	//clear entry from map
 	entryIndices.erase(comp);
+
+	onComponentRemove(comp);
 }

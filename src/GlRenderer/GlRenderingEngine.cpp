@@ -179,9 +179,6 @@ void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);
 
-	//Render map first
-	renderObject(matStack, shader, data.mapData);
-
 	//Render all objects
 	for (std::shared_ptr<Component> object : data.componentManager->getRenderComponents()) {
 		renderObject(matStack, shader, std::static_pointer_cast<RenderComponent>(object));
