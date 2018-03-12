@@ -44,7 +44,7 @@ void PhysicsComponentManager::update(Screen* screen) {
 		physics->update();
 	}
 
-	world->stepSimulation(1.0f/60.0f);
+	world->stepSimulation(1.0f/60.0f, 10);
 }
 
 void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
