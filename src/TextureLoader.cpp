@@ -20,12 +20,26 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-//Used to free image data from smart pointers.
-struct ImageDeleter {
-	void operator()(unsigned char* p) {
-		stbi_image_free(p);
-	}
-};
+namespace {
+	unsigned char missingData[16] = {
+		0x00, 0x00, 0x00, 0xFF,
+		0xC8, 0x00, 0xAA, 0xFF,
+		0xC8, 0x00, 0xAA, 0xFF,
+		0x00, 0x00, 0x00, 0xFF
+	};
+
+	//Used to free image data from smart pointers.
+	struct ImageDeleter {
+		void operator()(unsigned char* p) {
+			stbi_image_free(p);
+		}
+	};
+
+	//Used for missing data.
+	struct NonDeleter {
+		void operator()(unsigned char* p) {}
+	};
+}
 
 TextureData TextureLoader::loadFromDisk(std::string filename) {
 	TextureData texData = {};
@@ -41,6 +55,9 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 	if (imageData == nullptr) {
 		logger.error("Couldn't load texture \"" + filename + "\" - file doesn't exist.");
 		texData.loadSuccess = false;
+		texData.width = 2;
+		texData.height = 2;
+		texData.data.reset(missingData, NonDeleter());
 	}
 	else {
 		texData.loadSuccess = true;
