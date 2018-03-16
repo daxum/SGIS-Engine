@@ -27,7 +27,7 @@ MeshRenderData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, con
 	switch (type) {
 		case MeshType::STATIC:
 			//STATIC: all static meshes are combined into one unmodifiable buffer in gpu memory
-			logger.info("Adding mesh to static data...");
+			logger.debug("Adding mesh to static data...");
 
 			for (const uint32_t i : indices) {
 				const Vertex& vertex = vertices[i];
