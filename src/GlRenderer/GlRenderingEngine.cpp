@@ -228,7 +228,7 @@ void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int 
 	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
 }
 
-void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderData> data) {
+void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data) {
 	matStack.push();
 
 	matStack.translate(data->getTranslation());

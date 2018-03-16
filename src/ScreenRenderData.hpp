@@ -21,7 +21,6 @@
 #include <vector>
 #include <memory>
 
-#include "RenderData.hpp"
 #include "Camera.hpp"
 
 class RenderComponentManager;

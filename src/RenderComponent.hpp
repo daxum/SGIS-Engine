@@ -21,11 +21,8 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 #include "Component.hpp"
-#include "RenderData.hpp"
 
-//Describes how to render an object. This looks like multi-inheritance,
-//but RenderData is basically an interface, so it should be fine.
-class RenderComponent : public RenderData, public Component {
+class RenderComponent : public Component {
 public:
 	/**
 	 * Creates rendering data for the passed in object.
