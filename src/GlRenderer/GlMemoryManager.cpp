@@ -57,7 +57,7 @@ void GlMemoryManager::upload() {
 	}
 
 	//Static mesh data
-	logger.info("Uploading static mesh data...");
+	logger.debug("Uploading static mesh data...");
 	//Don't ask.
 	logger.debug(std::string("Static mesh stats:") +
 				 "\n\tVertices:   " + std::to_string(staticVertices.size()) +
