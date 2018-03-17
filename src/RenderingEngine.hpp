@@ -23,8 +23,8 @@
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
 #include "ModelLoader.hpp"
-#include "ScreenRenderData.hpp"
 #include "Model.hpp"
+#include "RenderComponentManager.hpp"
 
 class DisplayEngine;
 
@@ -110,10 +110,9 @@ public:
 	/**
 	 * Renders the passed in object.
 	 * @param data The stuff to render.
-	 * @param partialTicks The time between game updates, in milliseconds.
-	 *     Used for interpolation.
+	 * @param camera The camera to use.
 	 */
-	virtual void render(ScreenRenderData& data, float partialTicks) = 0;
+	virtual void render(std::shared_ptr<RenderComponentManager> data, Camera& camera) = 0;
 
 	/**
 	 * Called clearBuffers for lack of a better name. Clears the depth and stencil

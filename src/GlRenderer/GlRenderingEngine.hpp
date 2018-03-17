@@ -87,9 +87,9 @@ public:
 	 * Renders the passed in object. This clears the color and depth buffers,
 	 * draws the object(s), and presents the image.
 	 * @param data The data to render.
-	 * @param partialTicks The time since the last game update.
+	 * @param camera The camera.
 	 */
-	void render(ScreenRenderData& data, float partialTicks);
+	void render(std::shared_ptr<RenderComponentManager> data, Camera& camera);
 
 	/**
 	 * Clears the depth and stencil buffers.

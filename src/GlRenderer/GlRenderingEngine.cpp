@@ -160,9 +160,9 @@ void GlRenderingEngine::loadDefaultShaders(std::string path) {
 	shaderLoader->loadShader("basic", path + "glsl/basicShader.vert", path + "glsl/basicShader.frag", nullptr);
 }
 
-void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
+void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Camera& camera) {
 	//Don't render without a render component.
-	if (!data.componentManager) {
+	if (!data) {
 		return;
 	}
 
@@ -174,13 +174,13 @@ void GlRenderingEngine::render(ScreenRenderData& data, float partialTicks) {
 
 	MatrixStack matStack;
 
-	matStack.multiply(data.camera.getView());
+	matStack.multiply(camera.getView());
 
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);
 
 	//Render all objects
-	for (std::shared_ptr<Component> object : data.componentManager->getRenderComponents()) {
+	for (std::shared_ptr<Component> object : data->getRenderComponents()) {
 		renderObject(matStack, shader, std::static_pointer_cast<RenderComponent>(object));
 	}
 }

@@ -35,7 +35,7 @@ void Screen::update() {
 	}
 
 	//Update camera
-	renderData.camera.update();
+	camera.update();
 
 	//Remove queued objects
 	for (std::shared_ptr<Object> object : removalList) {
@@ -51,7 +51,7 @@ bool Screen::isKeyPressed(Key key) {
 
 void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
 	if (manager->name == RENDER_COMPONENT_NAME) {
-		renderData.componentManager = std::static_pointer_cast<RenderComponentManager>(manager);
+		renderManager = std::static_pointer_cast<RenderComponentManager>(manager);
 	}
 
 	managers.push_back(manager);

@@ -19,12 +19,13 @@
 #pragma once
 
 #include "KeyList.hpp"
-#include "ScreenRenderData.hpp"
+#include "Camera.hpp"
 #include "Object.hpp"
 #include "ModelManager.hpp"
 
 class DisplayEngine;
 class ComponentManager;
+class RenderComponentManager;
 
 class Screen {
 public:
@@ -58,7 +59,7 @@ public:
 	 * Gets all the information required to render the screen (models for objects, post-processing steps, etc).
 	 * @return Rendering data that can be used by RenderingEngine to produce a picture.
 	 */
-	ScreenRenderData& getRenderData() { return renderData; }
+	std::shared_ptr<RenderComponentManager> getRenderData() { return renderManager; }
 
 	/**
 	 * Adds the given manager to the list of managers for this screen. Some things to note:
@@ -91,14 +92,17 @@ public:
 	/**
 	 * Returns the camera associated with this screen.
 	 */
-	Camera& getCamera() { return renderData.camera; }
+	Camera& getCamera() { return camera; }
 
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
 
-	//Information on how to render this screen.
-	ScreenRenderData renderData;
+	//The rendering manager for this screen.
+	std::shared_ptr<RenderComponentManager> renderManager;
+
+	//Just the camera
+	Camera camera;
 
 	//The various managers for the components in this screen.
 	std::vector<std::shared_ptr<ComponentManager>> managers;
