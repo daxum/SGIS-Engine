@@ -18,11 +18,13 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include "Camera.hpp"
+#include "PhysicsComponent.hpp"
 
 Camera::Camera(glm::vec3 startPos, glm::vec3 startLook, glm::vec3 startUp) :
 	pos(startPos),
 	look(startLook),
-	up(startUp) {
+	up(startUp),
+	velocity(0.0, 0.0, 0.0) {
 
 }
 
@@ -36,4 +38,29 @@ void Camera::lookAt(float x, float y, float z) {
 
 glm::mat4 Camera::getView() {
 	return glm::lookAt(pos, look, up);
+}
+
+void Camera::update() {
+	//Temporary camera physics. Probably better to just make it a full-fledged object with limited one-way collision.
+
+	if (target) {
+		glm::vec3 targetPos = target->getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getTranslation();
+
+		glm::vec3 newVelocity = -1.5f * (pos - glm::vec3(targetPos.x, targetPos.y, targetPos.z + 10.0));
+
+		velocity.x = newVelocity.x;
+		velocity.z = newVelocity.z;
+
+		glm::vec3 lookPos = targetPos + velocity;
+		lookAt(lookPos.x, targetPos.y, lookPos.z);
+	}
+
+	pos += velocity;
+	velocity *= 0.95f;
+}
+
+void Camera::setTarget(std::shared_ptr<Object> object) {
+	if (object->getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)) {
+		target = object;
+	}
 }

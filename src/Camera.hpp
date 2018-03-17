@@ -20,6 +20,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Object.hpp"
+
 class Camera {
 public:
 	/**
@@ -52,10 +54,27 @@ public:
 	 */
 	glm::mat4 getView();
 
+	/**
+	 * Updates the camera. This currently moves it to track the object it is following.
+	 */
+	void update();
+
+	/**
+	 * Sets the object for the camera to track. If the object doesn't have a physics component,
+	 * this won't do anything.
+	 */
+	void setTarget(std::shared_ptr<Object> object);
+
 private:
 	//These three vectors define a camera - pos is position,
 	//look is where the camera is looking, up is the up vector.
 	glm::vec3 pos;
 	glm::vec3 look;
 	glm::vec3 up;
+
+	//The object to follow.
+	std::shared_ptr<Object> target;
+
+	//The velocity of the camera.
+	glm::vec3 velocity;
 };

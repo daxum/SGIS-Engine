@@ -88,6 +88,11 @@ public:
 	 */
 	ModelManager& getModelManager();
 
+	/**
+	 * Returns the camera associated with this screen.
+	 */
+	Camera& getCamera() { return renderData.camera; }
+
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;

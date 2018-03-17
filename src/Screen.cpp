@@ -34,6 +34,9 @@ void Screen::update() {
 		manager->update(this);
 	}
 
+	//Update camera
+	renderData.camera.update();
+
 	//Remove queued objects
 	for (std::shared_ptr<Object> object : removalList) {
 		deleteObject(object);
