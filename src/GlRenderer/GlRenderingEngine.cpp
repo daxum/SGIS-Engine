@@ -95,8 +95,6 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	//TODO: remove once resizing is figured out
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	window = glfwCreateWindow(windowWidth, windowHeight, windowTitle.c_str(), nullptr, nullptr);
 
@@ -208,8 +206,11 @@ void GlRenderingEngine::setProjection(int width, int height) {
 }
 
 void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
-	glViewport(0, 0, width, height);
-	renderer->setProjection(width, height);
+	int adjustedHeight = std::max(9*width/16, height);
+	int heightOffset = -(adjustedHeight - height) / 2;
+
+	glViewport(0, heightOffset, width, adjustedHeight);
+	renderer->setProjection(width, adjustedHeight);
 }
 
 void GlRenderingEngine::glfwError(int errorCode, const char* description) {
