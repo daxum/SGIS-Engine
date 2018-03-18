@@ -8,7 +8,6 @@ out vec4 outColor;
 
 uniform sampler2D tex0;
 uniform vec3 color;
-//uniform vec3 cameraPos;
 
 void main() {
 	outColor = texture(tex0, tex) * vec4(color, 1.0);

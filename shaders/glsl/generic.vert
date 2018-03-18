@@ -12,8 +12,11 @@ uniform mat4 modelView;
 uniform mat4 projection;
 
 void main() {
-	pos = posIn;
-	norm = normIn;
+	vec4 posCameraSpace = modelView * vec4(posIn, 1.0);
+
+	pos = posCameraSpace.xyz;
+	norm = (modelView * vec4(normIn, 0.0)).xyz;
 	tex = texIn;
-	gl_Position = projection * modelView * vec4(pos, 1.0);
+
+	gl_Position = projection * posCameraSpace;
 }

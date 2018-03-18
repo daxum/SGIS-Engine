@@ -157,7 +157,8 @@ void GlRenderingEngine::finishLoad() {
 }
 
 void GlRenderingEngine::loadDefaultShaders(std::string path) {
-	shaderLoader->loadShader("basic", path + "glsl/basicShader.vert", path + "glsl/basicShader.frag", nullptr);
+	shaderLoader->loadShader("basic", path + "glsl/generic.vert", path + "glsl/basic.frag", nullptr);
+	shaderLoader->loadShader("phong", path + "glsl/generic.vert", path + "glsl/blinnPhong.frag", nullptr);
 }
 
 void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Camera& camera) {
@@ -167,7 +168,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Cam
 	}
 
 	//Use basic shader for everything for now
-	std::shared_ptr<GlShader> shader = shaderMap.at("basic");
+	std::shared_ptr<GlShader> shader = shaderMap.at("phong");
 	shader->use();
 
 	shader->setUniformMat4("projection", projection);
