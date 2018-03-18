@@ -22,7 +22,7 @@
 
 class BoxPhysicsObject : public PhysicsObject {
 public:
-	BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f)) : PhysicsObject() {
+	BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), float mass = 1.0f) : PhysicsObject() {
 		shape = new btBoxShape(btVector3(aabb.xLength() / 2.0f, aabb.yLength() / 2.0f, aabb.zLength() / 2.0f));
 		state = new btDefaultMotionState();
 
@@ -31,7 +31,7 @@ public:
 		initialTransform.setOrigin(btVector3(position.x, position.y, position.z));
 		state->setWorldTransform(initialTransform);
 
-		btRigidBody::btRigidBodyConstructionInfo info(1.0, state, shape);
+		btRigidBody::btRigidBodyConstructionInfo info(mass, state, shape);
 
 		body = new btRigidBody(info);
 	}
