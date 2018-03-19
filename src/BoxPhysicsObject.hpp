@@ -22,7 +22,7 @@
 
 class BoxPhysicsObject : public PhysicsObject {
 public:
-	BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), float mass = 1.0f) : PhysicsObject() {
+	BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), float mass = 1.0f, float friction = 0.5f) : PhysicsObject() {
 		shape = new btBoxShape(btVector3(aabb.xLength() / 2.0f, aabb.yLength() / 2.0f, aabb.zLength() / 2.0f));
 		state = new btDefaultMotionState();
 
@@ -32,6 +32,7 @@ public:
 		state->setWorldTransform(initialTransform);
 
 		btRigidBody::btRigidBodyConstructionInfo info(mass, state, shape);
+		info.m_friction = friction;
 
 		body = new btRigidBody(info);
 	}
