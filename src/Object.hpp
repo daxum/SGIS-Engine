@@ -23,6 +23,7 @@
 #include <unordered_map>
 
 #include "Component.hpp"
+#include "ObjectPhysicsInterface.hpp"
 
 //An object in a world. Stores rendering, physics, etc.
 class Object {
@@ -30,7 +31,7 @@ public:
 	/**
 	 * Creates an object.
 	 */
-	Object() {}
+	Object();
 
 	/**
 	 * Retrieves the component with the requested name, or null if it doesn't exist.
@@ -47,11 +48,29 @@ public:
 	 * added to the world.
 	 * @param component The component to add.
 	 */
-	void addComponent(std::shared_ptr<Component> component) {
-		components[component->name] = component;
-	}
+	void addComponent(std::shared_ptr<Component> component);
+
+	/**
+	 * Returns the physics interface for this object. Primarily used by RenderComponents.
+	 * Should never be null.
+	 */
+	ObjectPhysicsInterface* getPhysics();
+
+	/**
+	 * Sets the physics interface for the object. This should never really need to be
+	 * called outside of the engine except for in rare circumstances.
+	 * The set interface will not be deleted by the object.
+	 * @param phys The new physics interface for the object.
+	 */
+	void setPhysics(ObjectPhysicsInterface* phys);
 
 private:
+	//Used by objects with no set physics interface. Completely stateless.
+	static ObjectPhysicsInterface defaultInterface;
+
 	//The map of components for this object. Component names should be in Component.hpp.
 	std::unordered_map<std::string, std::shared_ptr<Component>> components;
+
+	//The physics interface for the object.
+	ObjectPhysicsInterface* physics;
 };

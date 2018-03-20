@@ -16,31 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
-#include "Object.hpp"
-#include "PhysicsComponent.hpp"
+#pragma once
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color, glm::vec3 renderScale) :
-	Component(parent, RENDER_COMPONENT_NAME),
-	model(model),
-	color(color),
-	scale(renderScale) {
+#include <glm/glm.hpp>
 
-}
+//Used to prevent the need for components to directly access physics components for objects,
+//especially for objects that shouldn't have fully simulated physics. Will allow for different
+//"physics providers" as well - could theoretically be used in a gui or similar.
+class ObjectPhysicsInterface {
+public:
+	/**
+	 * Returns the translation of the object in the world.
+	 */
+	virtual glm::vec3 getTranslation() { return glm::vec3(0.0, 0.0, 0.0); }
 
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.getPhysics()->getTranslation();
-}
-
-glm::vec3 RenderComponent::getRotation() {
-	return  parent.getPhysics()->getRotation();
-}
-
-glm::vec3 RenderComponent::getScale() {
-	return scale;
-}
-
-glm::vec3 RenderComponent::getColor() {
-	return color;
-}
+	/**
+	 * Returns the rotation as angles around the x, y, and z axis.
+	 */
+	virtual glm::vec3 getRotation() { return glm::vec3(0.0, 0.0, 0.0); }
+};

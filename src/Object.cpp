@@ -16,31 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
 #include "Object.hpp"
-#include "PhysicsComponent.hpp"
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color, glm::vec3 renderScale) :
-	Component(parent, RENDER_COMPONENT_NAME),
-	model(model),
-	color(color),
-	scale(renderScale) {
+//Messy, but unfortunately necessary. Static class variables are weird.
+ObjectPhysicsInterface Object::defaultInterface;
+
+Object::Object() : physics(nullptr) {
 
 }
 
-glm::vec3 RenderComponent::getTranslation() {
-	return parent.getPhysics()->getTranslation();
+void Object::addComponent(std::shared_ptr<Component> component) {
+	components[component->name] = component;
 }
 
-glm::vec3 RenderComponent::getRotation() {
-	return  parent.getPhysics()->getRotation();
+ObjectPhysicsInterface* Object::getPhysics() {
+	if (physics == nullptr) {
+		return &defaultInterface;
+	}
+
+	return physics;
 }
 
-glm::vec3 RenderComponent::getScale() {
-	return scale;
-}
-
-glm::vec3 RenderComponent::getColor() {
-	return color;
+void Object::setPhysics(ObjectPhysicsInterface* phys) {
+	physics = phys;
 }

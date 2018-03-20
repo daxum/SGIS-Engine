@@ -18,6 +18,14 @@
 
 #include "PhysicsComponent.hpp"
 
+PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics) :
+	Component(object, PHYSICS_COMPONENT_NAME),
+	physics(physics),
+	acceleration(2.0f) {
+
+	parent.setPhysics(this);
+}
+
 void PhysicsComponent::update() {
 	btRigidBody* body = physics->getBody();
 

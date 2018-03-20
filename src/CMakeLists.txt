@@ -24,6 +24,7 @@ add_library(Engine
 	MatrixStack.cpp
 	UpdateComponentManager.cpp
 	PhysicsComponent.cpp
+	Object.cpp
 	GlRenderer/gl_core_4_1.c
 )
 

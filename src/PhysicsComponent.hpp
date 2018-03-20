@@ -23,15 +23,16 @@
 #include "Component.hpp"
 #include "Object.hpp"
 #include "PhysicsObject.hpp"
+#include "ObjectPhysicsInterface.hpp"
 
-class PhysicsComponent : public Component {
+class PhysicsComponent : public Component, ObjectPhysicsInterface {
 public:
 	/**
 	 * Creates a PhysicsComponent with the provided object as its parent.
 	 * @param object The parent of this component.
 	 * @param physics The PhysicsObject that defines this object in the physics engine.
 	 */
-	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics) : Component(object, PHYSICS_COMPONENT_NAME), physics(physics), acceleration(2.0f) {}
+	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics);
 
 	/**
 	 * Returns the physics body associated with this component.
