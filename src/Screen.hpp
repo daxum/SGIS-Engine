@@ -35,7 +35,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	Screen(DisplayEngine& display) : display(display) {}
+	Screen(DisplayEngine& display) : display(display), paused(false) {}
 
 	/**
 	 * Updates all the component managers from first added to last.
@@ -118,6 +118,11 @@ public:
 	 */
 	std::shared_ptr<ScreenState> getState() { return state; }
 
+	/**
+	 * Pauses / unpauses the screen.
+	 */
+	void setPaused(bool p) { paused = p; }
+
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
@@ -145,6 +150,9 @@ protected:
 
 	//User-defined state for the screen.
 	std::shared_ptr<ScreenState> state;
+
+	//Whether the screen has been paused (all updates stopped, only rendering).
+	bool paused;
 
 	/**
 	 * Deletes the provided object from this screen.

@@ -22,6 +22,11 @@
 #include "RenderComponentManager.hpp"
 
 void Screen::update() {
+	//Skip update if paused
+	if (paused) {
+		return;
+	}
+
 	//Add queued objects
 	for (std::shared_ptr<Object> object : additionList) {
 		addObjectToList(object);
