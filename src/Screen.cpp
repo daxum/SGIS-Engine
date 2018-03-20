@@ -65,20 +65,26 @@ void Screen::removeObject(std::shared_ptr<Object> object) {
 	removalList.push_back(object);
 }
 
+void Screen::removeObject(Object* object) {
+	if (objectIndices.count(object)) {
+		removeObject(objects[objectIndices.at(object)]);
+	}
+}
+
 void Screen::deleteObject(std::shared_ptr<Object> object) {
-	if (objectIndices.count(object) == 0) {
+	if (objectIndices.count(object.get()) == 0) {
 		//Object not found.
 		return;
 	}
 
 	//Switch with last, pop, and update map.
-	objects[objectIndices[object]] = objects.back();
+	objects[objectIndices[object.get()]] = objects.back();
 
 	//Set moved element's new index.
-	objectIndices[objects.back()] = objectIndices[object];
+	objectIndices[objects.back().get()] = objectIndices[object.get()];
 
 	objects.pop_back();
-	objectIndices.erase(object);
+	objectIndices.erase(object.get());
 
 	//Remove components
 	for (std::shared_ptr<ComponentManager> manager : managers) {
@@ -92,7 +98,7 @@ void Screen::deleteObject(std::shared_ptr<Object> object) {
 
 void Screen::addObjectToList(std::shared_ptr<Object> object) {
 	//Add to main list
-	objectIndices[object] = objects.size();
+	objectIndices[object.get()] = objects.size();
 	objects.push_back(object);
 
 	//Add any components to managers

@@ -85,6 +85,14 @@ public:
 	void removeObject(std::shared_ptr<Object> object);
 
 	/**
+	 * Same as above, but with regular pointers instead of shared,
+	 * for when an object needs to be removed but you don't have
+	 * access to the shared pointer.
+	 * @param object The object to remove.
+	 */
+	void removeObject(Object* object);
+
+	/**
 	 * Retrieves the model manager from the display
 	 */
 	ModelManager& getModelManager();
@@ -117,7 +125,7 @@ protected:
 	std::vector<std::shared_ptr<Object>> additionList;
 
 	//The indices of the objects in the object vector, for fast removal.
-	std::unordered_map<std::shared_ptr<Object>, size_t> objectIndices;
+	std::unordered_map<Object*, size_t> objectIndices;
 
 	/**
 	 * Deletes the provided object from this screen.
