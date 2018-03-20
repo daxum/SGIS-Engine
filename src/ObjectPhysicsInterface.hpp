@@ -25,6 +25,8 @@
 //"physics providers" as well - could theoretically be used in a gui or similar.
 class ObjectPhysicsInterface {
 public:
+	virtual ~ObjectPhysicsInterface() {}
+
 	/**
 	 * Returns the translation of the object in the world.
 	 */
