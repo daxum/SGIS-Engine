@@ -84,6 +84,11 @@ public:
 	 */
 	void onCollide(Screen* screen, PhysicsComponent* other);
 
+	/**
+	 * Returns the parent object, mainly for removal from screen and manipulating state.
+	 */
+	Object* getParent() { return &parent; }
+
 private:
 	std::shared_ptr<PhysicsObject> physics;
 	std::shared_ptr<CollisionHandler> collider;

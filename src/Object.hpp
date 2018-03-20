@@ -25,6 +25,9 @@
 #include "Component.hpp"
 #include "ObjectPhysicsInterface.hpp"
 
+//This will probably be expanded later.
+struct ObjectState {};
+
 //An object in a world. Stores rendering, physics, etc.
 class Object {
 public:
@@ -64,6 +67,17 @@ public:
 	 */
 	void setPhysics(ObjectPhysicsInterface* phys);
 
+	/**
+	 * Sets the state for this object.
+	 * @param newState The new state variable, user defined. Can be anything.
+	 */
+	void setState(std::shared_ptr<ObjectState> newState) { state = newState; }
+
+	/**
+	 * Returns the previously set state pointer, or null if none was set.
+	 */
+	std::shared_ptr<ObjectState> getState() { return state; }
+
 private:
 	//Used by objects with no set physics interface. Completely stateless.
 	static ObjectPhysicsInterface defaultInterface;
@@ -73,4 +87,7 @@ private:
 
 	//The physics interface for the object.
 	ObjectPhysicsInterface* physics;
+
+	//User-defined object state.
+	std::shared_ptr<ObjectState> state;
 };

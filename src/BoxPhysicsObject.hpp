@@ -23,9 +23,4 @@
 class BoxPhysicsObject : public PhysicsObject {
 public:
 	BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), float mass = 1.0f, float friction = 0.5f);
-
-	AxisAlignedBB& getBoundingBox() { return box; }
-
-private:
-	AxisAlignedBB box;
 };

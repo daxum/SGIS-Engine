@@ -24,7 +24,7 @@
 
 class PlanePhysicsObject : public PhysicsObject {
 public:
-	PlanePhysicsObject() : PhysicsObject(), planeBox(glm::vec3(std::numeric_limits<float>::min(), 0.0, std::numeric_limits<float>::min()), glm::vec3(std::numeric_limits<float>::max(), 0.0, std::numeric_limits<float>::max())) {
+	PlanePhysicsObject() : PhysicsObject() {
 		shape = new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0);
 		state = new btDefaultMotionState();
 
@@ -32,9 +32,4 @@ public:
 
 		body = new btRigidBody(info);
 	}
-
-	AxisAlignedBB& getBoundingBox() { return planeBox; }
-
-private:
-	AxisAlignedBB planeBox;
 };

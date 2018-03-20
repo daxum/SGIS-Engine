@@ -19,8 +19,7 @@
 #include "BoxPhysicsObject.hpp"
 
 BoxPhysicsObject::BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position, float mass, float friction) :
-	PhysicsObject(),
-	box(aabb) {
+	PhysicsObject() {
 
 	shape = new btBoxShape(btVector3(aabb.xLength() / 2.0f, aabb.yLength() / 2.0f, aabb.zLength() / 2.0f));
 	state = new btDefaultMotionState();

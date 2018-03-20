@@ -52,12 +52,6 @@ public:
 	 */
 	btMotionState* getMotionState() { return state; }
 
-	/**
-	 * Gets the bounding box for the object.
-	 * @return The bounding box.
-	 */
-	virtual AxisAlignedBB& getBoundingBox() = 0;
-
 protected:
 	btRigidBody* body;
 	btCollisionShape* shape;
