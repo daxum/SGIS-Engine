@@ -69,7 +69,7 @@ public:
 	 *  - Only one manager for each type should exist. Duplicates might work, but won't do anything useful.
 	 *  - Managers will be updated in the order they are added.
 	 *  - Objects that existed before the addition of the manager will not (currently) be added to it.
-	 *  - Render components will be automatically added to the screen's render data. Adding more render components will
+	 *  - Render component managers will be automatically added to the screen's render data. Adding more render managers will
 	 *      overwrite old ones, and the old ones will become functionally useless.
 	 * @param manager The manager to add.
 	 */
