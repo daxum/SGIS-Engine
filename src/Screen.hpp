@@ -27,6 +27,9 @@ class DisplayEngine;
 class ComponentManager;
 class RenderComponentManager;
 
+//Might be expanded later.
+struct ScreenState {};
+
 class Screen {
 public:
 	/**
@@ -102,6 +105,19 @@ public:
 	 */
 	Camera& getCamera() { return camera; }
 
+	/**
+	 * Sets the state for the screen.
+	 * @param newState The new screen state.
+	 */
+	void setState(std::shared_ptr<ScreenState> newState) { state = newState; }
+
+	/**
+	 * Returns the previously set state for the screen, or null if none
+	 * was set.
+	 * @return The state for the screen.
+	 */
+	std::shared_ptr<ScreenState> getState() { return state; }
+
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
@@ -126,6 +142,9 @@ protected:
 
 	//The indices of the objects in the object vector, for fast removal.
 	std::unordered_map<Object*, size_t> objectIndices;
+
+	//User-defined state for the screen.
+	std::shared_ptr<ScreenState> state;
 
 	/**
 	 * Deletes the provided object from this screen.
