@@ -20,6 +20,8 @@
 
 #include <btBulletDynamicsCommon.h>
 
+#include "AxisAlignedBB.hpp"
+
 //A wrapper for bullet physics objects for easier deletion.
 //Only meant to be subclassed from within the engine.
 class PhysicsObject {
@@ -49,6 +51,12 @@ public:
 	 * Returns the motion state, mostly used for rendering.
 	 */
 	btMotionState* getMotionState() { return state; }
+
+	/**
+	 * Gets the bounding box for the object.
+	 * @return The bounding box.
+	 */
+	virtual AxisAlignedBB& getBoundingBox() = 0;
 
 protected:
 	btRigidBody* body;

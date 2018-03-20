@@ -18,11 +18,13 @@
 
 #pragma once
 
+#include <limits>
+
 #include "PhysicsObject.hpp"
 
 class PlanePhysicsObject : public PhysicsObject {
 public:
-	PlanePhysicsObject() : PhysicsObject() {
+	PlanePhysicsObject() : PhysicsObject(), planeBox(glm::vec3(std::numeric_limits<float>::min(), 0.0, std::numeric_limits<float>::min()), glm::vec3(std::numeric_limits<float>::max(), 0.0, std::numeric_limits<float>::max())) {
 		shape = new btStaticPlaneShape(btVector3(0.0, 1.0, 0.0), 0.0);
 		state = new btDefaultMotionState();
 
@@ -30,4 +32,9 @@ public:
 
 		body = new btRigidBody(info);
 	}
+
+	AxisAlignedBB& getBoundingBox() { return planeBox; }
+
+private:
+	AxisAlignedBB planeBox;
 };

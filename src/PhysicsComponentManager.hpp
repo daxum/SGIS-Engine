@@ -33,6 +33,14 @@ public:
 	void update(Screen* screen);
 
 private:
+	/**
+	 * Only called from bullet.
+	 */
+	static void physicsTickCallback(btDynamicsWorld* world, btScalar timeStep);
+
+	//Screen pointer, set during update function for access from collision callback.
+	Screen* currentScreen;
+
 	btDiscreteDynamicsWorld* world;
 	btDefaultCollisionConfiguration* conf;
 	btCollisionDispatcher* dispatcher;
@@ -48,4 +56,9 @@ private:
 	 * Overridden from ComponentManager.
 	 */
 	void onComponentRemove(std::shared_ptr<Component> comp);
+
+	/**
+	 * Called from bullet, used for collision callbacks in physics objects.
+	 */
+	void tickCallback();
 };

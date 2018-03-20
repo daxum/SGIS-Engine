@@ -18,12 +18,19 @@
 
 #include "PhysicsComponent.hpp"
 
-PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics) :
+PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler, uint32_t collMask) :
 	Component(object, PHYSICS_COMPONENT_NAME),
 	physics(physics),
-	acceleration(2.0f) {
+	collider(collHandler),
+	acceleration(2.0f),
+	collisionMask(collMask) {
 
 	parent.setPhysics(this);
+	physics->getBody()->setUserPointer(this);
+
+	if (collider) {
+		collider->parent = this;
+	}
 }
 
 void PhysicsComponent::update() {
@@ -62,4 +69,10 @@ void PhysicsComponent::setVelocity(glm::vec3 v) {
 
 void PhysicsComponent::setAcceleration(float accel) {
 	acceleration = accel;
+}
+
+void PhysicsComponent::onCollide(Screen* screen, PhysicsComponent* other) {
+	if (collider && !(other->collisionMask ^ collisionMask)) {
+		collider->handleCollision(screen, other);
+	}
 }

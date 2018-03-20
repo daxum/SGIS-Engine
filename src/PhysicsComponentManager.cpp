@@ -20,6 +20,10 @@
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
 
+void PhysicsComponentManager::physicsTickCallback(btDynamicsWorld* world, btScalar timeStep) {
+	static_cast<PhysicsComponentManager*>(world->getWorldUserInfo())->tickCallback();
+}
+
 PhysicsComponentManager::PhysicsComponentManager() :
 	ComponentManager(PHYSICS_COMPONENT_NAME),
 	conf(new btDefaultCollisionConfiguration()),
@@ -28,6 +32,7 @@ PhysicsComponentManager::PhysicsComponentManager() :
 
 	dispatcher = new btCollisionDispatcher(conf);
 	world = new  btDiscreteDynamicsWorld(dispatcher, broadphase, solver, nullptr);
+	world->setInternalTickCallback(physicsTickCallback, this, false);
 }
 
 PhysicsComponentManager::~PhysicsComponentManager() {
@@ -44,17 +49,33 @@ void PhysicsComponentManager::update(Screen* screen) {
 		physics->update();
 	}
 
+	currentScreen = screen;
 	world->stepSimulation(1.0f/60.0f, 10);
 }
 
 void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 
-	world->addRigidBody(physics->getBody());
+	//Looks stupid, but works. Oh well.
+	world->addRigidBody(physics->getBody()->getBody());
 }
 
 void PhysicsComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 
-	world->removeRigidBody(physics->getBody());
+	world->removeRigidBody(physics->getBody()->getBody());
+}
+
+void PhysicsComponentManager::tickCallback() {
+	int manifoldCount = world->getDispatcher()->getNumManifolds();
+
+	for (int i = 0; i < manifoldCount; i++) {
+		btPersistentManifold* manifold = world->getDispatcher()->getManifoldByIndexInternal(i);
+
+		PhysicsComponent* object1 = static_cast<PhysicsComponent*>(manifold->getBody0()->getUserPointer());
+		PhysicsComponent* object2 = static_cast<PhysicsComponent*>(manifold->getBody1()->getUserPointer());
+
+		object1->onCollide(currentScreen, object2);
+		object2->onCollide(currentScreen, object1);
+	}
 }

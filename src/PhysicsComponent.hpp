@@ -24,6 +24,17 @@
 #include "Object.hpp"
 #include "PhysicsObject.hpp"
 #include "ObjectPhysicsInterface.hpp"
+#include "Screen.hpp"
+
+class PhysicsComponent;
+
+//Allows for user-defined collision responses.
+struct CollisionHandler {
+	//Set by physics component when added.
+	PhysicsComponent* parent;
+
+	virtual void handleCollision(Screen* screen, PhysicsComponent* hitObject) = 0;
+};
 
 class PhysicsComponent : public Component, ObjectPhysicsInterface {
 public:
@@ -31,14 +42,15 @@ public:
 	 * Creates a PhysicsComponent with the provided object as its parent.
 	 * @param object The parent of this component.
 	 * @param physics The PhysicsObject that defines this object in the physics engine.
+	 * @param collHandler An object containing a function to call when this object collides with another one.
+	 * @param collMask A mask to prevent collision callbacks from being called.
 	 */
-	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics);
+	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler = std::shared_ptr<CollisionHandler>(), uint32_t collMask = 0);
 
 	/**
 	 * Returns the physics body associated with this component.
-	 * Should only be called from the ComponentManager.
 	 */
-	btRigidBody* getBody() { return physics->getBody(); }
+	std::shared_ptr<PhysicsObject> getBody() { return physics; }
 
 	/**
 	 * Applies velocity changes and such to the internal object.
@@ -65,9 +77,20 @@ public:
 	 */
 	void setAcceleration(float accel);
 
+	/**
+	 * Called by the physics component manager when this object collides with another.
+	 * @param screen A screen, can be used for removing / adding other objects as a result of a collision.
+	 * @param other The object that was collided with.
+	 */
+	void onCollide(Screen* screen, PhysicsComponent* other);
+
 private:
 	std::shared_ptr<PhysicsObject> physics;
+	std::shared_ptr<CollisionHandler> collider;
 
 	btVector3 velocity;
 	float acceleration;
+
+	//The collision mask. If the xor of two masks is non-zero, the collision callback won't be called.
+	uint32_t collisionMask;
 };

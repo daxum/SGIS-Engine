@@ -16,16 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
 
-#pragma once
+#include "BoxPhysicsObject.hpp"
 
-#include "PhysicsObject.hpp"
+BoxPhysicsObject::BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position, float mass, float friction) :
+	PhysicsObject(),
+	box(aabb) {
 
-class BoxPhysicsObject : public PhysicsObject {
-public:
-	BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& position = glm::vec3(0.0f, 0.0f, 0.0f), float mass = 1.0f, float friction = 0.5f);
+	shape = new btBoxShape(btVector3(aabb.xLength() / 2.0f, aabb.yLength() / 2.0f, aabb.zLength() / 2.0f));
+	state = new btDefaultMotionState();
 
-	AxisAlignedBB& getBoundingBox() { return box; }
+	btTransform initialTransform;
+	initialTransform.setIdentity();
+	initialTransform.setOrigin(btVector3(position.x, position.y, position.z));
+	state->setWorldTransform(initialTransform);
 
-private:
-	AxisAlignedBB box;
-};
+	btRigidBody::btRigidBodyConstructionInfo info(mass, state, shape);
+	info.m_friction = friction;
+
+	body = new btRigidBody(info);
+}
