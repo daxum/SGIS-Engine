@@ -18,12 +18,11 @@
 
 #include "PhysicsComponent.hpp"
 
-PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler, uint32_t collMask) :
+PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler) :
 	Component(object, PHYSICS_COMPONENT_NAME),
 	physics(physics),
 	collider(collHandler),
-	acceleration(2.0f),
-	collisionMask(collMask) {
+	acceleration(2.0f) {
 
 	parent.setPhysics(this);
 	physics->getBody()->setUserPointer(this);
@@ -72,7 +71,7 @@ void PhysicsComponent::setAcceleration(float accel) {
 }
 
 void PhysicsComponent::onCollide(Screen* screen, PhysicsComponent* other) {
-	if (collider && !(other->collisionMask ^ collisionMask)) {
+	if (collider) {
 		collider->handleCollision(screen, other);
 	}
 }

@@ -45,7 +45,7 @@ public:
 	 * @param collHandler An object containing a function to call when this object collides with another one.
 	 * @param collMask A mask to prevent collision callbacks from being called.
 	 */
-	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler = std::shared_ptr<CollisionHandler>(), uint32_t collMask = 0);
+	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler = std::shared_ptr<CollisionHandler>());
 
 	/**
 	 * Returns the physics body associated with this component.
@@ -95,7 +95,4 @@ private:
 
 	btVector3 velocity;
 	float acceleration;
-
-	//The collision mask. If the xor of two masks is non-zero, the collision callback won't be called.
-	uint32_t collisionMask;
 };
