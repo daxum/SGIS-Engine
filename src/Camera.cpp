@@ -18,7 +18,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include "Camera.hpp"
-#include "PhysicsComponent.hpp"
 
 Camera::Camera(glm::vec3 startPos, glm::vec3 startLook, glm::vec3 startUp) :
 	pos(startPos),
