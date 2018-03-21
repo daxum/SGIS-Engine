@@ -60,8 +60,7 @@ public:
 	void update();
 
 	/**
-	 * Sets the object for the camera to track. If the object doesn't have a physics component,
-	 * this won't do anything.
+	 * Sets the object for the camera to track.
 	 */
 	void setTarget(std::shared_ptr<Object> object);
 

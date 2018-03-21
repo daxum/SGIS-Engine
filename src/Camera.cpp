@@ -44,7 +44,7 @@ void Camera::update() {
 	//Temporary camera physics. Probably better to just make it a full-fledged object with limited one-way collision.
 
 	if (target) {
-		glm::vec3 targetPos = target->getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)->getTranslation();
+		glm::vec3 targetPos = target->getPhysics()->getTranslation();
 
 		glm::vec3 newVelocity = -1.5f * (pos - glm::vec3(targetPos.x, targetPos.y, targetPos.z + 10.0));
 
@@ -60,7 +60,5 @@ void Camera::update() {
 }
 
 void Camera::setTarget(std::shared_ptr<Object> object) {
-	if (object->getComponent<PhysicsComponent>(PHYSICS_COMPONENT_NAME)) {
-		target = object;
-	}
+	target = object;
 }
