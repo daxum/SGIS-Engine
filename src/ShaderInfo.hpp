@@ -16,12 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "Model.hpp"
+#pragma once
 
-Model::Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture, std::string shader) :
-	mesh(meshData),
-	texture(texture),
-	meshBox(meshBox),
-	shader(shader) {
+#include <string>
 
-}
+struct ShaderInfo {
+	//Path to vertex shader.
+	std::string vertex;
+	//Path to fragment shader.
+	std::string fragment;
+
+	//Uniforms to be passed in. Must have these names in the shader (Really don't want to mess with OpenGL extensions for location on uniforms...).
+
+	//mat4, the modelView matrix.
+	bool modelView = false;
+	//mat4, the projection matrix.
+	bool projection = false;
+	//vec3, the color from the RenderComponent.
+	bool color = false;
+	//sampler2D, The first texture used.
+	bool tex0 = false;
+
+	//Extra, renderer-specific data. Always blank for now.
+	const void* extra;
+};

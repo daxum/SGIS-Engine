@@ -16,12 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "Model.hpp"
+#include "RenderComponentManager.hpp"
+#include "Engine.hpp"
 
-Model::Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture, std::string shader) :
-	mesh(meshData),
-	texture(texture),
-	meshBox(meshBox),
-	shader(shader) {
+void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
+	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
+	std::string shader = Engine::instance->getModelManager().getModel(renderComp->getModel()).shader;
+
+	renderComponents[shader].insert(renderComp);
+}
+
+void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
+	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
+
+	std::string shader = Engine::instance->getModelManager().getModel(renderComp->getModel()).shader;
+
+	renderComponents[shader].erase(renderComp);
 }

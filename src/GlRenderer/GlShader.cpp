@@ -19,7 +19,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "GlShader.hpp"
 
-GlShader::GlShader(GLuint id) : id(id) {}
+GlShader::GlShader(GLuint id, const ShaderInfo info) : id(id), info(info) {}
 
 GlShader::~GlShader() {
 	glDeleteProgram(id);

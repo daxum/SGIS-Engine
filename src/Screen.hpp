@@ -22,6 +22,7 @@
 #include "Camera.hpp"
 #include "Object.hpp"
 #include "ModelManager.hpp"
+#include "SequentialSet.hpp"
 
 class DisplayEngine;
 class ComponentManager;
@@ -137,16 +138,13 @@ protected:
 	std::vector<std::shared_ptr<ComponentManager>> managers;
 
 	//All objects that have been added to the screen.
-	std::vector<std::shared_ptr<Object>> objects;
+	SequentialSet<Object> objects;
 
 	//Objects to be removed at the end of the update.
 	std::vector<std::shared_ptr<Object>> removalList;
 
 	//Objects to be added after an update.
 	std::vector<std::shared_ptr<Object>> additionList;
-
-	//The indices of the objects in the object vector, for fast removal.
-	std::unordered_map<Object*, size_t> objectIndices;
 
 	//User-defined state for the screen.
 	std::shared_ptr<ScreenState> state;

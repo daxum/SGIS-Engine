@@ -34,12 +34,10 @@ public:
 	/**
 	 * Loads a program object using the given shader files.
 	 * @param name The name to associate the finished shader with.
-	 * @param vertexPath The path to the vertex shader source.
-	 * @param fragmentPath The path to the fragment shader source.
-	 * @param flags Unused for the OpenGL loader.
+	 * @param info The information about the shader.
 	 * @throw runtime_error if loading failed.
 	 */
-	void loadShader(std::string name, std::string vertexPath, std::string fragmentPath, const void* flags);
+	void loadShader(std::string name, const ShaderInfo& info);
 
 private:
 	std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap;

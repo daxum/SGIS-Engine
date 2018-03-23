@@ -19,27 +19,11 @@
 #include "ComponentManager.hpp"
 
 void ComponentManager::addComponent(std::shared_ptr<Component> comp) {
-	entryIndices[comp] = components.size();
-	components.push_back(comp);
+	components.insert(comp);
 	onComponentAdd(comp);
 }
 
 void ComponentManager::removeComponent(std::shared_ptr<Component> comp) {
-	if (entryIndices.count(comp) == 0) {
-		//Component not in vector.
-		return;
-	}
-
-	//Order doesn't really matter, so move the last element to where this one was and pop the vector.
-	components[entryIndices[comp]] = components.back();
-
-	//update moved element's index
-	entryIndices[components.back()] = entryIndices[comp];
-
-	components.pop_back();
-
-	//clear entry from map
-	entryIndices.erase(comp);
-
+	components.erase(comp);
 	onComponentRemove(comp);
 }

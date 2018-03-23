@@ -26,15 +26,15 @@ GlShaderLoader::GlShaderLoader(Logger& logger, std::unordered_map<std::string, s
 
 }
 
-void GlShaderLoader::loadShader(std::string name, std::string vertexPath, std::string fragmentPath, const void* flags) {
+void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	if (shaderMap.count(name) > 0) {
 		logger.warn("Tried to load duplicate shader \"" + name + "\".");
 		return;
 	}
 
-	logger.debug("Constructing shader from \"" + vertexPath + "\" and \"" + fragmentPath + "\".");
+	logger.debug("Constructing shader from \"" + info.vertex + "\" and \"" + info.fragment + "\".");
 
-	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(vertexPath, fragmentPath));
+	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info);
 	shaderMap.insert(std::make_pair(name, shader));
 
 	logger.debug("Shader \"" + name + "\" loaded.");
@@ -138,7 +138,7 @@ std::string GlShaderLoader::loadShaderSource(std::string filename) {
 		inFile.close();
 	}
 	catch(const std::ifstream::failure& e) {
-		throw std::runtime_error("Couldn't read shader source");
+		throw std::runtime_error("Couldn't read shader source for " + filename);
 	}
 
 	return sourceStream.str();

@@ -28,6 +28,9 @@
 
 class Engine {
 public:
+	//Global engine instance. Use sparingly!
+	static Engine* instance;
+
 	/**
 	 * Constructs an instance of the game engine.
 	 * Does not initialize any subsystems, but allows
@@ -50,6 +53,12 @@ public:
 	 * @throw runtime_error if initialization of one of the subsytems failed.
 	 */
 	void run(GameInterface& game);
+
+	/**
+	 * Returns the model manager for this engine. Const because it should
+	 * only be used for looking up model properties.
+	 */
+	const ModelManager& getModelManager() const { return modelManager; }
 
 private:
 	//The configuration used to create the engine. Non-reference is intentional.

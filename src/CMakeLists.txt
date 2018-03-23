@@ -26,6 +26,7 @@ add_library(Engine
 	PhysicsComponent.cpp
 	Object.cpp
 	BoxPhysicsObject.cpp
+	RenderComponentManager.cpp
 	GlRenderer/gl_core_4_1.c
 )
 

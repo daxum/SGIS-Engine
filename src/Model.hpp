@@ -49,11 +49,13 @@ public:
 	 * @param meshData This model's mesh information
 	 * @param meshBox The axis aligned bounding box for this model's mesh.
 	 * @param texture The name of the texture to use
+	 * @param shader The shader the model uses.
 	 */
-	Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture);
+	Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture, std::string shader);
 
 	//The mesh this model uses
 	const MeshRenderData mesh;
 	const std::string texture;
 	const AxisAlignedBB meshBox;
+	const std::string shader;
 };

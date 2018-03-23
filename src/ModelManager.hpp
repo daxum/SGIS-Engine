@@ -45,7 +45,7 @@ public:
 	 * @return the model with the given name.
 	 * @throw Whatever maps throw when they don't have a value (runtime_error?)
 	 */
-	Model& getModel(std::string name) { return modelMap.at(name); }
+	const Model& getModel(std::string name) const { return modelMap.at(name); }
 
 private:
 	//The logger

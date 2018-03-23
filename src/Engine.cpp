@@ -20,12 +20,20 @@
 #include "GlRenderer/GlRenderingEngine.hpp"
 #include "ExtraMath.hpp"
 
+Engine* Engine::instance = nullptr;
+
 Engine::Engine(const EngineConfig& config) :
 	config(config),
 	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
 	display(modelManager),
 	modelManager(config.loaderLog, renderer),
 	stopped(false) {
+
+	if (instance) {
+		throw std::runtime_error("Engine already initialized!");
+	}
+
+	instance = this;
 
 	switch(config.renderer) {
 		case Renderer::OPEN_GL:
@@ -39,7 +47,7 @@ Engine::Engine(const EngineConfig& config) :
 }
 
 Engine::~Engine() {
-
+	instance = nullptr;
 }
 
 void Engine::run(GameInterface& game) {

@@ -155,8 +155,24 @@ void GlRenderingEngine::finishLoad() {
 }
 
 void GlRenderingEngine::loadDefaultShaders(std::string path) {
-	shaderLoader->loadShader("basic", path + "glsl/generic.vert", path + "glsl/basic.frag", nullptr);
-	shaderLoader->loadShader("phong", path + "glsl/generic.vert", path + "glsl/blinnPhong.frag", nullptr);
+	ShaderInfo basicInfo;
+	basicInfo.vertex = path + "glsl/generic.vert";
+	basicInfo.fragment = path + "glsl/basic.frag";
+	basicInfo.modelView = true;
+	basicInfo.projection = true;
+	basicInfo.color = true;
+	basicInfo.tex0 = true;
+
+	ShaderInfo phongInfo;
+	phongInfo.vertex = path + "glsl/generic.vert";
+	phongInfo.fragment = path + "glsl/blinnPhong.frag";
+	phongInfo.modelView = true;
+	phongInfo.projection = true;
+	phongInfo.color = true;
+	phongInfo.tex0 = true;
+
+	shaderLoader->loadShader("basic", basicInfo);
+	shaderLoader->loadShader("phong", phongInfo);
 }
 
 void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Camera& camera) {
@@ -165,12 +181,6 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Cam
 		return;
 	}
 
-	//Use basic shader for everything for now
-	std::shared_ptr<GlShader> shader = shaderMap.at("phong");
-	shader->use();
-
-	shader->setUniformMat4("projection", projection);
-
 	MatrixStack matStack;
 
 	matStack.multiply(camera.getView());
@@ -178,9 +188,23 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Cam
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);
 
-	//Render all objects
-	for (std::shared_ptr<Component> object : data->getRenderComponents()) {
-		renderObject(matStack, shader, std::static_pointer_cast<RenderComponent>(object));
+	//Render all objects.
+	//Also, don't ask what the auto actually is. Just don't.
+	for (auto& object : data->getComponentShaderMap()) {
+		if (object.second.size() == 0) {
+			continue;
+		}
+
+		std::shared_ptr<GlShader> shader = shaderMap.at(object.first);
+		shader->use();
+
+		if (shader->info.projection) {
+			shader->setUniformMat4("projection", projection);
+		}
+
+		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
+			renderObject(matStack, shader, renderComponent);
+		}
 	}
 }
 
@@ -233,16 +257,23 @@ void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int 
 void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data) {
 	matStack.push();
 
-	matStack.translate(data->getTranslation());
-	matStack.rotate(data->getRotation());
-	matStack.scale(data->getScale());
+	if (shader->info.modelView) {
+		matStack.translate(data->getTranslation());
+		matStack.rotate(data->getRotation());
+		matStack.scale(data->getScale());
 
-	shader->setUniformMat4("modelView", matStack.top());
-	shader->setUniformVec3("color", data->getColor());
+		shader->setUniformMat4("modelView", matStack.top());
+	}
 
-	Model& model = modelManager.getModel(data->getModel());
+	if (shader->info.color) {
+		shader->setUniformVec3("color", data->getColor());
+	}
 
-	glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
+	const Model& model = modelManager.getModel(data->getModel());
+
+	if (shader->info.tex0) {
+		glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
+	}
 
 	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
 

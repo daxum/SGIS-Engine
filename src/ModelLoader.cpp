@@ -23,7 +23,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(std::string name, std::string filename, std::string texture) {
+void ModelLoader::loadModel(std::string name, std::string filename, std::string texture, std::string shader) {
 	std::shared_ptr<ModelData> data = loadFromDisk(filename);
 	//Always static for now
 	MeshRenderData mesh = renderer->addMesh(*(data.get()), MeshType::STATIC);
@@ -32,7 +32,7 @@ void ModelLoader::loadModel(std::string name, std::string filename, std::string 
 	logger.debug("Calculated box [" + std::to_string(box.min.x) + ", " + std::to_string(box.min.y) + ", " + std::to_string(box.min.z) + " | " +
 				 std::to_string(box.max.x) + ", " + std::to_string(box.max.y) + ", " + std::to_string(box.max.z) + "] for model " + name);
 
-	models.insert(std::make_pair(name, Model(mesh, box, texture)));
+	models.insert(std::make_pair(name, Model(mesh, box, texture, shader)));
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 

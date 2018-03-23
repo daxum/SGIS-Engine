@@ -18,12 +18,9 @@
 
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-#include <vector>
-
 #include "Component.hpp"
 #include "Screen.hpp"
+#include "SequentialSet.hpp"
 
 class ComponentManager {
 public:
@@ -61,11 +58,8 @@ public:
 	virtual void update(Screen* screen) = 0;
 
 protected:
-	//Indexes into the component vector for fast removal.
-	std::unordered_map<std::shared_ptr<Component>, size_t> entryIndices;
-
-	//Stores all the components managed by this manager.
-	std::vector<std::shared_ptr<Component>> components;
+	//Stores all the components added to this manager.
+	SequentialSet<Component> components;
 
 	/**
 	 * Called immediately after a component is added to the manager's

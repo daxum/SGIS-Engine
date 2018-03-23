@@ -58,7 +58,7 @@ public:
 	 * @param name The name to store the loaded model under.
 	 * @param filename The filename for the model to load.
 	 */
-	void loadModel(std::string name, std::string filename, std::string texture);
+	void loadModel(std::string name, std::string filename, std::string texture, std::string shader);
 
 protected:
 	//The logger

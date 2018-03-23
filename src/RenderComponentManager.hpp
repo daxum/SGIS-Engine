@@ -18,7 +18,12 @@
 
 #pragma once
 
+#include <unordered_map>
+#include <string>
+
 #include "ComponentManager.hpp"
+#include "SequentialSet.hpp"
+#include "RenderComponent.hpp"
 
 class RenderComponentManager : public ComponentManager {
 public:
@@ -36,5 +41,21 @@ public:
 	 * Called by the renderer to get all render components
 	 * @return A list of all render components (needs casting).
 	 */
-	std::vector<std::shared_ptr<Component>> getRenderComponents() { return components; }
+	std::unordered_map<std::string, SequentialSet<RenderComponent>>& getComponentShaderMap() { return renderComponents; }
+
+private:
+	//Sorts all RenderComponents by their shader for less context switching.
+	std::unordered_map<std::string, SequentialSet<RenderComponent>> renderComponents;
+
+	/**
+	 * Adds the component to one of the internal lists based on its model.
+	 * @param comp The component to be added.
+	 */
+	void onComponentAdd(std::shared_ptr<Component> comp);
+
+	/**
+	 * Undoes onComponentAdd.
+	 * @param comp The component to un-add.
+	 */
+	void onComponentRemove(std::shared_ptr<Component> comp);
 };

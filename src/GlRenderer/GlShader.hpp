@@ -21,6 +21,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include "CombinedGl.h"
+#include "ShaderInfo.hpp"
 
 //Encapsulates an OpenGL program object, to make things like setting
 //uniforms easier.
@@ -28,12 +29,15 @@ class GlShader {
 public:
 	//The program id for this shader
 	const GLuint id;
+	//Info on how to use this shader
+	const ShaderInfo info;
 
 	/**
 	 * Creates a GlShader with the given id.
 	 * @param id The id of the program object for this shader.
+	 * @param info The shader info for this shader.
 	 */
-	GlShader(GLuint id);
+	GlShader(GLuint id, const ShaderInfo info);
 
 	/**
 	 * Destructor. Destroys the program object.
