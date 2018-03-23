@@ -38,5 +38,5 @@ struct ShaderInfo {
 	bool tex0 = false;
 
 	//Extra, renderer-specific data. Always blank for now.
-	const void* extra;
+	const void* extra = nullptr;
 };
