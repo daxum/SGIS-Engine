@@ -97,11 +97,6 @@ public:
 	void removeObject(Object* object);
 
 	/**
-	 * Retrieves the model manager from the display
-	 */
-	ModelManager& getModelManager();
-
-	/**
 	 * Returns the camera associated with this screen.
 	 */
 	Camera& getCamera() { return camera; }

@@ -32,7 +32,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	DisplayEngine(ModelManager& modelManager);
+	DisplayEngine();
 
 	/**
 	 * Destructor
@@ -112,15 +112,7 @@ public:
 	 */
 	bool isKeyPressed(Key key);
 
-	/**
-	 * Returns the model manager for this display.
-	 */
-	ModelManager& getModelManager() { return modelManager; }
-
 private:
-	//The model manager, primarily used to give screens access to physics properties of models.
-	ModelManager& modelManager;
-
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
 	//and the second contains all screens that are currently being rendered.
 	//The outer stack is referred to above as the "screen stack", and the inner one
