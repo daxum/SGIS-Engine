@@ -78,9 +78,8 @@ public:
 	void finishLoad();
 
 	/**
-	 * Renders the passed in object. This clears the color and depth buffers,
-	 * draws the object(s), and presents the image.
-	 * @param data The data to render.
+	 * Renders the passed in object.
+	 * @param data The object to render.
 	 * @param camera The camera.
 	 */
 	void render(std::shared_ptr<RenderComponentManager> data, Camera& camera);
