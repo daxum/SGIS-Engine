@@ -55,11 +55,6 @@ struct EngineConfig {
 	std::string windowTitle;
 	//The time taken for each tick of the engine, in milliseconds.
 	double timestep;
-	//The path to the directory the engine will load its default shaders from.
-	//The specific set of shaders depends on the rendering engine used.
-	//Note that the shader names will be appended to this, so the directory
-	//should specified as "path/to/shaders/" and not "path/to/shaders".
-	std::string shaderPath;
 	//General logging for engine.
 	LogConfig generalLog;
 	//General renderer logger.

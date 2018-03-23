@@ -51,6 +51,12 @@ public:
 	virtual void loadModels(ModelLoader& loader) = 0;
 
 	/**
+	 * Called to load the game's shaders.
+	 * @param loader The shader loader used to load the shaders.
+	 */
+	virtual void loadShaders(std::shared_ptr<ShaderLoader> loader) = 0;
+
+	/**
 	 * Loads different screens for the game, such as guis, huds, worlds,
 	 * menus, etc. This should also push the first screen to be displayed onto
 	 * the display's screen stack.

@@ -86,13 +86,6 @@ public:
 	virtual void finishLoad() = 0;
 
 	/**
-	 * Loads any default shaders for the game engine, from the folder
-	 * specified by path. See EngineConfig.hpp for the format of path.
-	 * @param path The path to the folder containing the default shaders.
-	 */
-	 virtual void loadDefaultShaders(std::string path) = 0;
-
-	/**
 	 * Gets the texture loader for this rendering engine, which is
 	 * used to transfer textures from the disk to the GPU. Some loaders
 	 * might also have the option of storing loaded textures in RAM.

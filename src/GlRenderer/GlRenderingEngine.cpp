@@ -154,27 +154,6 @@ void GlRenderingEngine::finishLoad() {
 	memoryManager.upload();
 }
 
-void GlRenderingEngine::loadDefaultShaders(std::string path) {
-	ShaderInfo basicInfo;
-	basicInfo.vertex = path + "glsl/generic.vert";
-	basicInfo.fragment = path + "glsl/basic.frag";
-	basicInfo.modelView = true;
-	basicInfo.projection = true;
-	basicInfo.color = true;
-	basicInfo.tex0 = true;
-
-	ShaderInfo phongInfo;
-	phongInfo.vertex = path + "glsl/generic.vert";
-	phongInfo.fragment = path + "glsl/blinnPhong.frag";
-	phongInfo.modelView = true;
-	phongInfo.projection = true;
-	phongInfo.color = true;
-	phongInfo.tex0 = true;
-
-	shaderLoader->loadShader("basic", basicInfo);
-	shaderLoader->loadShader("phong", phongInfo);
-}
-
 void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Camera& camera) {
 	//Don't render without a render component.
 	if (!data) {
