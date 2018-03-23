@@ -60,6 +60,12 @@ public:
 	 */
 	const ModelManager& getModelManager() const { return modelManager; }
 
+	/**
+	 * Gets the configuration the engine was created with.
+	 * @return the engine's configuration.
+	 */
+	const EngineConfig& getConfig() const { return config; }
+
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
 	const EngineConfig config;

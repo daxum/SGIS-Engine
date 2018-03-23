@@ -19,6 +19,7 @@
 #include "PhysicsComponentManager.hpp"
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
+#include "Engine.hpp"
 
 void PhysicsComponentManager::physicsTickCallback(btDynamicsWorld* world, btScalar timeStep) {
 	static_cast<PhysicsComponentManager*>(world->getWorldUserInfo())->tickCallback();
@@ -50,7 +51,7 @@ void PhysicsComponentManager::update(Screen* screen) {
 	}
 
 	currentScreen = screen;
-	world->stepSimulation(1.0f/60.0f, 10);
+	world->stepSimulation(Engine::instance->getConfig().timestep / 1000.0, 20);
 }
 
 void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
