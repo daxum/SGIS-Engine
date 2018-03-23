@@ -114,6 +114,32 @@ public:
 	 */
 	void setProjection(int width, int height);
 
+private:
+	//Projection matrix.
+	glm::mat4 projection;
+	//The general rendering logger
+	Logger logger;
+	//The loader logger
+	Logger loaderLogger;
+	//A map to store texture data
+	std::unordered_map<std::string, GLuint> textureMap;
+	//A map to store the shaders used by the engine
+	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
+	//The object that stores all the models.
+	ModelManager& modelManager;
+	//The window created by glfw
+	GLFWwindow* window;
+
+	//The memory manager, for buffer management and such.
+	GlMemoryManager memoryManager;
+
+	/**
+	 * Renders the object onto the screen.
+	 * @param shader The shader used for rendering.
+	 * @param data The object to render.
+	 */
+	void renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data);
+
 	/**
 	 * Sets the window viewport with OpenGL. This is a callback
 	 * function for glfw, and should only be called directly once,
@@ -140,30 +166,4 @@ public:
 	 * @param mods Whether things like the shift key were pressed.
 	 */
 	static void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-private:
-	//Projection matrix.
-	glm::mat4 projection;
-	//The general rendering logger
-	Logger logger;
-	//The loader logger
-	Logger loaderLogger;
-	//A map to store texture data
-	std::unordered_map<std::string, GLuint> textureMap;
-	//A map to store the shaders used by the engine
-	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
-	//The object that stores all the models.
-	ModelManager& modelManager;
-	//The window created by glfw
-	GLFWwindow* window;
-
-	//The memory manager, for buffer management and such.
-	GlMemoryManager memoryManager;
-
-	/**
-	 * Renders the object onto the screen.
-	 * @param shader The shader used for rendering.
-	 * @param data The object to render.
-	 */
-	void renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data);
 };
