@@ -20,18 +20,19 @@
 #include <unordered_map>
 #include "ModelLoader.hpp"
 #include "RenderingEngine.hpp"
+#include "Engine.hpp"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(std::string name, std::string filename, std::string texture, std::string shader) {
+void ModelLoader::loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting) {
 	std::shared_ptr<ModelData> data = loadFromDisk(filename);
 	//Always static for now
-	MeshRenderData mesh = renderer->addMesh(*(data.get()), MeshType::STATIC);
+	MeshRenderData mesh = renderer->addMesh(*data, MeshType::STATIC);
 
 	AxisAlignedBB box = calculateBox(data);
 	logger.debug("Calculated box " + box.toString() + " for model " + name);
 
-	models.insert(std::make_pair(name, Model(mesh, box, texture, shader)));
+	models.insert(std::make_pair(name, Model(mesh, box, texture, shader, lighting)));
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 
@@ -86,8 +87,6 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 				 "\n\tVertices:          " + std::to_string(data->vertices.size()) +
 				 "\n\tIndices:           " + std::to_string(data->indices.size()) +
 				 "\n\tTotal loaded size: " + std::to_string(data->vertices.size() * sizeof(Vertex) + data->indices.size() * sizeof(uint32_t)) + " bytes");
-
-	//TODO: Materials
 
 	return data;
 }

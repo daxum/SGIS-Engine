@@ -41,6 +41,12 @@ struct MeshRenderData {
 	uint32_t indexCount;
 };
 
+struct LightInfo {
+	glm::vec3 ka;
+	glm::vec3 ks;
+	float s;
+};
+
 //Stores all model data, like mesh information, lighting parameters, and others.
 class Model {
 public:
@@ -51,11 +57,12 @@ public:
 	 * @param texture The name of the texture to use
 	 * @param shader The shader the model uses.
 	 */
-	Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture, std::string shader);
+	Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture, std::string shader, LightInfo light);
 
 	//The mesh this model uses
 	const MeshRenderData mesh;
 	const std::string texture;
 	const AxisAlignedBB meshBox;
 	const std::string shader;
+	const LightInfo lighting;
 };

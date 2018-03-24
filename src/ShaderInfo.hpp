@@ -36,6 +36,13 @@ struct ShaderInfo {
 	bool color = false;
 	//sampler2D, The first texture used.
 	bool tex0 = false;
+	//vec3, normalized light direction for directional lighting (camera space).
+	bool lightDir = false;
+	//Model lighting information:
+	//	vec3 ka - ambient light.
+	//	vec3 ks - specular light.
+	//	float s - shininess.
+	bool lighting = false;
 
 	//Extra, renderer-specific data. Always blank for now.
 	const void* extra = nullptr;

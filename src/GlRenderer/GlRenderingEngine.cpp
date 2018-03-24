@@ -181,6 +181,10 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Cam
 			shader->setUniformMat4("projection", projection);
 		}
 
+		if (shader->info.lightDir) {
+			shader->setUniformVec3("lightDir", glm::normalize(glm::vec3(matStack.top() * glm::vec4(1.0, 1.0, 0.0, 0.0))));
+		}
+
 		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
 			renderObject(matStack, shader, renderComponent);
 		}
@@ -249,6 +253,12 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 	}
 
 	const Model& model = modelManager.getModel(data->getModel());
+
+	if (shader->info.lighting) {
+		shader->setUniformVec3("ka", model.lighting.ka);
+		shader->setUniformVec3("ks", model.lighting.ks);
+		shader->setUniformFloat("s", model.lighting.s);
+	}
 
 	if (shader->info.tex0) {
 		glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));

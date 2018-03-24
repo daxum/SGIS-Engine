@@ -43,3 +43,8 @@ void GlShader::setUniformVec3(std::string name, glm::vec3 vec) {
 	GLuint uniformLoc = glGetUniformLocation(id, name.c_str());
 	glUniform3fv(uniformLoc, 1, glm::value_ptr(vec));
 }
+
+void GlShader::setUniformFloat(std::string name, float val) {
+	GLuint uniformLoc = glGetUniformLocation(id, name.c_str());
+	glUniform1f(uniformLoc, val);
+}
