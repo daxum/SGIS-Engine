@@ -182,7 +182,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Cam
 		}
 
 		if (shader->info.lightDir) {
-			shader->setUniformVec3("lightDir", glm::normalize(glm::vec3(matStack.top() * glm::vec4(1.0, 1.0, 0.0, 0.0))));
+			shader->setUniformVec3("lightDir", glm::normalize(glm::vec3(matStack.top() * glm::vec4(1.0, 1.0, 0.01, 0.0))));
 		}
 
 		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
