@@ -29,8 +29,7 @@ void ModelLoader::loadModel(std::string name, std::string filename, std::string 
 	MeshRenderData mesh = renderer->addMesh(*(data.get()), MeshType::STATIC);
 
 	AxisAlignedBB box = calculateBox(data);
-	logger.debug("Calculated box [" + std::to_string(box.min.x) + ", " + std::to_string(box.min.y) + ", " + std::to_string(box.min.z) + " | " +
-				 std::to_string(box.max.x) + ", " + std::to_string(box.max.y) + ", " + std::to_string(box.max.z) + "] for model " + name);
+	logger.debug("Calculated box " + box.toString() + " for model " + name);
 
 	models.insert(std::make_pair(name, Model(mesh, box, texture, shader)));
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
