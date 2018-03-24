@@ -44,7 +44,7 @@ glm::vec3 AxisAlignedBB::getCenter() const {
 }
 
 float AxisAlignedBB::getArea() const {
-	return (max.x - min.x) * (max.y - min.y) * (max.z - min.z);
+	return xLength() * yLength() * zLength();
 }
 
 float AxisAlignedBB::xLength() const {
