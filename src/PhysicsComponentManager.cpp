@@ -33,6 +33,7 @@ PhysicsComponentManager::PhysicsComponentManager() :
 
 	dispatcher = new btCollisionDispatcher(conf);
 	world = new  btDiscreteDynamicsWorld(dispatcher, broadphase, solver, nullptr);
+	world->setGravity(btVector3(0.0, -9.80665, 0.0));
 	world->setInternalTickCallback(physicsTickCallback, this, false);
 }
 
