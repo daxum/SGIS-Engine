@@ -19,6 +19,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <iostream>
+#include <string>
 
 struct AxisAlignedBB {
 	glm::vec3 min;
@@ -41,5 +43,9 @@ struct AxisAlignedBB {
 	void scale(glm::vec3 amount);
 	void scaleAll(float amount);
 
+	std::string toString() const;
+
 	static AxisAlignedBB interpolate(const AxisAlignedBB& start, const AxisAlignedBB& finish, float percent);
 };
+
+std::ostream& operator<<(std::ostream& out, const AxisAlignedBB& box);

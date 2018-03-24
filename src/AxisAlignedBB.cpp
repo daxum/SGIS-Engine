@@ -77,6 +77,11 @@ void AxisAlignedBB::scaleAll(float amount) {
 	scale(glm::vec3(amount, amount, amount));
 }
 
+std::string AxisAlignedBB::toString() const {
+	return "[" + std::to_string(min.x) + ", " + std::to_string(min.y) + ", " + std::to_string(min.z) + " | " +
+				 std::to_string(max.x) + ", " + std::to_string(max.y) + ", " + std::to_string(max.z) + "]";
+}
+
 AxisAlignedBB AxisAlignedBB::interpolate(const AxisAlignedBB& start, const AxisAlignedBB& finish, float percent) {
 	return AxisAlignedBB(glm::vec3(ExMath::interpolate(start.min.x, finish.min.x, percent),
 								   ExMath::interpolate(start.min.y, finish.min.y, percent),
@@ -84,4 +89,10 @@ AxisAlignedBB AxisAlignedBB::interpolate(const AxisAlignedBB& start, const AxisA
 						 glm::vec3(ExMath::interpolate(start.max.x, finish.max.x, percent),
 								   ExMath::interpolate(start.max.y, finish.max.y, percent),
 								   ExMath::interpolate(start.max.z, finish.max.z, percent)));
+}
+
+std::ostream& operator<<(std::ostream& out, const AxisAlignedBB& box) {
+	out << box.toString();
+
+	return out;
 }
