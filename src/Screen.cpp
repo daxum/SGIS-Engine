@@ -40,7 +40,7 @@ void Screen::update() {
 	}
 
 	//Update camera
-	camera.update();
+	camera->update();
 
 	//Remove queued objects
 	for (std::shared_ptr<Object> object : removalList) {

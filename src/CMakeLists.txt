@@ -13,7 +13,6 @@ add_library(Engine
 	GlRenderer/GlMemoryManager.cpp
 	Model.cpp
 	Logger.cpp
-	Camera.cpp
 	DisplayEngine.cpp
 	Screen.cpp
 	RenderComponent.cpp

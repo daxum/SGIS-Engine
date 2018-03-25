@@ -19,10 +19,10 @@
 #pragma once
 
 #include "KeyList.hpp"
-#include "Camera.hpp"
 #include "Object.hpp"
 #include "ModelManager.hpp"
 #include "SequentialSet.hpp"
+#include "DefaultCamera.hpp"
 
 class DisplayEngine;
 class ComponentManager;
@@ -36,7 +36,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	Screen(DisplayEngine& display) : display(display), paused(false) {}
+	Screen(DisplayEngine& display) : display(display), camera(std::make_shared<DefaultCamera>()), paused(false) {}
 
 	/**
 	 * Updates all the component managers from first added to last.
@@ -99,7 +99,12 @@ public:
 	/**
 	 * Returns the camera associated with this screen.
 	 */
-	Camera& getCamera() { return camera; }
+	std::shared_ptr<Camera> getCamera() { return camera; }
+
+	/**
+	 * Sets the camera for this screen.
+	 */
+	void setCamera(std::shared_ptr<Camera> newCamera) { camera = newCamera; }
 
 	/**
 	 * Sets the state for the screen.
@@ -127,7 +132,7 @@ protected:
 	std::shared_ptr<RenderComponentManager> renderManager;
 
 	//Just the camera
-	Camera camera;
+	std::shared_ptr<Camera> camera;
 
 	//The various managers for the components in this screen.
 	std::vector<std::shared_ptr<ComponentManager>> managers;

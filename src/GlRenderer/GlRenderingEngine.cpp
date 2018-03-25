@@ -154,7 +154,7 @@ void GlRenderingEngine::finishLoad() {
 	memoryManager.upload();
 }
 
-void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Camera& camera) {
+void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera) {
 	//Don't render without a render component.
 	if (!data) {
 		return;
@@ -162,7 +162,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, Cam
 
 	MatrixStack matStack;
 
-	matStack.multiply(camera.getView());
+	matStack.multiply(camera->getView());
 
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);

@@ -105,7 +105,7 @@ public:
 	 * @param data The stuff to render.
 	 * @param camera The camera to use.
 	 */
-	virtual void render(std::shared_ptr<RenderComponentManager> data, Camera& camera) = 0;
+	virtual void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera) = 0;
 
 	/**
 	 * Called clearBuffers for lack of a better name. Clears the depth and stencil

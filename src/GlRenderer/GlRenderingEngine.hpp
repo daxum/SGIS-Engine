@@ -82,7 +82,7 @@ public:
 	 * @param data The object to render.
 	 * @param camera The camera.
 	 */
-	void render(std::shared_ptr<RenderComponentManager> data, Camera& camera);
+	void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera);
 
 	/**
 	 * Clears the depth and stencil buffers.

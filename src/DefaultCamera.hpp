@@ -18,20 +18,21 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-class Camera {
+#include "Camera.hpp"
+
+class DefaultCamera : public Camera {
 public:
-	virtual ~Camera() {}
-
 	/**
 	 * Calculates a view matrix to use in rendering.
 	 * @return the view matrix.
 	 */
-	virtual glm::mat4 getView() = 0;
+	glm::mat4 getView() { return glm::lookAt(glm::vec3(0.0, 0.1, 1.0), glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 1.0, 0.0)); }
 
 	/**
-	 * Updates the camera.
+	 * Updates the camera. Does nothing.
 	 */
-	virtual void update() = 0;
+	void update() {}
 };
+
