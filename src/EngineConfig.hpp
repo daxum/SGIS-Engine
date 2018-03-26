@@ -55,6 +55,8 @@ struct EngineConfig {
 	std::string windowTitle;
 	//The time taken for each tick of the engine, in milliseconds.
 	double timestep;
+	//Time for physics engine updates, in seconds.
+	float physicsTimestep;
 	//General logging for engine.
 	LogConfig generalLog;
 	//General renderer logger.

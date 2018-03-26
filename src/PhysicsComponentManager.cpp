@@ -52,7 +52,7 @@ void PhysicsComponentManager::update(Screen* screen) {
 	}
 
 	currentScreen = screen;
-	world->stepSimulation(Engine::instance->getConfig().timestep / 1000.0, 20);
+	world->stepSimulation(Engine::instance->getConfig().timestep / 1000.0, 20, Engine::instance->getConfig().physicsTimestep);
 }
 
 void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
