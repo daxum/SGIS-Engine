@@ -24,12 +24,18 @@ BoxPhysicsObject::BoxPhysicsObject(const AxisAlignedBB& aabb, const glm::vec3& p
 	shape = new btBoxShape(btVector3(aabb.xLength() / 2.0f, aabb.yLength() / 2.0f, aabb.zLength() / 2.0f));
 	state = new btDefaultMotionState();
 
+	btVector3 localInertia(0.0f, 0.0f, 0.0f);
+
+	if (mass != 0.0f) {
+		shape->calculateLocalInertia(mass, localInertia);
+	}
+
 	btTransform initialTransform;
 	initialTransform.setIdentity();
 	initialTransform.setOrigin(btVector3(position.x, position.y, position.z));
 	state->setWorldTransform(initialTransform);
 
-	btRigidBody::btRigidBodyConstructionInfo info(mass, state, shape);
+	btRigidBody::btRigidBodyConstructionInfo info(mass, state, shape, localInertia);
 	info.m_friction = friction;
 
 	body = new btRigidBody(info);

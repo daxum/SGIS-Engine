@@ -22,7 +22,7 @@ PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject
 	Component(object, PHYSICS_COMPONENT_NAME),
 	physics(physics),
 	collider(collHandler),
-	acceleration(2.0f) {
+	acceleration(1.2f) {
 
 	parent.setPhysics(this);
 	physics->getBody()->setUserPointer(this);
@@ -37,6 +37,12 @@ void PhysicsComponent::update() {
 
 	btVector3 velocityDiff = body->getLinearVelocity() - velocity;
 	btVector3 force = -acceleration * velocityDiff - body->getLinearDamping() * velocityDiff;
+
+	//0 basically means "ignore this direction" right now. Should probably be using constraints or something instead?
+	if (velocity.x() == 0.0f) { force.setX(0.0f); }
+	if (velocity.y() == 0.0f) { force.setY(0.0f); }
+	if (velocity.z() == 0.0f) { force.setZ(0.0f); }
+
 	body->applyCentralForce(force);
 }
 
