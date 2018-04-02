@@ -32,6 +32,12 @@ public:
 	 */
 	void update(Screen* screen);
 
+	/**
+	 * Sets the gravity for the world.
+	 * @param x, y, z The force vector to be applied.
+	 */
+	void setGravity(float x, float y, float z) { world->setGravity(btVector3(x, y, z)); }
+
 private:
 	/**
 	 * Only called from bullet.
