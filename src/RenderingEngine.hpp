@@ -132,6 +132,11 @@ public:
 	 */
 	virtual void pollEvents() = 0;
 
+	/**
+	 * Captures / uncaptures the mouse.
+	 */
+	virtual void captureMouse(bool capture) = 0;
+
 protected:
 	std::shared_ptr<TextureLoader> texLoader;
 	std::shared_ptr<ShaderLoader> shaderLoader;

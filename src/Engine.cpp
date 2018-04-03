@@ -44,6 +44,8 @@ Engine::Engine(const EngineConfig& config) :
 			logger.fatal("Unknown renderer requested!");
 			throw std::runtime_error("Incomplete switch in Engine::Engine()");
 	}
+
+	display.setRenderer(renderer);
 }
 
 Engine::~Engine() {
@@ -116,7 +118,7 @@ void Engine::run(GameInterface& game) {
 		}
 
 		//Render the game.
-		display.render((float)lag / config.timestep, renderer);
+		display.render((float)lag / config.timestep);
 	}
 
 	//Clean up resources, exit game

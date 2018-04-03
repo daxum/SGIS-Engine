@@ -104,3 +104,11 @@ void Screen::addObjectToList(std::shared_ptr<Object> object) {
 		}
 	}
 }
+
+glm::vec2 Screen::getMousePos() {
+	return display.getMousePos();
+}
+
+glm::vec2 Screen::getMouseDist() {
+	return display.getMouseDist();
+}

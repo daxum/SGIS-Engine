@@ -120,10 +120,10 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	glfwSetFramebufferSizeCallback(window, GlRenderingEngine::setViewport);
 	glfwSetKeyCallback(window, GlRenderingEngine::keyPress);
+	glfwSetCursorPosCallback(window, GlRenderingEngine::mouseMove);
 	/*
 	//Other callbacks - might be moved elsewhere to accommodate engine
 	glfwSetScrollCallback(window, mouseScroll);
-	glfwSetCursorPosCallback(window, cursorMove);
 	glfwSetMouseButtonCallback(window, mouseClick);
 	*/
 
@@ -208,33 +208,8 @@ void GlRenderingEngine::pollEvents() {
 	glfwPollEvents();
 }
 
-void GlRenderingEngine::setProjection(int width, int height) {
-	projection = glm::perspective(PI / 4.0f, (float)width / height, 0.1f, 100000.0f);
-}
-
-void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
-	int adjustedHeight = std::max(9*width/16, height);
-	int heightOffset = -(adjustedHeight - height) / 2;
-
-	glViewport(0, heightOffset, width, adjustedHeight);
-	renderer->setProjection(width, adjustedHeight);
-}
-
-void GlRenderingEngine::glfwError(int errorCode, const char* description) {
-	throw std::runtime_error("GLFW error! " + std::to_string(errorCode) + ": " + description);
-}
-
-void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	KeyAction nativeAction;
-
-	switch (action) {
-		case GLFW_PRESS: nativeAction = KeyAction::PRESS; break;
-		case GLFW_REPEAT: nativeAction = KeyAction::REPEAT; break;
-		case GLFW_RELEASE: nativeAction = KeyAction::RELEASE; break;
-		default: nativeAction = KeyAction::UNKNOWN; break;
-	}
-
-	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
+void GlRenderingEngine::captureMouse(bool capture) {
+	glfwSetInputMode(window, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 }
 
 void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data) {
@@ -267,4 +242,37 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
 
 	matStack.pop();
+}
+
+void GlRenderingEngine::setProjection(int width, int height) {
+	projection = glm::perspective(PI / 4.0f, (float)width / height, 0.1f, 100000.0f);
+}
+
+void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
+	int adjustedHeight = std::max(9*width/16, height);
+	int heightOffset = -(adjustedHeight - height) / 2;
+
+	glViewport(0, heightOffset, width, adjustedHeight);
+	renderer->setProjection(width, adjustedHeight);
+}
+
+void GlRenderingEngine::glfwError(int errorCode, const char* description) {
+	throw std::runtime_error("GLFW error! " + std::to_string(errorCode) + ": " + description);
+}
+
+void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	KeyAction nativeAction;
+
+	switch (action) {
+		case GLFW_PRESS: nativeAction = KeyAction::PRESS; break;
+		case GLFW_REPEAT: nativeAction = KeyAction::REPEAT; break;
+		case GLFW_RELEASE: nativeAction = KeyAction::RELEASE; break;
+		default: nativeAction = KeyAction::UNKNOWN; break;
+	}
+
+	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
+}
+
+void GlRenderingEngine::mouseMove(GLFWwindow* window, double x, double y) {
+	display->onMouseMove((float)x, (float)y);
 }

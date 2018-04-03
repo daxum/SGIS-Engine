@@ -107,11 +107,9 @@ public:
 	void pollEvents();
 
 	/**
-	 * Sets the projection matrix. Only intended to be called from setViewport.
-	 * @param width The width of the window.
-	 * @param height The height of the window.
+	 * Captures / uncaptures the mouse.
 	 */
-	void setProjection(int width, int height);
+	void captureMouse(bool capture);
 
 private:
 	//Projection matrix.
@@ -140,6 +138,13 @@ private:
 	void renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data);
 
 	/**
+	 * Sets the projection matrix. Only intended to be called from setViewport.
+	 * @param width The width of the window.
+	 * @param height The height of the window.
+	 */
+	void setProjection(int width, int height);
+
+	/**
 	 * Sets the window viewport with OpenGL. This is a callback
 	 * function for glfw, and should only be called directly once,
 	 * at the end of OpenGL initialization.
@@ -165,4 +170,12 @@ private:
 	 * @param mods Whether things like the shift key were pressed.
 	 */
 	static void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+	/**
+	 * Callback.
+	 * @param window The window the mouse was moved in.
+	 * @param x The new x position of the mouse.
+	 * @param y The new y position of the mouse.
+	 */
+	static void mouseMove(GLFWwindow* window, double x, double y);
 };

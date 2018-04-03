@@ -82,9 +82,13 @@ public:
 	/**
 	 * Renders all screens in the overlay stack, from bottom to top.
 	 * @param partialTicks The time between game engine ticks.
-	 * @param renderer The rendering engine to use to render the screens.
 	 */
-	void render(float partialTicks, std::shared_ptr<RenderingEngine> renderer);
+	void render(float partialTicks);
+
+	/**
+	 * Called by the engine to set the rendering engine.
+	 */
+	void setRenderer(std::shared_ptr<RenderingEngine> newRenderer);
 
 	/**
 	 * Returns whether the screen stack is empty, which should only happen when the game
@@ -96,6 +100,7 @@ public:
 	/**
 	 * Called from the rendering engine's callback whenever a key is pressed.
 	 * @param key The key that was pressed.
+	 * @param action What the key did.
 	 */
 	void onKeyAction(Key key, KeyAction action);
 
@@ -112,6 +117,21 @@ public:
 	 */
 	bool isKeyPressed(Key key);
 
+	/**
+	 * Called by rendering engine when the mouse is moved.
+	 */
+	void onMouseMove(float x, float y);
+
+	/**
+	 * Returns the mouse position.
+	 */
+	glm::vec2 getMousePos() { return mousePos; }
+
+	/**
+	 * Returns how far the mouse moved in the last tick.
+	 */
+	glm::vec2 getMouseDist() { return mouseDistance; }
+
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
 	//and the second contains all screens that are currently being rendered.
@@ -122,7 +142,16 @@ private:
 	//Stores which keys are currently pressed.
 	std::unordered_map<Key, bool> keyMap;
 
+	//The current position of the mouse.
+	glm::vec2 mousePos;
+
+	//The amount the mouse has moved since the last tick.
+	glm::vec2 mouseDistance;
+
 	//Set when popScreen is called during updating, breaks out of the update loop
 	//to avoid updating invalid screens.
 	bool popped;
+
+	//Rendering engine, needed for mouse hiding.
+	std::shared_ptr<RenderingEngine> renderer;
 };

@@ -26,20 +26,30 @@ DisplayEngine::DisplayEngine() :
 
 void DisplayEngine::pushScreen(std::shared_ptr<Screen> screen) {
 	screenStack.emplace();
-	screenStack.top().push_back(screen);
+	pushOverlay(screen);
 }
 
 void DisplayEngine::popScreen() {
 	screenStack.pop();
 	popped = true;
+
+	if (!screenStack.empty() && !screenStack.top().empty()) {
+		renderer->captureMouse(getTop()->mouseHidden());
+	}
 }
 
 void DisplayEngine::pushOverlay(std::shared_ptr<Screen> overlay) {
 	screenStack.top().push_back(overlay);
+
+	renderer->captureMouse(overlay->mouseHidden());
 }
 
 void DisplayEngine::popOverlay() {
 	screenStack.top().pop_back();
+
+	if (!screenStack.top().empty()) {
+		renderer->captureMouse(getTop()->mouseHidden());
+	}
 }
 
 std::shared_ptr<Screen> DisplayEngine::getTop() {
@@ -66,9 +76,12 @@ void DisplayEngine::update() {
 	}
 
 	popped = false;
+	//This doesn't quite work as intended currently - if there are multiple updates per tick (if the engine is lagging behind),
+	//any updates past the first will see a mouse distance of 0. Hopefully this won't cause any problems.
+	mouseDistance = glm::vec2(0.0, 0.0);
 }
 
-void DisplayEngine::render(float partialTicks, std::shared_ptr<RenderingEngine> renderer) {
+void DisplayEngine::render(float partialTicks) {
 	if (screenStack.empty()) {
 		return;
 	}
@@ -82,6 +95,10 @@ void DisplayEngine::render(float partialTicks, std::shared_ptr<RenderingEngine> 
 	}
 
 	renderer->present();
+}
+
+void DisplayEngine::setRenderer(std::shared_ptr<RenderingEngine> newRenderer) {
+	renderer = newRenderer;
 }
 
 bool DisplayEngine::shouldExit() {
@@ -127,4 +144,10 @@ bool DisplayEngine::isKeyPressed(Key key) {
 	}
 
 	return keyMap[key];
+}
+
+void DisplayEngine::onMouseMove(float x, float y) {
+	glm::vec2 newPos(x, y);
+	mouseDistance += newPos - mousePos;
+	mousePos = newPos;
 }

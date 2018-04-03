@@ -36,7 +36,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	Screen(DisplayEngine& display) : display(display), camera(std::make_shared<DefaultCamera>()), paused(false) {}
+	Screen(DisplayEngine& display, bool hideMouse) : display(display), camera(std::make_shared<DefaultCamera>()), paused(false), hideMouse(hideMouse) {}
 
 	/**
 	 * Updates all the component managers from first added to last.
@@ -124,6 +124,21 @@ public:
 	 */
 	void setPaused(bool p) { paused = p; }
 
+	/**
+	 * Whether the mouse should be hidden when this screen has focus.
+	 */
+	bool mouseHidden() { return hideMouse; }
+
+	/**
+	 * Returns the mouse position.
+	 */
+	glm::vec2 getMousePos();
+
+	/**
+	 * Returns how far the mouse moved in the last tick.
+	 */
+	glm::vec2 getMouseDist();
+
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
@@ -151,6 +166,9 @@ protected:
 
 	//Whether the screen has been paused (all updates stopped, only rendering).
 	bool paused;
+
+	//Whether to hide the mouse when this screen has focus.
+	bool hideMouse;
 
 	/**
 	 * Deletes the provided object from this screen.
