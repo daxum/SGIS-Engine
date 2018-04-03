@@ -139,6 +139,12 @@ public:
 	 */
 	glm::vec2 getMouseDist();
 
+	/**
+	 * Returns the display engine for this screen, for modifying the screen stack.
+	 * Be careful about popping multiple times per update!
+	 */
+	DisplayEngine& getDisplay() { return display; }
+
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
