@@ -18,7 +18,10 @@
 
 #pragma once
 
-#include <btBulletDynamicsCommon.h>
+#include "btBulletDynamicsCommon.h"
+#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h"
+#include "BulletCollision/CollisionDispatch/btCollisionDispatcherMt.h"
+#include "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h"
 #include "ComponentManager.hpp"
 
 class PhysicsComponentManager : public ComponentManager {
@@ -47,11 +50,12 @@ private:
 	//Screen pointer, set during update function for access from collision callback.
 	Screen* currentScreen;
 
-	btDiscreteDynamicsWorld* world;
+	btDiscreteDynamicsWorldMt* world;
 	btDefaultCollisionConfiguration* conf;
-	btCollisionDispatcher* dispatcher;
+	btCollisionDispatcherMt* dispatcher;
 	btBroadphaseInterface* broadphase;
-	btSequentialImpulseConstraintSolver* solver;
+	btSequentialImpulseConstraintSolverMt* solver;
+	btConstraintSolverPoolMt* solverPool;
 
 	/**
 	 * Overridden from ComponentManager.

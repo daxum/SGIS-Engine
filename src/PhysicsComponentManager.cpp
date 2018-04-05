@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <thread>
+
 #include "PhysicsComponentManager.hpp"
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
@@ -29,12 +31,16 @@ PhysicsComponentManager::PhysicsComponentManager() :
 	ComponentManager(PHYSICS_COMPONENT_NAME),
 	conf(new btDefaultCollisionConfiguration()),
 	broadphase(new btDbvtBroadphase()),
-	solver(new btSequentialImpulseConstraintSolver()) {
+	solver(new btSequentialImpulseConstraintSolverMt()),
+	//Number of parallel solvers might need tweaking later, depending on other threads needed.
+	solverPool(new btConstraintSolverPoolMt(std::max(std::thread::hardware_concurrency(), 1u))) {
 
-	dispatcher = new btCollisionDispatcher(conf);
-	world = new  btDiscreteDynamicsWorld(dispatcher, broadphase, solver, nullptr);
+	dispatcher = new btCollisionDispatcherMt(conf, 40);
+	world = new  btDiscreteDynamicsWorldMt(dispatcher, broadphase, solverPool, solver, conf);
 	world->setGravity(btVector3(0.0, -9.80665, 0.0));
 	world->setInternalTickCallback(physicsTickCallback, this, false);
+
+	btSetTaskScheduler(btCreateDefaultTaskScheduler());
 }
 
 PhysicsComponentManager::~PhysicsComponentManager() {
@@ -43,6 +49,7 @@ PhysicsComponentManager::~PhysicsComponentManager() {
 	delete broadphase;
 	delete dispatcher;
 	delete conf;
+	delete solverPool;
 }
 
 void PhysicsComponentManager::update(Screen* screen) {

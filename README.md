@@ -9,7 +9,7 @@ These instructions (and the program in general, actually) have only been tested 
 1. First, make sure that the following are installed, or modify CMakeLists.txt to use local copies (replace `find_package()` with `add_subdirectory()`)
 	* [GLFW](http://www.glfw.org)
 	* [glm](https://glm.g-truc.net)
-	* [bullet](https://github.com/bulletphysics/bullet3)
+	* [bullet](https://github.com/bulletphysics/bullet3) (Must be built with multithreading enabled)
 2. From the top of the repository, do:
 
 	`cd src`
@@ -29,6 +29,8 @@ These instructions (and the program in general, actually) have only been tested 
 	`make`
 
 	This will create a file called libEngine.a, which can be linked with other projects.
+
+	Note that if bullet is linked statically, the threading library will have to be supplied by the project.
 
 ---
 The file `stb_image.h` was obtained from [here](https://github.com/nothings/stb), and makes a mess of the language indexing on github :(.
