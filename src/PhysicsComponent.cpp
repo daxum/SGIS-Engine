@@ -84,6 +84,16 @@ glm::vec3 PhysicsComponent::getRotation() {
 	return rotation;
 }
 
+glm::vec3 PhysicsComponent::getFront() {
+	btTransform trans;
+	physics->getMotionState()->getWorldTransform(trans);
+
+	btVector3 front(0.0, 0.0, -1.0);
+	front = trans.getBasis() * front;
+
+	return glm::normalize(glm::vec3(front.x(), front.y(), front.z()));
+}
+
 void PhysicsComponent::setVelocity(glm::vec3 v) {
 	physics->getBody()->activate(true);
 	velocity = btVector3(v.x, v.y, v.z);

@@ -68,6 +68,11 @@ public:
 	glm::vec3 getRotation();
 
 	/**
+	 * Returns a unit vector representing the direction the object is facing.
+	 */
+	glm::vec3 getFront();
+
+	/**
 	 * Sets the target velocity of the object, mostly called from the ai.
 	 */
 	void setVelocity(glm::vec3 v);
