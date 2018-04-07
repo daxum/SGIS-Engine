@@ -73,6 +73,14 @@ public:
 	void setVelocity(glm::vec3 v);
 
 	/**
+	 * If this is on, the objects velocity will gradually be changed to the set velocity.
+	 * If this is off, the same happens, but the object's velocity will not be slowed for components
+	 * that have the same direction as the set velocity.
+	 * Defaults to on.
+	 */
+	void velocityReduction(bool enable);
+
+	/**
 	 * Sets the acceleration, determines how quickly the object reaches the set velocity.
 	 */
 	void setAcceleration(float accel);
@@ -93,6 +101,7 @@ private:
 	std::shared_ptr<PhysicsObject> physics;
 	std::shared_ptr<CollisionHandler> collider;
 
+	bool brakes;
 	btVector3 velocity;
 	float acceleration;
 };

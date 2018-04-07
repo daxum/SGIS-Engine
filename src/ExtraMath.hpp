@@ -95,4 +95,12 @@ namespace ExMath {
 	 * @return The number closest to zero.
 	 */
 	float minMagnitude(float val1, float val2);
+
+	/**
+	 * Finds which of two numbers has the greater magnitude.
+	 * @param val1 The first number.
+	 * @param val2 The second number.
+	 * @return The number farthest from zero.
+	 */
+	float maxMagnitude(float val1, float val2);
 }

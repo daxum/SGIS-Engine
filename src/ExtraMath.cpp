@@ -56,3 +56,11 @@ float ExMath::minMagnitude(float val1, float val2) {
 
 	return val2;
 }
+
+float ExMath::maxMagnitude(float val1, float val2) {
+	if (minMagnitude(val1, val2) == val2) {
+		return val1;
+	}
+
+	return val2;
+}
