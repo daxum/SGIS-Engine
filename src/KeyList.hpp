@@ -29,6 +29,7 @@ enum class Key {
 	UP_ARROW,
 	RIGHT_ARROW,
 	DOWN_ARROW,
+	SPACE,
 	UNKNOWN
 };
 

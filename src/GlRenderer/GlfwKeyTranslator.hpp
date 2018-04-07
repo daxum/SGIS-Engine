@@ -36,6 +36,7 @@ namespace GLFWKeyTranslator {
 			case GLFW_KEY_DOWN: return Key::DOWN_ARROW; break;
 			case GLFW_KEY_RIGHT: return Key::RIGHT_ARROW; break;
 			case GLFW_KEY_LEFT: return Key::LEFT_ARROW; break;
+			case GLFW_KEY_SPACE: return Key::SPACE; break;
 			default: return Key::UNKNOWN;
 		}
 	}
