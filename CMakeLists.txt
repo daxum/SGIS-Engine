@@ -18,7 +18,6 @@ else()
 	if ("${BULLET_DIR}" STREQUAL "")
 		message(FATAL_ERROR "Local bullet set, but path not specified")
 	else()
-		#Uses a copy of bullet from a directory called bullet, placed two levels above the engine source directory.
 		add_subdirectory(${BULLET_DIR} ${CMAKE_CURRENT_BINARY_DIR}/bullet)
 		set(BULLET_INCLUDE_DIRS ${BULLET_DIR}/src)
 		set(BULLET_LIBRARIES "LinearMath;Bullet3Common;BulletInverseDynamics;BulletCollision;BulletDynamics;BulletSoftBody")
