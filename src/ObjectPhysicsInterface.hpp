@@ -19,6 +19,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 //Used to prevent the need for components to directly access physics components for objects,
 //especially for objects that shouldn't have fully simulated physics. Will allow for different
@@ -33,7 +34,7 @@ public:
 	virtual glm::vec3 getTranslation() { return glm::vec3(0.0, 0.0, 0.0); }
 
 	/**
-	 * Returns the rotation as angles around the x, y, and z axis.
+	 * Returns the rotation of the object.
 	 */
-	virtual glm::vec3 getRotation() { return glm::vec3(0.0, 0.0, 0.0); }
+	virtual glm::quat getRotation() { return glm::quat(0.0, glm::vec3(0.0, 0.0, 1.0)); }
 };

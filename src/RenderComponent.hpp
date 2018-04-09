@@ -39,9 +39,9 @@ public:
 
 	/**
 	 * Returns the rotation of this object.
-	 * @return A rotation vector for this object.
+	 * @return A quaternion for this object's rotation.
 	 */
-	glm::vec3 getRotation();
+	glm::quat getRotation();
 
 	/**
 	 * Returns the scale of this object.

@@ -33,7 +33,7 @@ glm::vec3 RenderComponent::getTranslation() {
 	return parent.getPhysics()->getTranslation();
 }
 
-glm::vec3 RenderComponent::getRotation() {
+glm::quat RenderComponent::getRotation() {
 	return  parent.getPhysics()->getRotation();
 }
 

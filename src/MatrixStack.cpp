@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp> //mat4_cast
 
 #include "MatrixStack.hpp"
 
@@ -48,8 +49,6 @@ void MatrixStack::scale(const glm::vec3& amount) {
 	matrices.top() = glm::scale(matrices.top(), amount);
 }
 
-void MatrixStack::rotate(const glm::vec3& angles) {
-	matrices.top() = glm::rotate(matrices.top(), angles.x, glm::vec3(1.0, 0.0, 0.0));
-	matrices.top() = glm::rotate(matrices.top(), angles.y, glm::vec3(0.0, 1.0, 0.0));
-	matrices.top() = glm::rotate(matrices.top(), angles.z, glm::vec3(0.0, 0.0, 1.0));
+void MatrixStack::rotate(const glm::quat& rotation) {
+	matrices.top() *= glm::mat4_cast(rotation);
 }

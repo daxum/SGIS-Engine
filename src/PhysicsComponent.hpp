@@ -65,7 +65,7 @@ public:
 	/**
 	 * Also used by rendering.
 	 */
-	glm::vec3 getRotation();
+	glm::quat getRotation();
 
 	/**
 	 * Returns a unit vector representing the direction the object is facing.

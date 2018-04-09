@@ -72,16 +72,13 @@ glm::vec3 PhysicsComponent::getTranslation() {
 }
 
 
-glm::vec3 PhysicsComponent::getRotation() {
-	glm::vec3 rotation;
-
+glm::quat PhysicsComponent::getRotation() {
 	btTransform trans;
 	physics->getMotionState()->getWorldTransform(trans);
 
-	//What even is this...
-	trans.getRotation().getEulerZYX(rotation.z, rotation.y, rotation.x);
+	btQuaternion btRot = trans.getRotation();
 
-	return rotation;
+	return glm::quat(btRot.w(), btRot.x(), btRot.y(), btRot.z());
 }
 
 glm::vec3 PhysicsComponent::getFront() {

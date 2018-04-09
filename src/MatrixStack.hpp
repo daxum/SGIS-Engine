@@ -62,9 +62,9 @@ public:
 
 	/**
 	 * Rotates the top matrix by the given amount.
-	 * @param angles A vector of angles representing the rotation in the x, y, and z directions. Probably in degrees?
+	 * @param angles A quaternion representing the rotation.
 	 */
-	void rotate(const glm::vec3& angles);
+	void rotate(const glm::quat& rotation);
 
 private:
 	//The matrix stack.
