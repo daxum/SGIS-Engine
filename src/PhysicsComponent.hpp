@@ -95,6 +95,9 @@ public:
 	 */
 	void velocityReduction(bool enable);
 
+	/**
+	 * Same as above, but for angular velocity.
+	 */
 	void rotationReduction(bool enable);
 
 	/**
