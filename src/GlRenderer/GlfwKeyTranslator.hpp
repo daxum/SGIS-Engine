@@ -30,6 +30,7 @@ namespace GLFWKeyTranslator {
 			case GLFW_KEY_ESCAPE: return Key::ESCAPE; break;
 			case GLFW_KEY_A: return Key::A; break;
 			case GLFW_KEY_D: return Key::D; break;
+			case GLFW_KEY_R: return Key::R; break;
 			case GLFW_KEY_S: return Key::S; break;
 			case GLFW_KEY_W: return Key::W; break;
 			case GLFW_KEY_UP: return Key::UP_ARROW; break;
