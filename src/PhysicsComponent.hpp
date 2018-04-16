@@ -78,6 +78,11 @@ public:
 	void setVelocity(glm::vec3 v);
 
 	/**
+	 * Directly applies torque to the underlying physics object.
+	 */
+	void rotate(glm::vec3 amount);
+
+	/**
 	 * If this is on, the objects velocity will gradually be changed to the set velocity.
 	 * If this is off, the same happens, but the object's velocity will not be slowed for components
 	 * that have the same direction as the set velocity.

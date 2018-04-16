@@ -96,6 +96,10 @@ void PhysicsComponent::setVelocity(glm::vec3 v) {
 	velocity = btVector3(v.x, v.y, v.z);
 }
 
+void PhysicsComponent::rotate(glm::vec3 amount) {
+	physics->getBody()->applyTorque(btVector3(amount.x, amount.y, amount.z));
+}
+
 void PhysicsComponent::velocityReduction(bool enable) {
 	brakes = enable;
 }
