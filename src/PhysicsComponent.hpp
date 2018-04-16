@@ -83,12 +83,19 @@ public:
 	void rotate(glm::vec3 amount);
 
 	/**
+	 * Sets the object's angular velocity to the provided amount.
+	 */
+	void setRotation(glm::vec3 amount);
+
+	/**
 	 * If this is on, the objects velocity will gradually be changed to the set velocity.
 	 * If this is off, the same happens, but the object's velocity will not be slowed for components
 	 * that have the same direction as the set velocity.
 	 * Defaults to on.
 	 */
 	void velocityReduction(bool enable);
+
+	void rotationReduction(bool enable);
 
 	/**
 	 * Sets the acceleration, determines how quickly the object reaches the set velocity.
@@ -111,7 +118,11 @@ private:
 	std::shared_ptr<PhysicsObject> physics;
 	std::shared_ptr<CollisionHandler> collider;
 
-	bool brakes;
+	bool linearBrakes;
+	bool angularBrakes;
 	btVector3 velocity;
+	btVector3 angularVelocity;
 	float acceleration;
+
+	btVector3 getAdjustedForce(btVector3 target, btVector3 current, float acceleration, float damping, bool brakes);
 };

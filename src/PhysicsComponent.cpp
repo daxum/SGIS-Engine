@@ -23,7 +23,8 @@ PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject
 	Component(object, PHYSICS_COMPONENT_NAME),
 	physics(physics),
 	collider(collHandler),
-	brakes(true),
+	linearBrakes(true),
+	angularBrakes(false),
 	acceleration(1.2f) {
 
 	parent.setPhysics(this);
@@ -36,31 +37,12 @@ PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject
 
 void PhysicsComponent::update() {
 	btRigidBody* body = physics->getBody();
-	btVector3 currVel = body->getLinearVelocity();
 
-	btVector3 newVel = velocity;
-
-	//Don't slow the object down along an axis if the target velocity is slower than its current speed.
-	if (!brakes) {
-		btVector3 absSum = velocity + currVel;
-		absSum = btVector3(std::abs(absSum.x()), std::abs(absSum.y()), std::abs(absSum.z()));
-
-		//If the sum of the magnitudes is greater than the longest vector, they must be pointing in the same direction along that axis.
-		if (absSum.x() >= std::max(std::abs(velocity.x()), std::abs(currVel.x()))) {
-			newVel.setX(ExMath::maxMagnitude(velocity.x(), currVel.x()));
-		}
-		if (absSum.y() >= std::max(std::abs(velocity.y()), std::abs(currVel.y()))) {
-			newVel.setY(ExMath::maxMagnitude(velocity.y(), currVel.y()));
-		}
-		if (absSum.z() >= std::max(std::abs(velocity.z()), std::abs(currVel.z()))) {
-			newVel.setZ(ExMath::maxMagnitude(velocity.z(), currVel.z()));
-		}
-	}
-
-	btVector3 velocityDiff = currVel - newVel;
-	btVector3 force = -acceleration * velocityDiff - body->getLinearDamping() * velocityDiff;
+	btVector3 force = getAdjustedForce(velocity, body->getLinearVelocity(), acceleration, body->getLinearDamping(), linearBrakes);
+	btVector3 torque = getAdjustedForce(angularVelocity, body->getAngularVelocity(), acceleration, body->getAngularDamping(), angularBrakes);
 
 	body->applyCentralForce(force);
+	body->applyTorque(torque);
 }
 
 glm::vec3 PhysicsComponent::getTranslation() {
@@ -100,8 +82,16 @@ void PhysicsComponent::rotate(glm::vec3 amount) {
 	physics->getBody()->applyTorque(btVector3(amount.x, amount.y, amount.z));
 }
 
+void PhysicsComponent::setRotation(glm::vec3 amount) {
+	angularVelocity = btVector3(amount.x, amount.y, amount.z);
+}
+
 void PhysicsComponent::velocityReduction(bool enable) {
-	brakes = enable;
+	linearBrakes = enable;
+}
+
+void PhysicsComponent::rotationReduction(bool enable) {
+	angularBrakes = enable;
 }
 
 void PhysicsComponent::setAcceleration(float accel) {
@@ -112,4 +102,28 @@ void PhysicsComponent::onCollide(Screen* screen, PhysicsComponent* other) {
 	if (collider) {
 		collider->handleCollision(screen, other);
 	}
+}
+
+btVector3 PhysicsComponent::getAdjustedForce(btVector3 target, btVector3 current, float acceleration, float damping, bool brakes) {
+	btVector3 newVel = target;
+
+	//Don't slow the object down along an axis if the target velocity is slower than its current speed.
+	if (!brakes) {
+		btVector3 absSum = current + target;
+		absSum = btVector3(std::abs(absSum.x()), std::abs(absSum.y()), std::abs(absSum.z()));
+
+		//If the sum of the magnitudes is greater than the longest vector, they must be pointing in the same direction along that axis.
+		if (absSum.x() >= std::max(std::abs(target.x()), std::abs(current.x()))) {
+			newVel.setX(ExMath::maxMagnitude(target.x(), current.x()));
+		}
+		if (absSum.y() >= std::max(std::abs(target.y()), std::abs(current.y()))) {
+			newVel.setY(ExMath::maxMagnitude(target.y(), current.y()));
+		}
+		if (absSum.z() >= std::max(std::abs(target.z()), std::abs(current.z()))) {
+			newVel.setZ(ExMath::maxMagnitude(target.z(), current.z()));
+		}
+	}
+
+	btVector3 velocityDiff = current - newVel;
+	return -acceleration * velocityDiff - damping * velocityDiff;
 }
