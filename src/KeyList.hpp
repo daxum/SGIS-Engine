@@ -36,7 +36,7 @@ enum class Key {
 	UNKNOWN
 };
 
-enum KeyAction {
+enum class KeyAction {
 	PRESS,
 	REPEAT,
 	RELEASE,
