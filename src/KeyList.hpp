@@ -23,6 +23,8 @@ enum class Key {
 	ESCAPE,
 	A,
 	D,
+	E,
+	Q,
 	R,
 	S,
 	W,
