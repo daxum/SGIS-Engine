@@ -97,6 +97,7 @@ public:
 
 	/**
 	 * Same as above, but for angular velocity.
+	 * Defaults to off.
 	 */
 	void rotationReduction(bool enable);
 
