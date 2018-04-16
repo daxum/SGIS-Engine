@@ -25,6 +25,8 @@ PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject
 	collider(collHandler),
 	linearBrakes(true),
 	angularBrakes(false),
+	velocity(0.0, 0.0, 0.0),
+	angularVelocity(0.0, 0.0, 0.0),
 	acceleration(1.2f) {
 
 	parent.setPhysics(this);
