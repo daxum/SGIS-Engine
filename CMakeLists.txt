@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 project(SGIS-Engine)
 
-option(USE_INSTALLED_BULLET "Use a version of bullet installed on the system, instead of a local copy" OFF)
-option(USE_INSTALLED_GLFW "Use a version of glfw installed on the system" OFF)
+option(USE_INSTALLED_BULLET "Use a version of bullet installed on the system, instead of a local copy" ON)
+option(USE_INSTALLED_GLFW "Use a version of glfw installed on the system" ON)
 
 set(BULLET_DIR "" CACHE STRING "Bullet repository directory, used if linking bullet statically")
 set(GLFW_DIR "" CACHE STRING "GLFW repository directory, used if linking statically")
