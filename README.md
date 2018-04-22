@@ -6,7 +6,7 @@ The engine for SGIS
 
 These instructions (and the program in general, actually) have only been tested on Linux:
 
-1. First, make sure that the following are installed, or modify CMakeLists.txt to use local copies (replace `find_package()` with `add_subdirectory()`)
+1. First, make sure that the following are installed, or set the `USE_INSTALLED_*` and `*_DIR` cmake variables to build with the engine.
 	* [GLFW](http://www.glfw.org)
 	* [glm](https://glm.g-truc.net)
 	* [bullet](https://github.com/bulletphysics/bullet3) (Must be built with multithreading enabled)
