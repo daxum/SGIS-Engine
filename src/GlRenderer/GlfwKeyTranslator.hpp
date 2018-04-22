@@ -27,19 +27,20 @@ namespace GLFWKeyTranslator {
 	 */
 	inline Key translate(int key) {
 		switch (key) {
-			case GLFW_KEY_ESCAPE: return Key::ESCAPE; break;
-			case GLFW_KEY_A: return Key::A; break;
-			case GLFW_KEY_D: return Key::D; break;
-			case GLFW_KEY_E: return Key::E; break;
-			case GLFW_KEY_Q: return Key::Q; break;
-			case GLFW_KEY_R: return Key::R; break;
-			case GLFW_KEY_S: return Key::S; break;
-			case GLFW_KEY_W: return Key::W; break;
-			case GLFW_KEY_UP: return Key::UP_ARROW; break;
-			case GLFW_KEY_DOWN: return Key::DOWN_ARROW; break;
-			case GLFW_KEY_RIGHT: return Key::RIGHT_ARROW; break;
-			case GLFW_KEY_LEFT: return Key::LEFT_ARROW; break;
-			case GLFW_KEY_SPACE: return Key::SPACE; break;
+			case GLFW_KEY_ESCAPE: return Key::ESCAPE;
+			case GLFW_KEY_A: return Key::A;
+			case GLFW_KEY_D: return Key::D;
+			case GLFW_KEY_E: return Key::E;
+			case GLFW_KEY_Q: return Key::Q;
+			case GLFW_KEY_R: return Key::R;
+			case GLFW_KEY_S: return Key::S;
+			case GLFW_KEY_W: return Key::W;
+			case GLFW_KEY_UP: return Key::UP_ARROW;
+			case GLFW_KEY_DOWN: return Key::DOWN_ARROW;
+			case GLFW_KEY_RIGHT: return Key::RIGHT_ARROW;
+			case GLFW_KEY_LEFT: return Key::LEFT_ARROW;
+			case GLFW_KEY_SPACE: return Key::SPACE;
+			case GLFW_KEY_ENTER: return Key::ENTER;
 			default: return Key::UNKNOWN;
 		}
 	}

@@ -21,18 +21,21 @@
 #include "Component.hpp"
 #include "Screen.hpp"
 #include "SequentialSet.hpp"
+#include "InputListener.hpp"
 
-class ComponentManager {
+class ComponentManager : public InputListener {
 public:
 	//The name of the components this manager manages (AIComponents would have name AI_COMPONENT_NAME, for example)
 	const std::string name;
+	const bool receiveEvents;
 
 	/**
 	 * Creates a manager for components with the given name. Name should
 	 * be unique for all managers in the same screen.
 	 * @param name The name of this ComponentManager.
+	 * @param events Whether to subscribe the component manager to input events.
 	 */
-	ComponentManager(std::string name) : name(name) {}
+	ComponentManager(std::string name, bool events = false) : name(name), receiveEvents(events) {}
 
 	/**
 	 * Virtual destructor
@@ -56,6 +59,11 @@ public:
 	 * @param screen The screen that owns this component manager, used to get input and such.
 	 */
 	virtual void update(Screen* screen) = 0;
+
+	/**
+	 * See InputListener.hpp.
+	 */
+	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<InputEvent> event) { return false; }
 
 protected:
 	//Stores all the components added to this manager.

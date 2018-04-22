@@ -16,29 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#include "GuiComponentManager.hpp"
+#include "GuiComponent.hpp"
 
-//This is exactly what it sounds like.
-enum class Key {
-	ESCAPE,
-	A,
-	D,
-	E,
-	Q,
-	R,
-	S,
-	W,
-	LEFT_ARROW,
-	UP_ARROW,
-	RIGHT_ARROW,
-	DOWN_ARROW,
-	SPACE,
-	ENTER,
-	UNKNOWN
-};
+bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared_ptr<InputEvent> event) {
+	//Mouse stuff is really annoying, so for now everything is done with keypresses.
 
-enum class KeyAction {
-	PRESS,
-	REPEAT,
-	RELEASE
-};
+	if (event->type == EventType::KEY) {
+		std::shared_ptr<KeyEvent> keyEvent = std::static_pointer_cast<KeyEvent>(event);
+
+		for (std::shared_ptr<Component> comp : components) {
+			std::shared_ptr<GuiComponent> element = std::static_pointer_cast<GuiComponent>(comp);
+
+			if (element->onKeyPress(parent, keyEvent->key, keyEvent->action)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}

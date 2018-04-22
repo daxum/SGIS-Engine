@@ -19,10 +19,12 @@
 #pragma once
 
 #include "KeyList.hpp"
+#include "MouseList.hpp"
 
 enum class EventType {
 	KEY,
-	MOUSE_MOVE
+	MOUSE_MOVE,
+	MOUSE_CLICK
 };
 
 //The base event type. Use the type variable to cast to the appropriate event structure.
@@ -50,4 +52,12 @@ struct MouseMoveEvent : public InputEvent {
 
 	const float x;
 	const float y;
+};
+
+//Mouse click. Holds the button pressed and whether the action was a press or release.
+struct MouseClickEvent : public InputEvent {
+	MouseClickEvent(MouseButton b, MouseAction a) : InputEvent(EventType::MOUSE_CLICK), button(b), action(a) {}
+
+	const MouseButton button;
+	const MouseAction action;
 };

@@ -51,8 +51,15 @@ void Screen::update() {
 }
 
 void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
+	//Rendering managers are set as the screens render data
 	if (manager->name == RENDER_COMPONENT_NAME) {
 		renderManager = std::static_pointer_cast<RenderComponentManager>(manager);
+	}
+
+	//Subscribe manager to events if needed. It never needs to be unsubscribed, because it can't
+	//be removed and managers have the same lifetime as the input handler.
+	if (manager->receiveEvents) {
+		inputHandler.addListener(manager);
 	}
 
 	managers.push_back(manager);

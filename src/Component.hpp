@@ -30,6 +30,7 @@ const std::string RENDER_COMPONENT_NAME = "render";
 const std::string AI_COMPONENT_NAME = "ai";
 const std::string PHYSICS_COMPONENT_NAME = "physics";
 const std::string UPDATE_COMPONENT_NAME = "update";
+const std::string GUI_COMPONENT_NAME = "gui";
 
 //A "piece" of an object. Used to implement rendering, physics, and other stuff.
 class Component : public InputListener {
@@ -53,7 +54,7 @@ public:
 	/**
 	 * See InputListener.hpp.
 	 */
-	virtual bool onEvent(const std::shared_ptr<InputEvent> event) { return false; }
+	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<InputEvent> event) { return false; }
 
 protected:
 	//The parent object.

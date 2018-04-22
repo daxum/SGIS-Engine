@@ -111,6 +111,13 @@ public:
 	 */
 	void onMouseMove(float x, float y);
 
+	/**
+	 * Called by rendering engine when mouse is clicked.
+	 * @param button Which button was clicked.
+	 * @param action Whether the button was pressed or released.
+	 */
+	void onMouseClick(MouseButton button, MouseAction action);
+
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
 	//and the second contains all screens that are currently being rendered.

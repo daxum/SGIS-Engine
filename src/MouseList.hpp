@@ -18,27 +18,13 @@
 
 #pragma once
 
-//This is exactly what it sounds like.
-enum class Key {
-	ESCAPE,
-	A,
-	D,
-	E,
-	Q,
-	R,
-	S,
-	W,
-	LEFT_ARROW,
-	UP_ARROW,
-	RIGHT_ARROW,
-	DOWN_ARROW,
-	SPACE,
-	ENTER,
-	UNKNOWN
+enum class MouseButton {
+	LEFT,
+	RIGHT,
+	MIDDLE
 };
 
-enum class KeyAction {
+enum class MouseAction {
 	PRESS,
-	REPEAT,
 	RELEASE
 };

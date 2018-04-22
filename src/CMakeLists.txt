@@ -24,6 +24,7 @@ add_library(Engine STATIC
 	BoxPhysicsObject.cpp
 	RenderComponentManager.cpp
 	InputHandler.cpp
+	GuiComponentManager.cpp
 	GlRenderer/gl_core_4_1.c
 )
 

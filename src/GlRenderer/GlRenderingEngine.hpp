@@ -178,4 +178,13 @@ private:
 	 * @param y The new y position of the mouse.
 	 */
 	static void mouseMove(GLFWwindow* window, double x, double y);
+
+	/**
+	 * Callback.
+	 * @param window The window the mouse was clicked on.
+	 * @param button The button that was clicked.
+	 * @param action Whether the click was a press or release.
+	 * @param mods Whether things like shift or control were pressed.
+	 */
+	static void mouseClick(GLFWwindow* window, int button, int action, int mods);
 };

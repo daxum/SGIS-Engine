@@ -63,7 +63,7 @@ void InputHandler::update(std::vector<std::shared_ptr<InputEvent>>& events) {
 		bool remove = false;
 
 		for (std::shared_ptr<InputListener> listener : listeners) {
-			remove = listener->onEvent(event) || remove;
+			remove = listener->onEvent(this, event) || remove;
 		}
 
 		//Mark handled events for removal, except key release events.

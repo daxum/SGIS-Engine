@@ -71,9 +71,11 @@ void DisplayEngine::update() {
 			i = screenStack.top().size();
 		}
 
+		std::shared_ptr<Screen> current = screenStack.top()[i - 1];
+
 		//Might move into screen later.
-		screenStack.top()[i - 1]->getInputHandler().update(events);
-		screenStack.top()[i - 1]->update();
+		current->getInputHandler().update(events);
+		current->update();
 
 		//If the screen stack was popped in the last update, screenStack.top() now points
 		//to a different overlay stack, so we should stop updating for this tick.
@@ -116,4 +118,8 @@ void DisplayEngine::onKeyAction(Key key, KeyAction action) {
 
 void DisplayEngine::onMouseMove(float x, float y) {
 	events.push_back(std::make_shared<MouseMoveEvent>(x, y));
+}
+
+void DisplayEngine::onMouseClick(MouseButton button, MouseAction action) {
+	events.push_back(std::make_shared<MouseClickEvent>(button, action));
 }

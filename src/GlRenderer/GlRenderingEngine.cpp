@@ -267,7 +267,7 @@ void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int 
 		case GLFW_PRESS: nativeAction = KeyAction::PRESS; break;
 		case GLFW_REPEAT: nativeAction = KeyAction::REPEAT; break;
 		case GLFW_RELEASE: nativeAction = KeyAction::RELEASE; break;
-		default: nativeAction = KeyAction::UNKNOWN; break;
+		default: return;
 	}
 
 	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
@@ -275,4 +275,24 @@ void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int 
 
 void GlRenderingEngine::mouseMove(GLFWwindow* window, double x, double y) {
 	display->onMouseMove((float)x, (float)y);
+}
+
+void GlRenderingEngine::mouseClick(GLFWwindow* window, int button, int action, int mods) {
+	MouseButton pressed;
+	MouseAction mouseAction;
+
+	switch(button) {
+		case GLFW_MOUSE_BUTTON_LEFT: pressed = MouseButton::LEFT; break;
+		case GLFW_MOUSE_BUTTON_MIDDLE: pressed = MouseButton::MIDDLE; break;
+		case GLFW_MOUSE_BUTTON_RIGHT: pressed = MouseButton::RIGHT; break;
+		default: return;
+	}
+
+	switch(action) {
+		case GLFW_PRESS: mouseAction = MouseAction::PRESS; break;
+		case GLFW_RELEASE: mouseAction = MouseAction::RELEASE; break;
+		default: return;
+	}
+
+	display->onMouseClick(pressed, mouseAction);
 }

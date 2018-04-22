@@ -18,27 +18,28 @@
 
 #pragma once
 
-//This is exactly what it sounds like.
-enum class Key {
-	ESCAPE,
-	A,
-	D,
-	E,
-	Q,
-	R,
-	S,
-	W,
-	LEFT_ARROW,
-	UP_ARROW,
-	RIGHT_ARROW,
-	DOWN_ARROW,
-	SPACE,
-	ENTER,
-	UNKNOWN
-};
+#include "ComponentManager.hpp"
 
-enum class KeyAction {
-	PRESS,
-	REPEAT,
-	RELEASE
+class GuiComponentManager : public ComponentManager {
+public:
+	/**
+	 * Constructor.
+	 * @param s The screen that owns this component manager.
+	 */
+	GuiComponentManager(std::shared_ptr<Screen> s) : ComponentManager(GUI_COMPONENT_NAME, true), parent(s) {}
+
+	/**
+	 * Does nothing at the moment, might change later to allow gui components to update themselves.
+	 * @param screen The parent screen of this gui.
+	 */
+	void update(Screen* screen) {}
+
+	/**
+	 * See InputListener.hpp.
+	 */
+	bool onEvent(const InputHandler* handler, const std::shared_ptr<InputEvent> event);
+
+private:
+	//The screen that owns this manager.
+	std::shared_ptr<Screen> parent;
 };
