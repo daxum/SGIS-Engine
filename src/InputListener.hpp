@@ -18,27 +18,17 @@
 
 #pragma once
 
-#include "Component.hpp"
-#include "Screen.hpp"
+#include "InputEvent.hpp"
 
-class AIComponent : public Component {
+class InputListener {
 public:
 	/**
-	 * Creates an AIComponent with the given object as its parent.
-	 * @param parent The object this AIComponent is for.
-	 * @param events Whether to subscribe to the input event handler.
+	 * Called from the event handler when an event happens.
+	 * @param event The event.
+	 * @return Whether the event should be removed from the event queue.
+	 *     Will not prevent it from being sent to other listeners on the
+	 *     same screen, but will prevent it from being sent to screens
+	 *     below the current one.
 	 */
-	AIComponent(Object& parent, bool events = false) : Component(parent, AI_COMPONENT_NAME, events) {}
-
-	virtual ~AIComponent() {}
-
-	/**
-	 * Updates this component using the provided world. It is important to
-	 * note that to allow threading, the world should be treated as read-only
-	 * at all times, and only ai-specific parts of the parent object should be
-	 * modified in this function. Similarly, ai parts of other objects should not
-	 * be modified (or even read) here. This will become more explicit later.
-	 * @param world The world the parent object is in.
-	 */
-	virtual void update(Screen* screen) = 0;
+	virtual bool onEvent(const std::shared_ptr<InputEvent> event) = 0;
 };

@@ -105,32 +105,11 @@ public:
 	void onKeyAction(Key key, KeyAction action);
 
 	/**
-	 * Similar to the above, but different in several important ways -
-	 * this is meant for polling key state, for detecting if a key is
-	 * held down at the given moment. The above is used for notifications
-	 * when a key is first pressed, but not when it is released or held down.
-	 * This is necessary for the case where a screen is changed while a key
-	 * is held down, and then the key is released, so that the original screen
-	 * doesn't still think the key is pressed because it missed the release event.
-	 * @param key The key to check state for.
-	 * @return Whether the key is pressed.
-	 */
-	bool isKeyPressed(Key key);
-
-	/**
 	 * Called by rendering engine when the mouse is moved.
+	 * @param x New mouse x.
+	 * @param y New mouse y.
 	 */
 	void onMouseMove(float x, float y);
-
-	/**
-	 * Returns the mouse position.
-	 */
-	glm::vec2 getMousePos() { return mousePos; }
-
-	/**
-	 * Returns how far the mouse moved in the last tick.
-	 */
-	glm::vec2 getMouseDist() { return mouseDistance; }
 
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
@@ -139,18 +118,12 @@ private:
 	//(which is actually a vector) as the "overlay stack".
 	std::stack<std::vector<std::shared_ptr<Screen>>> screenStack;
 
-	//Stores which keys are currently pressed.
-	std::unordered_map<Key, bool> keyMap;
-
-	//The current position of the mouse.
-	glm::vec2 mousePos;
-
-	//The amount the mouse has moved since the last tick.
-	glm::vec2 mouseDistance;
-
 	//Set when popScreen is called during updating, breaks out of the update loop
 	//to avoid updating invalid screens.
 	bool popped;
+
+	//All input events for this display, dispatched to all screen's input handlers once per tick.
+	std::vector<std::shared_ptr<InputEvent>> events;
 
 	//Rendering engine, needed for mouse hiding.
 	std::shared_ptr<RenderingEngine> renderer;

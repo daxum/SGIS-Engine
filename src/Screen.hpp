@@ -23,6 +23,7 @@
 #include "ModelManager.hpp"
 #include "SequentialSet.hpp"
 #include "DefaultCamera.hpp"
+#include "InputHandler.hpp"
 
 class DisplayEngine;
 class ComponentManager;
@@ -42,22 +43,6 @@ public:
 	 * Updates all the component managers from first added to last.
 	 */
 	void update();
-
-	/**
-	 * Called whenever a key is pressed. Useless right now, but will be updated for an event system later.
-	 * @param key The key that was pressed
-	 * @return Whether to stop passing the event to screens below this one.
-	 */
-	bool onKeyPressed(Key key) { return false; }
-
-	/**
-	 * Returns whether the given key is pressed. Will most likely be
-	 * expanded into an event system later so that ai and similar can tell when
-	 * a key is first pressed without constantly polling everything.
-	 * @param key The key to query.
-	 * @return Whether the key is pressed.
-	 */
-	bool isKeyPressed(Key key);
 
 	/**
 	 * Gets all the information required to render the screen (models for objects, post-processing steps, etc).
@@ -130,14 +115,11 @@ public:
 	bool mouseHidden() { return hideMouse; }
 
 	/**
-	 * Returns the mouse position.
+	 * Retreives the input handler for this screen.
+	 * @return The input handler, for getting the mouse/keyboard/etc. state
+	 *     and subscribing/removing input listeners.
 	 */
-	glm::vec2 getMousePos();
-
-	/**
-	 * Returns how far the mouse moved in the last tick.
-	 */
-	glm::vec2 getMouseDist();
+	InputHandler& getInputHandler() { return inputHandler; }
 
 	/**
 	 * Returns the display engine for this screen, for modifying the screen stack.
@@ -148,6 +130,9 @@ public:
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
+
+	//Handles the input for this screen.
+	InputHandler inputHandler;
 
 	//The rendering manager for this screen.
 	std::shared_ptr<RenderComponentManager> renderManager;

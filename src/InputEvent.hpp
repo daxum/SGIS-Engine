@@ -18,27 +18,36 @@
 
 #pragma once
 
-#include "Component.hpp"
-#include "Screen.hpp"
+#include "KeyList.hpp"
 
-class AIComponent : public Component {
+enum class EventType {
+	KEY,
+	MOUSE_MOVE
+};
+
+//The base event type. Use the type variable to cast to the appropriate event structure.
+struct InputEvent {
+protected:
+	InputEvent(EventType t) : type(t) {}
+
 public:
-	/**
-	 * Creates an AIComponent with the given object as its parent.
-	 * @param parent The object this AIComponent is for.
-	 * @param events Whether to subscribe to the input event handler.
-	 */
-	AIComponent(Object& parent, bool events = false) : Component(parent, AI_COMPONENT_NAME, events) {}
+	virtual ~InputEvent() {}
 
-	virtual ~AIComponent() {}
+	const EventType type;
+};
 
-	/**
-	 * Updates this component using the provided world. It is important to
-	 * note that to allow threading, the world should be treated as read-only
-	 * at all times, and only ai-specific parts of the parent object should be
-	 * modified in this function. Similarly, ai parts of other objects should not
-	 * be modified (or even read) here. This will become more explicit later.
-	 * @param world The world the parent object is in.
-	 */
-	virtual void update(Screen* screen) = 0;
+//Keyboard event. Holds the key and the action (press, repeat, release).
+struct KeyEvent : public InputEvent {
+	KeyEvent(Key k, KeyAction a) : InputEvent(EventType::KEY), key(k), action(a) {}
+
+	const Key key;
+	const KeyAction action;
+};
+
+//Mouse moved. Holds the distance moved from the last mouse position.
+struct MouseMoveEvent : public InputEvent {
+	MouseMoveEvent(float x, float y) : InputEvent(EventType::MOUSE_MOVE), x(x), y(y) {}
+
+	const float x;
+	const float y;
 };

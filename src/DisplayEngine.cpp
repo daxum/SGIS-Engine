@@ -61,12 +61,19 @@ void DisplayEngine::update() {
 		return;
 	}
 
-	//Update the overlay stack from bottom to top.
+	//Update the overlay stack from back to front.
 	//This cannot be range-based, because modifying the
 	//container you're looping over tends to behave strangely,
 	//due to the iterators not getting updated.
-	for (size_t i = 0; i < screenStack.top().size(); i++) {
-		screenStack.top()[i]->update();
+	for (size_t i = screenStack.top().size(); i > 0; i--) {
+		//If the overlay stack got popped more than once last update, i can become invalid.
+		if (i > screenStack.top().size()) {
+			i = screenStack.top().size();
+		}
+
+		//Might move into screen later.
+		screenStack.top()[i - 1]->getInputHandler().update(events);
+		screenStack.top()[i - 1]->update();
 
 		//If the screen stack was popped in the last update, screenStack.top() now points
 		//to a different overlay stack, so we should stop updating for this tick.
@@ -76,9 +83,7 @@ void DisplayEngine::update() {
 	}
 
 	popped = false;
-	//This doesn't quite work as intended currently - if there are multiple updates per tick (if the engine is lagging behind),
-	//any updates past the first will see a mouse distance of 0. Hopefully this won't cause any problems.
-	mouseDistance = glm::vec2(0.0, 0.0);
+	events.clear();
 }
 
 void DisplayEngine::render(float partialTicks) {
@@ -106,48 +111,9 @@ bool DisplayEngine::shouldExit() {
 }
 
 void DisplayEngine::onKeyAction(Key key, KeyAction action) {
-	//If pressed, notify all relevent screens and update key map.
-	if (action == KeyAction::PRESS) {
-		keyMap[key] = true;
-
-		if (screenStack.empty()) {
-			return;
-		}
-
-		//Iterate from the top screen to the bottom one so they can properly claim inputs
-		//The loop has weird parameters to prevent unsigned underflow.
-		for (size_t i = screenStack.top().size(); i >= 1; i--) {
-			bool stop = screenStack.top()[i - 1]->onKeyPressed(key);
-
-			//The screen stack could have been popped here as well.
-			if (stop || popped) {
-				break;
-			}
-		}
-
-		popped = false;
-	}
-	//If released, just update key map.
-	else if (action == KeyAction::RELEASE) {
-		keyMap[key] = false;
-	}
-
-	//No action for repeated key presses (KeyAction::REPEAT, eg. the key is held down and gets multiple press events) for now.
-}
-
-bool DisplayEngine::isKeyPressed(Key key) {
-	//Theoretically, operator[] default-initializes missing members for maps, but
-	//not sure if it can be trusted to consistently initialize booleans to false.
-	//(Old MSVC might initialize to true?)
-	if (keyMap.count(key) == 0) {
-		keyMap[key] = false;
-	}
-
-	return keyMap[key];
+	events.push_back(std::make_shared<KeyEvent>(key, action));
 }
 
 void DisplayEngine::onMouseMove(float x, float y) {
-	glm::vec2 newPos(x, y);
-	mouseDistance += newPos - mousePos;
-	mousePos = newPos;
+	events.push_back(std::make_shared<MouseMoveEvent>(x, y));
 }

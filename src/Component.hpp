@@ -19,6 +19,9 @@
 #pragma once
 
 #include <string>
+#include <memory>
+
+#include "InputListener.hpp"
 
 class Object;
 
@@ -29,17 +32,28 @@ const std::string PHYSICS_COMPONENT_NAME = "physics";
 const std::string UPDATE_COMPONENT_NAME = "update";
 
 //A "piece" of an object. Used to implement rendering, physics, and other stuff.
-class Component {
+class Component : public InputListener {
 public:
 	const std::string name;
+	const bool receiveEvents;
 
 	/**
 	 * Creates a component with the provided parent object
 	 * @param parent The owner of the component
+	 * @param name The name of the component, from the list above or user-defined values.
+	 *     Used to add the component to managers.
+	 * @param events Whether to subscribe the component to the input event handler (for key presses and such).
+	 *     IMPORTANT: If there isn't a component manager for the component's name when it is added to a screen,
+	 *     it WILL NOT be subscribed to any events.
 	 */
-	Component(Object& parent, std::string name) : name(name), parent(parent) {}
+	Component(Object& parent, std::string name, bool events = false) : name(name), receiveEvents(events), parent(parent) {}
 
 	virtual ~Component() {}
+
+	/**
+	 * See InputListener.hpp.
+	 */
+	virtual bool onEvent(const std::shared_ptr<InputEvent> event) { return false; }
 
 protected:
 	//The parent object.

@@ -50,10 +50,6 @@ void Screen::update() {
 	removalList.clear();
 }
 
-bool Screen::isKeyPressed(Key key) {
-	return display.isKeyPressed(key);
-}
-
 void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
 	if (manager->name == RENDER_COMPONENT_NAME) {
 		renderManager = std::static_pointer_cast<RenderComponentManager>(manager);
@@ -87,6 +83,11 @@ void Screen::deleteObject(std::shared_ptr<Object> object) {
 
 		if (comp) {
 			manager->removeComponent(comp);
+
+			//Unsubscribe to prevent leakage.
+			if (comp->receiveEvents) {
+				inputHandler.removeListener(comp);
+			}
 		}
 	}
 }
@@ -101,14 +102,11 @@ void Screen::addObjectToList(std::shared_ptr<Object> object) {
 
 		if (comp) {
 			manager->addComponent(comp);
+
+			//Subscribe to events if needed
+			if (comp->receiveEvents) {
+				inputHandler.addListener(comp);
+			}
 		}
 	}
-}
-
-glm::vec2 Screen::getMousePos() {
-	return display.getMousePos();
-}
-
-glm::vec2 Screen::getMouseDist() {
-	return display.getMouseDist();
 }
