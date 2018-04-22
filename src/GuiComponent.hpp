@@ -39,7 +39,7 @@ public:
 	virtual ~GuiComponent() {}
 
 	/**
-	 * Called by the GuiComponentManager when the mouse clicks on this object.
+	 * Called by the GuiComponentManager when a key is pressed.
 	 * @param screen The parent screen.
 	 * @param key The key that was pressed.
 	 * @param action Whether the action was a press, release, or repeat.
