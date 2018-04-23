@@ -24,15 +24,22 @@
 
 class DefaultCamera : public Camera {
 public:
+	DefaultCamera() : pos(0.0, 0.0, -1.0), lookDir(0.0, 0.0, 1.0), up(0.0, 1.0, 0.0) {}
+
 	/**
 	 * Calculates a view matrix to use in rendering.
 	 * @return the view matrix.
 	 */
-	glm::mat4 getView() { return glm::lookAt(glm::vec3(0.0, 0.1, 1.0), glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 1.0, 0.0)); }
+	glm::mat4 getView() { return glm::lookAt(pos, pos + lookDir, up); }
 
 	/**
 	 * Updates the camera. Does nothing.
 	 */
 	void update() {}
+
+	//Simple camera variables.
+	glm::vec3 pos;
+	glm::vec3 lookDir;
+	glm::vec3 up;
 };
 
