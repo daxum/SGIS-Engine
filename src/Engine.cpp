@@ -35,7 +35,7 @@ Engine::Engine(const EngineConfig& config) :
 
 	instance = this;
 
-	switch(config.renderer) {
+	switch(config.renderer.renderType) {
 		case Renderer::OPEN_GL:
 			logger.info("Using OpenGL renderer.");
 			renderer.reset(new GlRenderingEngine(modelManager, config.rendererLog, config.loaderLog));
@@ -58,7 +58,7 @@ void Engine::run(GameInterface& game) {
 	//Initialize renderer
 	logger.info("Initializing renderer...");
 
-	renderer->init(config.windowWidth, config.windowHeight, config.windowTitle, &display);
+	renderer->init(config.renderer.windowWidth, config.renderer.windowHeight, config.renderer.windowTitle, &display);
 	logger.info("Renderer initialization complete.");
 
 	//Pre-loading of a splash screen might go here

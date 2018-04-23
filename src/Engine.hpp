@@ -66,6 +66,13 @@ public:
 	 */
 	const EngineConfig& getConfig() const { return config; }
 
+	/**
+	 * Gets a constant version of the current rendering engine.
+	 * Used to get things like the projection matrix and window size.
+	 * @return The rendering engine.
+	 */
+	const std::shared_ptr<const RenderingEngine> getRenderer() const { return renderer; }
+
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
 	const EngineConfig config;

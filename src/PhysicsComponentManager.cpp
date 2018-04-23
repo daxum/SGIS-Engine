@@ -62,6 +62,21 @@ void PhysicsComponentManager::update(Screen* screen) {
 	world->stepSimulation(Engine::instance->getConfig().timestep / 1000.0, 20, Engine::instance->getConfig().physicsTimestep);
 }
 
+PhysicsComponent* PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::vec3 end) {
+	btVector3 from(start.x, start.y, start.z);
+	btVector3 to(end.x, end.y, end.z);
+
+	btCollisionWorld::ClosestRayResultCallback closestResult(from, to);
+
+	world->rayTest(from, to, closestResult);
+
+	if (closestResult.hasHit()) {
+		return (PhysicsComponent*) closestResult.m_collisionObject->getUserPointer();
+	}
+
+	return nullptr;
+}
+
 void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 

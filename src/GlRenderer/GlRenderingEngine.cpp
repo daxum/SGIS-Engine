@@ -20,6 +20,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Engine.hpp"
 #include "EngineConfig.hpp"
 #include "DisplayEngine.hpp"
 #include "GlfwKeyTranslator.hpp"
@@ -41,6 +42,8 @@ GlRenderingEngine::GlRenderingEngine(ModelManager& modelManager, const LogConfig
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),
 	modelManager(modelManager),
+	width(0.0f),
+	height(0.0f),
 	memoryManager(logger) {
 
 	if (renderer != nullptr) {
@@ -121,10 +124,10 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glfwSetFramebufferSizeCallback(window, GlRenderingEngine::setViewport);
 	glfwSetKeyCallback(window, GlRenderingEngine::keyPress);
 	glfwSetCursorPosCallback(window, GlRenderingEngine::mouseMove);
+	glfwSetMouseButtonCallback(window, GlRenderingEngine::mouseClick);
 	/*
 	//Other callbacks - might be moved elsewhere to accommodate engine
 	glfwSetScrollCallback(window, mouseScroll);
-	glfwSetMouseButtonCallback(window, mouseClick);
 	*/
 
 	//Set state defaults
@@ -212,6 +215,18 @@ void GlRenderingEngine::captureMouse(bool capture) {
 	glfwSetInputMode(window, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 }
 
+glm::mat4 GlRenderingEngine::getProjection() const {
+	return projection;
+}
+
+float GlRenderingEngine::getWindowWidth() const {
+	return width;
+}
+
+float GlRenderingEngine::getWindowHeight() const {
+	return height;
+}
+
 void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data) {
 	matStack.push();
 
@@ -245,15 +260,19 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 }
 
 void GlRenderingEngine::setProjection(int width, int height) {
-	projection = glm::perspective(PI / 4.0f, (float)width / height, 0.1f, 100000.0f);
+	const RenderConfig renderConfig = Engine::instance->getConfig().renderer;
+	projection = glm::perspective(PI / 4.0f, (float)width / height, renderConfig.nearPlane, renderConfig.farPlane);
 }
 
-void GlRenderingEngine::setViewport(GLFWwindow* window, int width, int height) {
-	int adjustedHeight = std::max(9*width/16, height);
-	int heightOffset = -(adjustedHeight - height) / 2;
+void GlRenderingEngine::setViewport(GLFWwindow* window, int nWidth, int nHeight) {
+	renderer->width = (float) nWidth;
+	renderer->height = (float) nHeight;
 
-	glViewport(0, heightOffset, width, adjustedHeight);
-	renderer->setProjection(width, adjustedHeight);
+	int adjustedHeight = std::max(9*nWidth/16, nHeight);
+	int heightOffset = -(adjustedHeight - nHeight) / 2;
+
+	glViewport(0, heightOffset, nWidth, adjustedHeight);
+	renderer->setProjection(nWidth, adjustedHeight);
 }
 
 void GlRenderingEngine::glfwError(int errorCode, const char* description) {

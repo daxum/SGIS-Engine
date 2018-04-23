@@ -44,15 +44,24 @@ struct LogConfig {
 	uint32_t mask;
 };
 
-struct EngineConfig {
-	//Which rendering engine to use
-	Renderer renderer;
-	//The initial window width, in pixels
+struct RenderConfig {
+	//Which rendering engine to use.
+	Renderer renderType;
+	//The initial window width, in pixels.
 	int windowWidth;
-	//The initial window height, in pixels
+	//The initial window height, in pixels.
 	int windowHeight;
-	//The title of the window
+	//The title of the window.
 	std::string windowTitle;
+	//The near plane distance (Warning: very small values can cause precision errors).
+	float nearPlane;
+	//The far plane distance.
+	float farPlane;
+};
+
+struct EngineConfig {
+	//Information about how the rendering engine should be set up.
+	RenderConfig renderer;
 	//The time taken for each tick of the engine, in milliseconds.
 	double timestep;
 	//Time for physics engine updates, in seconds.
@@ -61,6 +70,6 @@ struct EngineConfig {
 	LogConfig generalLog;
 	//General renderer logger.
 	LogConfig rendererLog;
-	//Loader logger
+	//Loader logger.
 	LogConfig loaderLog;
 };

@@ -20,6 +20,9 @@
 
 #include <memory>
 #include <string>
+
+#include <glm/glm.hpp>
+
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
 #include "ModelLoader.hpp"
@@ -136,6 +139,21 @@ public:
 	 * Captures / uncaptures the mouse.
 	 */
 	virtual void captureMouse(bool capture) = 0;
+
+	/**
+	 * Retreives the projection matrix.
+	 */
+	virtual glm::mat4 getProjection() const = 0;
+
+	/**
+	 * Gets the window's width, in pixels.
+	 */
+	virtual float getWindowWidth() const = 0;
+
+	/**
+	 * Gets the window's height, in pixels.
+	 */
+	virtual float getWindowHeight() const = 0;
 
 protected:
 	std::shared_ptr<TextureLoader> texLoader;

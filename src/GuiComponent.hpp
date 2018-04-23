@@ -27,10 +27,13 @@ public:
 	/**
 	 * Creates a guicomponent for the given object.
 	 * @param object The parent of this component.
-	 * @param position The position of this component, in world coordinates.
+	 * @param hasPhysics Whether the object has a physics component.
+	 * @param position The position of this component, in world coordinates. Won't be used if hasPysics is true.
 	 */
-	GuiComponent(Object& object, glm::vec3 position) : Component(object, GUI_COMPONENT_NAME), pos(position) {
-		parent.setPhysics(this);
+	GuiComponent(Object& object, bool hasPhysics = false, glm::vec3 position = glm::vec3(0.0, 0.0, 0.0)) : Component(object, GUI_COMPONENT_NAME), pos(position) {
+		if (!hasPhysics) {
+			parent.setPhysics(this);
+		}
 	}
 
 	/**
@@ -46,6 +49,15 @@ public:
 	 * @return Whether the component handled the event.
 	 */
 	virtual bool onKeyPress(std::shared_ptr<Screen> screen, Key key, KeyAction action) { return false; }
+
+	/**
+	 * Called when the mouse is clicked when hovering over this component. The object must have a physics component for
+	 * this to be called, due to the required ray tracing.
+	 * @param screen The parent screen.
+	 * @param button The mouse button that was clicked.
+	 * @param action Whether the click was a press or release.
+	 */
+	virtual void onMouseClick(std::shared_ptr<Screen> screen, MouseButton button, MouseAction action) {}
 
 	/**
 	 * Gets the translation of the object.

@@ -127,6 +127,13 @@ public:
 	 */
 	DisplayEngine& getDisplay() { return display; }
 
+	/**
+	 * Gets the component manager with the given name if it is present,
+	 * or null otherwise.
+	 * @param name The name of the component manager.
+	 */
+	std::shared_ptr<ComponentManager> getManager(std::string name);
+
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;

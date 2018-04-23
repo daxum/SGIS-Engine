@@ -23,6 +23,7 @@
 #include "BulletCollision/CollisionDispatch/btCollisionDispatcherMt.h"
 #include "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h"
 #include "ComponentManager.hpp"
+#include "PhysicsComponent.hpp"
 
 class PhysicsComponentManager : public ComponentManager {
 public:
@@ -40,6 +41,14 @@ public:
 	 * @param x, y, z The force vector to be applied.
 	 */
 	void setGravity(float x, float y, float z) { world->setGravity(btVector3(x, y, z)); }
+
+	/**
+	 * Raytraces through the world and returns the first physics object in the path.
+	 * @param start Where the raytrace starts.
+	 * @param end Where the raytrace ends.
+	 * @return The first object hit, or null if none were hit.
+	 */
+	PhysicsComponent* raytraceSingle(glm::vec3 start, glm::vec3 end);
 
 private:
 	/**

@@ -117,3 +117,13 @@ void Screen::addObjectToList(std::shared_ptr<Object> object) {
 		}
 	}
 }
+
+std::shared_ptr<ComponentManager> Screen::getManager(std::string name) {
+	for (std::shared_ptr<ComponentManager> compM : managers) {
+		if (compM->name == name) {
+			return compM;
+		}
+	}
+
+	return std::shared_ptr<ComponentManager>();
+}

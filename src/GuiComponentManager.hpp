@@ -42,4 +42,6 @@ public:
 private:
 	//The screen that owns this manager.
 	std::shared_ptr<Screen> parent;
+
+	bool handleMouseClick(const InputHandler* handler, const std::shared_ptr<MouseClickEvent> event);
 };

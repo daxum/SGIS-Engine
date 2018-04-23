@@ -111,6 +111,21 @@ public:
 	 */
 	void captureMouse(bool capture);
 
+	/**
+	 * Gets the projection matrix.
+	 */
+	glm::mat4 getProjection() const;
+
+	/**
+	 * Gets the window's width, in pixels.
+	 */
+	float getWindowWidth() const;
+
+	/**
+	 * Gets the window's height, in pixels.
+	 */
+	float getWindowHeight() const;
+
 private:
 	//Projection matrix.
 	glm::mat4 projection;
@@ -126,6 +141,10 @@ private:
 	ModelManager& modelManager;
 	//The window created by glfw
 	GLFWwindow* window;
+	//The window's width
+	float width;
+	//The window's height
+	float height;
 
 	//The memory manager, for buffer management and such.
 	GlMemoryManager memoryManager;
