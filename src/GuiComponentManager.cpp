@@ -21,9 +21,9 @@
 #include "Engine.hpp"
 #include "PhysicsComponentManager.hpp"
 
-bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared_ptr<InputEvent> event) {
+bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
 	if (event->type == EventType::KEY) {
-		std::shared_ptr<KeyEvent> keyEvent = std::static_pointer_cast<KeyEvent>(event);
+		std::shared_ptr<const KeyEvent> keyEvent = std::static_pointer_cast<const KeyEvent>(event);
 
 		for (std::shared_ptr<Component> comp : components) {
 			std::shared_ptr<GuiComponent> element = std::static_pointer_cast<GuiComponent>(comp);
@@ -35,13 +35,13 @@ bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared
 	}
 	//Mouse click events require raytracing, and therefore a physics component manager.
 	else if (event->type == EventType::MOUSE_CLICK && parent->getManager(PHYSICS_COMPONENT_NAME)) {
-		return handleMouseClick(handler, std::static_pointer_cast<MouseClickEvent>(event));
+		return handleMouseClick(handler, std::static_pointer_cast<const MouseClickEvent>(event));
 	}
 
 	return false;
 }
 
-bool GuiComponentManager::handleMouseClick(const InputHandler* handler, const std::shared_ptr<MouseClickEvent> event) {
+bool GuiComponentManager::handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event) {
 	const std::shared_ptr<const RenderingEngine> renderer = Engine::instance->getRenderer();
 	const RenderConfig renderConf = Engine::instance->getConfig().renderer;
 

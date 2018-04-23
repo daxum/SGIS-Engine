@@ -32,5 +32,5 @@ public:
 	 *     same screen, but will prevent it from being sent to screens
 	 *     below the current one.
 	 */
-	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<InputEvent> event) = 0;
+	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) = 0;
 };

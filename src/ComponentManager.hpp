@@ -63,7 +63,7 @@ public:
 	/**
 	 * See InputListener.hpp.
 	 */
-	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<InputEvent> event) { return false; }
+	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) { return false; }
 
 protected:
 	//Stores all the components added to this manager.
