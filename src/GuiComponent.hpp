@@ -48,7 +48,7 @@ public:
 	 * @param action Whether the action was a press, release, or repeat.
 	 * @return Whether the component handled the event.
 	 */
-	virtual bool onKeyPress(std::shared_ptr<Screen> screen, Key key, KeyAction action) { return false; }
+	virtual bool onKeyPress(Screen* screen, Key key, KeyAction action) { return false; }
 
 	/**
 	 * Called when the mouse is clicked when hovering over this component. The object must have a physics component for
@@ -57,7 +57,7 @@ public:
 	 * @param button The mouse button that was clicked.
 	 * @param action Whether the click was a press or release.
 	 */
-	virtual void onMouseClick(std::shared_ptr<Screen> screen, MouseButton button, MouseAction action) {}
+	virtual void onMouseClick(Screen* screen, MouseButton button, MouseAction action) {}
 
 	/**
 	 * Gets the translation of the object.

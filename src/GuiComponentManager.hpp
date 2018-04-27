@@ -26,7 +26,7 @@ public:
 	 * Constructor.
 	 * @param s The screen that owns this component manager.
 	 */
-	GuiComponentManager(std::shared_ptr<Screen> s) : ComponentManager(GUI_COMPONENT_NAME, true), parent(s) {}
+	GuiComponentManager(Screen* s) : ComponentManager(GUI_COMPONENT_NAME, true), parent(s) {}
 
 	/**
 	 * Does nothing at the moment, might change later to allow gui components to update themselves.
@@ -41,7 +41,7 @@ public:
 
 private:
 	//The screen that owns this manager.
-	std::shared_ptr<Screen> parent;
+	Screen* parent;
 
 	bool handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event);
 };
