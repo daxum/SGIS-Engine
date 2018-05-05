@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include <vector>
+#include <algorithm>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -29,6 +30,7 @@
 #include "GlShaderLoader.hpp"
 #include "RenderComponentManager.hpp"
 #include "RenderComponent.hpp"
+#include "ExtraMath.hpp"
 
 namespace {
 	//Bit of a hack for static callbacks
@@ -166,9 +168,13 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 	MatrixStack matStack;
 
 	matStack.multiply(camera->getView());
+	const auto cameraBox = getCameraCollisionData(camera->getView());
 
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);
+
+	unsigned int objectsRendered = 0;
+	unsigned int totalObjects = 0;
 
 	//Render all objects.
 	//Also, don't ask what the auto actually is. Just don't.
@@ -189,9 +195,21 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 		}
 
 		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
-			renderObject(matStack, shader, renderComponent);
+			totalObjects++;
+			const Model& model = modelManager.getModel(renderComponent->getModel());
+			const glm::vec3 scale = renderComponent->getScale();
+			float maxScale = std::max({scale.x, scale.y, scale.z});
+
+			const std::pair<glm::vec3, float> sphere = std::make_pair(renderComponent->getTranslation(), model.radius * maxScale);
+
+			if (checkVisible(sphere, cameraBox)) {
+				objectsRendered++;
+				renderObject(matStack, shader, renderComponent);
+			}
 		}
 	}
+
+	logger.debug("Rendered " + std::to_string(objectsRendered) + " out of " + std::to_string(totalObjects) + " objects");
 }
 
 void GlRenderingEngine::clearBuffers() {
@@ -257,6 +275,63 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
 
 	matStack.pop();
+}
+
+bool GlRenderingEngine::checkVisible(const std::pair<glm::vec3, float>& sphere, const std::vector<std::pair<glm::vec3, glm::vec3>>& camera) {
+	for (const auto& plane : camera) {
+		glm::vec3 planeVec = sphere.first - plane.first;
+		//Signed distance
+		float distance = glm::dot(planeVec, plane.second);
+
+		if (std::abs(distance) > sphere.second && distance > 0.0) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+std::vector<std::pair<glm::vec3, glm::vec3>> GlRenderingEngine::getCameraCollisionData(glm::mat4 view) {
+	const RenderConfig renderConfig = Engine::instance->getConfig().renderer;
+
+	auto topLeft = ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
+	auto topRight = ExMath::screenToWorld(glm::vec2(width, 0.0), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
+	auto bottomLeft = ExMath::screenToWorld(glm::vec2(0.0, height), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
+	auto bottomRight = ExMath::screenToWorld(glm::vec2(width, height), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
+
+	std::vector<std::pair<glm::vec3, glm::vec3>> posNorVec;
+
+	//Near plane
+	glm::vec3 pos = ExMath::bilinear3D(std::make_tuple(topLeft.first, topRight.first, bottomLeft.first, bottomRight.first), 0.5f, 0.5f);
+	glm::vec3 normal = glm::normalize(glm::cross(topRight.first - pos, topLeft.first - pos));
+	posNorVec.push_back(std::make_pair(pos, normal));
+
+	//Left plane (?)
+	pos = ExMath::bilinear3D(std::make_tuple(topRight.first, topRight.second, bottomRight.first, bottomRight.second), 0.5f, 0.5f);
+	normal = glm::normalize(glm::cross(topRight.second - pos, topRight.first - pos));
+	posNorVec.push_back(std::make_pair(pos, normal));
+
+	//Far plane
+	pos = ExMath::bilinear3D(std::make_tuple(topLeft.second, topRight.second, bottomLeft.second, bottomRight.second), 0.5f, 0.5f);
+	normal = glm::normalize(glm::cross(topLeft.second - pos, topRight.second - pos));
+	posNorVec.push_back(std::make_pair(pos, normal));
+
+	//Right plane (?)
+	pos = ExMath::bilinear3D(std::make_tuple(topLeft.first, topLeft.second, bottomLeft.first, bottomLeft.second), 0.5f, 0.5f);
+	normal = glm::normalize(glm::cross(topLeft.first - pos, topLeft.second - pos));
+	posNorVec.push_back(std::make_pair(pos, normal));
+
+	//Top plane
+	pos = ExMath::bilinear3D(std::make_tuple(topLeft.first, topRight.first, topLeft.second, topRight.second), 0.5f, 0.5f);
+	normal = glm::normalize(glm::cross(topLeft.first - pos, topRight.first - pos));
+	posNorVec.push_back(std::make_pair(pos, normal));
+
+	//Bottom plane
+	pos = ExMath::bilinear3D(std::make_tuple(bottomLeft.first, bottomRight.first, bottomLeft.second, bottomRight.second), 0.5f, 0.5f);
+	normal = glm::normalize(glm::cross(bottomRight.first - pos, bottomLeft.first - pos));
+	posNorVec.push_back(std::make_pair(pos, normal));
+
+	return posNorVec;
 }
 
 void GlRenderingEngine::setProjection(int width, int height) {

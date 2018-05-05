@@ -54,15 +54,17 @@ public:
 	 * Constructs a model using the given mesh
 	 * @param meshData This model's mesh information
 	 * @param meshBox The axis aligned bounding box for this model's mesh.
+	 * @param radius The radius of the model.
 	 * @param texture The name of the texture to use
 	 * @param shader The shader the model uses.
 	 */
-	Model(MeshRenderData meshData, AxisAlignedBB meshBox, std::string texture, std::string shader, LightInfo light);
+	Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light);
 
 	//The mesh this model uses
 	const MeshRenderData mesh;
 	const std::string texture;
 	const AxisAlignedBB meshBox;
+	const float radius;
 	const std::string shader;
 	const LightInfo lighting;
 };

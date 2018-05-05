@@ -20,6 +20,8 @@
 #include <chrono>
 #include <algorithm>
 #include <cmath>
+#include <tuple>
+
 #include "ExtraMath.hpp"
 
 namespace {
@@ -29,8 +31,17 @@ namespace {
 }
 
 float ExMath::interpolate(float start, float finish, float percent) {
-		return (finish - start) * percent + start;
-	}
+	return (finish - start) * percent + start;
+}
+
+glm::vec3 ExMath::interpolate3D(glm::vec3 start, glm::vec3 finish, float percent) {
+	return (1.0f - percent) * start + percent * finish;
+}
+
+glm::vec3 ExMath::bilinear3D(std::tuple<glm::vec3, glm::vec3, glm::vec3, glm::vec3> corners, float xWeight, float yWeight) {
+	return (1.0f - yWeight) * ((1.0f - xWeight) * std::get<0>(corners) + xWeight * std::get<1>(corners)) +
+			yWeight * ((1.0f - xWeight) * std::get<2>(corners) + xWeight * std::get<3>(corners));
+}
 
 float ExMath::randomFloat(float min, float max) {
 	return interpolate(min, max, distribution(engine));
@@ -63,4 +74,23 @@ float ExMath::maxMagnitude(float val1, float val2) {
 	}
 
 	return val2;
+}
+
+std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(glm::vec2 screenPos, glm::mat4 projection, glm::mat4 view, float screenWidth, float screenHeight, float nearPlane, float farPlane) {
+	glm::mat4 viewI = glm::inverse(view);
+	glm::mat4 projI = glm::inverse(projection);
+
+	screenPos.x = (screenPos.x / screenWidth - 0.5f) * 2.0f;
+	screenPos.y = -(screenPos.y / screenHeight - 0.5f) * 2.0f;
+
+	float wNear = nearPlane;
+	float wFar = farPlane;
+
+	glm::vec4 nearPos(screenPos * wNear, -wNear, wNear);
+	nearPos = viewI * projI * nearPos;
+
+	glm::vec4 farPos(screenPos * wFar, wFar, wFar);
+	farPos = viewI * projI * farPos;
+
+	return {nearPos, farPos};
 }

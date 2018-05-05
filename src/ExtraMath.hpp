@@ -20,6 +20,8 @@
 
 #include <stdexcept>
 
+#include <glm/glm.hpp>
+
 namespace ExMath {
 	/**
 	 * Clamps the first value to be between the second and third values.
@@ -57,6 +59,25 @@ namespace ExMath {
 	 * @return The interpolated value.
 	 */
 	float interpolate(float start, float finish, float percent);
+
+	/**
+	 * Similar to interpolate, but between two 3d points.
+	 * @param start Where to start interpolating.
+	 * @param finish Where to stop interpolating.
+	 * @param percent The percent to interpolate between the two points.
+	 * @return The interpolated point.
+	 */
+	glm::vec3 interpolate3D(glm::vec3 start, glm::vec3 finish, float percent);
+
+	/**
+	 * Bilinear interpolation between three dimensional points.
+	 * @param corners The four corners to interpolate between. The order is
+	 *     top left, top right, bottom left, bottom right.
+	 * @param xWeight, yWeight The x and y percents for the interpolation, in that order.
+	 * @return A point that is the result of the bilinear interpolation by the
+	 *     given percent of the four corners.
+	 */
+	glm::vec3 bilinear3D(std::tuple<glm::vec3, glm::vec3, glm::vec3, glm::vec3> corners, float xWeight, float yWeight);
 
 	/**
 	 * Generates a random floating point number between min and max.
@@ -103,4 +124,18 @@ namespace ExMath {
 	 * @return The number farthest from zero.
 	 */
 	float maxMagnitude(float val1, float val2);
+
+	/**
+	 * Converts screen coordinates to world coordinates.
+	 * This might go better in RenderingEngine?
+	 * @param screenPos The position on the screen.
+	 * @param projection The projection matrix from camera to clip space.
+	 * @param view The view matrix from world to camera space.
+	 * @param screenWidth The width of the screen, in pixels.
+	 * @param screenHeight The height of the screen, in pixels.
+	 * @param nearPlane The near plane's distance from the camera.
+	 * @param farPlane The far plane's distance from the camera.
+	 * @return The point projected onto the near plane (first) and the far plane (second).
+	 */
+	std::pair<glm::vec3, glm::vec3> screenToWorld(glm::vec2 screenPos, glm::mat4 projection, glm::mat4 view, float screenWidth, float screenHeight, float nearPlane, float farPlane);
 }

@@ -157,6 +157,24 @@ private:
 	void renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data);
 
 	/**
+	 * Checks whether the given sphere is in the camera's view.
+	 * @param sphere A sphere represented by a position and a radius.
+	 * @param camera A deformed box representing the camera's view, where each entry defines a
+	 *     plane with a position and a normal.
+	 * @return Whether the sphere is intersecting the camera's view.
+	 */
+	bool checkVisible(const std::pair<glm::vec3, float>& sphere, const std::vector<std::pair<glm::vec3, glm::vec3>>& camera);
+
+	/**
+	 * Gets a deformed collision box of the camera with normals for each face.
+	 * @param view The camera's view matrix.
+	 * @return a set of pairs of vectors. The first vector contains the center
+	 *     position of one of the faces, and the second contains the normal
+	 *     for that face.
+	 */
+	std::vector<std::pair<glm::vec3, glm::vec3>> getCameraCollisionData(glm::mat4 view);
+
+	/**
 	 * Sets the projection matrix. Only intended to be called from setViewport.
 	 * @param width The width of the window.
 	 * @param height The height of the window.

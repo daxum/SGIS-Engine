@@ -20,6 +20,7 @@
 #include "GuiComponent.hpp"
 #include "Engine.hpp"
 #include "PhysicsComponentManager.hpp"
+#include "ExtraMath.hpp"
 
 bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
 	if (event->type == EventType::KEY) {
@@ -46,22 +47,16 @@ bool GuiComponentManager::handleMouseClick(const InputHandler* handler, const st
 	const RenderConfig renderConf = Engine::instance->getConfig().renderer;
 
 	glm::vec2 mousePos = handler->getMousePos();
-	glm::mat4 viewI = glm::inverse(parent->getCamera()->getView());
-	glm::mat4 projI = glm::inverse(renderer->getProjection());
+	glm::mat4 projection = renderer->getProjection();
+	glm::mat4 view = parent->getCamera()->getView();
+	float width = renderer->getWindowWidth();
+	float height = renderer->getWindowHeight();
+	float near = renderConf.nearPlane;
+	float far = renderConf.farPlane;
 
-	mousePos.x = (mousePos.x / renderer->getWindowWidth() - 0.5f) * 2.0f;
-	mousePos.y = -(mousePos.y / renderer->getWindowHeight() - 0.5f) * 2.0f;
+	std::pair<glm::vec3, glm::vec3> nearFar = ExMath::screenToWorld(mousePos, projection, view, width, height, near, far);
 
-	float wNear = renderConf.nearPlane;
-	float wFar = renderConf.farPlane;
-
-	glm::vec4 nearPos(mousePos * wNear, -wNear, wNear);
-	nearPos = viewI * projI * nearPos;
-
-	glm::vec4 farPos(mousePos * wFar, wFar, wFar);
-	farPos = viewI * projI * farPos;
-
-	PhysicsComponent* hit = std::static_pointer_cast<PhysicsComponentManager>(parent->getManager(PHYSICS_COMPONENT_NAME))->raytraceSingle(nearPos, farPos);
+	PhysicsComponent* hit = std::static_pointer_cast<PhysicsComponentManager>(parent->getManager(PHYSICS_COMPONENT_NAME))->raytraceSingle(nearFar.first, nearFar.second);
 
 	if (hit != nullptr) {
 		std::shared_ptr<GuiComponent> element = hit->getParent()->getComponent<GuiComponent>(GUI_COMPONENT_NAME);

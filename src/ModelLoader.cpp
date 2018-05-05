@@ -32,7 +32,10 @@ void ModelLoader::loadModel(std::string name, std::string filename, std::string 
 	AxisAlignedBB box = calculateBox(data);
 	logger.debug("Calculated box " + box.toString() + " for model " + name);
 
-	models.insert(std::make_pair(name, Model(mesh, box, texture, shader, lighting)));
+	float radius = calculateMaxRadius(data, box.getCenter());
+	logger.debug("Radius of model is " + std::to_string(radius));
+
+	models.insert(std::make_pair(name, Model(mesh, box, radius, texture, shader, lighting)));
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 
@@ -113,4 +116,25 @@ AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) {
 	}
 
 	return AxisAlignedBB(min, max);
+}
+
+float ModelLoader::calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) {
+	if (data->vertices.size() == 0) {
+		logger.warn("Zero vertex mesh loaded?!");
+		return 0.0f;
+	}
+
+	float maxDistSq = 0.0f;
+
+	for (size_t i = 0; i < data->vertices.size(); i++) {
+		const glm::vec3& current = data->vertices[i].pos;
+
+		float vertDistSq = glm::dot(current, current);
+
+		if (maxDistSq < vertDistSq) {
+			maxDistSq = vertDistSq;
+		}
+	}
+
+	return sqrt(maxDistSq);
 }
