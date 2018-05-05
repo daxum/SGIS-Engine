@@ -39,13 +39,17 @@ struct CollisionHandler {
 class PhysicsComponent : public Component, ObjectPhysicsInterface {
 public:
 	/**
-	 * Creates a PhysicsComponent with the provided object as its parent.
-	 * @param object The parent of this component.
+	 * Creates a PhysicsComponent.
 	 * @param physics The PhysicsObject that defines this object in the physics engine.
 	 * @param collHandler An object containing a function to call when this object collides with another one.
 	 * @param collMask A mask to prevent collision callbacks from being called.
 	 */
-	PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler = std::shared_ptr<CollisionHandler>());
+	PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler = std::shared_ptr<CollisionHandler>());
+
+	/**
+	 * Called from Component when the parent object is set.
+	 */
+	void onParentSet();
 
 	/**
 	 * Returns the physics body associated with this component.
@@ -116,7 +120,7 @@ public:
 	/**
 	 * Returns the parent object, mainly for removal from screen and manipulating state.
 	 */
-	Object* getParent() { return &parent; }
+	std::shared_ptr<Object> getParent() { return lockParent(); }
 
 private:
 	std::shared_ptr<PhysicsObject> physics;

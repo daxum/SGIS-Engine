@@ -24,11 +24,10 @@
 class AIComponent : public Component {
 public:
 	/**
-	 * Creates an AIComponent with the given object as its parent.
-	 * @param parent The object this AIComponent is for.
+	 * Creates an AIComponent.
 	 * @param events Whether to subscribe to the input event handler.
 	 */
-	AIComponent(Object& parent, bool events = false) : Component(parent, AI_COMPONENT_NAME, events) {}
+	AIComponent(bool events = false) : Component(AI_COMPONENT_NAME, events) {}
 
 	virtual ~AIComponent() {}
 

@@ -26,13 +26,16 @@ class GuiComponent : public Component, ObjectPhysicsInterface {
 public:
 	/**
 	 * Creates a guicomponent for the given object.
-	 * @param object The parent of this component.
-	 * @param hasPhysics Whether the object has a physics component.
-	 * @param position The position of this component, in world coordinates. Won't be used if hasPysics is true.
+	 * @param position The position of this component, in world coordinates. Won't be used if the parent has a physics component.
 	 */
-	GuiComponent(Object& object, bool hasPhysics = false, glm::vec3 position = glm::vec3(0.0, 0.0, 0.0)) : Component(object, GUI_COMPONENT_NAME), pos(position) {
-		if (!hasPhysics) {
-			parent.setPhysics(this);
+	GuiComponent(glm::vec3 position = glm::vec3(0.0, 0.0, 0.0)) : Component(GUI_COMPONENT_NAME), pos(position) {}
+
+	/**
+	 * Sets this component as the physics provider if there isn't one already.
+	 */
+	void onParentSet() {
+		if (lockParent()->getPhysics() == nullptr) {
+			lockParent()->setPhysics(this);
 		}
 	}
 

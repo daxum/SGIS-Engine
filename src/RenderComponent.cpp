@@ -21,8 +21,8 @@
 #include "Object.hpp"
 #include "PhysicsComponent.hpp"
 
-RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 color, glm::vec3 renderScale) :
-	Component(parent, RENDER_COMPONENT_NAME),
+RenderComponent::RenderComponent(std::string model, glm::vec3 color, glm::vec3 renderScale) :
+	Component(RENDER_COMPONENT_NAME),
 	model(model),
 	color(color),
 	scale(renderScale) {
@@ -30,11 +30,11 @@ RenderComponent::RenderComponent(Object& parent, std::string model, glm::vec3 co
 }
 
 glm::vec3 RenderComponent::getTranslation() {
-	return parent.getPhysics()->getTranslation();
+	return lockParent()->getPhysics()->getTranslation();
 }
 
 glm::quat RenderComponent::getRotation() {
-	return  parent.getPhysics()->getRotation();
+	return  lockParent()->getPhysics()->getRotation();
 }
 
 glm::vec3 RenderComponent::getScale() {

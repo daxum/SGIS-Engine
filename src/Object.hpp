@@ -48,7 +48,7 @@ public:
 
 	/**
 	 * Adds a component to the object. This should usually be done before the object is
-	 * added to the world.
+	 * added to the world. The object will set itself as the component's parent.
 	 * @param component The component to add.
 	 */
 	void addComponent(std::shared_ptr<Component> component);

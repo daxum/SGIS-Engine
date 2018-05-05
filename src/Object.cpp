@@ -26,6 +26,7 @@ Object::Object() : physics(nullptr) {
 }
 
 void Object::addComponent(std::shared_ptr<Component> component) {
+	component->setParent(shared_from_this());
 	components[component->name] = component;
 }
 

@@ -25,11 +25,10 @@
 class RenderComponent : public Component {
 public:
 	/**
-	 * Creates rendering data for the passed in object.
-	 * @param parent The object this rendering data is for.
+	 * Creates a RenderComponent.
 	 * @param model The name of the model to use to render this object.
 	 */
-	RenderComponent(Object& parent, std::string model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
+	RenderComponent(std::string model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Returns the translation of this object.

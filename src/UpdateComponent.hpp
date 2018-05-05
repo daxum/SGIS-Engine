@@ -23,7 +23,7 @@
 
 class UpdateComponent : public Component {
 public:
-	UpdateComponent(Object& parent) : Component(parent, UPDATE_COMPONENT_NAME) {}
+	UpdateComponent() : Component(UPDATE_COMPONENT_NAME) {}
 
 	virtual ~UpdateComponent() {}
 

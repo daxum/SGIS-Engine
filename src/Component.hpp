@@ -39,17 +39,28 @@ public:
 	const bool receiveEvents;
 
 	/**
-	 * Creates a component with the provided parent object
-	 * @param parent The owner of the component
+	 * Creates a component.
 	 * @param name The name of the component, from the list above or user-defined values.
 	 *     Used to add the component to managers.
 	 * @param events Whether to subscribe the component to the input event handler (for key presses and such).
 	 *     IMPORTANT: If there isn't a component manager for the component's name when it is added to a screen,
 	 *     it WILL NOT be subscribed to any events.
 	 */
-	Component(Object& parent, std::string name, bool events = false) : name(name), receiveEvents(events), parent(parent) {}
+	Component(std::string name, bool events = false) : name(name), receiveEvents(events) {}
 
 	virtual ~Component() {}
+
+	/**
+	 * Only intended to be called from Object. Bad things may
+	 * or may not happen if this is called more than once.
+	 * @param The new parent of this component.
+	 */
+	void setParent(std::shared_ptr<Object> newParent) { parent = newParent; onParentSet(); }
+
+	/**
+	 * Called when the parent object is set.
+	 */
+	virtual void onParentSet() {}
 
 	/**
 	 * See InputListener.hpp.
@@ -58,5 +69,12 @@ public:
 
 protected:
 	//The parent object.
-	Object& parent;
+	std::weak_ptr<Object> parent;
+
+	/**
+	 * Locks the parent pointer for modification.
+	 * @return A shared_ptr to the parent, will be null if
+	 *     the parent has been destructed or wasn't set.
+	 */
+	std::shared_ptr<Object> lockParent() { return parent.lock(); }
 };

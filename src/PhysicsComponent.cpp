@@ -19,8 +19,8 @@
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
 
-PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler) :
-	Component(object, PHYSICS_COMPONENT_NAME),
+PhysicsComponent::PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler) :
+	Component(PHYSICS_COMPONENT_NAME),
 	physics(physics),
 	collider(collHandler),
 	linearBrakes(true),
@@ -29,12 +29,15 @@ PhysicsComponent::PhysicsComponent(Object& object, std::shared_ptr<PhysicsObject
 	angularVelocity(0.0, 0.0, 0.0),
 	acceleration(1.2f) {
 
-	parent.setPhysics(this);
 	physics->getBody()->setUserPointer(this);
 
 	if (collider) {
 		collider->parent = this;
 	}
+}
+
+void PhysicsComponent::onParentSet() {
+	lockParent()->setPhysics(this);
 }
 
 void PhysicsComponent::update() {
