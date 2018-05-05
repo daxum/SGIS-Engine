@@ -18,9 +18,10 @@
 
 #pragma once
 
+#include <unordered_set>
+
 #include "Component.hpp"
 #include "Screen.hpp"
-#include "SequentialSet.hpp"
 #include "InputListener.hpp"
 
 class ComponentManager : public InputListener {
@@ -67,7 +68,7 @@ public:
 
 protected:
 	//Stores all the components added to this manager.
-	SequentialSet<Component> components;
+	std::unordered_set<std::shared_ptr<Component>> components;
 
 	/**
 	 * Called immediately after a component is added to the manager's

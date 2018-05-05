@@ -18,10 +18,11 @@
 
 #pragma once
 
+#include <unordered_set>
+
 #include "KeyList.hpp"
 #include "Object.hpp"
 #include "ModelManager.hpp"
-#include "SequentialSet.hpp"
 #include "DefaultCamera.hpp"
 #include "InputHandler.hpp"
 
@@ -77,6 +78,9 @@ public:
 	 * Same as above, but with regular pointers instead of shared,
 	 * for when an object needs to be removed but you don't have
 	 * access to the shared pointer.
+	 * This should be considered deprecated, don't use it unless
+	 * absolutely neccessary. Use Object->get_shared_from_this() instead,
+	 * this function just calls that.
 	 * @param object The object to remove.
 	 */
 	void removeObject(Object* object);
@@ -151,7 +155,7 @@ protected:
 	std::vector<std::shared_ptr<ComponentManager>> managers;
 
 	//All objects that have been added to the screen.
-	SequentialSet<Object> objects;
+	std::unordered_set<std::shared_ptr<Object>> objects;
 
 	//Objects to be removed at the end of the update.
 	std::vector<std::shared_ptr<Object>> removalList;

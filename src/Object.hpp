@@ -29,7 +29,7 @@
 struct ObjectState {};
 
 //An object in a world. Stores rendering, physics, etc.
-class Object {
+class Object : public std::enable_shared_from_this<Object> {
 public:
 	/**
 	 * Creates an object.

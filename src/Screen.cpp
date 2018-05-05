@@ -74,11 +74,7 @@ void Screen::removeObject(std::shared_ptr<Object> object) {
 }
 
 void Screen::removeObject(Object* object) {
-	std::shared_ptr<Object> sharedObject = objects.getShared(object);
-
-	if (sharedObject) {
-		removeObject(sharedObject);
-	}
+	removeObject(object->shared_from_this());
 }
 
 void Screen::deleteObject(std::shared_ptr<Object> object) {

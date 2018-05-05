@@ -19,13 +19,13 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <memory>
 
 #include <glm/glm.hpp>
 
 #include "InputListener.hpp"
-#include "SequentialSet.hpp"
 
 class InputHandler {
 public:
@@ -69,7 +69,7 @@ public:
 
 private:
 	//List of subscribed listeners
-	SequentialSet<InputListener> listeners;
+	std::unordered_set<std::shared_ptr<InputListener>> listeners;
 
 	//Stores which keys are currently pressed.
 	std::unordered_map<Key, bool> keyMap;
