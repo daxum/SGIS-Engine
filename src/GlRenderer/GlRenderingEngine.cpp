@@ -173,9 +173,6 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 	//All models use the static buffer at this time
 	memoryManager.bindBuffer(MeshType::STATIC);
 
-	unsigned int objectsRendered = 0;
-	unsigned int totalObjects = 0;
-
 	//Render all objects.
 	//Also, don't ask what the auto actually is. Just don't.
 	for (auto& object : data->getComponentShaderMap()) {
@@ -195,7 +192,6 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 		}
 
 		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
-			totalObjects++;
 			const Model& model = modelManager.getModel(renderComponent->getModel());
 			const glm::vec3 scale = renderComponent->getScale();
 			float maxScale = std::max({scale.x, scale.y, scale.z});
@@ -203,13 +199,10 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 			const std::pair<glm::vec3, float> sphere = std::make_pair(renderComponent->getTranslation(), model.radius * maxScale);
 
 			if (checkVisible(sphere, cameraBox)) {
-				objectsRendered++;
 				renderObject(matStack, shader, renderComponent);
 			}
 		}
 	}
-
-	logger.debug("Rendered " + std::to_string(objectsRendered) + " out of " + std::to_string(totalObjects) + " objects");
 }
 
 void GlRenderingEngine::clearBuffers() {
