@@ -75,17 +75,6 @@ public:
 	void removeObject(std::shared_ptr<Object> object);
 
 	/**
-	 * Same as above, but with regular pointers instead of shared,
-	 * for when an object needs to be removed but you don't have
-	 * access to the shared pointer.
-	 * This should be considered deprecated, don't use it unless
-	 * absolutely neccessary. Use Object->get_shared_from_this() instead,
-	 * this function just calls that.
-	 * @param object The object to remove.
-	 */
-	void removeObject(Object* object);
-
-	/**
 	 * Returns the camera associated with this screen.
 	 */
 	std::shared_ptr<Camera> getCamera() { return camera; }

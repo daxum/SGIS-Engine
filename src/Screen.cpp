@@ -73,10 +73,6 @@ void Screen::removeObject(std::shared_ptr<Object> object) {
 	removalList.push_back(object);
 }
 
-void Screen::removeObject(Object* object) {
-	removeObject(object->shared_from_this());
-}
-
 void Screen::deleteObject(std::shared_ptr<Object> object) {
 	objects.erase(object);
 
