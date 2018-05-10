@@ -192,7 +192,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 		}
 
 		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
-			const Model& model = modelManager.getModel(renderComponent->getModel());
+			const Model& model = renderComponent->getModel();
 			const glm::vec3 scale = renderComponent->getScale();
 			float maxScale = std::max({scale.x, scale.y, scale.z});
 
@@ -253,7 +253,7 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 		shader->setUniformVec3("color", data->getColor());
 	}
 
-	const Model& model = modelManager.getModel(data->getModel());
+	const Model& model = data->getModel();
 
 	if (shader->info.lighting) {
 		shader->setUniformVec3("ka", model.lighting.ka);

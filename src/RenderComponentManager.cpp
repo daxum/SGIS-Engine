@@ -22,15 +22,22 @@
 void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
-	std::string shader = Engine::instance->getModelManager().getModel(renderComp->getModel()).shader;
+	std::string shader = renderComp->getModel().shader;
 
 	renderComponents[shader].insert(renderComp);
+	renderComp->setManager(this);
 }
 
 void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
-	std::string shader = Engine::instance->getModelManager().getModel(renderComp->getModel()).shader;
+	std::string shader = renderComp->getModel().shader;
 
 	renderComponents[shader].erase(renderComp);
+	renderComp->setManager(nullptr);
+}
+
+void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::string oldShader) {
+	renderComponents[oldShader].erase(renderComp);
+	renderComponents[renderComp->getModel().shader].insert(renderComp);
 }

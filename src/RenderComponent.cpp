@@ -20,10 +20,12 @@
 #include "AxisAlignedBB.hpp"
 #include "Object.hpp"
 #include "PhysicsComponent.hpp"
+#include "Engine.hpp"
+#include "RenderComponentManager.hpp"
 
 RenderComponent::RenderComponent(std::string model, glm::vec3 color, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
-	model(model),
+	model(Engine::instance->getModelManager().getModel(model)),
 	color(color),
 	scale(renderScale) {
 
@@ -43,4 +45,13 @@ glm::vec3 RenderComponent::getScale() {
 
 glm::vec3 RenderComponent::getColor() {
 	return color;
+}
+
+void RenderComponent::setModel(const Model& newModel) {
+	std::string oldShader = model.shader;
+	model = newModel;
+
+	if (manager) {
+		manager->reloadComponent(shared_from_this(), oldShader);
+	}
 }

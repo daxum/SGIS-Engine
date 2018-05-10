@@ -43,6 +43,12 @@ public:
 	 */
 	std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>>& getComponentShaderMap() { return renderComponents; }
 
+	/**
+	 * Removes and readds the component to the render component map.
+	 * @param renderComp The component to reload.
+	 */
+	void reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::string oldShader);
+
 private:
 	//Sorts all RenderComponents by their shader for less context switching.
 	std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>> renderComponents;

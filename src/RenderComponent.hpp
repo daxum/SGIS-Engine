@@ -18,11 +18,16 @@
 
 #pragma once
 
-#include <cstdint>
-#include <glm/glm.hpp>
-#include "Component.hpp"
+#include <memory>
 
-class RenderComponent : public Component {
+#include <glm/glm.hpp>
+
+#include "Component.hpp"
+#include "Model.hpp"
+
+class RenderComponentManager;
+
+class RenderComponent : public Component, std::enable_shared_from_this<RenderComponent> {
 public:
 	/**
 	 * Creates a RenderComponent.
@@ -55,18 +60,32 @@ public:
 	glm::vec3 getColor();
 
 	/**
-	 * Returns the name of the model to be used in rendering this object.
-	 * @return The model name.
+	 * Returns the model to be used in rendering this object.
+	 * @return The model.
 	 */
-	std::string getModel() { return model; }
+	const Model& getModel() { return model; }
+
+	/**
+	 * Changes the component's model to the specified one.
+	 * @param newModel The new model to use.
+	 */
+	void setModel(const Model& newModel);
+
+	/**
+	 * Only to be called from RenderComponentManager.
+	 */
+	void setManager(RenderComponentManager* renderManager) { manager = renderManager; }
 
 private:
 	//Which model to use for this object.
-	std::string model;
+	Model model;
 
 	//The color of the object
 	glm::vec3 color;
 
 	//The scale of the object's model.
 	glm::vec3 scale;
+
+	//The manager for this component, null if none.
+	RenderComponentManager* manager;
 };

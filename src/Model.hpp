@@ -61,10 +61,10 @@ public:
 	Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light);
 
 	//The mesh this model uses
-	const MeshRenderData mesh;
-	const std::string texture;
-	const AxisAlignedBB meshBox;
-	const float radius;
-	const std::string shader;
-	const LightInfo lighting;
+	MeshRenderData mesh;
+	std::string texture;
+	AxisAlignedBB meshBox;
+	float radius;
+	std::string shader;
+	LightInfo lighting;
 };
