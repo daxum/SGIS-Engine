@@ -10,11 +10,12 @@ These instructions (and the program in general, actually) have only been tested 
 	* [GLFW](http://www.glfw.org)
 	* [glm](https://glm.g-truc.net)
 	* [bullet](https://github.com/bulletphysics/bullet3) (Must be built with multithreading enabled)
+	* [Freetype2](https://www.freetype.org/)
 2. From the top of the repository, do:
 
 	`cd src`
 
-	`cmake .`
+	`cmake -DCMAKE_BUILD_TYPE=release -DFREETYPE_INCLUDE_DIR=<freetype_dir> .` where `<freetype_dir>` is the include directory for freetype2
 
 	`make`
 
@@ -24,7 +25,7 @@ These instructions (and the program in general, actually) have only been tested 
 
 	`cd build`
 
-	`cmake -DCMAKE_BUILD_TYPE=release ../src`
+	`cmake -DCMAKE_BUILD_TYPE=release -DFREETYPE_INCLUDE_DIR=<freetype_dir> ../src`
 
 	`make`
 
