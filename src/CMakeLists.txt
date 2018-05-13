@@ -37,8 +37,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	target_compile_options(Engine PRIVATE "-Wall")
 endif()
 
-target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${BULLET_INCLUDE_DIRS})
-target_link_libraries(Engine glfw ${BULLET_LIBRARIES})
+target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${BULLET_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIR})
+target_link_libraries(Engine glfw ${BULLET_LIBRARIES} freetype)
 
 if (WIN32)
 	#Never tested, but should probably work.

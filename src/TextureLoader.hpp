@@ -20,7 +20,10 @@
 
 #include <string>
 #include <memory>
+#include <vector>
+
 #include "Logger.hpp"
+#include "Font.hpp"
 
 //Returned when loading from disk
 struct TextureData {
@@ -74,7 +77,18 @@ public:
 	 * @param mipmap Whether to generate mipmaps for the texture.
 	 * @throw runtime_error if the texture could not be created.
 	 */
-	virtual void loadTexture(std::string name, std::string filename, Filter minFilter, Filter magFilter, bool mipmap) = 0;
+	virtual void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap) = 0;
+
+	/**
+	 * Loads a font and generates a texture from it. Only adds the specified
+	 * characters to the texture.
+	 * @param name The name of the font texture.
+	 * @param filenames A vector of filenames to load. Each font will be searched in
+	 *     order for each character, stopping as soon as it is found.
+	 * @param characters The characters to load from the specified file.
+	 * @param size The height of each character (in pixels?).
+	 */
+	void loadFont(const std::string& name, const std::vector<std::string>& filenames, const std::u32string& characters, size_t size);
 
 protected:
 	//The logger for the loader.
@@ -86,4 +100,30 @@ protected:
 	 * @return A filled out TextureData structure created from the provided file name.
 	 */
 	TextureData loadFromDisk(std::string filename);
+
+	/**
+	 * Adds a font to wherever fonts are stored and returns a reference to it.
+	 * @param textureName The name of the font's texture.
+	 * @return A reference to the stored font.
+	 */
+	virtual Font& addFont(const std::string& textureName) = 0;
+
+	/**
+	 * Adds a font texture in the same way as loadTexture.
+	 * @param textureName The name to store the texture under.
+	 * @param data The texture data to store. Be careful with the
+	 *     number of channels.
+	 */
+	virtual void addFontTexture(const std::string textureName, const TextureData& data) = 0;
+
+private:
+	/**
+	 * Sets the glyph's x and y coordinates so that they all fit on a texture of the given
+	 * size, without overlaps.
+	 * @param glyphs An array of glyphs to position on the texture. Must be sorted by height.
+	 * @param texSize The size (width and height) of the texture to arrange the glyphs on.
+	 * @return Whether all the glyphs fit on a texture of the given size. If this is false,
+	 *     some were not positioned.
+	 */
+	bool tryPositionGlyphs(std::vector<GlyphData*>& glyphs, const unsigned int texSize);
 };

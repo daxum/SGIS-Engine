@@ -7,6 +7,8 @@ option(USE_INSTALLED_GLFW "Use a version of glfw installed on the system" ON)
 set(BULLET_DIR "" CACHE STRING "Bullet repository directory, used if linking bullet statically")
 set(GLFW_DIR "" CACHE STRING "GLFW repository directory, used if linking statically")
 
+set(FREETYPE_INCLUDE_DIR "" CACHE STRING "Freetype2 include directory")
+
 #Threading should probably be enabled in the bullet library, not sure if it works with it off. It'll definitely be
 #slower if it does, though. If bullet is linked statically, some changes might be neccessary to its cmake files to
 #avoid link errors (or I'm doing something horribly wrong).

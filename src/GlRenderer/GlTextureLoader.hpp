@@ -43,7 +43,24 @@ public:
 	 * @param mipmap Whether to generate mipmaps for the texture.
 	 * @throw runtime_error if the texture could not be created.
 	 */
-	void loadTexture(std::string name, std::string filename, Filter minFilter, Filter magFilter, bool mipmap);
+	void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap);
+
+protected:
+	static Font tempFont;
+
+	/**
+	 * Adds a font to wherever fonts are stored and returns a reference to it.
+	 * @param textureName The name of the font's texture.
+	 * @return A reference to the stored font.
+	 */
+	Font& addFont(const std::string& textureName) { return tempFont; }
+
+	/**
+	 * Adds a font texture.
+	 * @param textureName The name to store the texture under.
+	 * @param data The texture data to store.
+	 */
+	void addFontTexture(const std::string textureName, const TextureData& data);
 
 private:
 	//The map where loaded textures are stored

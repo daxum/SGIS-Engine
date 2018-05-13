@@ -16,9 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <algorithm>
+
 #include "TextureLoader.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "ft2build.h"
+#include FT_FREETYPE_H
 
 namespace {
 	unsigned char missingData[16] = {
@@ -39,6 +43,24 @@ namespace {
 	struct NonDeleter {
 		void operator()(unsigned char* p) {}
 	};
+
+	//Used for temporary font storage when creating textures.
+	struct CharData {
+		CharData(GlyphData* g, unsigned char* buf, size_t bufferSize) :
+			glyph(g),
+			buffer(new unsigned char[bufferSize]) {
+
+			memcpy(buffer.get(), buf, bufferSize);
+		}
+
+		GlyphData* glyph;
+		std::shared_ptr<unsigned char> buffer;
+	};
+
+	//Sorts glyphs by decreasing height.
+	bool glyphSorter(const GlyphData* a, const GlyphData* b) {
+		return a->size.y > b->size.y;
+	}
 }
 
 TextureData TextureLoader::loadFromDisk(std::string filename) {
@@ -74,4 +96,145 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 	logger.debug("Loaded " + std::to_string(texData.width) + " x " + std::to_string(texData.height) + " texture \"" + filename + "\".");
 
 	return texData;
+}
+
+void TextureLoader::loadFont(const std::string& name, const std::vector<std::string>& filenames, const std::u32string& characters, size_t size) {
+	FT_Library library;
+	FT_Init_FreeType(&library);
+
+	std::vector<FT_Face> faces(filenames.size());
+
+	//Open all fonts.
+	for (size_t i = 0; i < filenames.size(); i++) {
+		if (FT_New_Face(library, filenames.at(i).c_str(), 0, &faces.at(i))) {
+			throw std::runtime_error("Couldn't open file \"" + filenames.at(i) + "\", or the filetype is not supported.");
+		}
+
+		FT_Set_Pixel_Sizes(faces.at(i), 0, size);
+	}
+
+	std::vector<GlyphData*> glyphs;
+	std::vector<CharData> chars;
+	Font& font = addFont(name);
+
+	//Load characters from fonts.
+	for (char32_t character : characters) {
+		for (const FT_Face& face : faces) {
+			//Maybe this char is in the next font...
+			if (FT_Load_Char(face, character, FT_LOAD_RENDER)) {
+				continue;
+			}
+
+			size_t bitmapSize = face->glyph->bitmap.width * face->glyph->bitmap.rows;
+
+			//Create glyph data
+			GlyphData data;
+			data.size = glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
+			data.bearing = glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
+			data.advance = glm::ivec2(face->glyph->advance.x, face->glyph->advance.y);
+
+			//Add to font
+			font.addGlyph(character, data);
+
+			//Add buffer for later adding to texture
+			chars.emplace_back(&font.getChar(character), face->glyph->bitmap.buffer, bitmapSize);
+			glyphs.push_back(chars.back().glyph);
+
+			break;
+		}
+	}
+
+	//Sort glyph vector by height
+	std::sort(glyphs.begin(), glyphs.end(), glyphSorter);
+
+	//Try to fit glyphs in smallest texture possible
+	unsigned int texSize = 2;
+
+	logger.debug("Trying texture of size " + std::to_string(texSize));
+
+	while (!tryPositionGlyphs(glyphs, texSize)) {
+		texSize = texSize << 1u;
+
+		//Couldn't even fit on the biggest of textures. What kind of font is this?!
+		if (texSize == 0) {
+			throw std::runtime_error("Couldn't fit font \"" + name + "\" on any texture.");
+		}
+
+		logger.debug("Trying texture of size " + std::to_string(texSize));
+	}
+
+	logger.debug("Using " + std::to_string(texSize) + " x " + std::to_string(texSize) + " texture for font \"" + name + "\"");
+
+	//Create texture
+	TextureData fontTexture;
+	fontTexture.data.reset(new unsigned char[texSize * texSize]);
+	fontTexture.width = texSize;
+	fontTexture.height = texSize;
+	fontTexture.channels = 1;
+	fontTexture.loadSuccess = true;
+
+	memset(fontTexture.data.get(), 0, texSize * texSize);
+
+	//Fill texture
+	for (const CharData& data : chars) {
+		const glm::ivec2 pos = data.glyph->pos;
+		const int width = data.glyph->size.x;
+		const int height = data.glyph->size.y;
+
+		if (pos.x + width > (int)texSize || pos.y + height > (int)texSize) {
+			logger.fatal("Memory corruption imminent!");
+			logger.fatal("pos: (" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ")");
+			logger.fatal("size: (" + std::to_string(width) + ", " + std::to_string(height) + ")");
+			throw std::runtime_error("Font loading failed!");
+		}
+
+		//Copy texture one row at a time
+		for (int i = pos.y; i < pos.y + height; i++) {
+			memcpy(&fontTexture.data.get()[i * texSize] + pos.x, &data.buffer.get()[(i - pos.y) * width], width);
+		}
+	}
+
+	//Upload texture
+	addFontTexture(name, fontTexture);
+
+	//Free freetype
+	for (FT_Face& face : faces) {
+		FT_Done_Face(face);
+	}
+
+	FT_Done_FreeType(library);
+}
+
+bool TextureLoader::tryPositionGlyphs(std::vector<GlyphData*>& glyphs, const unsigned int texSize) {
+	if (glyphs.empty()) {
+		return true;
+	}
+
+	unsigned int nextHeight = glyphs.at(0)->size.y;
+	unsigned int currentHeight = 0;
+	unsigned int currentPos = 0;
+
+	for (GlyphData* glyph : glyphs) {
+		//If glyph is too long, go to next row.
+		if (currentPos + glyph->size.x > texSize) {
+			currentPos = 0;
+			currentHeight = nextHeight;
+			//Glyphs are sorted by height, so just increment by this one's height.
+			nextHeight += glyph->size.y;
+		}
+
+		//If past end of texture, return false (this requires the glyphs to be sorted by height).
+		if (glyph->size.y + currentHeight > texSize) {
+			return false;
+		}
+
+		//Set glyph x and y.
+		glyph->pos.x = currentPos;
+		glyph->pos.y = currentHeight;
+
+		currentPos += glyph->size.x;
+	}
+
+	//Made it through all the glyphs, so they fit.
+	return true;
 }
