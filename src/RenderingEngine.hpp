@@ -28,6 +28,7 @@
 #include "ModelLoader.hpp"
 #include "Model.hpp"
 #include "RenderComponentManager.hpp"
+#include "RendererMemoryManager.hpp"
 
 class DisplayEngine;
 
@@ -75,12 +76,11 @@ public:
 	virtual void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display) = 0;
 
 	/**
-	 * Adds a mesh to the rendering engine.
-	 * @param data The model data to add.
-	 * @param type The type of the mesh to add.
-	 * @return the data needed to render the mesh.
+	 * Gets the memory manager for this rendering engine, used for uploading
+	 * models.
+	 * @return The memory manager for this rendering engine.
 	 */
-	virtual MeshRenderData addMesh(ModelData& data, MeshType type) = 0;
+	virtual RendererMemoryManager* getMemoryManager() = 0;
 
 	/**
 	 * To be called to put the engine in a renderable state - uploads models to the gpu,

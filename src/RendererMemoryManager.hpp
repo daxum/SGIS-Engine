@@ -20,27 +20,17 @@
 
 #include <cstdint>
 #include <vector>
-#include <unordered_map>
 
-#include "Vertex.hpp"
-#include "CombinedGl.h"
 #include "Model.hpp"
-#include "Logger.hpp"
-#include "RendererMemoryManager.hpp"
+#include "Vertex.hpp"
 
-class GlMemoryManager : public RendererMemoryManager {
+//An interface to the rendering engine's memory manager.
+class RendererMemoryManager {
 public:
 	/**
-	 * Initializes the memory manager - this does NOT allocate any
-	 * gpu memory.
-	 * @param logger The logger with which to log.
+	 * Destructor.
 	 */
-	GlMemoryManager(Logger& logger);
-
-	/**
-	 * Frees any allocated gpu memory.
-	 */
-	~GlMemoryManager();
+	virtual ~RendererMemoryManager() {}
 
 	/**
 	 * Adds a static mesh (vertices + indices) to be uploaded to the gpu at a later time.
@@ -49,7 +39,7 @@ public:
 	 * @return a MeshData struct that can be used for drawing.
 	 * @throw runtime_error if the memory manager has already been initialized.
 	 */
-	MeshRenderData addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+	virtual MeshRenderData addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) = 0;
 
 	/**
 	 * Dynamically uploads text model data to the gpu. Must call free later!
@@ -57,39 +47,11 @@ public:
 	 * @param indices The indices for the text model.
 	 * @return model data with which to render the text.
 	 */
-	MeshRenderData addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) { return {BUFFER_COUNT, 0, 0}; } //INCOMPLETE
+	virtual MeshRenderData addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) = 0;
 
 	/**
 	 * Marks the memory previously occupied by the model data as unused.
 	 * @param data The model data to free.
 	 */
-	void freeTextMesh(const MeshRenderData& data) {}
-
-	/**
-	 * Uploads static data to gpu to prepare for drawing.
-	 * @throw runtime_error if the memory manager has already been initialized.
-	 */
-	void upload();
-
-	/**
-	 * Binds the specified buffer for drawing.
-	 * @param type The buffer to bind.
-	 */
-	void bindBuffer(MeshType type);
-
-private:
-	//Just a logger
-	Logger& logger;
-	//Whether init has been called.
-	bool initialized;
-
-	//Data for STATIC MeshType meshes.
-	std::vector<Vertex> staticVertices;
-	std::unordered_map<Vertex, uint32_t> staticUniqueVertices;
-	std::vector<uint32_t> staticIndices;
-
-	//Buffers.
-	GLuint vaos[BUFFER_COUNT];
-	GLuint vertexBuffers[BUFFER_COUNT];
-	GLuint indexBuffers[BUFFER_COUNT];
+	virtual void freeTextMesh(const MeshRenderData& data) = 0;
 };

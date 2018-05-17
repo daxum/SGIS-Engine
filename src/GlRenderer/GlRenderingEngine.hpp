@@ -64,13 +64,11 @@ public:
 	void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display);
 
 	/**
-	 * Adds a mesh to the rendering engine. The opengl version
-	 * adds it to its memory manager.
-	 * @param data The model data to add.
-	 * @param type The type of the mesh to add.
-	 * @return the data needed to render the mesh.
+	 * Gets the memory manager for this rendering engine, used for uploading
+	 * models.
+	 * @return The memory manager for this rendering engine.
 	 */
-	MeshRenderData addMesh(ModelData& data, MeshType type);
+	RendererMemoryManager* getMemoryManager();
 
 	/**
 	 * Uploads data to gpu and sets some state stuff.

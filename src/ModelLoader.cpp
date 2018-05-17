@@ -27,7 +27,7 @@
 void ModelLoader::loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting) {
 	std::shared_ptr<ModelData> data = loadFromDisk(filename);
 	//Always static for now
-	MeshRenderData mesh = renderer->addMesh(*data, MeshType::STATIC);
+	MeshRenderData mesh = renderer->getMemoryManager()->addStaticMesh(data->vertices, data->indices);
 
 	AxisAlignedBB box = calculateBox(data);
 	logger.debug("Calculated box " + box.toString() + " for model " + name);

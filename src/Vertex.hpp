@@ -37,6 +37,11 @@ struct Vertex {
 	}
 };
 
+struct TextVertex {
+	glm::vec2 pos;
+	glm::vec2 tex;
+};
+
 inline std::string vertToString(const Vertex& v) {
 	return "(" + std::to_string(v.pos.x) + ", " + std::to_string(v.pos.y) + ", " + std::to_string(v.pos.z) + ") (" +
 		   std::to_string(v.normal.x) + ", " + std::to_string(v.normal.y) + ", " + std::to_string(v.normal.z) + ") (" +

@@ -151,8 +151,8 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	logger.info("OpenGL initialization complete.");
 }
 
-MeshRenderData GlRenderingEngine::addMesh(ModelData& data, MeshType type) {
-	return memoryManager.addMesh(data.vertices, data.indices, type);
+RendererMemoryManager* GlRenderingEngine::getMemoryManager() {
+	return &memoryManager;
 }
 
 void GlRenderingEngine::finishLoad() {

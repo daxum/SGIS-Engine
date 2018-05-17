@@ -24,11 +24,15 @@
 #include "AxisAlignedBB.hpp"
 
 //The type of mesh, affects mesh storage
-enum class MeshType {
+enum MeshType {
 	//Static meshes will be uploaded to gpu memory, for fast access by the gpu. Their buffers
 	//will never be mapped. In addition, their vertices may be combined with the vertices of other
 	//static meshes to save memory.
-	STATIC
+	STATIC = 0,
+	//Text meshes.
+	DYNAMIC_TEXT,
+	//The total number of buffers, not actually a type of buffer.
+	BUFFER_COUNT
 };
 
 //Contains the data needed to draw a mesh, such as offsets in the index buffer

@@ -8,42 +8,36 @@ GlMemoryManager::GlMemoryManager(Logger& logger) :
 }
 
 GlMemoryManager::~GlMemoryManager() {
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vertexBuffer);
-	glDeleteBuffers(1, &indexBuffer);
+	glDeleteVertexArrays(BUFFER_COUNT, vaos);
+	glDeleteBuffers(BUFFER_COUNT, vertexBuffers);
+	glDeleteBuffers(BUFFER_COUNT, indexBuffers);
 }
 
-MeshRenderData GlMemoryManager::addMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, MeshType type) {
+MeshRenderData GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
 	if (initialized) {
-		throw std::runtime_error("Cannot add meshes after initialization!");
+		throw std::runtime_error("Cannot add static meshes after initialization!");
 	}
 
 	MeshRenderData data = {};
-	data.type = type;
+	data.type = MeshType::STATIC;
 	data.indexStart = staticIndices.size() * sizeof(uint32_t);
 
 	uint32_t indexStartSize = staticIndices.size();
 
-	switch (type) {
-		case MeshType::STATIC:
-			//STATIC: all static meshes are combined into one unmodifiable buffer in gpu memory
-			logger.debug("Adding mesh to static data...");
+	logger.debug("Adding mesh to static data...");
 
-			for (const uint32_t i : indices) {
-				const Vertex& vertex = vertices[i];
+	for (const uint32_t i : indices) {
+		const Vertex& vertex = vertices[i];
 
-				//If vertex is unique to all static meshes
-				if (staticUniqueVertices.count(vertex) == 0) {
-					//Add new vertex and index
-					staticUniqueVertices[vertex] = staticVertices.size();
-					staticVertices.push_back(vertex);
-				}
+		//If vertex is unique to all static meshes
+		if (staticUniqueVertices.count(vertex) == 0) {
+			//Add new vertex and index
+			staticUniqueVertices[vertex] = staticVertices.size();
+			staticVertices.push_back(vertex);
+		}
 
-				//Add index for vertex, index may refer to vertex of another mesh
-				staticIndices.push_back(staticUniqueVertices[vertex]);
-			}
-			break;
-		default: throw std::runtime_error("Missing mesh type!");
+		//Add index for vertex, index may refer to vertex of another mesh
+		staticIndices.push_back(staticUniqueVertices[vertex]);
 	}
 
 	data.indexCount = staticIndices.size() - indexStartSize;
@@ -64,20 +58,20 @@ void GlMemoryManager::upload() {
 				 "\n\tIndices:    " + std::to_string(staticIndices.size()) +
 				 "\n\tTotal size: " + std::to_string(staticVertices.size() * sizeof(Vertex) + staticIndices.size() * sizeof(uint32_t)) + " bytes");
 
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vertexBuffer);
-	glGenBuffers(1, &indexBuffer);
+	glGenVertexArrays(BUFFER_COUNT, vaos);
+	glGenBuffers(BUFFER_COUNT, vertexBuffers);
+	glGenBuffers(BUFFER_COUNT, indexBuffers);
 
-	glBindVertexArray(vao);
+	glBindVertexArray(vaos[MeshType::STATIC]);
 
 	logger.debug("Creating " + std::to_string(staticVertices.size() * sizeof(Vertex)) + " byte vertex buffer for static data.");
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[MeshType::STATIC]);
 	glBufferData(GL_ARRAY_BUFFER, staticVertices.size() * sizeof(Vertex), staticVertices.data(), GL_STATIC_DRAW);
 
 	logger.debug("Creating " + std::to_string(staticIndices.size() * sizeof(uint32_t)) + " byte index buffer for static data.");
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffers[MeshType::STATIC]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, staticIndices.size() * sizeof(uint32_t), staticIndices.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
@@ -104,8 +98,9 @@ void GlMemoryManager::upload() {
 }
 
 void GlMemoryManager::bindBuffer(MeshType type) {
-	switch (type) {
-		case MeshType::STATIC: glBindVertexArray(vao); break;
-		default: throw std::runtime_error("Missing type in GlMemoryManager::bindBuffer!");
+	if (type >= BUFFER_COUNT) {
+		throw std::runtime_error("Invalid meshtype in bindBuffer!");
 	}
+
+	glBindVertexArray(vaos[type]);
 }

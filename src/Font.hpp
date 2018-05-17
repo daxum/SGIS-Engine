@@ -62,6 +62,11 @@ public:
 	 */
 	GlyphData& getChar(char32_t glyph) { return glyphs.at(glyph); }
 
+	/**
+	 * Returns the font's texture.
+	 */
+	const std::string& getTexture() { return texture; }
+
 private:
 	std::unordered_map<char32_t, GlyphData> glyphs;
 
