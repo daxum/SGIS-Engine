@@ -92,4 +92,10 @@ private:
 	GLuint vaos[BUFFER_COUNT];
 	GLuint vertexBuffers[BUFFER_COUNT];
 	GLuint indexBuffers[BUFFER_COUNT];
+
+	//Text buffer stuff.
+	//Maybe make this configurable later. 8MB is enough for around 130,000 characters.
+	const size_t textBufferSize = 8388608;
+	//Theoretically this buffer can be smaller, but probably not really worth it (8/3 vertex/index ratio).
+	const size_t textIndexBufferSize = textBufferSize;
 };

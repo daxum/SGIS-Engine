@@ -83,6 +83,26 @@ void GlMemoryManager::upload() {
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoords));
 
+	//Text buffers
+
+	glBindVertexArray(vaos[MeshType::DYNAMIC_TEXT]);
+
+	logger.debug("Creating " + std::to_string(textBufferSize) + " byte vertex buffer for text data.");
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[MeshType::DYNAMIC_TEXT]);
+	glBufferData(GL_ARRAY_BUFFER, textBufferSize, nullptr, GL_DYNAMIC_DRAW);
+
+	logger.debug("Creating " + std::to_string(textIndexBufferSize) + " byte index buffer for text data.");
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffers[MeshType::DYNAMIC_TEXT]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, textIndexBufferSize, nullptr, GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*) offsetof(TextVertex, pos));
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*) offsetof(TextVertex, tex));
+
 	glBindVertexArray(0);
 
 	//Delete mesh caches
