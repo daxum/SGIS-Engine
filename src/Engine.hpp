@@ -86,8 +86,6 @@ private:
 	std::shared_ptr<RenderingEngine> renderer;
 	//Manages all models loaded by the game
 	ModelManager modelManager;
-	//Set by the exit function to terminate the main game loop.
-	bool stopped;
 
 	/**
 	 * Indicates if the engine should stop, used to exit the main loop.
