@@ -21,12 +21,21 @@
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
+#include <list>
 
 #include "Vertex.hpp"
 #include "CombinedGl.h"
 #include "Model.hpp"
 #include "Logger.hpp"
 #include "RendererMemoryManager.hpp"
+
+//Used for allocations in dynamic buffers.
+//All values in bytes.
+struct AllocInfo {
+	size_t start;
+	size_t size;
+	bool free;
+};
 
 class GlMemoryManager : public RendererMemoryManager {
 public:
@@ -57,13 +66,13 @@ public:
 	 * @param indices The indices for the text model.
 	 * @return model data with which to render the text.
 	 */
-	MeshRenderData addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) { return {BUFFER_COUNT, 0, 0}; } //INCOMPLETE
+	MeshRenderData addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices);
 
 	/**
 	 * Marks the memory previously occupied by the model data as unused.
 	 * @param data The model data to free.
 	 */
-	void freeTextMesh(const MeshRenderData& data) {}
+	void freeTextMesh(const MeshRenderData& data);
 
 	/**
 	 * Uploads static data to gpu to prepare for drawing.
@@ -98,4 +107,38 @@ private:
 	const size_t textBufferSize = 8388608;
 	//Theoretically this buffer can be smaller, but probably not really worth it (8/3 vertex/index ratio).
 	const size_t textIndexBufferSize = textBufferSize;
+
+	//Text memory management
+	typedef std::list<AllocInfo>::iterator DynBufElement;
+
+	//Stores current text buffer allocations.
+	std::list<AllocInfo> textAllocList;
+	//Same for index buffer
+	std::list<AllocInfo> textIndexAllocList;
+	//Points to next free segment in text buffer.
+	DynBufElement nextAlloc;
+	DynBufElement nextIndexAlloc;
+	//Maps from index start to free list positions.
+	std::unordered_map<size_t, DynBufElement> textVertMap;
+	std::unordered_map<size_t, DynBufElement> textIndexMap;
+
+	/**
+	 * Allocates a section from the list and returns the start point.
+	 * @param list The free list for the memory being allocated.
+	 * @param current The current allocation position in the list.
+	 * @param allocSize The amount of memory to allocate.
+	 * @return The offset into the buffer for the start of the memory allocation.
+	 * @throw runtime_error if the allocation failed.
+	 */
+	size_t allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize);
+
+	/**
+	 * Frees a section of the list and merges with adjacent free segments.
+	 * Current will be moved past the merged segment if needed, to prevent
+	 * immediate reallocation.
+	 * @param list The list to free from.
+	 * @param current The next segment to be used for allocation.
+	 * @param freePos The position in the list to free.
+	 */
+	void freeFromList(std::list<AllocInfo>& list, DynBufElement& current, DynBufElement freePos);
 };

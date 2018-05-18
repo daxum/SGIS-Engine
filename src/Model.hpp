@@ -40,9 +40,9 @@ struct MeshRenderData {
 	//The type of this mesh - determines which buffer to use
 	MeshType type;
 	//The starting position (byte offset) in the index buffer
-	uint32_t indexStart;
+	size_t indexStart;
 	//The number of indices in the mesh
-	uint32_t indexCount;
+	size_t indexCount;
 };
 
 struct LightInfo {

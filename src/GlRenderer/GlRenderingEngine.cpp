@@ -203,6 +203,8 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 			}
 		}
 	}
+
+	glBindVertexArray(0);
 }
 
 void GlRenderingEngine::clearBuffers() {
@@ -265,7 +267,7 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 		glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
 	}
 
-	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) (uintptr_t)model.mesh.indexStart);
+	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) model.mesh.indexStart);
 
 	matStack.pop();
 }

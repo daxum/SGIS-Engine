@@ -1,4 +1,6 @@
 #include <stdexcept>
+#include <cstring>
+
 #include "GlMemoryManager.hpp"
 
 GlMemoryManager::GlMemoryManager(Logger& logger) :
@@ -22,7 +24,7 @@ MeshRenderData GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertice
 	data.type = MeshType::STATIC;
 	data.indexStart = staticIndices.size() * sizeof(uint32_t);
 
-	uint32_t indexStartSize = staticIndices.size();
+	size_t indexStartSize = staticIndices.size();
 
 	logger.debug("Adding mesh to static data...");
 
@@ -43,6 +45,57 @@ MeshRenderData GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertice
 	data.indexCount = staticIndices.size() - indexStartSize;
 
 	return data;
+}
+
+MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) {
+	if (!initialized) {
+		throw std::runtime_error("Attempt to add dynamic mesh before initialization!");
+	}
+
+	const size_t vertSize = vertices.size() * sizeof(TextVertex);
+	const size_t indexSize = indices.size() * sizeof(uint32_t);
+
+	size_t vertexStart = allocateFromList(textAllocList, nextAlloc, vertSize);
+	size_t indexStart = allocateFromList(textIndexAllocList, nextIndexAlloc, indexSize);
+
+	//Adjust indices for vertex start.
+	uint32_t indexOffset = vertexStart / sizeof(TextVertex);
+
+	std::vector<uint32_t> adjIndices(indices);
+
+	for (uint32_t& i : adjIndices) {
+		i += indexOffset;
+	}
+
+	//Upload mesh data.
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[MeshType::DYNAMIC_TEXT]);
+	void* bufferData = glMapBufferRange(GL_ARRAY_BUFFER, vertexStart, vertSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+	memcpy(bufferData, vertices.data(), vertSize);
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffers[MeshType::DYNAMIC_TEXT]);
+	void* indexBufferData = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, indexStart, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+	memcpy(indexBufferData, adjIndices.data(), indexSize);
+	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+	//Add to map.
+	textVertMap.insert({indexStart, nextAlloc});
+	textIndexMap.insert({indexStart, nextIndexAlloc});
+
+	return {DYNAMIC_TEXT, indexStart, indices.size()};
+}
+
+void GlMemoryManager::freeTextMesh(const MeshRenderData& data) {
+	DynBufElement vertFreePos = textVertMap.at(data.indexStart);
+	DynBufElement indexFreePos = textIndexMap.at(data.indexStart);
+
+	textVertMap.erase(data.indexStart);
+	textIndexMap.erase(data.indexStart);
+
+	freeFromList(textAllocList, nextAlloc, vertFreePos);
+	freeFromList(textIndexAllocList, nextIndexAlloc, indexFreePos);
+
+	//Invalidating the buffer ranges would go here if supported.
 }
 
 void GlMemoryManager::upload() {
@@ -105,6 +158,16 @@ void GlMemoryManager::upload() {
 
 	glBindVertexArray(0);
 
+	//Initialize text buffer free lists
+	textAllocList.clear();
+	textIndexAllocList.clear();
+
+	textAllocList.push_back({0, textBufferSize, true});
+	textIndexAllocList.push_back({0, textIndexBufferSize, true});
+
+	nextAlloc = textAllocList.begin();
+	nextIndexAlloc = textIndexAllocList.begin();
+
 	//Delete mesh caches
 	logger.info("Deleting mesh caches... (will save around " + std::to_string(staticVertices.size() * sizeof(Vertex) +
 				staticIndices.size() * sizeof(uint32_t) + staticUniqueVertices.size() * sizeof(Vertex) +
@@ -123,4 +186,86 @@ void GlMemoryManager::bindBuffer(MeshType type) {
 	}
 
 	glBindVertexArray(vaos[type]);
+}
+
+size_t GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize) {
+	DynBufElement start = current;
+
+	//Find free segment of proper size.
+	while (current->size < allocSize || !current->free) {
+		current++;
+
+		if (current == list.end()) {
+			current = list.begin();
+		}
+
+		if (current == start) {
+			throw std::runtime_error("Failed to allocate " + std::to_string(allocSize) + " bytes from dynamic buffer");
+		}
+	}
+
+	//Found segment, allocate it.
+	size_t pos = current->start;
+	current->free = false;
+
+	//Split segment if needed.
+	size_t extra = current->size - allocSize;
+
+	if (extra > 0) {
+		DynBufElement next = current;
+		next++;
+
+		list.insert(next, {current->start + current->size, extra, true});
+		current->size -= extra;
+	}
+
+	return pos;
+}
+
+void GlMemoryManager::freeFromList(std::list<AllocInfo>& list, DynBufElement& current, DynBufElement freePos) {
+	if (freePos->free) {
+		throw std::runtime_error("Invalid free attempt from dynamic buffer!");
+	}
+
+	freePos->free = true;
+
+	//Merge with previous.
+	DynBufElement prev = freePos;
+	prev--;
+
+	if (freePos != list.begin() && prev->free) {
+		DynBufElement next = freePos;
+		freePos = prev;
+
+		freePos->size += next->size;
+		list.erase(next);
+
+		//Move current past merged element if needed.
+		if (current == freePos) {
+			current++;
+
+			if (current == list.end()) {
+				current = list.begin();
+			}
+		}
+	}
+
+	//Merge with next.
+	DynBufElement next = freePos;
+	next++;
+
+	if (next != list.end() && next->free) {
+		//Move current past to-be-merged element.
+		if (current == next) {
+			current++;
+
+			if (current == list.end()) {
+				current = list.begin();
+			}
+		}
+
+		//Merge elements.
+		freePos->size += next->size;
+		list.erase(next);
+	}
 }
