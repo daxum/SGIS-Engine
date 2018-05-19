@@ -80,7 +80,7 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 		xPos += data.advance;
 	}
 
-	yPos -= font.getSize() + font.getSize();
+	yPos -= font.getSize();
 
 	//Temporary, fix models later.
 	LightInfo fontLight = {
