@@ -24,7 +24,7 @@
 
 class DefaultCamera : public Camera {
 public:
-	DefaultCamera() : pos(0.0, 0.0, -1.0), lookDir(0.0, 0.0, 1.0), up(0.0, 1.0, 0.0) {}
+	DefaultCamera() : pos(0.0, 0.0, 1.0), lookDir(0.0, 0.0, -1.0), up(0.0, 1.0, 0.0) {}
 
 	/**
 	 * Calculates a view matrix to use in rendering.

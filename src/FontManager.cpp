@@ -59,23 +59,23 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 
 		//Place vertices.
 
-		//Bottom left
-		vertices.push_back({glm::vec2(xPos + data.bearing.x, baseline + data.bearing.y), glm::vec2(data.fPos.x, data.fPos.y)});
-		//Bottom right
-		vertices.push_back({glm::vec2(xPos + data.bearing.x + data.size.x, baseline + data.bearing.y), glm::vec2(data.fPos.z, data.fPos.y)});
 		//Top left
-		vertices.push_back({glm::vec2(xPos + data.bearing.x, baseline - (data.size.y - data.bearing.y)), glm::vec2(data.fPos.x, data.fPos.w)});
+		vertices.push_back({glm::vec2(xPos + data.bearing.x, baseline + data.bearing.y), glm::vec2(data.fPos.x, data.fPos.y)});
 		//Top right
+		vertices.push_back({glm::vec2(xPos + data.bearing.x + data.size.x, baseline + data.bearing.y), glm::vec2(data.fPos.z, data.fPos.y)});
+		//Bottom left
+		vertices.push_back({glm::vec2(xPos + data.bearing.x, baseline - (data.size.y - data.bearing.y)), glm::vec2(data.fPos.x, data.fPos.w)});
+		//Bottom right
 		vertices.push_back({glm::vec2(xPos + data.bearing.x + data.size.x, baseline - (data.size.y - data.bearing.y)), glm::vec2(data.fPos.z, data.fPos.w)});
 
 		//Add indices.
 
-		indices.push_back(3 + indexStart);
+		indices.push_back(0 + indexStart);
 		indices.push_back(2 + indexStart);
-		indices.push_back(0 + indexStart);
-		indices.push_back(1 + indexStart);
 		indices.push_back(3 + indexStart);
 		indices.push_back(0 + indexStart);
+		indices.push_back(3 + indexStart);
+		indices.push_back(1 + indexStart);
 
 		xPos += data.advance;
 	}
