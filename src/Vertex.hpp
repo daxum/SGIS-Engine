@@ -48,6 +48,11 @@ inline std::string vertToString(const Vertex& v) {
 		   std::to_string(v.texCoords.x) + ", " + std::to_string(v.texCoords.y) + ")";
 }
 
+inline std::string textVertToString(const TextVertex& t) {
+	return "(" + std::to_string(t.pos.x) + ", " + std::to_string(t.pos.y) + ") (" +
+		   std::to_string(t.tex.x) + ", " + std::to_string(t.tex.y) + ")";
+}
+
 namespace std {
     template<> struct hash<Vertex> {
         size_t operator()(Vertex const& vertex) const {

@@ -48,10 +48,6 @@ MeshRenderData GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertice
 }
 
 MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) {
-	if (!initialized) {
-		throw std::runtime_error("Attempt to add dynamic mesh before initialization!");
-	}
-
 	const size_t vertSize = vertices.size() * sizeof(TextVertex);
 	const size_t indexSize = indices.size() * sizeof(uint32_t);
 
@@ -100,7 +96,7 @@ void GlMemoryManager::freeTextMesh(const MeshRenderData& data) {
 
 void GlMemoryManager::upload() {
 	if (initialized) {
-		throw std::runtime_error("Init called twice for memory manager!");
+		throw std::runtime_error("upload called twice for memory manager!");
 	}
 
 	//Static mesh data
@@ -110,10 +106,6 @@ void GlMemoryManager::upload() {
 				 "\n\tVertices:   " + std::to_string(staticVertices.size()) +
 				 "\n\tIndices:    " + std::to_string(staticIndices.size()) +
 				 "\n\tTotal size: " + std::to_string(staticVertices.size() * sizeof(Vertex) + staticIndices.size() * sizeof(uint32_t)) + " bytes");
-
-	glGenVertexArrays(BUFFER_COUNT, vaos);
-	glGenBuffers(BUFFER_COUNT, vertexBuffers);
-	glGenBuffers(BUFFER_COUNT, indexBuffers);
 
 	glBindVertexArray(vaos[MeshType::STATIC]);
 
@@ -136,8 +128,27 @@ void GlMemoryManager::upload() {
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoords));
 
-	//Text buffers
+	glBindVertexArray(0);
 
+	//Delete mesh caches
+	logger.info("Deleting mesh caches... (will save around " + std::to_string(staticVertices.size() * sizeof(Vertex) +
+				staticIndices.size() * sizeof(uint32_t) + staticUniqueVertices.size() * sizeof(Vertex) +
+				staticUniqueVertices.size() * sizeof(uint32_t)) + " bytes)");
+
+	std::vector<Vertex>().swap(staticVertices);
+	std::vector<uint32_t>().swap(staticIndices);
+	std::unordered_map<Vertex, uint32_t>().swap(staticUniqueVertices);
+
+	initialized = true;
+}
+
+void GlMemoryManager::init() {
+	//Generate all buffers
+	glGenVertexArrays(BUFFER_COUNT, vaos);
+	glGenBuffers(BUFFER_COUNT, vertexBuffers);
+	glGenBuffers(BUFFER_COUNT, indexBuffers);
+
+	//Allocate text buffers
 	glBindVertexArray(vaos[MeshType::DYNAMIC_TEXT]);
 
 	logger.debug("Creating " + std::to_string(textBufferSize) + " byte vertex buffer for text data.");
@@ -151,7 +162,7 @@ void GlMemoryManager::upload() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, textIndexBufferSize, nullptr, GL_DYNAMIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*) offsetof(TextVertex, pos));
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*) offsetof(TextVertex, pos));
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*) offsetof(TextVertex, tex));
@@ -167,17 +178,6 @@ void GlMemoryManager::upload() {
 
 	nextAlloc = textAllocList.begin();
 	nextIndexAlloc = textIndexAllocList.begin();
-
-	//Delete mesh caches
-	logger.info("Deleting mesh caches... (will save around " + std::to_string(staticVertices.size() * sizeof(Vertex) +
-				staticIndices.size() * sizeof(uint32_t) + staticUniqueVertices.size() * sizeof(Vertex) +
-				staticUniqueVertices.size() * sizeof(uint32_t)) + " bytes)");
-
-	std::vector<Vertex>().swap(staticVertices);
-	std::vector<uint32_t>().swap(staticIndices);
-	std::unordered_map<Vertex, uint32_t>().swap(staticUniqueVertices);
-
-	initialized = true;
 }
 
 void GlMemoryManager::bindBuffer(MeshType type) {

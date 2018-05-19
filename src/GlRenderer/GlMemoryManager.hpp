@@ -81,6 +81,11 @@ public:
 	void upload();
 
 	/**
+	 * Initializes the dynamic buffers.
+	 */
+	void init();
+
+	/**
 	 * Binds the specified buffer for drawing.
 	 * @param type The buffer to bind.
 	 */

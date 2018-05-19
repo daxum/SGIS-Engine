@@ -102,13 +102,6 @@ protected:
 	TextureData loadFromDisk(std::string filename);
 
 	/**
-	 * Adds a font to wherever fonts are stored and returns a reference to it.
-	 * @param textureName The name of the font's texture.
-	 * @return A reference to the stored font.
-	 */
-	virtual Font& addFont(const std::string& textureName) = 0;
-
-	/**
 	 * Adds a font texture in the same way as loadTexture.
 	 * @param textureName The name to store the texture under.
 	 * @param data The texture data to store. Be careful with the

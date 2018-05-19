@@ -25,6 +25,7 @@ add_library(Engine STATIC
 	RenderComponentManager.cpp
 	InputHandler.cpp
 	GuiComponentManager.cpp
+	FontManager.cpp
 	GlRenderer/gl_core_4_1.c
 )
 

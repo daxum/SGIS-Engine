@@ -25,6 +25,7 @@
 #include "EngineConfig.hpp"
 #include "ModelManager.hpp"
 #include "Logger.hpp"
+#include "FontManager.hpp"
 
 class Engine {
 public:
@@ -73,6 +74,13 @@ public:
 	 */
 	const std::shared_ptr<const RenderingEngine> getRenderer() const { return renderer; }
 
+	/**
+	 * Gets the engine's font manager. Not threadsafe, should only be called from
+	 * TextComponent / TextureLoader.
+	 * @return The font manager from this engine.
+	 */
+	FontManager& getFontManager() { return fontManager; }
+
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
 	const EngineConfig config;
@@ -86,6 +94,8 @@ private:
 	std::shared_ptr<RenderingEngine> renderer;
 	//Manages all models loaded by the game
 	ModelManager modelManager;
+	//Manages all loaded fonts
+	FontManager fontManager;
 
 	/**
 	 * Indicates if the engine should stop, used to exit the main loop.

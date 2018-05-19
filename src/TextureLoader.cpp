@@ -19,6 +19,7 @@
 #include <algorithm>
 
 #include "TextureLoader.hpp"
+#include "Engine.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "ft2build.h"
@@ -46,8 +47,9 @@ namespace {
 
 	//Used for temporary font storage when creating textures.
 	struct CharData {
-		CharData(GlyphData* g, unsigned char* buf, size_t bufferSize) :
-			glyph(g),
+		CharData(const GlyphData* g, unsigned char* buf, size_t bufferSize) :
+			//Don't look
+			glyph(const_cast<GlyphData*>(g)),
 			buffer(new unsigned char[bufferSize]) {
 
 			memcpy(buffer.get(), buf, bufferSize);
@@ -115,7 +117,12 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 
 	std::vector<GlyphData*> glyphs;
 	std::vector<CharData> chars;
-	Font& font = addFont(name);
+
+	if (FT_Load_Char(faces.at(0), U' ', FT_LOAD_RENDER)) {
+		throw std::runtime_error("Missing space in font " + filenames.at(0) + "!");
+	}
+
+	Font& font = Engine::instance->getFontManager().addFont(name, faces.at(0)->glyph->advance.x >> 6, size);
 
 	//Load characters from fonts.
 	for (char32_t character : characters) {
@@ -131,7 +138,7 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 			GlyphData data;
 			data.size = glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
 			data.bearing = glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
-			data.advance = glm::ivec2(face->glyph->advance.x, face->glyph->advance.y);
+			data.advance = face->glyph->advance.x >> 6;
 
 			//Add to font
 			font.addGlyph(character, data);
@@ -215,16 +222,19 @@ bool TextureLoader::tryPositionGlyphs(std::vector<GlyphData*>& glyphs, const uns
 	unsigned int currentPos = 0;
 
 	for (GlyphData* glyph : glyphs) {
+		//TODO: calculate spacing based on font size.
+		glm::vec2 size(glyph->size.x + 4, glyph->size.y + 4);
+
 		//If glyph is too long, go to next row.
-		if (currentPos + glyph->size.x > texSize) {
+		if (currentPos + size.x > texSize) {
 			currentPos = 0;
 			currentHeight = nextHeight;
 			//Glyphs are sorted by height, so just increment by this one's height.
-			nextHeight += glyph->size.y;
+			nextHeight += size.y;
 		}
 
 		//If past end of texture, return false (this requires the glyphs to be sorted by height).
-		if (glyph->size.y + currentHeight > texSize) {
+		if (size.y + currentHeight > texSize) {
 			return false;
 		}
 
@@ -232,7 +242,13 @@ bool TextureLoader::tryPositionGlyphs(std::vector<GlyphData*>& glyphs, const uns
 		glyph->pos.x = currentPos;
 		glyph->pos.y = currentHeight;
 
-		currentPos += glyph->size.x;
+		//Set tex coords
+		glyph->fPos.x = currentPos / (float)texSize;
+		glyph->fPos.y = currentHeight / (float)texSize;
+		glyph->fPos.z = (currentPos + glyph->size.x) / (float)texSize;
+		glyph->fPos.w = (currentHeight + glyph->size.y) / (float)texSize;
+
+		currentPos += size.x;
 	}
 
 	//Made it through all the glyphs, so they fit.

@@ -118,6 +118,11 @@ public:
 	 */
 	void onMouseClick(MouseButton button, MouseAction action);
 
+	/**
+	 * Completely empties the screen stack.
+	 */
+	void clear() { std::stack<std::vector<std::shared_ptr<Screen>>>().swap(screenStack); }
+
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
 	//and the second contains all screens that are currently being rendered.

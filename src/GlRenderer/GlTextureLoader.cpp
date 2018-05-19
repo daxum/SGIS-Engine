@@ -19,9 +19,6 @@
 #include <stdexcept>
 #include "GlTextureLoader.hpp"
 
-//TEMP, REMOVE LATER
-Font GlTextureLoader::tempFont("TEMPFONT");
-
 GlTextureLoader::GlTextureLoader(Logger& logger, std::unordered_map<std::string, GLuint>& texMap) :
 	TextureLoader(logger),
 	textureMap(texMap) {

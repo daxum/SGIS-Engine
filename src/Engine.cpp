@@ -26,7 +26,8 @@ Engine::Engine(const EngineConfig& config) :
 	config(config),
 	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
 	display(),
-	modelManager(config.loaderLog, renderer) {
+	modelManager(config.loaderLog, renderer),
+	fontManager(renderer) {
 
 	if (instance) {
 		throw std::runtime_error("Engine already initialized!");
@@ -122,6 +123,9 @@ void Engine::run(GameInterface& game) {
 
 	//Clean up resources, exit game
 	logger.info("Exit called, shutting down.");
+
+	//Prevent segmentation faults.
+	display.clear();
 }
 
 bool Engine::shouldExit() {

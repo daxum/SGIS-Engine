@@ -27,6 +27,9 @@ struct GlyphData {
 	//Position in texture, from top left.
 	glm::ivec2 pos;
 
+	//Position of corners in texture, from 0 to 1
+	glm::vec4 fPos;
+
 	//Width and height of glyph.
 	glm::ivec2 size;
 
@@ -34,7 +37,7 @@ struct GlyphData {
 	glm::ivec2 bearing;
 
 	//Distance to next character.
-	glm::ivec2 advance;
+	int advance;
 };
 
 class Font {
@@ -42,8 +45,10 @@ public:
 	/**
 	 * Creates a font with the given texture.
 	 * @param tex The bitmap containing the font's characters.
+	 * @param spaceWidth The width of a space.
+	 * @param size The font size.
 	 */
-	Font(std::string tex) : texture(tex) {}
+	Font(std::string tex, int spaceWidth, size_t size) : texture(tex), spaceWidth(spaceWidth), size(size) {}
 
 	/**
 	 * Adds a character to the font. Should only be called during font
@@ -54,21 +59,35 @@ public:
 	void addGlyph(char32_t glyph, GlyphData& data) { glyphs.insert({glyph, data}); }
 
 	/**
+	 * Try to guess what this does.
+	 */
+	int getSpaceWidth() const { return spaceWidth; }
+
+	/**
 	 * Gets the texture data for the given character.
 	 * @param glyph The character to get texture data for.
 	 * @return The texture data for the character.
 	 * @throw Whatever map throws when an element isn't present, whenever
 	 *     the character isn't present.
 	 */
-	GlyphData& getChar(char32_t glyph) { return glyphs.at(glyph); }
+	const GlyphData& getChar(char32_t glyph) const { return glyphs.at(glyph); }
 
 	/**
 	 * Returns the font's texture.
 	 */
-	const std::string& getTexture() { return texture; }
+	const std::string& getTexture() const { return texture; }
+
+	/**
+	 * Returns the size of the font.
+	 */
+	const size_t getSize() const { return size; }
 
 private:
 	std::unordered_map<char32_t, GlyphData> glyphs;
 
 	std::string texture;
+
+	int spaceWidth;
+
+	size_t size;
 };

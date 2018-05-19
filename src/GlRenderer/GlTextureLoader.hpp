@@ -46,15 +46,6 @@ public:
 	void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap);
 
 protected:
-	static Font tempFont;
-
-	/**
-	 * Adds a font to wherever fonts are stored and returns a reference to it.
-	 * @param textureName The name of the font's texture.
-	 * @return A reference to the stored font.
-	 */
-	Font& addFont(const std::string& textureName) { return tempFont; }
-
 	/**
 	 * Adds a font texture.
 	 * @param textureName The name to store the texture under.

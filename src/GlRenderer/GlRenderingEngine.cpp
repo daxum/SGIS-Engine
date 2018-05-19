@@ -144,9 +144,13 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glClearColor(0.0, 0.2, 0.5, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	memoryManager.init();
 
 	logger.info("OpenGL initialization complete.");
 }
@@ -170,8 +174,8 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 	matStack.multiply(camera->getView());
 	const auto cameraBox = getCameraCollisionData(camera->getView());
 
-	//All models use the static buffer at this time
-	memoryManager.bindBuffer(MeshType::STATIC);
+	//TODO: sort properly so this isn't needed.
+	MeshType currentBuffer = MeshType::BUFFER_COUNT;
 
 	//Render all objects.
 	//Also, don't ask what the auto actually is. Just don't.
@@ -199,6 +203,11 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 			const std::pair<glm::vec3, float> sphere = std::make_pair(renderComponent->getTranslation(), model.radius * maxScale);
 
 			if (checkVisible(sphere, cameraBox)) {
+				if (model.mesh.type != currentBuffer) {
+					memoryManager.bindBuffer(model.mesh.type);
+					currentBuffer = model.mesh.type;
+				}
+
 				renderObject(matStack, shader, renderComponent);
 			}
 		}
