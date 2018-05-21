@@ -219,6 +219,13 @@ size_t GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufEleme
 		current->size -= extra;
 	}
 
+	//Increment current, loop if needed.
+	current++;
+
+	if (current == list.end()) {
+		current = list.begin();
+	}
+
 	return pos;
 }
 
