@@ -51,11 +51,11 @@ MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& verti
 	const size_t vertSize = vertices.size() * sizeof(TextVertex);
 	const size_t indexSize = indices.size() * sizeof(uint32_t);
 
-	size_t vertexStart = allocateFromList(textAllocList, nextAlloc, vertSize);
-	size_t indexStart = allocateFromList(textIndexAllocList, nextIndexAlloc, indexSize);
+	DynBufElement vertexElement = allocateFromList(textAllocList, nextAlloc, vertSize);
+	DynBufElement indexElement = allocateFromList(textIndexAllocList, nextIndexAlloc, indexSize);
 
 	//Adjust indices for vertex start.
-	uint32_t indexOffset = vertexStart / sizeof(TextVertex);
+	uint32_t indexOffset = vertexElement->start / sizeof(TextVertex);
 
 	std::vector<uint32_t> adjIndices(indices);
 
@@ -65,20 +65,20 @@ MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& verti
 
 	//Upload mesh data.
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[MeshType::DYNAMIC_TEXT]);
-	void* bufferData = glMapBufferRange(GL_ARRAY_BUFFER, vertexStart, vertSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+	void* bufferData = glMapBufferRange(GL_ARRAY_BUFFER, vertexElement->start, vertSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
 	memcpy(bufferData, vertices.data(), vertSize);
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffers[MeshType::DYNAMIC_TEXT]);
-	void* indexBufferData = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, indexStart, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+	void* indexBufferData = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, indexElement->start, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
 	memcpy(indexBufferData, adjIndices.data(), indexSize);
 	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
 	//Add to map.
-	textVertMap.insert({indexStart, nextAlloc});
-	textIndexMap.insert({indexStart, nextIndexAlloc});
+	textVertMap.insert({vertexElement->start, vertexElement});
+	textIndexMap.insert({indexElement->start, indexElement});
 
-	return {DYNAMIC_TEXT, indexStart, indices.size()};
+	return {DYNAMIC_TEXT, indexElement->start, indices.size()};
 }
 
 void GlMemoryManager::freeTextMesh(const MeshRenderData& data) {
@@ -188,7 +188,7 @@ void GlMemoryManager::bindBuffer(MeshType type) {
 	glBindVertexArray(vaos[type]);
 }
 
-size_t GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize) {
+GlMemoryManager::DynBufElement GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize) {
 	DynBufElement start = current;
 
 	//Find free segment of proper size.
@@ -205,7 +205,6 @@ size_t GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufEleme
 	}
 
 	//Found segment, allocate it.
-	size_t pos = current->start;
 	current->free = false;
 
 	//Split segment if needed.
@@ -219,6 +218,8 @@ size_t GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufEleme
 		current->size -= extra;
 	}
 
+	DynBufElement allocated = current;
+
 	//Increment current, loop if needed.
 	current++;
 
@@ -226,7 +227,7 @@ size_t GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufEleme
 		current = list.begin();
 	}
 
-	return pos;
+	return allocated;
 }
 
 void GlMemoryManager::freeFromList(std::list<AllocInfo>& list, DynBufElement& current, DynBufElement freePos) {

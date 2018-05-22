@@ -128,14 +128,14 @@ private:
 	std::unordered_map<size_t, DynBufElement> textIndexMap;
 
 	/**
-	 * Allocates a section from the list and returns the start point.
+	 * Allocates a section from the list.
 	 * @param list The free list for the memory being allocated.
 	 * @param current The current allocation position in the list.
 	 * @param allocSize The amount of memory to allocate.
-	 * @return The offset into the buffer for the start of the memory allocation.
+	 * @return The allocated element.
 	 * @throw runtime_error if the allocation failed.
 	 */
-	size_t allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize);
+	DynBufElement allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize);
 
 	/**
 	 * Frees a section of the list and merges with adjacent free segments.
