@@ -75,3 +75,12 @@ void TextComponent::setShader(const std::string& shader) {
 	textModel.shader = shader;
 	lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);
 }
+
+AxisAlignedBB TextComponent::getTextBox() {
+	AxisAlignedBB textBox = textModel.meshBox;
+
+	textBox.translate(-textBox.getCenter());
+	textBox.scale(lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->getScale());
+
+	return textBox;
+}

@@ -69,6 +69,13 @@ public:
 	 */
 	void setShader(const std::string& shader);
 
+	/**
+	 * Returns the bounding box of the current text model, centered and
+	 * taking scale into account.
+	 * @return The centered and scaled bounding box of the text.
+	 */
+	AxisAlignedBB getTextBox();
+
 private:
 	std::string currentFont;
 	std::string currentShader;
