@@ -38,19 +38,12 @@ public:
 	RenderComponent(std::string model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
-	 * Similar to the constructor above, but generates a model based on the given text instead.
-	 * @param text The text to render. Supports newlines.
-	 * @param font The font for the text.
-	 * @param shader The shader to render the text with.
+	 * Creates a RenderComponent. Same as above, but takes the actual model.
+	 * @param model The model to use to render this object.
 	 * @param color The color to render the object as.
 	 * @param renderScale The scale of the object.
 	 */
-	RenderComponent(const std::u32string& text, const std::string& font, const std::string& shader, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
-
-	/**
-	 * Destructor.
-	 */
-	~RenderComponent();
+	RenderComponent(const Model& model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Returns the translation of this object.
@@ -77,6 +70,18 @@ public:
 	glm::vec3 getColor();
 
 	/**
+	 * Sets the renderComponent's scale.
+	 * @param newScale The new scale.
+	 */
+	void setScale(glm::vec3 newScale) { scale = newScale; }
+
+	/**
+	 * Sets the renderComponent's color.
+	 * @param newColor The new color.
+	 */
+	void setColor(glm::vec3 newColor) { color = newColor; }
+
+	/**
 	 * Returns the model to be used in rendering this object.
 	 * @return The model.
 	 */
@@ -89,19 +94,6 @@ public:
 	void setModel(const Model& newModel);
 
 	/**
-	 * Sets the model to the given text.
-	 * @param text The text to set the model to.
-	 * @param font The font to use.
-	 * @param shader The shader to use.
-	 */
-	void setTextModel(const std::u32string& text, const std::string& font, const std::string& shader);
-
-	/**
-	 * Same as above, reuses previous font and shader.
-	 */
-	void setTextModel(const std::u32string& text);
-
-	/**
 	 * Only to be called from RenderComponentManager.
 	 */
 	void setManager(RenderComponentManager* renderManager) { manager = renderManager; }
@@ -109,9 +101,6 @@ public:
 private:
 	//Which model to use for this object.
 	Model model;
-
-	//Whether the model was generated dynamically and needs to be freed.
-	bool textModel;
 
 	//The color of the object
 	glm::vec3 color;

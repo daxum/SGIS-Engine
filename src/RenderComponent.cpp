@@ -26,25 +26,17 @@
 RenderComponent::RenderComponent(std::string model, glm::vec3 color, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
 	model(Engine::instance->getModelManager().getModel(model)),
-	textModel(false),
 	color(color),
 	scale(renderScale) {
 
 }
 
-RenderComponent::RenderComponent(const std::u32string& text, const std::string& font, const std::string& shader, glm::vec3 color, glm::vec3 renderScale) :
+RenderComponent::RenderComponent(const Model& model, glm::vec3 color, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
-	model(Engine::instance->getFontManager().createTextModel(font, text, shader)),
-	textModel(true),
+	model(model),
 	color(color),
 	scale(renderScale) {
 
-}
-
-RenderComponent::~RenderComponent() {
-	if (textModel) {
-		Engine::instance->getFontManager().freeTextModel(model);
-	}
 }
 
 glm::vec3 RenderComponent::getTranslation() {
@@ -64,39 +56,10 @@ glm::vec3 RenderComponent::getColor() {
 }
 
 void RenderComponent::setModel(const Model& newModel) {
-	if (textModel) {
-		Engine::instance->getFontManager().freeTextModel(model);
-	}
-
-	textModel = false;
-
 	std::string oldShader = model.shader;
 	model = newModel;
 
 	if (manager) {
 		manager->reloadComponent(shared_from_this(), oldShader);
 	}
-}
-
-void RenderComponent::setTextModel(const std::u32string& text, const std::string& font, const std::string& shader) {
-	if (textModel) {
-		Engine::instance->getFontManager().freeTextModel(model);
-	}
-
-	textModel = true;
-
-	std::string oldShader = model.shader;
-	model = Engine::instance->getFontManager().createTextModel(font, text, shader);
-
-	if (manager) {
-		manager->reloadComponent(shared_from_this(), oldShader);
-	}
-}
-
-void RenderComponent::setTextModel(const std::u32string& text) {
-	if (!textModel) {
-		throw std::runtime_error("setTextModel with no font/shader for previous non-text model!");
-	}
-
-	setTextModel(text, model.texture, model.shader);
 }
