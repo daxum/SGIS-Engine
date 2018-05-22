@@ -56,8 +56,15 @@ public:
 	/**
 	 * Returns the physics interface for this object. Primarily used by RenderComponents.
 	 * Should never be null.
+	 * @return The object's physics interface.
 	 */
 	ObjectPhysicsInterface* getPhysics();
+
+	/**
+	 * Returns whether the object has a set physics interface.
+	 * @return true if the object has a physics interface, false otherwise.
+	 */
+	bool hasPhysics();
 
 	/**
 	 * Sets the physics interface for the object. This should never really need to be

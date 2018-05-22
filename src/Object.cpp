@@ -31,11 +31,15 @@ void Object::addComponent(std::shared_ptr<Component> component) {
 }
 
 ObjectPhysicsInterface* Object::getPhysics() {
-	if (physics == nullptr) {
+	if (!hasPhysics()) {
 		return &defaultInterface;
 	}
 
 	return physics;
+}
+
+bool Object::hasPhysics() {
+	return physics != nullptr;
 }
 
 void Object::setPhysics(ObjectPhysicsInterface* phys) {

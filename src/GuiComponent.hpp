@@ -34,7 +34,7 @@ public:
 	 * Sets this component as the physics provider if there isn't one already.
 	 */
 	void onParentSet() {
-		if (lockParent()->getPhysics() == nullptr) {
+		if (!lockParent()->hasPhysics()) {
 			lockParent()->setPhysics(this);
 		}
 	}
