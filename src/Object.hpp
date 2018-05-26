@@ -43,7 +43,12 @@ public:
 	 */
 	template <typename T>
 	std::shared_ptr<T> getComponent(std::string name) {
-		return std::static_pointer_cast<T>(components[name]);
+		if (components.count(name)) {
+			return std::static_pointer_cast<T>(components.at(name));
+		}
+		else {
+			return std::shared_ptr<T>();
+		}
 	}
 
 	/**
