@@ -75,7 +75,7 @@ MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& verti
 	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
 	//Add to map.
-	textVertMap.insert({vertexElement->start, vertexElement});
+	textVertMap.insert({indexElement->start, vertexElement});
 	textIndexMap.insert({indexElement->start, indexElement});
 
 	return {DYNAMIC_TEXT, indexElement->start, indices.size()};
@@ -214,8 +214,8 @@ GlMemoryManager::DynBufElement GlMemoryManager::allocateFromList(std::list<Alloc
 		DynBufElement next = current;
 		next++;
 
-		list.insert(next, {current->start + current->size, extra, true});
 		current->size -= extra;
+		list.insert(next, {current->start + current->size, extra, true});
 	}
 
 	DynBufElement allocated = current;
