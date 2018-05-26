@@ -74,7 +74,7 @@ MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& verti
 	memcpy(indexBufferData, adjIndices.data(), indexSize);
 	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
-	//Add to map.
+	//Add to map. Yes, the vertex map gets the index element's start. That is intended.
 	textVertMap.insert({indexElement->start, vertexElement});
 	textIndexMap.insert({indexElement->start, indexElement});
 
