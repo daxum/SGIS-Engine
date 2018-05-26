@@ -30,6 +30,11 @@
 class InputHandler {
 public:
 	/**
+	 * Default constructor.
+	 */
+	InputHandler();
+
+	/**
 	 * Adds the given listener to the listener list, so that
 	 * it will be notified of events.
 	 * @param listener The object to add.

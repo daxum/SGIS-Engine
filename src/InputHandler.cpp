@@ -20,6 +20,12 @@
 
 #include "InputHandler.hpp"
 
+InputHandler::InputHandler() :
+	mousePos(0.0, 0.0),
+	mouseDistance(0.0, 0.0) {
+
+}
+
 void InputHandler::addListener(std::shared_ptr<InputListener> listener) {
 	listeners.insert(listener);
 }
