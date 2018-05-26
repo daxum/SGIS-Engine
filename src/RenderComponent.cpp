@@ -60,6 +60,6 @@ void RenderComponent::setModel(const Model& newModel) {
 	model = newModel;
 
 	if (manager) {
-		manager->reloadComponent(shared_from_this(), oldShader);
+		manager->reloadComponent(lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME), oldShader);
 	}
 }

@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <memory>
-
 #include <glm/glm.hpp>
 
 #include "Component.hpp"
@@ -27,7 +25,7 @@
 
 class RenderComponentManager;
 
-class RenderComponent : public Component, std::enable_shared_from_this<RenderComponent> {
+class RenderComponent : public Component {
 public:
 	/**
 	 * Creates a RenderComponent.
