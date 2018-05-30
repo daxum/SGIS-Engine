@@ -19,13 +19,15 @@
 #pragma once
 
 #include <memory>
+
 #include "GameInterface.hpp"
 #include "DisplayEngine.hpp"
-#include "RenderingEngine.hpp"
 #include "EngineConfig.hpp"
 #include "ModelManager.hpp"
 #include "Logger.hpp"
 #include "FontManager.hpp"
+
+class RenderingEngine;
 
 class Engine {
 public:

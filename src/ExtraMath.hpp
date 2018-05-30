@@ -23,6 +23,9 @@
 #include <glm/glm.hpp>
 
 namespace ExMath {
+	//Pi, to the ninth digit.
+	constexpr static const float PI = 3.141592654f;
+
 	/**
 	 * Clamps the first value to be between the second and third values.
 	 * The object passed to this function should implement operator<

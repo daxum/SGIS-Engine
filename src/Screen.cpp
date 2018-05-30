@@ -20,7 +20,16 @@
 #include "DisplayEngine.hpp"
 #include "ComponentManager.hpp"
 #include "RenderComponentManager.hpp"
+#include "DefaultCamera.hpp"
 
+Screen::Screen(DisplayEngine& display, bool hideMouse) :
+	display(display),
+	camera(std::make_shared<DefaultCamera>()),
+	paused(false),
+	hideMouse(hideMouse) {
+
+	camera->setProjection();
+}
 void Screen::update() {
 	//Skip update if paused
 	if (paused) {
@@ -36,7 +45,7 @@ void Screen::update() {
 
 	//Update components
 	for (std::shared_ptr<ComponentManager> manager : managers) {
-		manager->update(this);
+		manager->update();
 	}
 
 	//Update camera
@@ -63,6 +72,7 @@ void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
 	}
 
 	managers.push_back(manager);
+	manager->setScreen(this);
 }
 
 void Screen::addObject(std::shared_ptr<Object> object) {
@@ -71,6 +81,11 @@ void Screen::addObject(std::shared_ptr<Object> object) {
 
 void Screen::removeObject(std::shared_ptr<Object> object) {
 	removalList.push_back(object);
+}
+
+void Screen::setCamera(std::shared_ptr<Camera> newCamera) {
+	camera = newCamera;
+	camera->setProjection();
 }
 
 void Screen::deleteObject(std::shared_ptr<Object> object) {

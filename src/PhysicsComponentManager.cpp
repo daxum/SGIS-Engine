@@ -52,13 +52,12 @@ PhysicsComponentManager::~PhysicsComponentManager() {
 	delete solverPool;
 }
 
-void PhysicsComponentManager::update(Screen* screen) {
+void PhysicsComponentManager::update() {
 	for (std::shared_ptr<Component> comp : components) {
 		std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 		physics->update();
 	}
 
-	currentScreen = screen;
 	world->stepSimulation(Engine::instance->getConfig().timestep / 1000.0, 20, Engine::instance->getConfig().physicsTimestep);
 }
 
@@ -99,7 +98,7 @@ void PhysicsComponentManager::tickCallback() {
 		PhysicsComponent* object1 = static_cast<PhysicsComponent*>(manifold->getBody0()->getUserPointer());
 		PhysicsComponent* object2 = static_cast<PhysicsComponent*>(manifold->getBody1()->getUserPointer());
 
-		object1->onCollide(currentScreen, object2);
-		object2->onCollide(currentScreen, object1);
+		object1->onCollide(screen, object2);
+		object2->onCollide(screen, object1);
 	}
 }

@@ -23,12 +23,12 @@
 #include "KeyList.hpp"
 #include "Object.hpp"
 #include "ModelManager.hpp"
-#include "DefaultCamera.hpp"
 #include "InputHandler.hpp"
 
 class DisplayEngine;
 class ComponentManager;
 class RenderComponentManager;
+class Camera;
 
 //Might be expanded later.
 struct ScreenState {};
@@ -38,7 +38,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	Screen(DisplayEngine& display, bool hideMouse) : display(display), camera(std::make_shared<DefaultCamera>()), paused(false), hideMouse(hideMouse) {}
+	Screen(DisplayEngine& display, bool hideMouse);
 
 	/**
 	 * Updates all the component managers from first added to last.
@@ -82,7 +82,7 @@ public:
 	/**
 	 * Sets the camera for this screen.
 	 */
-	void setCamera(std::shared_ptr<Camera> newCamera) { camera = newCamera; }
+	void setCamera(std::shared_ptr<Camera> newCamera);
 
 	/**
 	 * Sets the state for the screen.

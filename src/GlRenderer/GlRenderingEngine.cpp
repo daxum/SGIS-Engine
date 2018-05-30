@@ -31,6 +31,7 @@
 #include "RenderComponentManager.hpp"
 #include "RenderComponent.hpp"
 #include "ExtraMath.hpp"
+#include "Camera.hpp"
 
 namespace {
 	//Bit of a hack for static callbacks
@@ -172,7 +173,8 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 	MatrixStack matStack;
 
 	matStack.multiply(camera->getView());
-	const auto cameraBox = getCameraCollisionData(camera->getView());
+	const auto nearFar = camera->getNearFar();
+	const auto cameraBox = getCameraCollisionData(camera->getView(), camera->getProjection(), nearFar.first, nearFar.second);
 
 	//TODO: sort properly so this isn't needed.
 	MeshType currentBuffer = MeshType::BUFFER_COUNT;
@@ -188,7 +190,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 		shader->use();
 
 		if (shader->info.projection) {
-			shader->setUniformMat4("projection", projection);
+			shader->setUniformMat4("projection", camera->getProjection());
 		}
 
 		if (shader->info.lightDir) {
@@ -235,10 +237,6 @@ void GlRenderingEngine::pollEvents() {
 
 void GlRenderingEngine::captureMouse(bool capture) {
 	glfwSetInputMode(window, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-}
-
-glm::mat4 GlRenderingEngine::getProjection() const {
-	return projection;
 }
 
 float GlRenderingEngine::getWindowWidth() const {
@@ -295,13 +293,13 @@ bool GlRenderingEngine::checkVisible(const std::pair<glm::vec3, float>& sphere, 
 	return true;
 }
 
-std::vector<std::pair<glm::vec3, glm::vec3>> GlRenderingEngine::getCameraCollisionData(glm::mat4 view) {
+std::vector<std::pair<glm::vec3, glm::vec3>> GlRenderingEngine::getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane) {
 	const RenderConfig renderConfig = Engine::instance->getConfig().renderer;
 
-	auto topLeft = ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
-	auto topRight = ExMath::screenToWorld(glm::vec2(width, 0.0), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
-	auto bottomLeft = ExMath::screenToWorld(glm::vec2(0.0, height), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
-	auto bottomRight = ExMath::screenToWorld(glm::vec2(width, height), projection, view, width, height, renderConfig.nearPlane, renderConfig.farPlane);
+	auto topLeft = ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, view, width, height, nearPlane, farPlane);
+	auto topRight = ExMath::screenToWorld(glm::vec2(width, 0.0), projection, view, width, height, nearPlane, farPlane);
+	auto bottomLeft = ExMath::screenToWorld(glm::vec2(0.0, height), projection, view, width, height, nearPlane, farPlane);
+	auto bottomRight = ExMath::screenToWorld(glm::vec2(width, height), projection, view, width, height, nearPlane, farPlane);
 
 	std::vector<std::pair<glm::vec3, glm::vec3>> posNorVec;
 
@@ -338,20 +336,12 @@ std::vector<std::pair<glm::vec3, glm::vec3>> GlRenderingEngine::getCameraCollisi
 	return posNorVec;
 }
 
-void GlRenderingEngine::setProjection(int width, int height) {
-	const RenderConfig renderConfig = Engine::instance->getConfig().renderer;
-	projection = glm::perspective(PI / 4.0f, (float)width / height, renderConfig.nearPlane, renderConfig.farPlane);
-}
-
 void GlRenderingEngine::setViewport(GLFWwindow* window, int nWidth, int nHeight) {
 	renderer->width = (float) nWidth;
 	renderer->height = (float) nHeight;
 
-	int adjustedHeight = std::max(9*nWidth/16, nHeight);
-	int heightOffset = -(adjustedHeight - nHeight) / 2;
-
-	glViewport(0, heightOffset, nWidth, adjustedHeight);
-	renderer->setProjection(nWidth, adjustedHeight);
+	glViewport(0, 0, nWidth, nHeight);
+	display->updateProjections();
 }
 
 void GlRenderingEngine::glfwError(int errorCode, const char* description) {

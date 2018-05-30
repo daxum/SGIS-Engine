@@ -21,6 +21,7 @@
 #include "Engine.hpp"
 #include "PhysicsComponentManager.hpp"
 #include "ExtraMath.hpp"
+#include "Camera.hpp"
 
 bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
 	if (event->type == EventType::KEY) {
@@ -29,13 +30,13 @@ bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared
 		for (std::shared_ptr<Component> comp : components) {
 			std::shared_ptr<GuiComponent> element = std::static_pointer_cast<GuiComponent>(comp);
 
-			if (element->onKeyPress(parent, keyEvent->key, keyEvent->action)) {
+			if (element->onKeyPress(screen, keyEvent->key, keyEvent->action)) {
 				return true;
 			}
 		}
 	}
 	//Mouse click events require raytracing, and therefore a physics component manager.
-	else if (event->type == EventType::MOUSE_CLICK && parent->getManager(PHYSICS_COMPONENT_NAME)) {
+	else if (event->type == EventType::MOUSE_CLICK && screen->getManager(PHYSICS_COMPONENT_NAME)) {
 		return handleMouseClick(handler, std::static_pointer_cast<const MouseClickEvent>(event));
 	}
 
@@ -44,25 +45,26 @@ bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared
 
 bool GuiComponentManager::handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event) {
 	const std::shared_ptr<const RenderingEngine> renderer = Engine::instance->getRenderer();
-	const RenderConfig renderConf = Engine::instance->getConfig().renderer;
 
 	glm::vec2 mousePos = handler->getMousePos();
-	glm::mat4 projection = renderer->getProjection();
-	glm::mat4 view = parent->getCamera()->getView();
+	glm::mat4 projection = screen->getCamera()->getProjection();
+	glm::mat4 view = screen->getCamera()->getView();
 	float width = renderer->getWindowWidth();
 	float height = renderer->getWindowHeight();
-	float near = renderConf.nearPlane;
-	float far = renderConf.farPlane;
+
+	const auto nearFarPlanes = screen->getCamera()->getNearFar();
+	float near = nearFarPlanes.first;
+	float far = nearFarPlanes.second;
 
 	std::pair<glm::vec3, glm::vec3> nearFar = ExMath::screenToWorld(mousePos, projection, view, width, height, near, far);
 
-	PhysicsComponent* hit = std::static_pointer_cast<PhysicsComponentManager>(parent->getManager(PHYSICS_COMPONENT_NAME))->raytraceSingle(nearFar.first, nearFar.second);
+	PhysicsComponent* hit = std::static_pointer_cast<PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME))->raytraceSingle(nearFar.first, nearFar.second);
 
 	if (hit != nullptr) {
 		std::shared_ptr<GuiComponent> element = hit->getParent()->getComponent<GuiComponent>(GUI_COMPONENT_NAME);
 
 		if (element) {
-			element->onMouseClick(parent, event->button, event->action);
+			element->onMouseClick(screen, event->button, event->action);
 			return true;
 		}
 	}

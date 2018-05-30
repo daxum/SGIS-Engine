@@ -31,6 +31,23 @@ public:
 	virtual glm::mat4 getView() = 0;
 
 	/**
+	 * Fetches a projection matrix.
+	 * @return the projection matrix.
+	 */
+	virtual glm::mat4 getProjection() = 0;
+
+	/**
+	 * Called whenever the window changes to reset the projection matrix.
+	 */
+	virtual void setProjection() {}
+
+	/**
+	 * Retrieves the near and far plane.
+	 * @return A pair with the near plane as the first element and the far plane as the second.
+	 */
+	virtual std::pair<float, float> getNearFar() = 0;
+
+	/**
 	 * Updates the camera.
 	 */
 	virtual void update() = 0;

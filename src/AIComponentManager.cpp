@@ -19,7 +19,7 @@
 #include "AIComponentManager.hpp"
 #include "AIComponent.hpp"
 
-void AIComponentManager::update(Screen* screen) {
+void AIComponentManager::update() {
 	for (std::shared_ptr<Component> comp : components) {
 		std::static_pointer_cast<AIComponent>(comp)->update(screen);
 	}

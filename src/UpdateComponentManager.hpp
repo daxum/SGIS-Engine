@@ -26,7 +26,6 @@ public:
 
 	/**
 	 * Updates all the update components, non-concurrently.
-	 * @param screen The parent screen for this manager.
 	 */
-	void update(Screen* screen);
+	void update();
 };

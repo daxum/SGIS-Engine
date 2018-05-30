@@ -110,11 +110,6 @@ public:
 	void captureMouse(bool capture);
 
 	/**
-	 * Gets the projection matrix.
-	 */
-	glm::mat4 getProjection() const;
-
-	/**
 	 * Gets the window's width, in pixels.
 	 */
 	float getWindowWidth() const;
@@ -125,8 +120,6 @@ public:
 	float getWindowHeight() const;
 
 private:
-	//Projection matrix.
-	glm::mat4 projection;
 	//The general rendering logger
 	Logger logger;
 	//The loader logger
@@ -166,18 +159,14 @@ private:
 	/**
 	 * Gets a deformed collision box of the camera with normals for each face.
 	 * @param view The camera's view matrix.
+	 * @param projection The camera's projection matrix.
+	 * @param nearPlane The near plane.
+	 * @param farplane The far plane.
 	 * @return a set of pairs of vectors. The first vector contains the center
 	 *     position of one of the faces, and the second contains the normal
 	 *     for that face.
 	 */
-	std::vector<std::pair<glm::vec3, glm::vec3>> getCameraCollisionData(glm::mat4 view);
-
-	/**
-	 * Sets the projection matrix. Only intended to be called from setViewport.
-	 * @param width The width of the window.
-	 * @param height The height of the window.
-	 */
-	void setProjection(int width, int height);
+	std::vector<std::pair<glm::vec3, glm::vec3>> getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane);
 
 	/**
 	 * Sets the window viewport with OpenGL. This is a callback

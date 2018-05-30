@@ -36,7 +36,7 @@ public:
 	 * @param name The name of this ComponentManager.
 	 * @param events Whether to subscribe the component manager to input events.
 	 */
-	ComponentManager(std::string name, bool events = false) : name(name), receiveEvents(events) {}
+	ComponentManager(std::string name, bool events = false) : name(name), receiveEvents(events), screen(nullptr) {}
 
 	/**
 	 * Virtual destructor
@@ -57,18 +57,25 @@ public:
 
 	/**
 	 * Updates all components managed by this component manager in no specific order.
-	 * @param screen The screen that owns this component manager, used to get input and such.
 	 */
-	virtual void update(Screen* screen) = 0;
+	virtual void update() = 0;
 
 	/**
 	 * See InputListener.hpp.
 	 */
 	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) { return false; }
 
+	/**
+	 * Sets the parent screen. Only call from Screen.
+	 */
+	void setScreen(Screen* newScreen) { screen = newScreen; }
+
 protected:
 	//Stores all the components added to this manager.
 	std::unordered_set<std::shared_ptr<Component>> components;
+
+	//Pointer to parent screen.
+	Screen* screen;
 
 	/**
 	 * Called immediately after a component is added to the manager's

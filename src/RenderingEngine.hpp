@@ -42,9 +42,6 @@ class DisplayEngine;
 //information on how to render them. Hopefully this strategy won't be too restrictive.
 class RenderingEngine {
 public:
-	//Pi, to the ninth digit.
-	constexpr static float PI = 3.141592654f;
-
 	/**
 	 * Constructs the base rendering engine and initializes some parts of
 	 * the rendering api.
@@ -139,11 +136,6 @@ public:
 	 * Captures / uncaptures the mouse.
 	 */
 	virtual void captureMouse(bool capture) = 0;
-
-	/**
-	 * Retreives the projection matrix.
-	 */
-	virtual glm::mat4 getProjection() const = 0;
 
 	/**
 	 * Gets the window's width, in pixels.

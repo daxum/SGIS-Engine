@@ -35,7 +35,7 @@ public:
 	/**
 	 * RenderComponents don't update.
 	 */
-	void update(Screen* screen) {}
+	void update() {}
 
 	/**
 	 * Called by the renderer to get all render components

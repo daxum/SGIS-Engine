@@ -34,7 +34,7 @@ public:
 	 * Updates all physics components.
 	 * @param screen The screen that owns this PhysicsComponentManager.
 	 */
-	void update(Screen* screen);
+	void update();
 
 	/**
 	 * Sets the gravity for the world.
@@ -55,9 +55,6 @@ private:
 	 * Only called from bullet.
 	 */
 	static void physicsTickCallback(btDynamicsWorld* world, btScalar timeStep);
-
-	//Screen pointer, set during update function for access from collision callback.
-	Screen* currentScreen;
 
 	btDiscreteDynamicsWorldMt* world;
 	btDefaultCollisionConfiguration* conf;

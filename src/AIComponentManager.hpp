@@ -27,7 +27,6 @@ public:
 
 	/**
 	 * Updates all ai components, by calling their update functions.
-	 * @param screen The screen that owns this AIComponentManager.
 	 */
-	void update(Screen* screen);
+	void update();
 };

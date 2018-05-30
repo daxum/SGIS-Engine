@@ -18,6 +18,7 @@
 
 #include "DisplayEngine.hpp"
 #include "Screen.hpp"
+#include "Camera.hpp"
 
 DisplayEngine::DisplayEngine() :
 	popped(false) {
@@ -25,35 +26,35 @@ DisplayEngine::DisplayEngine() :
 }
 
 void DisplayEngine::pushScreen(std::shared_ptr<Screen> screen) {
-	screenStack.emplace();
+	screenStack.emplace_back();
 	pushOverlay(screen);
 }
 
 void DisplayEngine::popScreen() {
-	screenStack.pop();
+	screenStack.pop_back();
 	popped = true;
 
-	if (!screenStack.empty() && !screenStack.top().empty()) {
+	if (!screenStack.empty() && !screenStack.back().empty()) {
 		renderer->captureMouse(getTop()->mouseHidden());
 	}
 }
 
 void DisplayEngine::pushOverlay(std::shared_ptr<Screen> overlay) {
-	screenStack.top().push_back(overlay);
+	screenStack.back().push_back(overlay);
 
 	renderer->captureMouse(overlay->mouseHidden());
 }
 
 void DisplayEngine::popOverlay() {
-	screenStack.top().pop_back();
+	screenStack.back().pop_back();
 
-	if (!screenStack.top().empty()) {
+	if (!screenStack.back().empty()) {
 		renderer->captureMouse(getTop()->mouseHidden());
 	}
 }
 
 std::shared_ptr<Screen> DisplayEngine::getTop() {
-	return screenStack.top().back();
+	return screenStack.back().back();
 }
 
 void DisplayEngine::update() {
@@ -65,13 +66,13 @@ void DisplayEngine::update() {
 	//This cannot be range-based, because modifying the
 	//container you're looping over tends to behave strangely,
 	//due to the iterators not getting updated.
-	for (size_t i = screenStack.top().size(); i > 0; i--) {
+	for (size_t i = screenStack.back().size(); i > 0; i--) {
 		//If the overlay stack got popped more than once last update, i can become invalid.
-		if (i > screenStack.top().size()) {
-			i = screenStack.top().size();
+		if (i > screenStack.back().size()) {
+			i = screenStack.back().size();
 		}
 
-		std::shared_ptr<Screen> current = screenStack.top()[i - 1];
+		std::shared_ptr<Screen> current = screenStack.back()[i - 1];
 
 		//Might move into screen later.
 		current->getInputHandler().update(events);
@@ -96,7 +97,7 @@ void DisplayEngine::render(float partialTicks) {
 	//Render all screens in the overlay stack from botom to top.
 	//Clear the depth and stencil buffers after each one so they
 	//don't effect each other's rendering.
-	for (std::shared_ptr<Screen> screen : screenStack.top()) {
+	for (std::shared_ptr<Screen> screen : screenStack.back()) {
 		renderer->render(screen->getRenderData(), screen->getCamera());
 		renderer->clearBuffers();
 	}
@@ -122,4 +123,12 @@ void DisplayEngine::onMouseMove(float x, float y) {
 
 void DisplayEngine::onMouseClick(MouseButton button, MouseAction action) {
 	events.push_back(std::make_shared<MouseClickEvent>(button, action));
+}
+
+void DisplayEngine::updateProjections() {
+	for (std::vector<std::shared_ptr<Screen>>& overlay : screenStack) {
+		for (std::shared_ptr<Screen>& screen : overlay) {
+			screen->getCamera()->setProjection();
+		}
+	}
 }

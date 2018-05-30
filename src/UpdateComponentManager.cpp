@@ -19,7 +19,7 @@
 #include "UpdateComponentManager.hpp"
 #include "UpdateComponent.hpp"
 
-void UpdateComponentManager::update(Screen* screen) {
+void UpdateComponentManager::update() {
 	for (std::shared_ptr<Component> comp : components) {
 		std::static_pointer_cast<UpdateComponent>(comp)->update(screen);
 	}

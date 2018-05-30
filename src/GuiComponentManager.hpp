@@ -24,15 +24,14 @@ class GuiComponentManager : public ComponentManager {
 public:
 	/**
 	 * Constructor.
-	 * @param s The screen that owns this component manager.
 	 */
-	GuiComponentManager(Screen* s) : ComponentManager(GUI_COMPONENT_NAME, true), parent(s) {}
+	GuiComponentManager() : ComponentManager(GUI_COMPONENT_NAME, true) {}
 
 	/**
 	 * Does nothing at the moment, might change later to allow gui components to update themselves.
 	 * @param screen The parent screen of this gui.
 	 */
-	void update(Screen* screen) {}
+	void update() {}
 
 	/**
 	 * See InputListener.hpp.
@@ -40,8 +39,9 @@ public:
 	bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event);
 
 private:
-	//The screen that owns this manager.
-	Screen* parent;
 
+	/**
+	 * Handles a mouse click.
+	 */
 	bool handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event);
 };

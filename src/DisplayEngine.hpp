@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <stack>
 #include <vector>
 #include <memory>
 #include <unordered_map>
@@ -121,14 +120,20 @@ public:
 	/**
 	 * Completely empties the screen stack.
 	 */
-	void clear() { std::stack<std::vector<std::shared_ptr<Screen>>>().swap(screenStack); }
+	void clear() { std::vector<std::vector<std::shared_ptr<Screen>>>().swap(screenStack); }
+
+	/**
+	 * Updates the projection matrix for every screen's camera.
+	 */
+	void updateProjections();
 
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,
 	//and the second contains all screens that are currently being rendered.
 	//The outer stack is referred to above as the "screen stack", and the inner one
-	//(which is actually a vector) as the "overlay stack".
-	std::stack<std::vector<std::shared_ptr<Screen>>> screenStack;
+	//as the "overlay stack".
+	//std::stack can't be used because it can't be iterated over.
+	std::vector<std::vector<std::shared_ptr<Screen>>> screenStack;
 
 	//Set when popScreen is called during updating, breaks out of the update loop
 	//to avoid updating invalid screens.

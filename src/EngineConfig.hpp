@@ -53,10 +53,6 @@ struct RenderConfig {
 	int windowHeight;
 	//The title of the window.
 	std::string windowTitle;
-	//The near plane distance (Warning: very small values can cause precision errors).
-	float nearPlane;
-	//The far plane distance.
-	float farPlane;
 };
 
 struct EngineConfig {
