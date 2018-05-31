@@ -20,6 +20,8 @@
 
 #include "ComponentManager.hpp"
 
+class GuiComponent;
+
 class GuiComponentManager : public ComponentManager {
 public:
 	/**
@@ -39,9 +41,29 @@ public:
 	bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event);
 
 private:
+	//The component the mouse is currently over.
+	std::shared_ptr<GuiComponent> currentHovered;
 
 	/**
 	 * Handles a mouse click.
 	 */
 	bool handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event);
+
+	/**
+	 * Handles mouse movement.
+	 */
+	bool handleMouseMove(const std::shared_ptr<const MouseMoveEvent> event);
+
+	/**
+	 * Performs a raytrace for the given mouse position and returns the object hit, if any.
+	 * @param mousePos The current position of the mouse.
+	 * @return The object the mouse is hovering over, nullptr if not present.
+	 */
+	std::shared_ptr<GuiComponent> getUnderMouse(const glm::vec2& mousePos);
+
+	/**
+	 * Sets the current hovered component to nullptr if neccessary.
+	 * @param comp The component that was removed.
+	 */
+	void onComponentRemove(std::shared_ptr<Component> comp);
 };

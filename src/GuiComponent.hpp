@@ -63,6 +63,18 @@ public:
 	virtual void onMouseClick(Screen* screen, MouseButton button, MouseAction action) {}
 
 	/**
+	 * Called when the mouse moves over the component.
+	 * @param screen The parent screen.
+	 */
+	virtual void onHoverStart(Screen* screen) {}
+
+	/**
+	 * Called when the mouse moves off of the component.
+	 * @param screen The parent screen.
+	 */
+	virtual void onHoverStop(Screen* screen) {}
+
+	/**
 	 * Gets the translation of the object.
 	 * @return The translation of the object.
 	 */
