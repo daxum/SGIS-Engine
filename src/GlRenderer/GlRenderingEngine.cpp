@@ -247,6 +247,13 @@ float GlRenderingEngine::getWindowHeight() const {
 	return height;
 }
 
+glm::vec2 GlRenderingEngine::queryMousePos() const {
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+
+	return glm::vec2(x, y);
+}
+
 void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data) {
 	matStack.push();
 

@@ -147,6 +147,11 @@ public:
 	 */
 	virtual float getWindowHeight() const = 0;
 
+	/**
+	 * Gets the mouse position from the system.
+	 */
+	virtual glm::vec2 queryMousePos() const = 0;
+
 protected:
 	std::shared_ptr<TextureLoader> texLoader;
 	std::shared_ptr<ShaderLoader> shaderLoader;

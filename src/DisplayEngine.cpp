@@ -19,6 +19,7 @@
 #include "DisplayEngine.hpp"
 #include "Screen.hpp"
 #include "Camera.hpp"
+#include "Engine.hpp"
 
 DisplayEngine::DisplayEngine() :
 	popped(false) {
@@ -32,6 +33,7 @@ void DisplayEngine::pushScreen(std::shared_ptr<Screen> screen) {
 
 void DisplayEngine::popScreen() {
 	screenStack.pop_back();
+
 	popped = true;
 
 	if (!screenStack.empty() && !screenStack.back().empty()) {
@@ -85,8 +87,15 @@ void DisplayEngine::update() {
 		}
 	}
 
-	popped = false;
 	events.clear();
+
+	if (popped) {
+		//Update new top screen's mouse position by sending extra mouse move event.
+		glm::vec2 mousePos = Engine::instance->getRenderer()->queryMousePos();
+		onMouseMove(mousePos.x, mousePos.y);
+	}
+
+	popped = false;
 }
 
 void DisplayEngine::render(float partialTicks) {

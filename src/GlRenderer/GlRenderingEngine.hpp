@@ -119,6 +119,11 @@ public:
 	 */
 	float getWindowHeight() const;
 
+	/**
+	 * Gets the mouse position from the system.
+	 */
+	glm::vec2 queryMousePos() const;
+
 private:
 	//The general rendering logger
 	Logger logger;
