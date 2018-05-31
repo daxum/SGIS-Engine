@@ -57,8 +57,12 @@ public:
 	 * Loads a model from disk and makes it ready for use in drawing.
 	 * @param name The name to store the loaded model under.
 	 * @param filename The filename for the model to load.
+	 * @param texture The texture to use for the model.
+	 * @param shader The shader to use for the model.
+	 * @param lighting The lighting information for the model.
+	 * @param pass The render pass to render the model in.
 	 */
-	void loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting);
+	void loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, RenderPass pass);
 
 protected:
 	//The logger

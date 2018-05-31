@@ -45,6 +45,13 @@ struct MeshRenderData {
 	size_t indexCount;
 };
 
+//Which render pass to draw the model in
+enum class RenderPass {
+	OPAQUE,
+	TRANSPARENT,
+	TRANSLUCENT
+};
+
 struct LightInfo {
 	glm::vec3 ka;
 	glm::vec3 ks;
@@ -61,14 +68,15 @@ public:
 	 * @param radius The radius of the model.
 	 * @param texture The name of the texture to use
 	 * @param shader The shader the model uses.
+	 * @param pass The render pass to render the model in.
 	 */
-	Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light);
+	Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, RenderPass pass);
 
-	//The mesh this model uses
 	MeshRenderData mesh;
 	std::string texture;
 	AxisAlignedBB meshBox;
 	float radius;
 	std::string shader;
 	LightInfo lighting;
+	RenderPass pass;
 };

@@ -18,12 +18,13 @@
 
 #include "Model.hpp"
 
-Model::Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light) :
+Model::Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, RenderPass pass) :
 	mesh(meshData),
 	texture(texture),
 	meshBox(meshBox),
 	radius(radius),
 	shader(shader),
-	lighting(light) {
+	lighting(light),
+	pass(pass) {
 
 }
