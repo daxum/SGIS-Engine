@@ -45,12 +45,19 @@ namespace {
 		void operator()(unsigned char* p) {}
 	};
 
+	//Used to delete char arrays because array shared pointers won't work properly (c++17?)
+	struct ArrayDeleter {
+		void operator()(unsigned char* p) {
+			delete[] p;
+		}
+	};
+
 	//Used for temporary font storage when creating textures.
 	struct CharData {
 		CharData(const GlyphData* g, unsigned char* buf, size_t bufferSize) :
 			//Don't look
 			glyph(const_cast<GlyphData*>(g)),
-			buffer(new unsigned char[bufferSize]) {
+			buffer(new unsigned char[bufferSize], ArrayDeleter()) {
 
 			memcpy(buffer.get(), buf, bufferSize);
 		}
@@ -174,7 +181,7 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 
 	//Create texture
 	TextureData fontTexture;
-	fontTexture.data.reset(new unsigned char[texSize * texSize]);
+	fontTexture.data.reset(new unsigned char[texSize * texSize], ArrayDeleter());
 	fontTexture.width = texSize;
 	fontTexture.height = texSize;
 	fontTexture.channels = 1;
