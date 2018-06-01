@@ -27,7 +27,8 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::
 	angularBrakes(false),
 	velocity(0.0, 0.0, 0.0),
 	angularVelocity(0.0, 0.0, 0.0),
-	acceleration(1.2f) {
+	acceleration(1.2f),
+	rotAccel(1.2f) {
 
 	physics->getBody()->setUserPointer(this);
 
@@ -44,7 +45,7 @@ void PhysicsComponent::update() {
 	btRigidBody* body = physics->getBody();
 
 	btVector3 force = getAdjustedForce(velocity, body->getLinearVelocity(), acceleration, body->getLinearDamping(), linearBrakes);
-	btVector3 torque = getAdjustedForce(angularVelocity, body->getAngularVelocity(), acceleration, body->getAngularDamping(), angularBrakes);
+	btVector3 torque = getAdjustedForce(angularVelocity, body->getAngularVelocity(), rotAccel, body->getAngularDamping(), angularBrakes);
 
 	body->applyCentralForce(force);
 	body->applyTorque(torque);
@@ -101,6 +102,10 @@ void PhysicsComponent::rotationReduction(bool enable) {
 
 void PhysicsComponent::setAcceleration(float accel) {
 	acceleration = accel;
+}
+
+void PhysicsComponent::setRotationalAcceleration(float accel) {
+	rotAccel = accel;
 }
 
 void PhysicsComponent::onCollide(Screen* screen, PhysicsComponent* other) {

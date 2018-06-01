@@ -111,6 +111,11 @@ public:
 	void setAcceleration(float accel);
 
 	/**
+	 * Sets rotational acceleration.
+	 */
+	void setRotationalAcceleration(float accel);
+
+	/**
 	 * Called by the physics component manager when this object collides with another.
 	 * @param screen A screen, can be used for removing / adding other objects as a result of a collision.
 	 * @param other The object that was collided with.
@@ -131,6 +136,7 @@ private:
 	btVector3 velocity;
 	btVector3 angularVelocity;
 	float acceleration;
+	float rotAccel;
 
 	btVector3 getAdjustedForce(btVector3 target, btVector3 current, float acceleration, float damping, bool brakes);
 };
