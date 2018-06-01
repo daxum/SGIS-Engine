@@ -34,6 +34,7 @@ enum class Key {
 	DOWN_ARROW,
 	SPACE,
 	ENTER,
+	LEFT_SHIFT,
 	UNKNOWN
 };
 

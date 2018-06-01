@@ -41,6 +41,7 @@ namespace GLFWKeyTranslator {
 			case GLFW_KEY_LEFT: return Key::LEFT_ARROW;
 			case GLFW_KEY_SPACE: return Key::SPACE;
 			case GLFW_KEY_ENTER: return Key::ENTER;
+			case GLFW_KEY_LEFT_SHIFT: return Key::LEFT_SHIFT;
 			default: return Key::UNKNOWN;
 		}
 	}
