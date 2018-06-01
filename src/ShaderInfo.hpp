@@ -36,6 +36,8 @@ struct ShaderInfo {
 	bool color = false;
 	//sampler2D, The first texture used.
 	bool tex0 = false;
+	//samplerCube, Cubemap texture. Mutually exclusive with tex0.
+	bool cubemap = false;
 	//vec3, normalized light direction for directional lighting (camera space).
 	bool lightDir = false;
 	//Model lighting information:

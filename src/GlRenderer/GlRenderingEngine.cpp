@@ -26,7 +26,6 @@
 #include "DisplayEngine.hpp"
 #include "GlfwKeyTranslator.hpp"
 #include "GlRenderingEngine.hpp"
-#include "GlTextureLoader.hpp"
 #include "GlShaderLoader.hpp"
 #include "RenderComponentManager.hpp"
 #include "RenderComponent.hpp"
@@ -66,12 +65,13 @@ GlRenderingEngine::~GlRenderingEngine() {
 	//Delete textures
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	std::vector<GLuint> namesToDelete(textureMap.size());
 
 	size_t i = 0;
 	for (const auto& tex : textureMap) {
-		namesToDelete[i] = tex.second;
+		namesToDelete[i] = tex.second.id;
 		i++;
 	}
 
@@ -146,7 +146,9 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDepthFunc(GL_LEQUAL);
 
 	glClearColor(0.0, 0.2, 0.5, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -204,7 +206,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 
 			const std::pair<glm::vec3, float> sphere = std::make_pair(renderComponent->getTranslation(), model.radius * maxScale);
 
-			if (checkVisible(sphere, cameraBox)) {
+			if (!model.viewCull || checkVisible(sphere, cameraBox)) {
 				if (model.mesh.type != currentBuffer) {
 					memoryManager.bindBuffer(model.mesh.type);
 					currentBuffer = model.mesh.type;
@@ -277,8 +279,18 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlSh
 		shader->setUniformFloat("s", model.lighting.s);
 	}
 
-	if (shader->info.tex0) {
-		glBindTexture(GL_TEXTURE_2D, textureMap.at(model.texture));
+	if (shader->info.tex0 || shader->info.cubemap) {
+		GlTextureData data = textureMap.at(model.texture);
+
+		if (shader->info.tex0 && data.type == TextureType::STANDARD) {
+			glBindTexture(GL_TEXTURE_2D, data.id);
+		}
+		else if (shader->info.cubemap && data.type == TextureType::CUBEMAP) {
+			glBindTexture(GL_TEXTURE_CUBE_MAP, data.id);
+		}
+		else {
+			logger.error("Texture type doesn't match shader texture type for texture \"" + model.texture + "\"");
+		}
 	}
 
 	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) model.mesh.indexStart);

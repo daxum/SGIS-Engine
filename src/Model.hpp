@@ -70,7 +70,7 @@ public:
 	 * @param shader The shader the model uses.
 	 * @param pass The render pass to render the model in.
 	 */
-	Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, RenderPass pass);
+	Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, RenderPass pass, bool viewCull = true);
 
 	MeshRenderData mesh;
 	std::string texture;
@@ -79,4 +79,5 @@ public:
 	std::string shader;
 	LightInfo lighting;
 	RenderPass pass;
+	bool viewCull;
 };

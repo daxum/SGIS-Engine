@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include "GlTextureLoader.hpp"
 
-GlTextureLoader::GlTextureLoader(Logger& logger, std::unordered_map<std::string, GLuint>& texMap) :
+GlTextureLoader::GlTextureLoader(Logger& logger, std::unordered_map<std::string, GlTextureData>& texMap) :
 	TextureLoader(logger),
 	textureMap(texMap) {
 
@@ -61,14 +61,52 @@ void GlTextureLoader::loadTexture(const std::string& name, const std::string& fi
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
-	textureMap.insert(std::make_pair(name, texture));
+	textureMap.insert(std::make_pair(name, GlTextureData{TextureType::STANDARD, texture}));
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	logger.debug("Uploaded texture \"" + name + "\".");
 }
 
-//This and the above function should be merged eventually.
+void GlTextureLoader::loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
+	if (filenames.size() != 6) {
+		throw std::runtime_error("Bad cubemap size");
+	}
+
+	if (textureMap.count(name) != 0) {
+		throw std::runtime_error("Attempted to load duplicate texture \"" + name + "\"");
+	}
+
+	GLuint cubeMap = 0;
+	glGenTextures(1, &cubeMap);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
+
+	for (unsigned int i = 0; i < filenames.size(); i++) {
+		TextureData texData = loadFromDisk(filenames.at(i));
+
+		if (!texData.loadSuccess) {
+			throw std::runtime_error("Failed to load cubemap texture " + filenames.at(i));
+		}
+
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, texData.width, texData.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData.data.get());
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, minFilter == Filter::LINEAR ? GL_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, magFilter == Filter::LINEAR ? GL_LINEAR : GL_NEAREST);
+
+	if (mipmap) {
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
+
+	textureMap.insert(std::make_pair(name, GlTextureData{TextureType::CUBEMAP, cubeMap}));
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	logger.debug("Uploaded cubemap texture \"" + name + "\"");
+}
+
+//This and loadTexture should be merged eventually.
 void GlTextureLoader::addFontTexture(const std::string textureName, const TextureData& data) {
 	if (textureMap.count(textureName) != 0) {
 		//Duplicate texture, skip it.
@@ -99,7 +137,7 @@ void GlTextureLoader::addFontTexture(const std::string textureName, const Textur
 	//Generate mipmaps
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	textureMap.insert(std::make_pair(textureName, texture));
+	textureMap.insert(std::make_pair(textureName, GlTextureData{TextureType::STANDARD, texture}));
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 

@@ -28,6 +28,7 @@
 #include "CombinedGl.h"
 #include "GlShader.hpp"
 #include "GlMemoryManager.hpp"
+#include "GlTextureLoader.hpp"
 #include "Model.hpp"
 #include "Logger.hpp"
 #include "MatrixStack.hpp"
@@ -130,7 +131,7 @@ private:
 	//The loader logger
 	Logger loaderLogger;
 	//A map to store texture data
-	std::unordered_map<std::string, GLuint> textureMap;
+	std::unordered_map<std::string, GlTextureData> textureMap;
 	//A map to store the shaders used by the engine
 	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
 	//The object that stores all the models.

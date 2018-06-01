@@ -66,9 +66,7 @@ public:
 	virtual ~TextureLoader() {}
 
 	/**
-	 * To be implemented by subclasses. This should load a texture and
-	 * give it to the rendering engine. The method of transfer from the loader
-	 * to the engine can be anything, but it has to get there.
+	 * Loads a texture from disk.
 	 * @param name The name the texture is stored under, used by other components
 	 *     to refer to the texture.
 	 * @param filename The full filename of the texture to be loaded.
@@ -78,6 +76,17 @@ public:
 	 * @throw runtime_error if the texture could not be created.
 	 */
 	virtual void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap) = 0;
+
+	/**
+	 * Loads a cubemap texture from the textures specified by filenames.
+	 * @param name The name to store the texture under.
+	 * @param filenames An array of six filenames in the order {+x, -x, +y, -y, +z, -z}.
+	 *     All textures must be the same size.
+	 * @param minFilter The filter to use when downscaling.
+	 * @param magFilter The filter to use the upscaling.
+	 * @param mipmap Whether to generate mipmaps.
+	 */
+	virtual void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) = 0;
 
 	/**
 	 * Loads a font and generates a texture from it. Only adds the specified

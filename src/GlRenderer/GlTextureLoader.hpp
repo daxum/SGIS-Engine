@@ -20,8 +20,20 @@
 
 #include <string>
 #include <unordered_map>
+
 #include "TextureLoader.hpp"
 #include "CombinedGl.h"
+
+enum class TextureType {
+	STANDARD,
+	CUBEMAP
+};
+
+//Stores information for rendering a texture.
+struct GlTextureData {
+	TextureType type;
+	GLuint id;
+};
 
 class GlTextureLoader : public TextureLoader {
 public:
@@ -30,7 +42,7 @@ public:
 	 * @param logger Logger to use to log logs in a log file. Log.
 	 * @param texMap The map where loaded textures are stored.
 	 */
-	GlTextureLoader(Logger& logger, std::unordered_map<std::string, GLuint>& texMap);
+	GlTextureLoader(Logger& logger, std::unordered_map<std::string, GlTextureData>& texMap);
 
 	/**
 	 * Loads a texture from disk and uploads it to the GPU after storing it in the
@@ -45,6 +57,17 @@ public:
 	 */
 	void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap);
 
+	/**
+	 * Loads a cubemap texture.
+	 * @param name The name to store the texture under.
+	 * @param filenames An array of six filenames in the order {+x, -x, +y, -y, +z, -z}.
+	 *     All textures must be the same size.
+	 * @param minFilter The filter to use when downscaling.
+	 * @param magFilter The filter to use the upscaling.
+	 * @param mipmap Whether to generate mipmaps.
+	 */
+	void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap);
+
 protected:
 	/**
 	 * Adds a font texture.
@@ -55,5 +78,5 @@ protected:
 
 private:
 	//The map where loaded textures are stored
-	std::unordered_map<std::string, GLuint>& textureMap;
+	std::unordered_map<std::string, GlTextureData>& textureMap;
 };
