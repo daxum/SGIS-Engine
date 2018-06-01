@@ -24,6 +24,7 @@ enum class Key {
 	A,
 	D,
 	E,
+	F,
 	Q,
 	R,
 	S,

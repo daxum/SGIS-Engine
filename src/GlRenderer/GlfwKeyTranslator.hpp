@@ -31,6 +31,7 @@ namespace GLFWKeyTranslator {
 			case GLFW_KEY_A: return Key::A;
 			case GLFW_KEY_D: return Key::D;
 			case GLFW_KEY_E: return Key::E;
+			case GLFW_KEY_F: return Key::F;
 			case GLFW_KEY_Q: return Key::Q;
 			case GLFW_KEY_R: return Key::R;
 			case GLFW_KEY_S: return Key::S;
