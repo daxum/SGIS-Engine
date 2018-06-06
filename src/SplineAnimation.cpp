@@ -151,5 +151,5 @@ glm::quat SplineAnimation::getRot(size_t index, float percent) {
 
 	glm::vec4 vec(1.0, percent, percent*percent, percent*percent*percent);
 
-	return vec4ToQuat(points * (matrix * vec));
+	return glm::normalize(vec4ToQuat(points * (matrix * vec)));
 }
