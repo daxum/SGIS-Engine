@@ -19,10 +19,11 @@
 #include "AnimationComponent.hpp"
 #include "Object.hpp"
 
-AnimationComponent::AnimationComponent(const std::vector<std::pair<glm::vec3, glm::quat>>& frames, const float time, const glm::mat4& matrix) :
+AnimationComponent::AnimationComponent(const std::vector<std::pair<glm::vec3, glm::quat>>& frames, const float time, const glm::vec3& offset, const glm::mat4& matrix) :
 	Component(ANIMATION_COMPONENT_NAME),
 	animation(frames, time, matrix),
-	time(0) {
+	time(0),
+	posOffset(offset) {
 
 }
 
@@ -31,7 +32,7 @@ void AnimationComponent::onParentSet() {
 }
 
 glm::vec3 AnimationComponent::getTranslation() {
-	return animation.getLocation((float)time).first;
+	return animation.getLocation((float)time).first + posOffset;
 }
 
 glm::quat AnimationComponent::getRotation() {

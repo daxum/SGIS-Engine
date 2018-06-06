@@ -30,7 +30,7 @@ public:
 	 * @param time The time to complete the animation, in EngineConfig::timestep units.
 	 * @param matrix A matrix for the spline curve, defaults to a bezier curve.
 	 */
-	AnimationComponent(const std::vector<std::pair<glm::vec3, glm::quat>>& frames, const float time, const glm::mat4& matrix = SplineAnimation::B);
+	AnimationComponent(const std::vector<std::pair<glm::vec3, glm::quat>>& frames, const float time, const glm::vec3& offset = glm::vec3(0.0, 0.0, 0.0), const glm::mat4& matrix = SplineAnimation::B);
 
 	/**
 	 * Just increments the time.
@@ -41,6 +41,12 @@ public:
 	 * Sets the animation component as the physics provider.
 	 */
 	void onParentSet();
+
+	/**
+	 * Sets the position's offset.
+	 * @param offset the new offset.
+	 */
+	void setOffset(glm::vec3 offset) { posOffset = offset; }
 
 	/**
 	 * Gets the translation of the object from the animation.
@@ -59,4 +65,7 @@ private:
 	SplineAnimation animation;
 	//Current animation time, in update ticks.
 	size_t time;
+
+	//Position offset, used to move the animation.
+	glm::vec3 posOffset;
 };
