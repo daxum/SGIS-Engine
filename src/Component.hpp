@@ -32,6 +32,7 @@ const std::string PHYSICS_COMPONENT_NAME = "physics";
 const std::string UPDATE_COMPONENT_NAME = "update";
 const std::string GUI_COMPONENT_NAME = "gui";
 const std::string TEXT_COMPONENT_NAME = "text";
+const std::string ANIMATION_COMPONENT_NAME = "animation";
 
 //A "piece" of an object. Used to implement rendering, physics, and other stuff.
 class Component : public InputListener {

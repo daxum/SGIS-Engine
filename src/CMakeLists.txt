@@ -27,6 +27,8 @@ add_library(Engine STATIC
 	GuiComponentManager.cpp
 	FontManager.cpp
 	TextComponent.cpp
+	SplineAnimation.cpp
+	AnimationComponent.cpp
 	GlRenderer/gl_core_4_1.c
 )
 
