@@ -29,6 +29,13 @@ const glm::mat4 SplineAnimation::B = {
 	-0.5,  1.5, -1.5,  0.5
 };
 
+const glm::mat4 SplineAnimation::catmullRom = {
+	0.0, 2.0, 0.0, 0.0,
+	-1.0, 0.0, 1.0, 0.0,
+	2.0, -5.0, 4.0, -1.0,
+	-1.0, 3.0, -3.0, 1.0
+};
+
 SplineAnimation::SplineAnimation(const std::vector<std::pair<glm::vec3, glm::quat>>& frames, const float time, const glm::mat4& matrix) :
 	controlPoints(frames),
 	maxTime(time),

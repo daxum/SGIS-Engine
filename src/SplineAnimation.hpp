@@ -47,6 +47,8 @@ public:
 
 	//Default matrix for bezier curve.
 	static const glm::mat4 B;
+	//Catmull-Rom spline.
+	static const glm::mat4 catmullRom;
 
 private:
 	//Control points for the curve.
