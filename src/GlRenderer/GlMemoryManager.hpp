@@ -111,6 +111,8 @@ private:
 	//Maybe make this configurable later. 8MB is enough for around 130,000 characters.
 	const size_t textBufferSize = 8388608;
 	//For every 4 vertices, there are 6 indices.
+	//The full equation is: textBufferSize * ((indices * indexSize) / (vertices * vertexSize)),
+	//which results in textBufferSize * ((6*4) / (4*16)). Simplifying gives the below equation.
 	const size_t textIndexBufferSize = (6 * textBufferSize) / sizeof(TextVertex);
 
 	//Text memory management
