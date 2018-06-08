@@ -20,7 +20,14 @@
 #include "GlRenderer/GlRenderingEngine.hpp"
 #include "ExtraMath.hpp"
 
+#include "LinearMath/btThreads.h"
+
 Engine* Engine::instance = nullptr;
+
+//Make not deleting the task scheduler not a memory leak.
+//Can't store a local one because that causes segmentation faults.
+//Probably just going to create my own later.
+static btITaskScheduler* globalScheduler = nullptr;
 
 Engine::Engine(const EngineConfig& config) :
 	config(config),
@@ -34,6 +41,12 @@ Engine::Engine(const EngineConfig& config) :
 	}
 
 	instance = this;
+
+	if (!globalScheduler) {
+		globalScheduler = btCreateDefaultTaskScheduler();
+	}
+
+	scheduler = globalScheduler;
 
 	switch(config.renderer.renderType) {
 		case Renderer::OPEN_GL:

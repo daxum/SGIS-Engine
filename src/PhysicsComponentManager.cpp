@@ -40,7 +40,7 @@ PhysicsComponentManager::PhysicsComponentManager() :
 	world->setGravity(btVector3(0.0, -9.80665, 0.0));
 	world->setInternalTickCallback(physicsTickCallback, this, false);
 
-	btSetTaskScheduler(btCreateDefaultTaskScheduler());
+	btSetTaskScheduler(Engine::instance->getTaskScheduler());
 }
 
 PhysicsComponentManager::~PhysicsComponentManager() {
