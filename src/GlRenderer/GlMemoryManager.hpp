@@ -110,8 +110,8 @@ private:
 	//Text buffer stuff.
 	//Maybe make this configurable later. 8MB is enough for around 130,000 characters.
 	const size_t textBufferSize = 8388608;
-	//For every 4 vertices, there are six indices.
-	const size_t textIndexBufferSize = (6 * textBufferSize) / (sizeof(TextVertex) * 4);
+	//For every 4 vertices, there are 6 indices.
+	const size_t textIndexBufferSize = (6 * textBufferSize) / sizeof(TextVertex);
 
 	//Text memory management
 	typedef std::list<AllocInfo>::iterator DynBufElement;
