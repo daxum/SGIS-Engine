@@ -76,7 +76,7 @@ public:
 
 	/**
 	 * Uploads static data to gpu to prepare for drawing.
-	 * @throw runtime_error if the memory manager has already been initialized.
+	 * @throw runtime_error if data has already been uploaded.
 	 */
 	void upload();
 
