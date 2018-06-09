@@ -107,7 +107,7 @@ void DisplayEngine::render(float partialTicks) {
 	//Clear the depth and stencil buffers after each one so they
 	//don't effect each other's rendering.
 	for (std::shared_ptr<Screen> screen : screenStack.back()) {
-		renderer->render(screen->getRenderData(), screen->getCamera());
+		renderer->render(screen->getRenderData(), screen->getCamera(), screen->getState());
 		renderer->clearBuffers();
 	}
 

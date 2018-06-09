@@ -24,6 +24,7 @@
 #include "RenderComponent.hpp"
 #include "MatrixStack.hpp"
 #include "ShaderInterface.hpp"
+#include "Screen.hpp"
 
 //An interface to the shaders from game code.
 //Used to set uniforms.
@@ -34,8 +35,9 @@ public:
 	/**
 	 * Sets uniforms for all objects using this shader, like the projection and view matrices.
 	 * @param camera The current camera.
+	 * @param state User-set screen state.
 	 */
-	virtual void setGlobalUniforms(std::shared_ptr<Camera> camera) = 0;
+	virtual void setGlobalUniforms(std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) = 0;
 
 	/**
 	 * Sets uniforms that change based on the object being rendered, such as translation
@@ -43,8 +45,9 @@ public:
 	 * @param object The render component of the object being rendered.
 	 * @param matStack The current matrix stack. Will be pushed/popped before/after the function
 	 *     call, and will usually contain just the view matrix at the start of the function.
+	 * @param state User-set screen state.
 	 */
-	virtual void setPerObjectUniforms(std::shared_ptr<RenderComponent> object, MatrixStack& matStack) = 0;
+	virtual void setPerObjectUniforms(std::shared_ptr<RenderComponent> object, MatrixStack& matStack, std::shared_ptr<ScreenState> state) = 0;
 
 	/**
 	 * Internal engine use only. Sets the interface to the graphics api to use when setting uniforms.

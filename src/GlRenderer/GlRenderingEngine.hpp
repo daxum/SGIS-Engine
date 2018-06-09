@@ -81,7 +81,7 @@ public:
 	 * @param data The object to render.
 	 * @param camera The camera.
 	 */
-	void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera);
+	void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
 
 	/**
 	 * Clears the depth and stencil buffers.
@@ -151,7 +151,7 @@ private:
 	 * @param shader The shader used for rendering.
 	 * @param data The object to render.
 	 */
-	void renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data);
+	void renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state);
 
 	/**
 	 * Checks whether the given sphere is in the camera's view.

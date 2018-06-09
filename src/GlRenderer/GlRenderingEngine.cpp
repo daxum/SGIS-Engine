@@ -166,7 +166,7 @@ void GlRenderingEngine::finishLoad() {
 	memoryManager.upload();
 }
 
-void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera) {
+void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
 	//Don't render without a render component.
 	if (!data) {
 		return;
@@ -191,7 +191,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 		std::shared_ptr<Shader> shader = shaderMap.at(object.first);
 		shader->getRenderInterface()->bind();
 
-		shader->setGlobalUniforms(camera);
+		shader->setGlobalUniforms(camera, state);
 
 		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
 			const Model& model = renderComponent->getModel();
@@ -206,7 +206,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 					currentBuffer = model.mesh.type;
 				}
 
-				renderObject(matStack, shader, renderComponent);
+				renderObject(matStack, shader, renderComponent, state);
 			}
 		}
 	}
@@ -250,10 +250,10 @@ glm::vec2 GlRenderingEngine::queryMousePos() const {
 	return glm::vec2(x, y);
 }
 
-void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data) {
+void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state) {
 	matStack.push();
 
-	shader->setPerObjectUniforms(data, matStack);
+	shader->setPerObjectUniforms(data, matStack, state);
 
 	const Model& model = data->getModel();
 	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) model.mesh.indexStart);

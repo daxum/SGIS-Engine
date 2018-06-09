@@ -29,6 +29,7 @@
 #include "Model.hpp"
 #include "RenderComponentManager.hpp"
 #include "RendererMemoryManager.hpp"
+#include "Screen.hpp"
 
 class DisplayEngine;
 
@@ -104,8 +105,9 @@ public:
 	 * Renders the passed in object.
 	 * @param data The stuff to render.
 	 * @param camera The camera to use.
+	 * @param state User-set screen state, passed to shader when setting uniforms.
 	 */
-	virtual void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera) = 0;
+	virtual void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) = 0;
 
 	/**
 	 * Called clearBuffers for lack of a better name. Clears the depth and stencil
