@@ -20,31 +20,15 @@
 
 #include <string>
 
+#include "Shader.hpp"
+
 struct ShaderInfo {
 	//Path to vertex shader.
 	std::string vertex;
 	//Path to fragment shader.
 	std::string fragment;
-
-	//Uniforms to be passed in. Must have these names in the shader (Really don't want to mess with OpenGL extensions for location on uniforms...).
-
-	//mat4, the modelView matrix.
-	bool modelView = false;
-	//mat4, the projection matrix.
-	bool projection = false;
-	//vec3, the color from the RenderComponent.
-	bool color = false;
-	//sampler2D, The first texture used.
-	bool tex0 = false;
-	//samplerCube, Cubemap texture. Mutually exclusive with tex0.
-	bool cubemap = false;
-	//vec3, normalized light direction for directional lighting (camera space).
-	bool lightDir = false;
-	//Model lighting information:
-	//	vec3 ka - ambient light.
-	//	vec3 ks - specular light.
-	//	float s - shininess.
-	bool lighting = false;
+	//Shader object for settting uniforms.
+	std::shared_ptr<Shader> shaderObject;
 
 	//Extra, renderer-specific data. Always blank for now.
 	const void* extra = nullptr;

@@ -26,7 +26,7 @@
 
 #include "RenderingEngine.hpp"
 #include "CombinedGl.h"
-#include "GlShader.hpp"
+#include "Shader.hpp"
 #include "GlMemoryManager.hpp"
 #include "GlTextureLoader.hpp"
 #include "Model.hpp"
@@ -133,7 +133,7 @@ private:
 	//A map to store texture data
 	std::unordered_map<std::string, GlTextureData> textureMap;
 	//A map to store the shaders used by the engine
-	std::unordered_map<std::string, std::shared_ptr<GlShader>> shaderMap;
+	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
 	//The object that stores all the models.
 	ModelManager& modelManager;
 	//The window created by glfw
@@ -151,7 +151,7 @@ private:
 	 * @param shader The shader used for rendering.
 	 * @param data The object to render.
 	 */
-	void renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data);
+	void renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data);
 
 	/**
 	 * Checks whether the given sphere is in the camera's view.

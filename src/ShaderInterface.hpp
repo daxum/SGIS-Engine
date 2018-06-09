@@ -19,36 +19,26 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 
-#include "CombinedGl.h"
-#include "ShaderInterface.hpp"
-#include "GlTextureLoader.hpp"
+enum class UniformType {
+	FLOAT,
+	VEC2,
+	VEC3,
+	VEC4,
+	MAT3x3,
+	MAT4x4
+};
 
-//Encapsulates an OpenGL program object, to make things like setting
-//uniforms easier.
-class GlShader : public ShaderInterface {
+//Engine implementation of shaders to interface with the rendering engine.
+//GlShader and similar all extend this.
+class ShaderInterface {
 public:
-	//The program id for this shader
-	const GLuint id;
+	virtual ~ShaderInterface() {}
 
 	/**
-	 * Creates a GlShader with the given id.
-	 * @param id The id of the program object for this shader.
-	 * @param textureMap A reference to the rendering engine's texture map, used
-	 *     for setting textures.
+	 * Binds the shader for use in rendering.
 	 */
-	GlShader(GLuint id, const std::unordered_map<std::string, GlTextureData>& textureMap);
-
-	/**
-	 * Destructor. Destroys the program object.
-	 */
-	~GlShader();
-
-	/**
-	 * Sets this shader program as active with OpenGL.
-	 */
-	void bind();
+	virtual void bind() = 0;
 
 	/**
 	 * Sets a uniform variable.
@@ -56,16 +46,12 @@ public:
 	 * @param name The name of the uniform in the shader.
 	 * @param data The value to set the uniform data to.
 	 */
-	void setUniform(UniformType type, const std::string& name, const void* data);
+	virtual void setUniform(UniformType type, const std::string& name, const void* data) = 0;
 
 	/**
 	 * Sets the texture at the given index to the provided name.
 	 * @param name The name of the texture to bind.
 	 * @param index The texture unit to bind the texture to.
 	 */
-	void setTexture(const std::string& name, unsigned int index);
-
-private:
-	//A reference to the texture map for setting textures.
-	const std::unordered_map<std::string, GlTextureData>& textureMap;
+	virtual void setTexture(const std::string& name, unsigned int index) = 0;
 };

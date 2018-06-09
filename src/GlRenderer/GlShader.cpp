@@ -16,35 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <glm/gtc/type_ptr.hpp>
 #include "GlShader.hpp"
 
-GlShader::GlShader(GLuint id, const ShaderInfo info) : id(id), info(info) {}
+GlShader::GlShader(GLuint id, const std::unordered_map<std::string, GlTextureData>& textureMap) : id(id), textureMap(textureMap) {}
 
 GlShader::~GlShader() {
 	glDeleteProgram(id);
 }
 
-void GlShader::use() {
+void GlShader::bind() {
 	glUseProgram(id);
 }
 
-void GlShader::setUniformMat4(std::string name, glm::mat4 matrix) {
+void GlShader::setUniform(UniformType type, const std::string& name, const void* data) {
 	GLuint uniformLoc = glGetUniformLocation(id, name.c_str());
-	glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(matrix));
+
+	const GLfloat* floatData = (const GLfloat*) data;
+
+	switch (type) {
+		case UniformType::FLOAT: glUniform1f(uniformLoc, *floatData); break;
+		case UniformType::VEC2: glUniform2fv(uniformLoc, 1, floatData); break;
+		case UniformType::VEC3: glUniform3fv(uniformLoc, 1, floatData); break;
+		case UniformType::VEC4: glUniform4fv(uniformLoc, 1, floatData); break;
+		case UniformType::MAT3x3: glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, floatData); break;
+		case UniformType::MAT4x4: glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, floatData); break;
+		default: throw std::runtime_error("Missing case in GLShader uniform switch!");
+	}
 }
 
-void GlShader::setUniformVec2(std::string name, glm::vec2 vec) {
-	GLuint uniformLoc = glGetUniformLocation(id, name.c_str());
-	glUniform2fv(uniformLoc, 1, glm::value_ptr(vec));
-}
+void GlShader::setTexture(const std::string& name, unsigned int index) {
+	glActiveTexture(GL_TEXTURE0 + index);
 
-void GlShader::setUniformVec3(std::string name, glm::vec3 vec) {
-	GLuint uniformLoc = glGetUniformLocation(id, name.c_str());
-	glUniform3fv(uniformLoc, 1, glm::value_ptr(vec));
-}
+	const GlTextureData& data = textureMap.at(name);
 
-void GlShader::setUniformFloat(std::string name, float val) {
-	GLuint uniformLoc = glGetUniformLocation(id, name.c_str());
-	glUniform1f(uniformLoc, val);
+	switch (data.type) {
+		case TextureType::STANDARD: glBindTexture(GL_TEXTURE_2D, data.id); break;
+		case TextureType::CUBEMAP: glBindTexture(GL_TEXTURE_CUBE_MAP, data.id); break;
+		default: throw std::runtime_error("Missing texture type in GlShader::setTexture()!");
+	}
 }

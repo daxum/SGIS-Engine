@@ -40,7 +40,7 @@ namespace {
 
 GlRenderingEngine::GlRenderingEngine(ModelManager& modelManager, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
-					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap)),
+					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap, textureMap)),
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),
 	modelManager(modelManager),
@@ -188,16 +188,10 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 			continue;
 		}
 
-		std::shared_ptr<GlShader> shader = shaderMap.at(object.first);
-		shader->use();
+		std::shared_ptr<Shader> shader = shaderMap.at(object.first);
+		shader->getRenderInterface()->bind();
 
-		if (shader->info.projection) {
-			shader->setUniformMat4("projection", camera->getProjection());
-		}
-
-		if (shader->info.lightDir) {
-			shader->setUniformVec3("lightDir", glm::normalize(glm::vec3(matStack.top() * glm::vec4(1.0, 1.0, 0.01, 0.0))));
-		}
+		shader->setGlobalUniforms(camera);
 
 		for (std::shared_ptr<RenderComponent> renderComponent : object.second) {
 			const Model& model = renderComponent->getModel();
@@ -256,43 +250,12 @@ glm::vec2 GlRenderingEngine::queryMousePos() const {
 	return glm::vec2(x, y);
 }
 
-void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data) {
+void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data) {
 	matStack.push();
 
-	if (shader->info.modelView) {
-		matStack.translate(data->getTranslation());
-		matStack.rotate(data->getRotation());
-		matStack.scale(data->getScale());
-
-		shader->setUniformMat4("modelView", matStack.top());
-	}
-
-	if (shader->info.color) {
-		shader->setUniformVec3("color", data->getColor());
-	}
+	shader->setPerObjectUniforms(data, matStack);
 
 	const Model& model = data->getModel();
-
-	if (shader->info.lighting) {
-		shader->setUniformVec3("ka", model.lighting.ka);
-		shader->setUniformVec3("ks", model.lighting.ks);
-		shader->setUniformFloat("s", model.lighting.s);
-	}
-
-	if (shader->info.tex0 || shader->info.cubemap) {
-		GlTextureData data = textureMap.at(model.texture);
-
-		if (shader->info.tex0 && data.type == TextureType::STANDARD) {
-			glBindTexture(GL_TEXTURE_2D, data.id);
-		}
-		else if (shader->info.cubemap && data.type == TextureType::CUBEMAP) {
-			glBindTexture(GL_TEXTURE_CUBE_MAP, data.id);
-		}
-		else {
-			logger.error("Texture type doesn't match shader texture type for texture \"" + model.texture + "\"");
-		}
-	}
-
 	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) model.mesh.indexStart);
 
 	matStack.pop();

@@ -18,11 +18,14 @@
 
 #include <sstream>
 #include <fstream>
-#include "GlShaderLoader.hpp"
 
-GlShaderLoader::GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap) :
+#include "GlShaderLoader.hpp"
+#include "GlShader.hpp"
+
+GlShaderLoader::GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap) :
 	ShaderLoader(logger),
-	shaderMap(shaderMap) {
+	shaderMap(shaderMap),
+	textureMap(textureMap) {
 
 }
 
@@ -34,8 +37,10 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 
 	logger.debug("Constructing shader from \"" + info.vertex + "\" and \"" + info.fragment + "\".");
 
-	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info);
-	shaderMap.insert(std::make_pair(name, shader));
+	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), textureMap);
+	info.shaderObject->setRenderInterface(shader);
+
+	shaderMap.insert(std::make_pair(name, info.shaderObject));
 
 	logger.debug("Shader \"" + name + "\" loaded.");
 }

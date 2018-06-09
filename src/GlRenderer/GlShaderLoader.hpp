@@ -21,15 +21,20 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+
 #include "ShaderLoader.hpp"
-#include "GlShader.hpp"
+#include "Shader.hpp"
+#include "GlTextureLoader.hpp"
 
 class GlShaderLoader : public ShaderLoader {
 public:
 	/**
 	 * Constructs a GlShaderLoader that stores loaded shaders in the provided map.
+	 * @param logger The logger to use.
+	 * @param shaderMap The map to store loaded shaders in.
+	 * @param textureMap Map passed in the GlShaders, will never be accessed during loading.
 	 */
-	GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap);
+	GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap);
 
 	/**
 	 * Loads a program object using the given shader files.
@@ -40,7 +45,8 @@ public:
 	void loadShader(std::string name, const ShaderInfo& info);
 
 private:
-	std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap;
+	std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap;
+	const std::unordered_map<std::string, GlTextureData>& textureMap;
 
 	/**
 	 * Creates a program object using the shaders with the specified filenames.
