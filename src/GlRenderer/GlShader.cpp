@@ -50,7 +50,7 @@ void GlShader::setTexture(const std::string& name, unsigned int index) {
 	const GlTextureData& data = textureMap.at(name);
 
 	switch (data.type) {
-		case TextureType::STANDARD: glBindTexture(GL_TEXTURE_2D, data.id); break;
+		case TextureType::TEX_2D: glBindTexture(GL_TEXTURE_2D, data.id); break;
 		case TextureType::CUBEMAP: glBindTexture(GL_TEXTURE_CUBE_MAP, data.id); break;
 		default: throw std::runtime_error("Missing texture type in GlShader::setTexture()!");
 	}

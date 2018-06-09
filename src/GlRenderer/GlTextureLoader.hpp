@@ -25,7 +25,7 @@
 #include "CombinedGl.h"
 
 enum class TextureType {
-	STANDARD,
+	TEX_2D,
 	CUBEMAP
 };
 

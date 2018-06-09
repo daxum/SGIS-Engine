@@ -61,7 +61,7 @@ void GlTextureLoader::loadTexture(const std::string& name, const std::string& fi
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
-	textureMap.insert(std::make_pair(name, GlTextureData{TextureType::STANDARD, texture}));
+	textureMap.insert(std::make_pair(name, GlTextureData{TextureType::TEX_2D, texture}));
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -137,7 +137,7 @@ void GlTextureLoader::addFontTexture(const std::string textureName, const Textur
 	//Generate mipmaps
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	textureMap.insert(std::make_pair(textureName, GlTextureData{TextureType::STANDARD, texture}));
+	textureMap.insert(std::make_pair(textureName, GlTextureData{TextureType::TEX_2D, texture}));
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
