@@ -139,6 +139,9 @@ private:
 	//to avoid updating invalid screens.
 	bool popped;
 
+	//Used to send events like mouse position to the new top screen whenever the stack changes.
+	bool stackChanged;
+
 	//All input events for this display, dispatched to all screen's input handlers once per tick.
 	std::vector<std::shared_ptr<InputEvent>> events;
 
