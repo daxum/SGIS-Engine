@@ -44,6 +44,17 @@ bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared
 			return handleMouseMove(std::static_pointer_cast<const MouseMoveEvent>(event));
 		}
 	}
+	else if (event->type == EventType::MOUSE_SCROLL) {
+		std::shared_ptr<const MouseScrollEvent> scrollEvent = std::static_pointer_cast<const MouseScrollEvent>(event);
+
+		for (std::shared_ptr<Component> comp : components) {
+			std::shared_ptr<GuiComponent> element = std::static_pointer_cast<GuiComponent>(comp);
+
+			element->onMouseScroll(screen, scrollEvent->x, scrollEvent->y);
+		}
+
+		return true;
+	}
 
 	return false;
 }

@@ -24,7 +24,8 @@
 enum class EventType {
 	KEY,
 	MOUSE_MOVE,
-	MOUSE_CLICK
+	MOUSE_CLICK,
+	MOUSE_SCROLL
 };
 
 //The base event type. Use the type variable to cast to the appropriate event structure.
@@ -60,4 +61,11 @@ struct MouseClickEvent : public InputEvent {
 
 	const MouseButton button;
 	const MouseAction action;
+};
+
+struct MouseScrollEvent : public InputEvent {
+	MouseScrollEvent(float x, float y) : InputEvent(EventType::MOUSE_SCROLL), x(x), y(y) {}
+
+	const float x;
+	const float y;
 };

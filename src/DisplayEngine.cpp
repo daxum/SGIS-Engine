@@ -140,6 +140,10 @@ void DisplayEngine::onMouseClick(MouseButton button, MouseAction action) {
 	events.push_back(std::make_shared<MouseClickEvent>(button, action));
 }
 
+void DisplayEngine::onMouseScroll(float x, float y) {
+	events.push_back(std::make_shared<MouseScrollEvent>(x, y));
+}
+
 void DisplayEngine::updateProjections() {
 	for (std::vector<std::shared_ptr<Screen>>& overlay : screenStack) {
 		for (std::shared_ptr<Screen>& screen : overlay) {

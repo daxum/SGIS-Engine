@@ -128,10 +128,7 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glfwSetKeyCallback(window, GlRenderingEngine::keyPress);
 	glfwSetCursorPosCallback(window, GlRenderingEngine::mouseMove);
 	glfwSetMouseButtonCallback(window, GlRenderingEngine::mouseClick);
-	/*
-	//Other callbacks - might be moved elsewhere to accommodate engine
-	glfwSetScrollCallback(window, mouseScroll);
-	*/
+	glfwSetScrollCallback(window, GlRenderingEngine::mouseScroll);
 
 	//Set state defaults
 
@@ -365,4 +362,8 @@ void GlRenderingEngine::mouseClick(GLFWwindow* window, int button, int action, i
 	}
 
 	display->onMouseClick(pressed, mouseAction);
+}
+
+void GlRenderingEngine::mouseScroll(GLFWwindow* window, double x, double y) {
+	display->onMouseScroll((float)x, (float)y);
 }

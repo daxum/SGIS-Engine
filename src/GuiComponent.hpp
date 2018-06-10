@@ -63,6 +63,14 @@ public:
 	virtual void onMouseClick(Screen* screen, MouseButton button, MouseAction action) {}
 
 	/**
+	 * Called when the scroll wheel is scrolled.
+	 * @param screen The parent screen.
+	 * @param x The x offset of the wheel, usually 0.
+	 * @param y The y offset of the wheel.
+	 */
+	virtual void onMouseScroll(Screen* screen, float x, float y) {}
+
+	/**
 	 * Called when the mouse moves over the component.
 	 * @param screen The parent screen.
 	 */

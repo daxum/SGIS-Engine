@@ -118,6 +118,13 @@ public:
 	void onMouseClick(MouseButton button, MouseAction action);
 
 	/**
+	 * Called by the rendering engine when the mouse wheel is scrolled.
+	 * @param x The x offset of the wheel.
+	 * @param y The y offset of the wheel.
+	 */
+	void onMouseScroll(float x, float y);
+
+	/**
 	 * Completely empties the screen stack.
 	 */
 	void clear() { std::vector<std::vector<std::shared_ptr<Screen>>>().swap(screenStack); }

@@ -217,4 +217,12 @@ private:
 	 * @param mods Whether things like shift or control were pressed.
 	 */
 	static void mouseClick(GLFWwindow* window, int button, int action, int mods);
+
+	/**
+	 * Callback.
+	 * @param window The window the mouse was scrolled on.
+	 * @param x The x offset.
+	 * @param y The y offset.
+	 */
+	static void mouseScroll(GLFWwindow* window, double x, double y);
 };
