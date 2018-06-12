@@ -20,6 +20,17 @@
 #include "RenderComponent.hpp"
 #include "Engine.hpp"
 
+std::u32string TextComponent::convToU32(const std::string& s) {
+	std::u32string out;
+	out.reserve(s.size());
+
+	for (const char& c : s) {
+		out.push_back((char32_t)c);
+	}
+
+	return out;
+}
+
 TextComponent::TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, glm::vec3 scale, glm::vec3 color) :
 	Component(TEXT_COMPONENT_NAME),
 	currentFont(font),

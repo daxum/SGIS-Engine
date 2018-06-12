@@ -28,6 +28,13 @@
 class TextComponent : public Component {
 public:
 	/**
+	 * Converts a normal string to a u32string.
+	 * @param s The string to convert.
+	 * @return The u32string version of s.
+	 */
+	static std::u32string convToU32(const std::string& s);
+
+	/**
 	 * Creates a text component. If an object is going to be only text,
 	 * adding a render component is uneccessary, as the text component will
 	 * add one itself (only if one is not already present).
