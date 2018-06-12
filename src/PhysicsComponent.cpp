@@ -84,6 +84,11 @@ void PhysicsComponent::setVelocity(glm::vec3 v) {
 	velocity = btVector3(v.x, v.y, v.z);
 }
 
+glm::vec3 PhysicsComponent::getVelocity() {
+	const btVector3& velocity = getBody()->getBody()->getLinearVelocity();
+	return glm::vec3(velocity.x(), velocity.y(), velocity.z());
+}
+
 void PhysicsComponent::rotate(glm::vec3 amount) {
 	physics->getBody()->applyTorque(btVector3(amount.x, amount.y, amount.z));
 }

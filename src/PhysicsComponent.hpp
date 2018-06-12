@@ -82,6 +82,11 @@ public:
 	void setVelocity(glm::vec3 v);
 
 	/**
+	 * Returns the current velocity of the object.
+	 */
+	glm::vec3 getVelocity();
+
+	/**
 	 * Directly applies torque to the underlying physics object.
 	 */
 	void rotate(glm::vec3 amount);
