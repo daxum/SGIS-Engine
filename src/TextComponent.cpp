@@ -95,3 +95,25 @@ AxisAlignedBB TextComponent::getTextBox() {
 
 	return textBox;
 }
+
+void TextComponent::fitToBox(const AxisAlignedBB& box, bool preserveAspect) {
+	const AxisAlignedBB& textBox = getTextBox();
+
+	float xScale = box.xLength() / textBox.xLength();
+	float yScale = box.yLength() / textBox.yLength();
+
+	if (preserveAspect) {
+		const float scale = std::min(xScale, yScale);
+
+		xScale = scale;
+		yScale = scale;
+	}
+
+	std::shared_ptr<RenderComponent> render = lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
+
+	glm::vec3 adjustedScale = render->getScale();
+	adjustedScale.x *= xScale;
+	adjustedScale.y *= yScale;
+
+	render->setScale(adjustedScale);
+}
