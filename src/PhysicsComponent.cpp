@@ -90,10 +90,12 @@ glm::vec3 PhysicsComponent::getVelocity() {
 }
 
 void PhysicsComponent::rotate(glm::vec3 amount) {
+	physics->getBody()->activate(true);
 	physics->getBody()->applyTorque(btVector3(amount.x, amount.y, amount.z));
 }
 
 void PhysicsComponent::setRotation(glm::vec3 amount) {
+	physics->getBody()->activate(true);
 	angularVelocity = btVector3(amount.x, amount.y, amount.z);
 }
 
