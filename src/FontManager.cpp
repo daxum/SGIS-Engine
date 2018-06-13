@@ -37,6 +37,7 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 	std::vector<uint32_t> indices;
 
 	float farthestX = 0.0f;
+	float lowestY = 0.0f;
 
 	for (char32_t c : text) {
 		//Handle space and newline
@@ -78,9 +79,8 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 		indices.push_back(1 + indexStart);
 
 		xPos += data.advance;
+		lowestY = std::min(baseline - (data.size.y - data.bearing.y), lowestY);
 	}
-
-	yPos -= font.getSize();
 
 	//Temporary, fix models later.
 	LightInfo fontLight = {
@@ -89,8 +89,8 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 		1.0f
 	};
 
-	float radius = glm::length(glm::vec2(farthestX, yPos)) / 2.0f;
-	AxisAlignedBB box(glm::vec3(0.0, yPos, -0.01), glm::vec3(farthestX, 0.0, 0.01));
+	float radius = glm::length(glm::vec2(farthestX, lowestY)) / 2.0f;
+	AxisAlignedBB box(glm::vec3(0.0, lowestY, -0.01), glm::vec3(farthestX, 0.0, 0.01));
 
 	MeshRenderData modelData = renderer->getMemoryManager()->addTextMesh(vertices, indices);
 	Model textModel(modelData, box, radius, font.getTexture(), shader, fontLight, RenderPass::TRANSLUCENT);
