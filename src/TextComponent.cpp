@@ -96,11 +96,11 @@ AxisAlignedBB TextComponent::getTextBox() {
 	return textBox;
 }
 
-void TextComponent::fitToBox(const AxisAlignedBB& box, bool preserveAspect) {
+void TextComponent::fitToBox(const glm::vec2& box, bool preserveAspect) {
 	const AxisAlignedBB& textBox = getTextBox();
 
-	float xScale = box.xLength() / textBox.xLength();
-	float yScale = box.yLength() / textBox.yLength();
+	float xScale = box.x / textBox.xLength();
+	float yScale = box.y / textBox.yLength();
 
 	if (preserveAspect) {
 		const float scale = std::min(xScale, yScale);

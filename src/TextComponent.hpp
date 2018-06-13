@@ -85,12 +85,11 @@ public:
 
 	/**
 	 * Adjusts the rendering scale so that the text fits inside the given bounding box.
-	 * This does not take z into account, just x and y.
-	 * @param box The box to fit the text inside.
+	 * @param box A vector containing the x and y lengths to fit the text within.
 	 * @param perserveAspect If true, this will scale the text equally for both the x and y directions.
 	 *     If false, it will fit the text inside the box exactly.
 	 */
-	void fitToBox(const AxisAlignedBB& box, bool preserveAspect = true);
+	void fitToBox(const glm::vec2& box, bool preserveAspect = true);
 
 private:
 	std::string currentFont;
