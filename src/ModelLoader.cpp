@@ -72,10 +72,15 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 				attributes.normals[3 * index.normal_index + 2]
 			};
 
-			vertex.texCoords = {
-				attributes.texcoords[2 * index.texcoord_index],
-				attributes.texcoords[2 * index.texcoord_index + 1]
-			};
+			if (!attributes.texcoords.empty()) {
+				vertex.texCoords = {
+					attributes.texcoords[2 * index.texcoord_index],
+					attributes.texcoords[2 * index.texcoord_index + 1]
+				};
+			}
+			else {
+				vertex.texCoords = {0.0, 0.0};
+			}
 
 			if (uniqueVertices.count(vertex) == 0) {
 				uniqueVertices[vertex] = data->vertices.size();
