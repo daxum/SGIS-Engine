@@ -18,26 +18,29 @@
 
 #include "RenderComponentManager.hpp"
 #include "Engine.hpp"
+#include "Model.hpp"
 
 void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
-	std::string shader = renderComp->getModel().shader;
-
-	renderComponents[shader].insert(renderComp);
+	getComponentSet(renderComp->getModel()).insert(renderComp);
 	renderComp->setManager(this);
 }
 
 void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
-	std::string shader = renderComp->getModel().shader;
-
-	renderComponents[shader].erase(renderComp);
+	getComponentSet(renderComp->getModel()).erase(renderComp);
 	renderComp->setManager(nullptr);
 }
 
-void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::string oldShader) {
-	renderComponents[oldShader].erase(renderComp);
-	renderComponents[renderComp->getModel().shader].insert(renderComp);
+void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> renderComp, const Model& oldModel) {
+	const Model& model = renderComp->getModel();
+
+	getComponentSet(oldModel).erase(renderComp);
+	getComponentSet(model).insert(renderComp);
+}
+
+std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(const Model& model) {
+	return renderComponents.at(model.pass).at(model.mesh.type)[model.shader];
 }

@@ -46,8 +46,8 @@ struct MeshRenderData {
 };
 
 //Which render pass to draw the model in
-enum class RenderPass {
-	OPAQUE,
+enum RenderPass {
+	OPAQUE = 0,
 	TRANSPARENT,
 	TRANSLUCENT
 };

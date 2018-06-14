@@ -56,10 +56,11 @@ glm::vec3 RenderComponent::getColor() {
 }
 
 void RenderComponent::setModel(const Model& newModel) {
-	std::string oldShader = model.shader;
+	const Model oldModel = model;
 	model = newModel;
 
 	if (manager) {
-		manager->reloadComponent(lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME), oldShader);
+		//Get shared pointer from parent because not stored here (shared_from_this was having problems for some reason).
+		manager->reloadComponent(lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME), oldModel);
 	}
 }

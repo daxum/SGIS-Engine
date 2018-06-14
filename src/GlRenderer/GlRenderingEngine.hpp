@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <array>
 
 #include <glm/glm.hpp>
 
@@ -126,6 +127,8 @@ public:
 	glm::vec2 queryMousePos() const;
 
 private:
+	//The type for the camera view box.
+	typedef std::array<std::pair<glm::vec3, glm::vec3>, 6> CameraBox;
 	//The general rendering logger
 	Logger logger;
 	//The loader logger
@@ -154,13 +157,22 @@ private:
 	void renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state);
 
 	/**
+	 * Renders all the objects in objects. Transparency stuff is set up before this function is called.
+	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
+	 * @param camera The camera to use when rendering.
+	 * @param viewBox The view box of the camera, used for culling.
+	 * @param state The screen state, passed to shaders when setting uniforms.
+	 */
+	void renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state);
+
+	/**
 	 * Checks whether the given sphere is in the camera's view.
 	 * @param sphere A sphere represented by a position and a radius.
 	 * @param camera A deformed box representing the camera's view, where each entry defines a
 	 *     plane with a position and a normal.
 	 * @return Whether the sphere is intersecting the camera's view.
 	 */
-	bool checkVisible(const std::pair<glm::vec3, float>& sphere, const std::vector<std::pair<glm::vec3, glm::vec3>>& camera);
+	bool checkVisible(const std::pair<glm::vec3, float>& sphere, const CameraBox& camera);
 
 	/**
 	 * Gets a deformed collision box of the camera with normals for each face.
@@ -172,7 +184,7 @@ private:
 	 *     position of one of the faces, and the second contains the normal
 	 *     for that face.
 	 */
-	std::vector<std::pair<glm::vec3, glm::vec3>> getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane);
+	CameraBox getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane);
 
 	/**
 	 * Sets the window viewport with OpenGL. This is a callback

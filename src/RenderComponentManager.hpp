@@ -20,6 +20,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <array>
 #include <string>
 
 #include "ComponentManager.hpp"
@@ -27,6 +28,11 @@
 
 class RenderComponentManager : public ComponentManager {
 public:
+	//In case it's not clear, this is an array of maps from strings to sets of pointers to renderComponents.
+	typedef std::array<std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>>, MeshType::BUFFER_COUNT> RenderPassObjects;
+	//0 - opaque, 1 - transparent, 2 - translucent
+	typedef std::array<RenderPassObjects, 3> RenderPassList;
+
 	/**
 	 * Constructor, sets name.
 	 */
@@ -41,17 +47,18 @@ public:
 	 * Called by the renderer to get all render components
 	 * @return A list of all render components (needs casting).
 	 */
-	std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>>& getComponentShaderMap() { return renderComponents; }
+	const RenderPassList& getComponentList() const { return renderComponents; }
 
 	/**
 	 * Removes and readds the component to the render component map.
 	 * @param renderComp The component to reload.
+	 * @param oldModel The model the component previously used.
 	 */
-	void reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::string oldShader);
+	void reloadComponent(std::shared_ptr<RenderComponent> renderComp, const Model& oldModel);
 
 private:
 	//Sorts all RenderComponents by their shader for less context switching.
-	std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>> renderComponents;
+	RenderPassList renderComponents;
 
 	/**
 	 * Adds the component to one of the internal lists based on its model.
@@ -64,4 +71,11 @@ private:
 	 * @param comp The component to un-add.
 	 */
 	void onComponentRemove(std::shared_ptr<Component> comp);
+
+	/**
+	 * Helper function to get the set a component belongs in.
+	 * @param model The model of the render component to fetch the set for.
+	 * @return The set the component belongs in.
+	 */
+	std::unordered_set<std::shared_ptr<RenderComponent>>& getComponentSet(const Model& model);
 };
