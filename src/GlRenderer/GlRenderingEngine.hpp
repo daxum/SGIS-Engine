@@ -162,8 +162,9 @@ private:
 	 * @param camera The camera to use when rendering.
 	 * @param viewBox The view box of the camera, used for culling.
 	 * @param state The screen state, passed to shaders when setting uniforms.
+	 * @param blend Whether to enable blend when rendering an object.
 	 */
-	void renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state);
+	void renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state, bool blend = false);
 
 	/**
 	 * Checks whether the given sphere is in the camera's view.

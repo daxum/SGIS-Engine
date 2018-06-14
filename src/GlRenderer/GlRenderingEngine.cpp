@@ -182,9 +182,7 @@ void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 	renderTransparencyPass(transparencyPassList.at(1), matStack, camera, cameraBox, state);
 
 	//Translucent objects
-	glEnable(GL_BLEND);
-	renderTransparencyPass(transparencyPassList.at(2), matStack, camera, cameraBox, state);
-	glDisable(GL_BLEND);
+	renderTransparencyPass(transparencyPassList.at(2), matStack, camera, cameraBox, state, true);
 
 	glBindVertexArray(0);
 }
@@ -236,7 +234,9 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shad
 	matStack.pop();
 }
 
-void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state) {
+void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state, bool blend) {
+	bool blendOn = false;
+
 	//For each buffer type.
 	for (MeshType i = MeshType::STATIC; i < MeshType::BUFFER_COUNT; i = (MeshType)((int)(i) + 1)) {
 		bool bufferBound = false;
@@ -245,12 +245,6 @@ void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::Ren
 		for (const auto& object : objects.at(i)) {
 			if (object.second.size() == 0) {
 				continue;
-			}
-
-			//Bind buffer here to avoid binding buffers with no objects using them.
-			if (!bufferBound) {
-				memoryManager.bindBuffer(i);
-				bufferBound = true;
 			}
 
 			std::shared_ptr<Shader> shader = shaderMap.at(object.first);
@@ -268,10 +262,27 @@ void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::Ren
 				const std::pair<glm::vec3, float> sphere = std::make_pair(renderComponent->getTranslation(), model.radius * maxScale);
 
 				if (!model.viewCull || checkVisible(sphere, viewBox)) {
+					//Bind buffer here to avoid binding buffers with no objects using them.
+					if (!bufferBound) {
+						memoryManager.bindBuffer(i);
+						bufferBound = true;
+					}
+
+					//Same for blend.
+					if (blend && !blendOn) {
+						glEnable(GL_BLEND);
+						blendOn = true;
+					}
+
 					renderObject(matStack, shader, renderComponent, state);
 				}
 			}
 		}
+	}
+
+	//Turn off blend if enabled.
+	if (blendOn) {
+		glDisable(GL_BLEND);
 	}
 }
 
