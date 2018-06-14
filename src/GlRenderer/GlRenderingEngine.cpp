@@ -315,9 +315,9 @@ GlRenderingEngine::CameraBox GlRenderingEngine::getCameraCollisionData(glm::mat4
 	glm::vec3 normal = glm::normalize(glm::cross(topRight.first - pos, topLeft.first - pos));
 	posNorVec[0] = std::make_pair(pos, normal);
 
-	//Left plane (?)
+	//Right plane
 	pos = ExMath::bilinear3D(std::make_tuple(topRight.first, topRight.second, bottomRight.first, bottomRight.second), 0.5f, 0.5f);
-	normal = glm::normalize(glm::cross(topRight.second - pos, topRight.first - pos));
+	normal = glm::normalize(glm::cross(bottomRight.second - pos, topRight.second - pos));
 	posNorVec[1] = std::make_pair(pos, normal);
 
 	//Far plane
@@ -325,9 +325,9 @@ GlRenderingEngine::CameraBox GlRenderingEngine::getCameraCollisionData(glm::mat4
 	normal = glm::normalize(glm::cross(topLeft.second - pos, topRight.second - pos));
 	posNorVec[2] = std::make_pair(pos, normal);
 
-	//Right plane (?)
+	//Left plane
 	pos = ExMath::bilinear3D(std::make_tuple(topLeft.first, topLeft.second, bottomLeft.first, bottomLeft.second), 0.5f, 0.5f);
-	normal = glm::normalize(glm::cross(topLeft.first - pos, topLeft.second - pos));
+	normal = glm::normalize(glm::cross(bottomLeft.first - pos, topLeft.first - pos));
 	posNorVec[3] = std::make_pair(pos, normal);
 
 	//Top plane
