@@ -143,7 +143,6 @@ void Engine::parallelFor(size_t begin, size_t end, const std::function<void(size
 			}
 		});
 	}
-
 }
 
 bool Engine::shouldExit() {
