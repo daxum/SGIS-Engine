@@ -25,9 +25,8 @@
 #include "ExtraMath.hpp"
 
 namespace {
-	std::mt19937 engine(ExMath::getTimeMillis());
-	std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
-	std::uniform_int_distribution<int> intDistribution;
+	//Psuedo-square time to avoid chunking when threads all initialize at once.
+	thread_local std::mt19937 engine(ExMath::getTimeMillis() * ExMath::getTimeMillis());
 }
 
 float ExMath::interpolate(float start, float finish, float percent) {
@@ -44,15 +43,15 @@ glm::vec3 ExMath::bilinear3D(std::tuple<glm::vec3, glm::vec3, glm::vec3, glm::ve
 }
 
 float ExMath::randomFloat(float min, float max) {
-	return interpolate(min, max, distribution(engine));
+	return interpolate(min, max, std::uniform_real_distribution<float>(0.0f, 1.0f)(engine));
 }
 
 bool ExMath::randomBool() {
-	return (bool)(intDistribution(engine) & 1);
+	return (bool)(std::uniform_int_distribution<int>()(engine) & 1);
 }
 
 int ExMath::randomInt(int min, int max) {
-	return intDistribution(engine) % (max - min + 1) + min;
+	return std::uniform_int_distribution<int>()(engine) % (max - min + 1) + min;
 }
 
 double ExMath::getTimeMillis() {
