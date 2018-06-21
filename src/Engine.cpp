@@ -21,6 +21,7 @@
 #include "ExtraMath.hpp"
 
 #include "LinearMath/btThreads.h"
+#include "tbb/parallel_for.h"
 
 Engine* Engine::instance = nullptr;
 
@@ -128,6 +129,21 @@ void Engine::run(GameInterface& game) {
 
 	//Prevent segmentation faults.
 	display.clear();
+}
+
+void Engine::parallelFor(size_t begin, size_t end, const std::function<void(size_t)>& func, size_t grainSize) {
+	if (grainSize == 0) {
+		tbb::parallel_for(begin, end, func);
+	}
+	else {
+		//Lambdas of lambdas of lambdas...
+		tbb::parallel_for(tbb::blocked_range<size_t>(begin, end, grainSize), [&func](const tbb::blocked_range<size_t>& r) {
+			for (size_t i = r.begin(); i < r.end(); i++) {
+				func(i);
+			}
+		});
+	}
+
 }
 
 bool Engine::shouldExit() {

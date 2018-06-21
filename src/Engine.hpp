@@ -19,6 +19,7 @@
 #pragma once
 
 #include <memory>
+#include <functional>
 
 #include "GameInterface.hpp"
 #include "DisplayEngine.hpp"
@@ -83,6 +84,15 @@ public:
 	 * @return The font manager from this engine.
 	 */
 	FontManager& getFontManager() { return fontManager; }
+
+	/**
+	 * Execute for loop in parallel.
+	 * @param begin The starting value.
+	 * @param end The ending value.
+	 * @param func The function to run. Will be called with the current index of the loop.
+	 * @param grainSize How many invokations of func to do serially per task. Set to zero to determine automatically.
+	 */
+	void parallelFor(size_t begin, size_t end, const std::function<void(size_t)>& func, size_t grainSize = 0);
 
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
