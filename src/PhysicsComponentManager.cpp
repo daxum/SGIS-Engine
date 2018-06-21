@@ -18,6 +18,7 @@
 
 #include <thread>
 
+#include "LinearMath/btThreads.h"
 #include "PhysicsComponentManager.hpp"
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
@@ -40,7 +41,7 @@ PhysicsComponentManager::PhysicsComponentManager() :
 	world->setGravity(btVector3(0.0, -9.80665, 0.0));
 	world->setInternalTickCallback(physicsTickCallback, this, false);
 
-	btSetTaskScheduler(Engine::instance->getTaskScheduler());
+	btSetTaskScheduler(btGetTBBTaskScheduler());
 }
 
 PhysicsComponentManager::~PhysicsComponentManager() {

@@ -84,11 +84,6 @@ public:
 	 */
 	FontManager& getFontManager() { return fontManager; }
 
-	/**
-	 * Currently only for PhysicsComponentManager.
-	 */
-	btITaskScheduler* getTaskScheduler() { return scheduler; }
-
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
 	const EngineConfig config;
@@ -104,9 +99,6 @@ private:
 	ModelManager modelManager;
 	//Manages all loaded fonts
 	FontManager fontManager;
-
-	//For threading, probably will change later
-	btITaskScheduler* scheduler;
 
 	/**
 	 * Indicates if the engine should stop, used to exit the main loop.
