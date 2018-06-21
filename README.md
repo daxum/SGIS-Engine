@@ -31,8 +31,6 @@ These instructions (and the program in general, actually) have only been tested 
 
 	This will create a file called libEngine.a, which can be linked with other projects.
 
-	Note that if bullet is linked statically, the threading library will have to be supplied by the project.
-
 ---
 The file `stb_image.h` was obtained from [here](https://github.com/nothings/stb), and makes a mess of the language indexing on github :(.
 
