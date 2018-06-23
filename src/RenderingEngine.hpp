@@ -32,8 +32,6 @@
 #include "Screen.hpp"
 #include "WindowSystemInterface.hpp"
 
-class DisplayEngine;
-
 //A generic rendering engine. Provides the base interfaces, like resource loading
 //and rendering, but leaves the implementation to api-specific subclasses, like
 //a GlRenderingEngine, or a VulkanRenderingEngine (or maybe even a DxRenderingEngine.
