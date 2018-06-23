@@ -49,10 +49,13 @@ public:
 	 * the rendering api.
 	 * @param tl The texture loader this engine should use.
 	 * @param sl The shader loader this engine should use.
+	 * @param rendererLog The logger config for the rendering engine.
+	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if initialization failed.
 	 */
-	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl) :
-		texLoader(tl), shaderLoader(sl) {}
+	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, const LogConfig& rendererLog, const LogConfig& loaderLog) :
+		texLoader(tl), shaderLoader(sl), logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
+		loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile) {}
 
 	/**
 	 * Destroys any api-agnostic resources the engine might
@@ -134,4 +137,9 @@ public:
 protected:
 	std::shared_ptr<TextureLoader> texLoader;
 	std::shared_ptr<ShaderLoader> shaderLoader;
+
+	//The general rendering logger
+	Logger logger;
+	//The loader logger
+	Logger loaderLogger;
 };

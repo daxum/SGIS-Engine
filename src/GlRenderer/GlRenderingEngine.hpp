@@ -108,10 +108,6 @@ public:
 private:
 	//The type for the camera view box.
 	typedef std::array<std::pair<glm::vec3, glm::vec3>, 6> CameraBox;
-	//The general rendering logger
-	Logger logger;
-	//The loader logger
-	Logger loaderLogger;
 	//A map to store texture data
 	std::unordered_map<std::string, GlTextureData> textureMap;
 	//A map to store the shaders used by the engine
