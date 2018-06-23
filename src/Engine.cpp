@@ -18,6 +18,7 @@
 
 #include "Engine.hpp"
 #include "GlRenderer/GlRenderingEngine.hpp"
+#include "VkRenderer/VkRenderingEngine.hpp"
 #include "ExtraMath.hpp"
 
 #include "LinearMath/btThreads.h"
@@ -43,6 +44,10 @@ Engine::Engine(const EngineConfig& config) :
 			logger.info("Using OpenGL renderer.");
 			renderer.reset(new GlRenderingEngine(display, config.rendererLog, config.loaderLog));
 			break;
+		case Renderer::VULKAN:
+			logger.info("Using Vulkan renderer.");
+			renderer.reset(new VkRenderingEngine(display, config.rendererLog, config.loaderLog));
+			break;
 		default:
 			logger.fatal("Unknown renderer requested!");
 			throw std::runtime_error("Incomplete switch in Engine::Engine()");
@@ -63,6 +68,11 @@ void Engine::run(GameInterface& game) {
 
 	renderer->init();
 	logger.info("Renderer initialization complete.");
+
+	//Testing for vulkan loading, remove later.
+	if (config.renderer.renderType == Renderer::VULKAN) {
+		return;
+	}
 
 	//Pre-loading of a splash screen might go here
 
