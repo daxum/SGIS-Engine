@@ -31,12 +31,11 @@
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
 
-GlRenderingEngine::GlRenderingEngine(ModelManager& modelManager, DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
+GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
 					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap, textureMap)),
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),
-	modelManager(modelManager),
 	interface(display, this),
 	memoryManager(logger) {
 

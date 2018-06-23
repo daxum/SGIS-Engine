@@ -49,7 +49,7 @@ public:
 	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if glfw initialization failed.
 	 */
-	GlRenderingEngine(ModelManager& modelManager, DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog);
+	GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog);
 
 	/**
 	 * Destroys the window and terminates glfw
@@ -116,8 +116,6 @@ private:
 	std::unordered_map<std::string, GlTextureData> textureMap;
 	//A map to store the shaders used by the engine
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
-	//The object that stores all the models.
-	ModelManager& modelManager;
 	//Callback handler object
 	GlfwInterface interface;
 
