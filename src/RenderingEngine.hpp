@@ -30,6 +30,7 @@
 #include "RenderComponentManager.hpp"
 #include "RendererMemoryManager.hpp"
 #include "Screen.hpp"
+#include "WindowSystemInterface.hpp"
 
 class DisplayEngine;
 
@@ -65,13 +66,9 @@ public:
 	 *  - allocating device resources
 	 *  - creating swapchains, framebuffers, and other nonsense
 	 *  - registering callbacks
-	 * @param windowWidth The width of the created window.
-	 * @param windowHeight The height of the created window.
-	 * @param windowTitle The title of the created window.
-	 * @param display The display for the engine, used to set input callbacks.
 	 * @throw runtime_error if initialization failed.
 	 */
-	virtual void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display) = 0;
+	virtual void init() = 0;
 
 	/**
 	 * Gets the memory manager for this rendering engine, used for uploading
@@ -122,37 +119,17 @@ public:
 	virtual void present() = 0;
 
 	/**
-	 * Indicates whether the window was closed by the user, and the
-	 * game should stop.
-	 * @return Whether to terminate the game due to a closed window.
+	 * Called when the window size has changed and the viewport needs to be updated.
+	 * @param width The new window width.
+	 * @param height The new window height.
 	 */
-	virtual bool windowClosed() = 0;
+	virtual void setViewport(int width, int height) = 0;
 
 	/**
-	 * Called from the engine to poll for events. This will usually
-	 * call glfwPollEvents().
+	 * Gets the interface to the window, provides things like window size.
+	 * @return The interface to the window system.
 	 */
-	virtual void pollEvents() = 0;
-
-	/**
-	 * Captures / uncaptures the mouse.
-	 */
-	virtual void captureMouse(bool capture) = 0;
-
-	/**
-	 * Gets the window's width, in pixels.
-	 */
-	virtual float getWindowWidth() const = 0;
-
-	/**
-	 * Gets the window's height, in pixels.
-	 */
-	virtual float getWindowHeight() const = 0;
-
-	/**
-	 * Gets the mouse position from the system.
-	 */
-	virtual glm::vec2 queryMousePos() const = 0;
+	virtual const WindowSystemInterface& getWindowInterface() const = 0;
 
 protected:
 	std::shared_ptr<TextureLoader> texLoader;

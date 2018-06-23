@@ -39,14 +39,14 @@ void DisplayEngine::popScreen() {
 	stackChanged = true;
 
 	if (!screenStack.empty() && !screenStack.back().empty()) {
-		renderer->captureMouse(getTop()->mouseHidden());
+		renderer->getWindowInterface().captureMouse(getTop()->mouseHidden());
 	}
 }
 
 void DisplayEngine::pushOverlay(std::shared_ptr<Screen> overlay) {
 	screenStack.back().push_back(overlay);
 
-	renderer->captureMouse(overlay->mouseHidden());
+	renderer->getWindowInterface().captureMouse(overlay->mouseHidden());
 	stackChanged = true;
 }
 
@@ -54,7 +54,7 @@ void DisplayEngine::popOverlay() {
 	screenStack.back().pop_back();
 
 	if (!screenStack.back().empty()) {
-		renderer->captureMouse(getTop()->mouseHidden());
+		renderer->getWindowInterface().captureMouse(getTop()->mouseHidden());
 	}
 
 	stackChanged = true;
@@ -96,7 +96,7 @@ void DisplayEngine::update() {
 
 	if (stackChanged) {
 		//Update new top screen's mouse position by sending extra mouse move event.
-		glm::vec2 mousePos = Engine::instance->getRenderer()->queryMousePos();
+		glm::vec2 mousePos = renderer->getWindowInterface().queryMousePos();
 		onMouseMove(mousePos.x, mousePos.y);
 		stackChanged = false;
 	}

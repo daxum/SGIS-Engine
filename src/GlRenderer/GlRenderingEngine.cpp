@@ -24,7 +24,6 @@
 #include "Engine.hpp"
 #include "EngineConfig.hpp"
 #include "DisplayEngine.hpp"
-#include "GlfwKeyTranslator.hpp"
 #include "GlRenderingEngine.hpp"
 #include "GlShaderLoader.hpp"
 #include "RenderComponentManager.hpp"
@@ -32,29 +31,14 @@
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
 
-namespace {
-	//Bit of a hack for static callbacks
-	GlRenderingEngine* renderer = nullptr;
-	DisplayEngine* display = nullptr;
-}
-
-GlRenderingEngine::GlRenderingEngine(ModelManager& modelManager, const LogConfig& rendererLog, const LogConfig& loaderLog) :
+GlRenderingEngine::GlRenderingEngine(ModelManager& modelManager, DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
 					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap, textureMap)),
 	logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 	loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile),
 	modelManager(modelManager),
-	width(0.0f),
-	height(0.0f),
+	interface(display, this),
 	memoryManager(logger) {
-
-	if (renderer != nullptr) {
-		throw std::runtime_error("GlRenderingEngine initialized more than once!");
-	}
-
-	renderer = this;
-
-	glfwSetErrorCallback(GlRenderingEngine::glfwError);
 
 	if (!glfwInit()) {
 		throw std::runtime_error("Couldn't initialize glfw");
@@ -79,21 +63,18 @@ GlRenderingEngine::~GlRenderingEngine() {
 
 	//Delete window and terminate glfw
 
+	GLFWwindow* window = interface.getWindow();
+
 	if (window != nullptr) {
 		glfwDestroyWindow(window);
-		window = nullptr;
 	}
 
 	glfwTerminate();
-	renderer = nullptr;
-	display = nullptr;
 
 	logger.info("Destroyed OpenGL rendering engine.");
 }
 
-void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* displayEngine) {
-	display = displayEngine;
-
+void GlRenderingEngine::init() {
 	//Create the window
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -102,7 +83,11 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
-	window = glfwCreateWindow(windowWidth, windowHeight, windowTitle.c_str(), nullptr, nullptr);
+	const int initWidth = Engine::instance->getConfig().renderer.windowWidth;
+	const int initHeight = Engine::instance->getConfig().renderer.windowHeight;
+	const std::string& title = Engine::instance->getConfig().renderer.windowTitle;
+
+	GLFWwindow* window = glfwCreateWindow(initWidth, initHeight, title.c_str(), nullptr, nullptr);
 
 	if (window == nullptr) {
 		throw std::runtime_error("Failed to create window and context");
@@ -110,7 +95,7 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	glfwMakeContextCurrent(window);
 
-	logger.info("Created window and context.");
+	logger.info("Created window and context");
 
 	//Load OpenGL functions
 
@@ -124,20 +109,13 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	//Set callbacks
 
-	glfwSetFramebufferSizeCallback(window, GlRenderingEngine::setViewport);
-	glfwSetKeyCallback(window, GlRenderingEngine::keyPress);
-	glfwSetCursorPosCallback(window, GlRenderingEngine::mouseMove);
-	glfwSetMouseButtonCallback(window, GlRenderingEngine::mouseClick);
-	glfwSetScrollCallback(window, GlRenderingEngine::mouseScroll);
+	interface.init(window);
+
+	//Set viewport
+
+	glViewport(0, 0, (int) interface.getWindowWidth(), (int) interface.getWindowHeight());
 
 	//Set state defaults
-
-	int width = 0;
-	int height = 0;
-
-	glfwGetFramebufferSize(window, &width, &height);
-
-	setViewport(nullptr, width, height);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
@@ -148,6 +126,8 @@ void GlRenderingEngine::init(int windowWidth, int windowHeight, std::string wind
 
 	glClearColor(0.0, 0.2, 0.5, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	//Initialize memory manager
 
 	memoryManager.init();
 
@@ -192,35 +172,12 @@ void GlRenderingEngine::clearBuffers() {
 }
 
 void GlRenderingEngine::present() {
-	glfwSwapBuffers(window);
+	glfwSwapBuffers(interface.getWindow());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-bool GlRenderingEngine::windowClosed() {
-	return glfwWindowShouldClose(window);
-}
-
-void GlRenderingEngine::pollEvents() {
-	glfwPollEvents();
-}
-
-void GlRenderingEngine::captureMouse(bool capture) {
-	glfwSetInputMode(window, GLFW_CURSOR, capture ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-}
-
-float GlRenderingEngine::getWindowWidth() const {
-	return width;
-}
-
-float GlRenderingEngine::getWindowHeight() const {
-	return height;
-}
-
-glm::vec2 GlRenderingEngine::queryMousePos() const {
-	double x, y;
-	glfwGetCursorPos(window, &x, &y);
-
-	return glm::vec2(x, y);
+void GlRenderingEngine::setViewport(int width, int height) {
+	glViewport(0, 0, width, height);
 }
 
 void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state) {
@@ -302,6 +259,8 @@ bool GlRenderingEngine::checkVisible(const std::pair<glm::vec3, float>& sphere, 
 
 GlRenderingEngine::CameraBox GlRenderingEngine::getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane) {
 	const RenderConfig renderConfig = Engine::instance->getConfig().renderer;
+	const float width = interface.getWindowWidth();
+	const float height = interface.getWindowHeight();
 
 	auto topLeft = ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, view, width, height, nearPlane, farPlane);
 	auto topRight = ExMath::screenToWorld(glm::vec2(width, 0.0), projection, view, width, height, nearPlane, farPlane);
@@ -341,57 +300,4 @@ GlRenderingEngine::CameraBox GlRenderingEngine::getCameraCollisionData(glm::mat4
 	posNorVec[5] = std::make_pair(pos, normal);
 
 	return posNorVec;
-}
-
-void GlRenderingEngine::setViewport(GLFWwindow* window, int nWidth, int nHeight) {
-	renderer->width = (float) nWidth;
-	renderer->height = (float) nHeight;
-
-	glViewport(0, 0, nWidth, nHeight);
-	display->updateProjections();
-}
-
-void GlRenderingEngine::glfwError(int errorCode, const char* description) {
-	throw std::runtime_error("GLFW error! " + std::to_string(errorCode) + ": " + description);
-}
-
-void GlRenderingEngine::keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	KeyAction nativeAction;
-
-	switch (action) {
-		case GLFW_PRESS: nativeAction = KeyAction::PRESS; break;
-		case GLFW_REPEAT: nativeAction = KeyAction::REPEAT; break;
-		case GLFW_RELEASE: nativeAction = KeyAction::RELEASE; break;
-		default: return;
-	}
-
-	display->onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
-}
-
-void GlRenderingEngine::mouseMove(GLFWwindow* window, double x, double y) {
-	display->onMouseMove((float)x, (float)y);
-}
-
-void GlRenderingEngine::mouseClick(GLFWwindow* window, int button, int action, int mods) {
-	MouseButton pressed;
-	MouseAction mouseAction;
-
-	switch(button) {
-		case GLFW_MOUSE_BUTTON_LEFT: pressed = MouseButton::LEFT; break;
-		case GLFW_MOUSE_BUTTON_MIDDLE: pressed = MouseButton::MIDDLE; break;
-		case GLFW_MOUSE_BUTTON_RIGHT: pressed = MouseButton::RIGHT; break;
-		default: return;
-	}
-
-	switch(action) {
-		case GLFW_PRESS: mouseAction = MouseAction::PRESS; break;
-		case GLFW_RELEASE: mouseAction = MouseAction::RELEASE; break;
-		default: return;
-	}
-
-	display->onMouseClick(pressed, mouseAction);
-}
-
-void GlRenderingEngine::mouseScroll(GLFWwindow* window, double x, double y) {
-	display->onMouseScroll((float)x, (float)y);
 }

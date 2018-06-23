@@ -29,6 +29,7 @@ add_library(Engine STATIC
 	TextComponent.cpp
 	SplineAnimation.cpp
 	AnimationComponent.cpp
+	GlfwInterface.cpp
 	GlRenderer/gl_core_4_1.c
 )
 

@@ -41,7 +41,7 @@ Engine::Engine(const EngineConfig& config) :
 	switch(config.renderer.renderType) {
 		case Renderer::OPEN_GL:
 			logger.info("Using OpenGL renderer.");
-			renderer.reset(new GlRenderingEngine(modelManager, config.rendererLog, config.loaderLog));
+			renderer.reset(new GlRenderingEngine(modelManager, display, config.rendererLog, config.loaderLog));
 			break;
 		default:
 			logger.fatal("Unknown renderer requested!");
@@ -61,7 +61,7 @@ void Engine::run(GameInterface& game) {
 	//Initialize renderer
 	logger.info("Initializing renderer...");
 
-	renderer->init(config.renderer.windowWidth, config.renderer.windowHeight, config.renderer.windowTitle, &display);
+	renderer->init();
 	logger.info("Renderer initialization complete.");
 
 	//Pre-loading of a splash screen might go here
@@ -92,7 +92,7 @@ void Engine::run(GameInterface& game) {
 
 	while (!shouldExit()) {
 		//Poll for window / input events
-		renderer->pollEvents();
+		renderer->getWindowInterface().pollEvents();
 
 		//Calculate time since last frame, capping at 100 milliseconds.
 		double newTime = ExMath::getTimeMillis();
@@ -146,5 +146,5 @@ void Engine::parallelFor(size_t begin, size_t end, const std::function<void(size
 }
 
 bool Engine::shouldExit() {
-	return display.shouldExit() || renderer->windowClosed();
+	return display.shouldExit() || renderer->getWindowInterface().windowClosed();
 }

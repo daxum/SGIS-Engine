@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#pragma once
+
 #include "KeyList.hpp"
-#include "CombinedGl.h"
+#include <GLFW/glfw3.h>
 
 namespace GLFWKeyTranslator {
 	/**

@@ -46,8 +46,8 @@ public:
 	 * display, so be careful.
 	 */
 	void setProjection() {
-		float width = Engine::instance->getRenderer()->getWindowWidth();
-		float height = Engine::instance->getRenderer()->getWindowHeight();
+		float width = Engine::instance->getWindowInterface().getWindowWidth();
+		float height = Engine::instance->getWindowInterface().getWindowHeight();
 
 		projection = glm::perspective(ExMath::PI / 4.0f, width / height, near, far);
 	}

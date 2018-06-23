@@ -27,6 +27,7 @@
 #include "ModelManager.hpp"
 #include "Logger.hpp"
 #include "FontManager.hpp"
+#include "WindowSystemInterface.hpp"
 
 class RenderingEngine;
 class btITaskScheduler;
@@ -76,7 +77,7 @@ public:
 	 * Used to get things like the projection matrix and window size.
 	 * @return The rendering engine.
 	 */
-	const std::shared_ptr<const RenderingEngine> getRenderer() const { return renderer; }
+	const WindowSystemInterface& getWindowInterface() const { return renderer->getWindowInterface(); }
 
 	/**
 	 * Gets the engine's font manager. Not threadsafe, should only be called from

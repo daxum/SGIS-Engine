@@ -35,6 +35,7 @@
 #include "MatrixStack.hpp"
 #include "ModelManager.hpp"
 #include "RenderComponent.hpp"
+#include "GlfwInterface.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -43,11 +44,12 @@ public:
 	 * Constructs a GlRenderingEngine and initializes small parts of
 	 * glfw - it just calls the init function and sets the error callback.
 	 * @param modelManager A reference to the object that stores model data.
+	 * @param display A reference to the engine's display engine, used for callbacks.
 	 * @param rendererLog The logger config for the rendering engine.
 	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if glfw initialization failed.
 	 */
-	GlRenderingEngine(ModelManager& modelManager, const LogConfig& rendererLog, const LogConfig& loaderLog);
+	GlRenderingEngine(ModelManager& modelManager, DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog);
 
 	/**
 	 * Destroys the window and terminates glfw
@@ -57,13 +59,9 @@ public:
 	/**
 	 * Initializes OpenGL. A window is created, functions are loaded,
 	 * callbacks are registered, and state defaults are set.
-	 * @param windowWidth The width of the created window.
-	 * @param windowHeight The height of the created window.
-	 * @param windowTitle The title of the created window.
-	 * @param display The display to set the input callbacks to.
 	 * @throw runtime_error if initialization failed.
 	 */
-	void init(int windowWidth, int windowHeight, std::string windowTitle, DisplayEngine* display);
+	void init();
 
 	/**
 	 * Gets the memory manager for this rendering engine, used for uploading
@@ -87,44 +85,25 @@ public:
 	/**
 	 * Clears the depth and stencil buffers.
 	 */
-	virtual void clearBuffers();
+	void clearBuffers();
 
 	/**
 	 * Swaps the buffers and clears for the next frame.
 	 */
-	virtual void present();
+	void present();
 
 	/**
-	 * Indicates whether the window was closed by the user, and the
-	 * game should stop.
-	 * @return Whether to terminate the game due to a closed window.
+	 * Called when the window size has changed and the viewport needs to be updated.
+	 * @param width The new window width.
+	 * @param height The new window height.
 	 */
-	bool windowClosed();
+	void setViewport(int width, int height);
 
 	/**
-	 * Just calls glfwPollEvents() and returns.
+	 * Gets the interface to the window, provides things like window size.
+	 * @return The interface to the window system.
 	 */
-	void pollEvents();
-
-	/**
-	 * Captures / uncaptures the mouse.
-	 */
-	void captureMouse(bool capture);
-
-	/**
-	 * Gets the window's width, in pixels.
-	 */
-	float getWindowWidth() const;
-
-	/**
-	 * Gets the window's height, in pixels.
-	 */
-	float getWindowHeight() const;
-
-	/**
-	 * Gets the mouse position from the system.
-	 */
-	glm::vec2 queryMousePos() const;
+	const WindowSystemInterface& getWindowInterface() const { return interface; }
 
 private:
 	//The type for the camera view box.
@@ -139,12 +118,8 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
 	//The object that stores all the models.
 	ModelManager& modelManager;
-	//The window created by glfw
-	GLFWwindow* window;
-	//The window's width
-	float width;
-	//The window's height
-	float height;
+	//Callback handler object
+	GlfwInterface interface;
 
 	//The memory manager, for buffer management and such.
 	GlMemoryManager memoryManager;
@@ -186,56 +161,4 @@ private:
 	 *     for that face.
 	 */
 	CameraBox getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane);
-
-	/**
-	 * Sets the window viewport with OpenGL. This is a callback
-	 * function for glfw, and should only be called directly once,
-	 * at the end of OpenGL initialization.
-	 * @param window The window provided to the callback by glfw. Can be null.
-	 * @param width The new viewport width.
-	 * @param height The new viewport height.
-	 */
-	static void setViewport(GLFWwindow* window, int width, int height);
-
-	/**
-	 * The error callback for glfw. Never call this directly.
-	 * @param error The glfw error code.
-	 * @param description A description of the error.
-	 */
-	static void glfwError(int error, const char* description);
-
-	/**
-	 * Another glfw callback.
-	 * @param window The window for the key press.
-	 * @param key The key that was pressed.
-	 * @param scancode The platform-specific key that was pressed.
-	 * @param action What the key did (press, repeat, or release).
-	 * @param mods Whether things like the shift key were pressed.
-	 */
-	static void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-	/**
-	 * Callback.
-	 * @param window The window the mouse was moved in.
-	 * @param x The new x position of the mouse.
-	 * @param y The new y position of the mouse.
-	 */
-	static void mouseMove(GLFWwindow* window, double x, double y);
-
-	/**
-	 * Callback.
-	 * @param window The window the mouse was clicked on.
-	 * @param button The button that was clicked.
-	 * @param action Whether the click was a press or release.
-	 * @param mods Whether things like shift or control were pressed.
-	 */
-	static void mouseClick(GLFWwindow* window, int button, int action, int mods);
-
-	/**
-	 * Callback.
-	 * @param window The window the mouse was scrolled on.
-	 * @param x The x offset.
-	 * @param y The y offset.
-	 */
-	static void mouseScroll(GLFWwindow* window, double x, double y);
 };

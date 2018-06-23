@@ -90,12 +90,12 @@ bool GuiComponentManager::handleMouseMove(const std::shared_ptr<const MouseMoveE
 }
 
 std::shared_ptr<GuiComponent> GuiComponentManager::getUnderMouse(const glm::vec2& mousePos) {
-	const std::shared_ptr<const RenderingEngine> renderer = Engine::instance->getRenderer();
+	const WindowSystemInterface& interface = Engine::instance->getWindowInterface();
 
 	glm::mat4 projection = screen->getCamera()->getProjection();
 	glm::mat4 view = screen->getCamera()->getView();
-	float width = renderer->getWindowWidth();
-	float height = renderer->getWindowHeight();
+	float width = interface.getWindowWidth();
+	float height = interface.getWindowHeight();
 
 	const auto nearFarPlanes = screen->getCamera()->getNearFar();
 	float near = nearFarPlanes.first;
