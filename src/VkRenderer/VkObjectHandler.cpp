@@ -67,6 +67,43 @@ void VkObjectHandler::createInstance() {
 		logger.debug(std::string("\t") + glfwExtensions[i]);
 	}
 
+	//Validation layers (TODO: allow turning off later, specify which ones from game)
+
+	const std::vector<std::string> enableLayers = {
+		"VK_LAYER_LUNARG_standard_validation"
+	};
+
+	uint32_t layerCount = 0;
+	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+	logger.debug("Found " + std::to_string(layerCount) + " validation layers:");
+
+	std::vector<VkLayerProperties> layers(layerCount);
+	std::vector<const char*> layerNames;
+	layerNames.reserve(layerCount);
+
+	vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
+
+	for (const VkLayerProperties& layer : layers) {
+		bool enabled = false;
+
+		for (const std::string& name : enableLayers) {
+			if (name == layer.layerName) {
+				layerNames.push_back(layer.layerName);
+				enabled = true;
+				break;
+			}
+		}
+
+		logger.debug(std::string("\t") + layer.layerName + " " + std::to_string(layer.specVersion) + " - " + std::to_string(layer.implementationVersion) + ":");
+		logger.debug(std::string("\t\tEnabled: ") + (enabled ? "Yes" : "No"));
+		logger.debug(std::string("\t\t") + layer.description);
+	}
+
+	if (layerNames.size() != enableLayers.size()) {
+		logger.warn("Not all validation layers loaded!");
+	}
+
 	//Create instance
 
 	VkInstanceCreateInfo instanceCreateInfo = {};
@@ -74,7 +111,8 @@ void VkObjectHandler::createInstance() {
 	instanceCreateInfo.pApplicationInfo = &appInfo;
 	instanceCreateInfo.enabledExtensionCount = glfwExtensionCount;
 	instanceCreateInfo.ppEnabledExtensionNames = glfwExtensions;
-	instanceCreateInfo.enabledLayerCount = 0;
+	instanceCreateInfo.enabledLayerCount = layerNames.size();
+	instanceCreateInfo.ppEnabledLayerNames = layerNames.data();
 
 	if (vkCreateInstance(&instanceCreateInfo, nullptr, &instance) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create vulkan instance!");
