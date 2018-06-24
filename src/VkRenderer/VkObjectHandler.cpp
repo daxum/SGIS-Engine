@@ -20,15 +20,22 @@
 
 #include "VkObjectHandler.hpp"
 #include "Engine.hpp"
+#include "VkExtensionFunctionLoader.hpp"
 
 VkObjectHandler::VkObjectHandler(Logger& logger) :
 	logger(logger) {
 
 	createInstance();
+	loadInstanceExtensionFunctions(instance);
+	setDebugCallback();
 }
 
 VkObjectHandler::~VkObjectHandler() {
+	vkDestroyDebugReportCallbackEXT(instance, callback, nullptr);
 	vkDestroyInstance(instance, nullptr);
+
+	//This is perfectly safe, the instance isn't accessed in any way.
+	destroyInstanceExtensionFunctions(instance);
 }
 
 void VkObjectHandler::createInstance() {
@@ -63,9 +70,15 @@ void VkObjectHandler::createInstance() {
 
 	logger.debug("Required glfw extensions:");
 
+	std::vector<const char*> extensionNames;
+
 	for (uint32_t i = 0; i < glfwExtensionCount; i++) {
+		extensionNames.push_back(glfwExtensions[i]);
+
 		logger.debug(std::string("\t") + glfwExtensions[i]);
 	}
+
+	extensionNames.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
 	//Validation layers (TODO: allow turning off later, specify which ones from game)
 
@@ -109,8 +122,8 @@ void VkObjectHandler::createInstance() {
 	VkInstanceCreateInfo instanceCreateInfo = {};
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	instanceCreateInfo.pApplicationInfo = &appInfo;
-	instanceCreateInfo.enabledExtensionCount = glfwExtensionCount;
-	instanceCreateInfo.ppEnabledExtensionNames = glfwExtensions;
+	instanceCreateInfo.enabledExtensionCount = extensionNames.size();
+	instanceCreateInfo.ppEnabledExtensionNames = extensionNames.data();
 	instanceCreateInfo.enabledLayerCount = layerNames.size();
 	instanceCreateInfo.ppEnabledLayerNames = layerNames.data();
 
@@ -119,4 +132,36 @@ void VkObjectHandler::createInstance() {
 	}
 
 	logger.debug("Created vulkan instance");
+}
+
+void VkObjectHandler::setDebugCallback() {
+	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+	callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+	callbackCreateInfo.pfnCallback = VkObjectHandler::debugCallback;
+	callbackCreateInfo.pUserData = this;
+
+	vkCreateDebugReportCallbackEXT(instance, &callbackCreateInfo, nullptr, &callback);
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {
+	std::string message("Message from layer \"");
+	message = message + layerPrefix + "\": " + mesg;
+
+	VkObjectHandler* objHandler = (VkObjectHandler*) usrData;
+
+	if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+		objHandler->logger.error(message);
+	}
+	else if (flags & (VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)) {
+		objHandler->logger.warn(message);
+	}
+	else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+		objHandler->logger.info(message);
+	}
+	else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+		objHandler->logger.debug(message);
+	}
+
+	return VK_FALSE;
 }

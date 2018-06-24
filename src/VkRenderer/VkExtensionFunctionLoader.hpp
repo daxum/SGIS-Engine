@@ -20,41 +20,14 @@
 
 #include <vulkan/vulkan.h>
 
-#include "Logger.hpp"
+//Definitions in VkExtensionFuncDefs.cpp
 
-//Handles creation and destruction of all vulkan objects.
-class VkObjectHandler {
-public:
-	/**
-	 * Initializes vulkan objects.
-	 */
-	VkObjectHandler(Logger& logger);
+/**
+ * Loads all available extension functions for the given instance.
+ */
+void loadInstanceExtensionFunctions(VkInstance instance);
 
-	/**
-	 *Destroys all active objects.
-	 */
-	~VkObjectHandler();
-
-private:
-	//The logger
-	Logger& logger;
-
-	//Vulkan instance
-	VkInstance instance;
-	VkDebugReportCallbackEXT callback;
-
-	/**
-	 * Creates the instance object.
-	 */
-	void createInstance();
-
-	/**
-	 * Sets the debug callback.
-	 */
-	void setDebugCallback();
-
-	/**
-	 * Vulkan debug callback.
-	 */
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData);
-};
+/**
+ * Destroys all loaded extension functions for the given instance.
+ */
+void destroyInstanceExtensionFunctions(VkInstance instance);

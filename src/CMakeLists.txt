@@ -33,6 +33,7 @@ add_library(Engine STATIC
 	VkRenderer/VkRenderingEngine.cpp
 	VkRenderer/VkObjectHandler.cpp
 	GlRenderer/gl_core_4_1.c
+	VkRenderer/VkExtensionFuncDefs.cpp
 )
 
 set_target_properties(Engine PROPERTIES
