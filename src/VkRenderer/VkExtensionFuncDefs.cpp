@@ -32,12 +32,18 @@ namespace {
 	std::unordered_map<VkInstance, FuncPtrs> instanceFuncMap;
 }
 
-void loadInstanceExtensionFunctions(VkInstance instance) {
+size_t loadInstanceExtensionFunctions(VkInstance instance) {
+	size_t failCount = 0;
+
 	FuncPtrs ptrs = {0};
 	ptrs.vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+	if (!ptrs.vkCreateDebugReportCallbackEXT) failCount++;
 	ptrs.vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+	if (!ptrs.vkDestroyDebugReportCallbackEXT) failCount++;
 
 	instanceFuncMap.insert({instance, ptrs});
+
+	return failCount;
 }
 
 void destroyInstanceExtensionFunctions(VkInstance instance) {
@@ -71,8 +77,5 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugReportCallbackEXT(
 
 	if (func) {
 		func(instance, callback, pAllocator);
-	}
-	else {
-		throw std::runtime_error("vkDestroyDebugReportCallbackEXT not loaded");
 	}
 }

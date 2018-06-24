@@ -26,7 +26,15 @@ VkObjectHandler::VkObjectHandler(Logger& logger) :
 	logger(logger) {
 
 	createInstance();
-	loadInstanceExtensionFunctions(instance);
+
+	size_t numFailed = loadInstanceExtensionFunctions(instance);
+	if (numFailed > 0) {
+		logger.warn("Failed to load " + std::to_string(numFailed) + " vulkan extension functions");
+	}
+	else {
+		logger.info("Loaded all vulkan extension functions");
+	}
+
 	setDebugCallback();
 }
 
@@ -141,7 +149,9 @@ void VkObjectHandler::setDebugCallback() {
 	callbackCreateInfo.pfnCallback = VkObjectHandler::debugCallback;
 	callbackCreateInfo.pUserData = this;
 
-	vkCreateDebugReportCallbackEXT(instance, &callbackCreateInfo, nullptr, &callback);
+	if (vkCreateDebugReportCallbackEXT(instance, &callbackCreateInfo, nullptr, &callback) != VK_SUCCESS) {
+		logger.warn("Couldn't create debug report callback");
+	}
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {

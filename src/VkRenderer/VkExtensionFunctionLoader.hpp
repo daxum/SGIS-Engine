@@ -24,8 +24,9 @@
 
 /**
  * Loads all available extension functions for the given instance.
+ * @return The number of functions that failed to load.
  */
-void loadInstanceExtensionFunctions(VkInstance instance);
+size_t loadInstanceExtensionFunctions(VkInstance instance);
 
 /**
  * Destroys all loaded extension functions for the given instance.
