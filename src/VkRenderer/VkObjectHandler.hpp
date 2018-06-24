@@ -25,9 +25,10 @@
 
 struct QueueFamilyIndices {
 	int graphicsFamily = -1;
+	int presentFamily = -1;
 
 	bool isComplete() {
-		return graphicsFamily >= 0;
+		return graphicsFamily >= 0 && presentFamily >= 0;
 	}
 };
 
@@ -37,7 +38,7 @@ public:
 	/**
 	 * Initializes vulkan objects.
 	 */
-	VkObjectHandler(Logger& logger);
+	VkObjectHandler(Logger& logger, GLFWwindow* window);
 
 	/**
 	 *Destroys all active objects.
@@ -54,6 +55,8 @@ private:
 	VkDevice device;
 	VkDebugReportCallbackEXT callback;
 	VkQueue graphicsQueue;
+	VkQueue presentQueue;
+	VkSurfaceKHR surface;
 
 	//List of enabled validation layers
 	std::vector<const char*> enabledLayerNames;
@@ -62,6 +65,12 @@ private:
 	 * Creates the instance object.
 	 */
 	void createInstance();
+
+	/**
+	 * Creates the window surface for rendering.
+	 * @param window The window to create the surface for.
+	 */
+	void createSurface(GLFWwindow* window);
 
 	/**
 	 * Sets the debug callback.
@@ -79,6 +88,9 @@ private:
 	 */
 	void removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices);
 
+	/**
+	 * Finds all necessary queue families for the given device.
+	 */
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice physDevice);
 
 	/**

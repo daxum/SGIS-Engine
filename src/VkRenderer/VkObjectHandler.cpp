@@ -16,13 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <unordered_set>
+#include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 #include "VkObjectHandler.hpp"
 #include "Engine.hpp"
 #include "VkExtensionFunctionLoader.hpp"
 
-VkObjectHandler::VkObjectHandler(Logger& logger) :
+VkObjectHandler::VkObjectHandler(Logger& logger, GLFWwindow* window) :
 	logger(logger) {
 
 	createInstance();
@@ -36,6 +38,7 @@ VkObjectHandler::VkObjectHandler(Logger& logger) :
 	}
 
 	setDebugCallback();
+	createSurface(window);
 	setPhysicalDevice();
 	createLogicalDevice();
 }
@@ -43,6 +46,7 @@ VkObjectHandler::VkObjectHandler(Logger& logger) :
 VkObjectHandler::~VkObjectHandler() {
 	vkDestroyDebugReportCallbackEXT(instance, callback, nullptr);
 	vkDestroyDevice(device, nullptr);
+	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
 
 	//This is perfectly safe, the instance isn't accessed in any way.
@@ -144,6 +148,12 @@ void VkObjectHandler::createInstance() {
 	logger.debug("Created vulkan instance");
 }
 
+void VkObjectHandler::createSurface(GLFWwindow* window) {
+	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create window surface!");
+	}
+}
+
 void VkObjectHandler::setDebugCallback() {
 	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
 	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -221,6 +231,13 @@ QueueFamilyIndices VkObjectHandler::findQueueFamilies(VkPhysicalDevice physDevic
 			out.graphicsFamily = i;
 		}
 
+		VkBool32 presentSupport = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentSupport);
+
+		if (queueFamilies.at(i).queueCount > 0 && presentSupport) {
+			out.presentFamily = i;
+		}
+
 		if (out.isComplete()) {
 			break;
 		}
@@ -233,18 +250,25 @@ void VkObjectHandler::createLogicalDevice() {
 	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
 	float queuePriority = 1.0f;
 
-	VkDeviceQueueCreateInfo queueCreateInfo = {};
-	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queueCreateInfo.queueFamilyIndex = queueIndices.graphicsFamily;
-	queueCreateInfo.queueCount = 1;
-	queueCreateInfo.pQueuePriorities = &queuePriority;
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::unordered_set<int> uniqueQueueFamilies = { queueIndices.graphicsFamily, queueIndices.presentFamily };
+
+	for (int queueFamily : uniqueQueueFamilies) {
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+
+		queueCreateInfos.push_back(queueCreateInfo);
+	}
 
 	VkPhysicalDeviceFeatures usedDeviceFeatures = {};
 
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-	deviceCreateInfo.queueCreateInfoCount = 1;
+	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+	deviceCreateInfo.queueCreateInfoCount = queueCreateInfos.size();
 	deviceCreateInfo.pEnabledFeatures = &usedDeviceFeatures;
 	deviceCreateInfo.enabledLayerCount = enabledLayerNames.size();
 	deviceCreateInfo.ppEnabledLayerNames = enabledLayerNames.data();
@@ -254,6 +278,7 @@ void VkObjectHandler::createLogicalDevice() {
 	}
 
 	vkGetDeviceQueue(device, queueIndices.graphicsFamily, 0, &graphicsQueue);
+	vkGetDeviceQueue(device, queueIndices.presentFamily, 0, &presentQueue);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {

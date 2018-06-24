@@ -71,7 +71,7 @@ void VkRenderingEngine::init() {
 		throw std::runtime_error("Init called more than once in VkRenderingEngine!");
 	}
 
-	objectHandler = new VkObjectHandler(logger);
+	objectHandler = new VkObjectHandler(logger, window);
 }
 
 void VkRenderingEngine::finishLoad() {
