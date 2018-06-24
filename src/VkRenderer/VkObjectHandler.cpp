@@ -36,10 +36,13 @@ VkObjectHandler::VkObjectHandler(Logger& logger) :
 	}
 
 	setDebugCallback();
+	setPhysicalDevice();
+	createLogicalDevice();
 }
 
 VkObjectHandler::~VkObjectHandler() {
 	vkDestroyDebugReportCallbackEXT(instance, callback, nullptr);
+	vkDestroyDevice(device, nullptr);
 	vkDestroyInstance(instance, nullptr);
 
 	//This is perfectly safe, the instance isn't accessed in any way.
@@ -100,8 +103,7 @@ void VkObjectHandler::createInstance() {
 	logger.debug("Found " + std::to_string(layerCount) + " validation layers:");
 
 	std::vector<VkLayerProperties> layers(layerCount);
-	std::vector<const char*> layerNames;
-	layerNames.reserve(layerCount);
+	enabledLayerNames.reserve(layerCount);
 
 	vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
 
@@ -110,7 +112,7 @@ void VkObjectHandler::createInstance() {
 
 		for (const std::string& name : enableLayers) {
 			if (name == layer.layerName) {
-				layerNames.push_back(layer.layerName);
+				enabledLayerNames.push_back(layer.layerName);
 				enabled = true;
 				break;
 			}
@@ -121,7 +123,7 @@ void VkObjectHandler::createInstance() {
 		logger.debug(std::string("\t\t") + layer.description);
 	}
 
-	if (layerNames.size() != enableLayers.size()) {
+	if (enabledLayerNames.size() != enableLayers.size()) {
 		logger.warn("Not all validation layers loaded!");
 	}
 
@@ -132,8 +134,8 @@ void VkObjectHandler::createInstance() {
 	instanceCreateInfo.pApplicationInfo = &appInfo;
 	instanceCreateInfo.enabledExtensionCount = extensionNames.size();
 	instanceCreateInfo.ppEnabledExtensionNames = extensionNames.data();
-	instanceCreateInfo.enabledLayerCount = layerNames.size();
-	instanceCreateInfo.ppEnabledLayerNames = layerNames.data();
+	instanceCreateInfo.enabledLayerCount = enabledLayerNames.size();
+	instanceCreateInfo.ppEnabledLayerNames = enabledLayerNames.data();
 
 	if (vkCreateInstance(&instanceCreateInfo, nullptr, &instance) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create vulkan instance!");
@@ -145,13 +147,113 @@ void VkObjectHandler::createInstance() {
 void VkObjectHandler::setDebugCallback() {
 	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
 	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-	callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+	callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
 	callbackCreateInfo.pfnCallback = VkObjectHandler::debugCallback;
 	callbackCreateInfo.pUserData = this;
 
 	if (vkCreateDebugReportCallbackEXT(instance, &callbackCreateInfo, nullptr, &callback) != VK_SUCCESS) {
 		logger.warn("Couldn't create debug report callback");
 	}
+}
+
+void VkObjectHandler::setPhysicalDevice() {
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+	if (deviceCount == 0) {
+		logger.error("No devices supporting vulkan, and yet vulkan is installed?");
+		throw std::runtime_error("No vulkan supporting devices found");
+	}
+
+	std::vector<VkPhysicalDevice> devices(deviceCount);
+	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+	//Remove unsuitable devices
+	removeInsufficientDevices(devices);
+
+	if (devices.empty()) {
+		throw std::runtime_error("No suitable device found!");
+	}
+
+	//Take first dgpu found, if doesn't exist, just take first gpu.
+	bool deviceSet = false;
+
+	for (const VkPhysicalDevice& physDevice : devices) {
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(physDevice, &properties);
+
+		if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+			deviceSet = true;
+			physicalDevice = physDevice;
+		}
+	}
+
+	if (!deviceSet) {
+		physicalDevice = devices.at(0);
+	}
+}
+
+void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices) {
+	for (size_t i = devices.size(); i > 0; i--) {
+		VkPhysicalDevice physDevice = devices.at(i - 1);
+
+		VkPhysicalDeviceProperties properties;
+		VkPhysicalDeviceFeatures features;
+		vkGetPhysicalDeviceProperties(physDevice, &properties);
+		vkGetPhysicalDeviceFeatures(physDevice, &features);
+
+		if (!findQueueFamilies(physDevice).isComplete()) {
+			devices.erase(devices.begin() + (i - 1));
+		}
+	}
+}
+
+QueueFamilyIndices VkObjectHandler::findQueueFamilies(VkPhysicalDevice physDevice) {
+	QueueFamilyIndices out;
+
+	uint32_t queueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, nullptr);
+	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, queueFamilies.data());
+
+	for (size_t i = 0; i < queueFamilies.size(); i++) {
+		if (queueFamilies.at(i).queueCount > 0 && queueFamilies.at(i).queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+			out.graphicsFamily = i;
+		}
+
+		if (out.isComplete()) {
+			break;
+		}
+	}
+
+	return out;
+}
+
+void VkObjectHandler::createLogicalDevice() {
+	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
+	float queuePriority = 1.0f;
+
+	VkDeviceQueueCreateInfo queueCreateInfo = {};
+	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueCreateInfo.queueFamilyIndex = queueIndices.graphicsFamily;
+	queueCreateInfo.queueCount = 1;
+	queueCreateInfo.pQueuePriorities = &queuePriority;
+
+	VkPhysicalDeviceFeatures usedDeviceFeatures = {};
+
+	VkDeviceCreateInfo deviceCreateInfo = {};
+	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
+	deviceCreateInfo.queueCreateInfoCount = 1;
+	deviceCreateInfo.pEnabledFeatures = &usedDeviceFeatures;
+	deviceCreateInfo.enabledLayerCount = enabledLayerNames.size();
+	deviceCreateInfo.ppEnabledLayerNames = enabledLayerNames.data();
+
+	if (vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create logical device");
+	}
+
+	vkGetDeviceQueue(device, queueIndices.graphicsFamily, 0, &graphicsQueue);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {
@@ -167,9 +269,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlags
 		objHandler->logger.warn(message);
 	}
 	else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
-		objHandler->logger.info(message);
-	}
-	else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+		//This would be info, but there's just so much...
 		objHandler->logger.debug(message);
 	}
 

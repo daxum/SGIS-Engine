@@ -18,9 +18,18 @@
 
 #pragma once
 
+#include <vector>
 #include <vulkan/vulkan.h>
 
 #include "Logger.hpp"
+
+struct QueueFamilyIndices {
+	int graphicsFamily = -1;
+
+	bool isComplete() {
+		return graphicsFamily >= 0;
+	}
+};
 
 //Handles creation and destruction of all vulkan objects.
 class VkObjectHandler {
@@ -41,7 +50,13 @@ private:
 
 	//Vulkan instance
 	VkInstance instance;
+	VkPhysicalDevice physicalDevice;
+	VkDevice device;
 	VkDebugReportCallbackEXT callback;
+	VkQueue graphicsQueue;
+
+	//List of enabled validation layers
+	std::vector<const char*> enabledLayerNames;
 
 	/**
 	 * Creates the instance object.
@@ -52,6 +67,24 @@ private:
 	 * Sets the debug callback.
 	 */
 	void setDebugCallback();
+
+	/**
+	 * Gets the best physical device pointer from the instance.
+	 */
+	void setPhysicalDevice();
+
+	/**
+	 * Removes all devices that don't meet requirements from the list.
+	 * @param devices A list of devices to check.
+	 */
+	void removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices);
+
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice physDevice);
+
+	/**
+	 * Creates the logical device from the physical device.
+	 */
+	void createLogicalDevice();
 
 	/**
 	 * Vulkan debug callback.
