@@ -11,6 +11,9 @@ These instructions (and the program in general, actually) have only been tested 
 	* [glm](https://glm.g-truc.net)
 	* [bullet](https://github.com/bulletphysics/bullet3) (Must be built with multithreading enabled)
 	* [Freetype2](https://www.freetype.org/)
+
+	In addition, OpenGl and Vulkan support are both needed (these will be configurable later, but for now you must have both).
+
 2. From the top of the repository, do:
 
 	`cd src`
