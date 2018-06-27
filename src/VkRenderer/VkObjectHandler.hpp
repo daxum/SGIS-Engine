@@ -55,7 +55,7 @@ private:
 	//The logger
 	Logger& logger;
 
-	//Vulkan instance
+	//Vulkan Objects
 	VkInstance instance;
 	VkPhysicalDevice physicalDevice;
 	VkDevice device;
@@ -64,6 +64,11 @@ private:
 	VkQueue presentQueue;
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapchain;
+
+	//Swapchain stuff
+	std::vector<VkImage> swapchainImages;
+	VkFormat swapchainImageFormat;
+	VkExtent2D swapchainExtent;
 
 	//List of enabled validation layers
 	std::vector<const char*> enabledLayerNames;

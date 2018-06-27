@@ -389,7 +389,14 @@ void VkObjectHandler::createSwapchain() {
 		throw std::runtime_error("Failed to create swapchain!");
 	}
 
-	logger.debug("Created swapchain");
+	vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+	swapchainImages.resize(imageCount);
+	vkGetSwapchainImages(device, swapchain, &imageCount, swapchainImages.data());
+
+	swapchainImageFormat = format.format;
+	swapchainExtent = extent;
+
+	logger.debug("Created swapchain with " + std::to_string(imageCount) + " images");
 }
 
 VkSurfaceFormatKHR VkObjectHandler::chooseBestFormat(const std::vector<VkSurfaceFormatKHR>& formats) {
