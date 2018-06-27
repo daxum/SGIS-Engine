@@ -67,6 +67,7 @@ private:
 
 	//Swapchain stuff
 	std::vector<VkImage> swapchainImages;
+	std::vector<VkImageView> imageViews;
 	VkFormat swapchainImageFormat;
 	VkExtent2D swapchainExtent;
 
@@ -128,6 +129,11 @@ private:
 	 * Creates the swap chain object.
 	 */
 	void createSwapchain();
+
+	/**
+	 * Creates image views for each of the swap chain's images.
+	 */
+	void createImageViews();
 
 	/**
 	 * Takes the best format from the list.
