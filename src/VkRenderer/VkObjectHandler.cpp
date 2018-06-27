@@ -391,7 +391,7 @@ void VkObjectHandler::createSwapchain() {
 
 	vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
 	swapchainImages.resize(imageCount);
-	vkGetSwapchainImages(device, swapchain, &imageCount, swapchainImages.data());
+	vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchainImages.data());
 
 	swapchainImageFormat = format.format;
 	swapchainExtent = extent;
