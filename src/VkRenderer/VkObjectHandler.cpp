@@ -165,7 +165,7 @@ void VkObjectHandler::createSurface(GLFWwindow* window) {
 void VkObjectHandler::setDebugCallback() {
 	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
 	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-	callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
+	callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
 	callbackCreateInfo.pfnCallback = VkObjectHandler::debugCallback;
 	callbackCreateInfo.pUserData = this;
 
@@ -325,10 +325,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlags
 	}
 	else if (flags & (VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)) {
 		objHandler->logger.warn(message);
-	}
-	else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
-		//This would be info, but there's just so much...
-		objHandler->logger.debug(message);
 	}
 
 	return VK_FALSE;
