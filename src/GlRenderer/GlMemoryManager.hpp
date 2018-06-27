@@ -58,7 +58,7 @@ public:
 	 * @return a MeshData struct that can be used for drawing.
 	 * @throw runtime_error if the memory manager has already been initialized.
 	 */
-	MeshRenderData addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+	std::shared_ptr<RenderMeshObject> addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 
 	/**
 	 * Dynamically uploads text model data to the gpu. Must call free later!
@@ -66,7 +66,7 @@ public:
 	 * @param indices The indices for the text model.
 	 * @return model data with which to render the text.
 	 */
-	MeshRenderData addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices);
+	std::shared_ptr<RenderMeshObject> addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices);
 
 	/**
 	 * Marks the memory previously occupied by the model data as unused.

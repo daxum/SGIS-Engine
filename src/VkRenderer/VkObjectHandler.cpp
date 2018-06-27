@@ -56,15 +56,22 @@ VkObjectHandler::VkObjectHandler(Logger& logger, GLFWwindow* window) :
 	createLogicalDevice();
 	createSwapchain();
 	createImageViews();
+	createRenderPass();
+	createFramebuffers();
 }
 
 VkObjectHandler::~VkObjectHandler() {
 	vkDestroyDebugReportCallbackEXT(instance, callback, nullptr);
 
+	for (VkFramebuffer framebuffer : framebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+
 	for (VkImageView view : imageViews) {
 		vkDestroyImageView(device, view, nullptr);
 	}
 
+	vkDestroyRenderPass(device, renderPass, nullptr);
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -457,6 +464,61 @@ VkExtent2D VkObjectHandler::getSwapExtent(const VkSurfaceCapabilitiesKHR& capabi
 	ExMath::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
 	return extent;
+}
+
+void VkObjectHandler::createRenderPass() {
+	VkAttachmentDescription colorAttachment = {};
+	colorAttachment.format = swapchainImageFormat;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference attachRef = {};
+	attachRef.attachment = 0;
+	attachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &attachRef;
+
+	VkRenderPassCreateInfo renderCreateInfo = {};
+	renderCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderCreateInfo.attachmentCount = 1;
+	renderCreateInfo.pAttachments = &colorAttachment;
+	renderCreateInfo.subpassCount = 1;
+	renderCreateInfo.pSubpasses = &subpass;
+
+	if (vkCreateRenderPass(device, &renderCreateInfo, nullptr, &renderPass) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create render pass!");
+	}
+}
+
+void VkObjectHandler::createFramebuffers() {
+	framebuffers.resize(imageViews.size());
+
+	for (size_t i = 0; i < imageViews.size(); i++) {
+		VkImageView attachments[] = {
+			imageViews.at(i);
+		};
+
+		VkFramebufferCreateInfo framebufferCreateInfo = {};
+		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferCreateInfo.renderPass = renderPass;
+		framebufferCreateInfo.attachmentCount = 1;
+		framebufferCreateInfo.pAttachments = attachments;
+		framebufferCreateInfo.width = swapchainExtent.width;
+		framebufferCreateInfo.height = swapchainExtent.height;
+		framebufferCreateInfo.layers = 1;
+
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers.at(i)) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create framebuffer!");
+		}
+	}
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {

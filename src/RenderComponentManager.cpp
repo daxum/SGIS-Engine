@@ -42,5 +42,5 @@ void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> re
 }
 
 std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(const Model& model) {
-	return renderComponents.at(model.pass).at(model.mesh.type)[model.shader];
+	return renderComponents.at(model.pass)[model.shader];
 }

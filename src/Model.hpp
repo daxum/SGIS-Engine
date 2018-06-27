@@ -23,33 +23,10 @@
 
 #include "AxisAlignedBB.hpp"
 
-//The type of mesh, affects mesh storage
-enum MeshType {
-	//Static meshes will be uploaded to gpu memory, for fast access by the gpu. Their buffers
-	//will never be mapped. In addition, their vertices may be combined with the vertices of other
-	//static meshes to save memory.
-	STATIC = 0,
-	//Text meshes.
-	DYNAMIC_TEXT,
-	//The total number of buffers, not actually a type of buffer.
-	BUFFER_COUNT
-};
-
-//Contains the data needed to draw a mesh, such as offsets in the index buffer
-struct MeshRenderData {
-	//The type of this mesh - determines which buffer to use
-	MeshType type;
-	//The starting position (byte offset) in the index buffer
-	size_t indexStart;
-	//The number of indices in the mesh
-	size_t indexCount;
-};
-
-//Which render pass to draw the model in
-enum RenderPass {
-	OPAQUE = 0,
-	TRANSPARENT,
-	TRANSLUCENT
+//Object containing renderer-specific information for the mesh.
+class RenderMeshObject {
+public:
+	virtual ~RenderMeshObject() {}
 };
 
 struct LightInfo {
@@ -70,14 +47,22 @@ public:
 	 * @param shader The shader the model uses.
 	 * @param pass The render pass to render the model in.
 	 */
-	Model(MeshRenderData meshData, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, RenderPass pass, bool viewCull = true);
+	Model(std::shared_ptr<RenderMeshObject> mesh, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, bool viewCull = true);
 
-	MeshRenderData mesh;
+	/**
+	 * Casts the mesh object to the specified type.
+	 * Only should be called from the rendering engine.
+	 * @return The mesh object cast to the given type.
+	 */
+	template<typename T> std::shared_ptr<T> getMesh() {
+		return std::static_pointer_cast<T>(mesh);
+	}
+
+	std::shared_ptr<RenderMeshObject> mesh;
 	std::string texture;
 	AxisAlignedBB meshBox;
 	float radius;
 	std::string shader;
 	LightInfo lighting;
-	RenderPass pass;
 	bool viewCull;
 };

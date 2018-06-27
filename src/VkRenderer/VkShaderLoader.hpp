@@ -18,31 +18,42 @@
 
 #pragma once
 
-#include <string>
+#include <vector>
 
-#include "Logger.hpp"
-#include "ShaderInfo.hpp"
+#include "ShaderLoader.hpp"
 
-class ShaderLoader {
+class VkShaderLoader {
 public:
 	/**
-	 * Default constructor. Sets up logging.
+	 * Constructor
 	 */
-	ShaderLoader(Logger& logger) : logger(logger) {}
-
-	/**
-	 * Destructor. Here for subclasses.
-	 */
-	virtual ~ShaderLoader() {}
+	VkShaderLoader(VkDevice device, const VkExtent2D& swapchainExtent, Logger& logger) : ShaderLoader(logger), device(device), swapchainExtent(swapchainExtent) {}
 
 	/**
 	 * Loads the shaders from disk and constructs a program object from them.
-	 * More arguments might need to be added for things like geometry and tesselation shaders.
 	 * @param name A name given to the loaded shader.
 	 * @param info Information about the shader to be loaded.
 	 */
-	virtual void loadShader(std::string name, const ShaderInfo& info) = 0;
+	void loadShader(std::string name, const ShaderInfo& info);
 
-protected:
-	Logger& logger;
+private:
+	//Device got from VkObjectHandler.
+	VkDevice device;
+	//Swapchain image size.
+	const VkExtent2D& swapchainExtent;
+
+	/**
+	 * Loads shader bytecode from disk and creates a shader module for it.
+	 * @param filename The file containing the bytecode.
+	 * @return A shader module for the shader.
+	 */
+	VkShaderModule createShaderModule(const std::string& filename);
+
+	/**
+	 * Loads the given file from disk as binary data.
+	 * @param filename The file to load.
+	 * @return The binary data the file contained.
+	 */
+	std::vector<unsigned char> loadFromDisk(const std::string& filename);
 };
+

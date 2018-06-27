@@ -42,10 +42,6 @@ TextComponent::TextComponent(const std::u32string& text, const std::string& font
 
 }
 
-TextComponent::~TextComponent() {
-	Engine::instance->getFontManager().freeTextModel(textModel);
-}
-
 void TextComponent::onParentSet() {
 	std::shared_ptr<RenderComponent> render = lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
 
@@ -63,7 +59,6 @@ void TextComponent::setText(const std::u32string& newText) {
 	currentText = newText;
 
 	Model newModel = Engine::instance->getFontManager().createTextModel(currentFont, currentText, currentShader);
-	Engine::instance->getFontManager().freeTextModel(textModel);
 	textModel = newModel;
 
 	lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);
@@ -73,7 +68,6 @@ void TextComponent::setFont(const std::string& font) {
 	currentFont = font;
 
 	Model newModel = Engine::instance->getFontManager().createTextModel(currentFont, currentText, currentShader);
-	Engine::instance->getFontManager().freeTextModel(textModel);
 	textModel = newModel;
 
 	lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);

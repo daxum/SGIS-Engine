@@ -15,15 +15,12 @@ GlMemoryManager::~GlMemoryManager() {
 	glDeleteBuffers(BUFFER_COUNT, indexBuffers);
 }
 
-MeshRenderData GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
+std::shared_ptr<RenderMeshObject> GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
 	if (initialized) {
 		throw std::runtime_error("Cannot add static meshes after initialization!");
 	}
 
-	MeshRenderData data = {};
-	data.type = MeshType::STATIC;
-	data.indexStart = staticIndices.size() * sizeof(uint32_t);
-
+	std::shared_ptr<GlRenderMeshObject> data = std::make_shared(MeshType::STATIC, staticIndices.size() * sizeof(uint32_t), 0, this);
 	size_t indexStartSize = staticIndices.size();
 
 	logger.debug("Adding mesh to static data...");
@@ -42,12 +39,12 @@ MeshRenderData GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertice
 		staticIndices.push_back(staticUniqueVertices[vertex]);
 	}
 
-	data.indexCount = staticIndices.size() - indexStartSize;
+	data->indexCount = staticIndices.size() - indexStartSize;
 
 	return data;
 }
 
-MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) {
+std::shared_ptr<RenderMeshObject> GlMemoryManager::addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) {
 	const size_t vertSize = vertices.size() * sizeof(TextVertex);
 	const size_t indexSize = indices.size() * sizeof(uint32_t);
 
@@ -78,7 +75,7 @@ MeshRenderData GlMemoryManager::addTextMesh(const std::vector<TextVertex>& verti
 	textVertMap.insert({indexElement->start, vertexElement});
 	textIndexMap.insert({indexElement->start, indexElement});
 
-	return {DYNAMIC_TEXT, indexElement->start, indices.size()};
+	return std::make_shared<GlRenderMeshObject>(DYNAMIC_TEXT, indexElement->start, indices.size(), this);
 }
 
 void GlMemoryManager::freeTextMesh(const MeshRenderData& data) {

@@ -184,8 +184,8 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shad
 
 	shader->setPerObjectUniforms(data, matStack, state);
 
-	const Model& model = data->getModel();
-	glDrawElements(GL_TRIANGLES, model.mesh.indexCount, GL_UNSIGNED_INT, (void*) model.mesh.indexStart);
+	const std::shared_ptr<GlRenderMeshObject> mesh = data->getModel().getMesh<GlRenderMeshObject>();
+	glDrawElements(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*) mesh->indexStart);
 
 	matStack.pop();
 }

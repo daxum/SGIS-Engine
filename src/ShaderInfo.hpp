@@ -22,14 +22,33 @@
 
 #include "Shader.hpp"
 
+//Render passes for the engine.
+//Each shader is part of one render pass.
+enum RenderPass {
+	OPAQUE = 0,
+	TRANSPARENT,
+	TRANSLUCENT
+};
+
 struct ShaderInfo {
 	//Path to vertex shader.
 	std::string vertex;
 	//Path to fragment shader.
 	std::string fragment;
-	//Shader object for settting uniforms.
+	//Shader object for setting uniforms.
 	std::shared_ptr<Shader> shaderObject;
+	//The render pass the shader is part of.
+	RenderPass pass;
 
-	//Extra, renderer-specific data. Always blank for now.
+	//Extra, renderer-specific data. Unused for GlRenderingEngine,
+	//VkRenderingEngine needs this set to a VkShaderInfo struct.
 	const void* extra = nullptr;
+};
+
+//Extra shader info for vulkan rendering engine.
+struct VkShaderInfo {
+	//Temporary hack to get the renderer set up. This specifies whether the shader uses
+	//the text vertex struct or the standard one. This will be moved to somewhere more
+	//rational later, to allow games to set their own vertex formats.
+	bool textVertex = false;
 };

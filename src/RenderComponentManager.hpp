@@ -28,8 +28,8 @@
 
 class RenderComponentManager : public ComponentManager {
 public:
-	//In case it's not clear, this is an array of maps from strings to sets of pointers to renderComponents.
-	typedef std::array<std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>>, MeshType::BUFFER_COUNT> RenderPassObjects;
+	//In case it's not clear, this is a map from strings to sets of pointers to renderComponents.
+	typedef std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>> RenderPassObjects;
 	//0 - opaque, 1 - transparent, 2 - translucent
 	typedef std::array<RenderPassObjects, 3> RenderPassList;
 

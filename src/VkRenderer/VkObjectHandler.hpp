@@ -64,10 +64,12 @@ private:
 	VkQueue presentQueue;
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapchain;
+	VkRenderPass renderPass;
 
 	//Swapchain stuff
 	std::vector<VkImage> swapchainImages;
 	std::vector<VkImageView> imageViews;
+	std::vector<VkFramebuffer> framebuffers;
 	VkFormat swapchainImageFormat;
 	VkExtent2D swapchainExtent;
 
@@ -146,6 +148,16 @@ private:
 	 * Gets the swap chain resolution.
 	 */
 	VkExtent2D getSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+	/**
+	 * Creates the render pass. This might belong somewhere else?
+	 */
+	void createRenderPass();
+
+	/**
+	 * Creates the framebuffers.
+	 */
+	void createFramebuffers();
 
 	/**
 	 * Vulkan debug callback.

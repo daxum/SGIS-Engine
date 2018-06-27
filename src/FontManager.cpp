@@ -92,12 +92,8 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 	float radius = glm::length(glm::vec2(farthestX, lowestY)) / 2.0f;
 	AxisAlignedBB box(glm::vec3(0.0, lowestY, -0.01), glm::vec3(farthestX, 0.0, 0.01));
 
-	MeshRenderData modelData = renderer->getMemoryManager()->addTextMesh(vertices, indices);
+	std::shared_ptr<RenderMeshObject> modelData = renderer->getMemoryManager()->addTextMesh(vertices, indices);
 	Model textModel(modelData, box, radius, font.getTexture(), shader, fontLight, RenderPass::TRANSLUCENT);
 
 	return textModel;
-}
-
-void FontManager::freeTextModel(const Model& model) {
-	renderer->getMemoryManager()->freeTextMesh(model.mesh);
 }
