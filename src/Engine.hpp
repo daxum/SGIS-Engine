@@ -34,6 +34,11 @@ class btITaskScheduler;
 
 class Engine {
 public:
+	//Engine version information
+	static constexpr uint32_t VERSION_MAJOR = 1;
+	static constexpr uint32_t VERSION_MINOR = 0;
+	static constexpr uint32_t VERSION_PATCH = 0;
+
 	//Global engine instance. Use sparingly!
 	static Engine* instance;
 

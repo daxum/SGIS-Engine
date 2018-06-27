@@ -24,7 +24,8 @@
 
 //List of available rendering engines.
 enum class Renderer {
-	OPEN_GL
+	OPEN_GL,
+	VULKAN
 };
 
 //Used to avoid passing references in the config.
@@ -56,6 +57,10 @@ struct RenderConfig {
 };
 
 struct EngineConfig {
+	//The name of the game, used when initializing the rendering engine if available.
+	std::string gameName;
+	//The version number of the game, used in the same way as the above.
+	uint32_t gameVersion;
 	//Information about how the rendering engine should be set up.
 	RenderConfig renderer;
 	//The time taken for each tick of the engine, in milliseconds.
