@@ -24,6 +24,18 @@
 #include "Engine.hpp"
 #include "VkExtensionFunctionLoader.hpp"
 
+namespace {
+	//TODO: These things should go in the engine config
+
+	const std::vector<std::string> requiredExtensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
+	const std::vector<std::string> enableLayers = {
+		"VK_LAYER_LUNARG_standard_validation"
+	};
+};
+
 VkObjectHandler::VkObjectHandler(Logger& logger, GLFWwindow* window) :
 	logger(logger) {
 
@@ -96,10 +108,6 @@ void VkObjectHandler::createInstance() {
 	extensionNames.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
 	//Validation layers (TODO: allow turning off later, specify which ones from game)
-
-	const std::vector<std::string> enableLayers = {
-		"VK_LAYER_LUNARG_standard_validation"
-	};
 
 	uint32_t layerCount = 0;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -212,10 +220,26 @@ void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& d
 		vkGetPhysicalDeviceProperties(physDevice, &properties);
 		vkGetPhysicalDeviceFeatures(physDevice, &features);
 
-		if (!findQueueFamilies(physDevice).isComplete()) {
+		if (!findQueueFamilies(physDevice).isComplete() || !deviceHasAllExtensions(physDevice, requiredExtensions)) {
 			devices.erase(devices.begin() + (i - 1));
 		}
 	}
+}
+
+bool VkObjectHandler::deviceHasAllExtensions(VkPhysicalDevice device, const std::vector<std::string>& extensions) {
+	uint32_t extensionCount = 0;
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+	std::unordered_set<std::string> unavailableExtensions(extensions.begin(), extensions.end());
+
+	for (const VkExtensionProperties& property : availableExtensions) {
+		unavailableExtensions.erase(property.extensionName);
+	}
+
+	return unavailableExtensions.empty();
 }
 
 QueueFamilyIndices VkObjectHandler::findQueueFamilies(VkPhysicalDevice physDevice) {
@@ -265,6 +289,13 @@ void VkObjectHandler::createLogicalDevice() {
 
 	VkPhysicalDeviceFeatures usedDeviceFeatures = {};
 
+	std::vector<const char*> deviceExtensions;
+	deviceExtensions.reserve(requiredExtensions.size());
+
+	for (const std::string& s : requiredExtensions) {
+		deviceExtensions.push_back(s.c_str());
+	}
+
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -272,6 +303,8 @@ void VkObjectHandler::createLogicalDevice() {
 	deviceCreateInfo.pEnabledFeatures = &usedDeviceFeatures;
 	deviceCreateInfo.enabledLayerCount = enabledLayerNames.size();
 	deviceCreateInfo.ppEnabledLayerNames = enabledLayerNames.data();
+	deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
+	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 	if (vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create logical device");

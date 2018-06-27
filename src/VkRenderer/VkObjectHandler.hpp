@@ -89,6 +89,14 @@ private:
 	void removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices);
 
 	/**
+	 * Checks whether the device supports the given extensions.
+	 * @param physDevice The device to check.
+	 * @param extensions The extensions to verify the presence of.
+	 * @return whether all the extensions were present.
+	 */
+	bool deviceHasAllExtensions(VkPhysicalDevice physDevice, const std::vector<std::string>& extensions);
+
+	/**
 	 * Finds all necessary queue families for the given device.
 	 */
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice physDevice);
