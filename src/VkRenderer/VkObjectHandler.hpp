@@ -32,6 +32,12 @@ struct QueueFamilyIndices {
 	}
 };
 
+struct SwapchainSupportDetails {
+	VkSurfaceCapabilitiesKHR capabilities;
+	std::vector<VkSurfaceFormatKHR> formats;
+	std::vector<VkPresentModeKHR> presentModes;
+};
+
 //Handles creation and destruction of all vulkan objects.
 class VkObjectHandler {
 public:
@@ -57,6 +63,7 @@ private:
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
 	VkSurfaceKHR surface;
+	VkSwapchainKHR swapchain;
 
 	//List of enabled validation layers
 	std::vector<const char*> enabledLayerNames;
@@ -105,6 +112,29 @@ private:
 	 * Creates the logical device from the physical device.
 	 */
 	void createLogicalDevice();
+
+	/**
+	 * Gets swapchain support for the given device.
+	 * @param physDevice the device to query support for.
+	 */
+	SwapchainSupportDetails querySwapChainSupport(VkPhysicalDevice physDevice);
+
+	/**
+	 * Creates the swap chain object.
+	 */
+	void createSwapchain();
+
+	/**
+	 * Takes the best format from the list.
+	 * @param formats A list of the available formats.
+	 * @return The best format in the list.
+	 */
+	VkSurfaceFormatKHR chooseBestFormat(const std::vector<VkSurfaceFormatKHR>& formats);
+
+	/**
+	 * Gets the swap chain resolution.
+	 */
+	VkExtent2D getSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 	/**
 	 * Vulkan debug callback.
