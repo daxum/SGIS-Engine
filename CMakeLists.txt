@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 project(SGIS-Engine)
 
+option(USE_OPENGL "Build the engine with OpenGL support" ON)
+option(USE_VULKAN "Build the engine with Vulkan support" ON)
+
 option(USE_INSTALLED_BULLET "Use a version of bullet installed on the system, instead of a local copy" ON)
 option(USE_INSTALLED_GLFW "Use a version of glfw installed on the system" ON)
 
