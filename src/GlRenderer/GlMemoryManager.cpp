@@ -78,12 +78,14 @@ std::shared_ptr<RenderMeshObject> GlMemoryManager::addTextMesh(const std::vector
 	return std::make_shared<GlRenderMeshObject>(DYNAMIC_TEXT, indexElement->start, indices.size(), this);
 }
 
-void GlMemoryManager::freeTextMesh(const MeshRenderData& data) {
-	DynBufElement vertFreePos = textVertMap.at(data.indexStart);
-	DynBufElement indexFreePos = textIndexMap.at(data.indexStart);
+void GlMemoryManager::freeTextMesh(const std::shared_ptr<RenderMeshObject> data) {
+	std::shared_ptr<GlRenderMeshObject> glData = std::static_pointer_cast<GlRenderMeshObject>(data);
 
-	textVertMap.erase(data.indexStart);
-	textIndexMap.erase(data.indexStart);
+	DynBufElement vertFreePos = textVertMap.at(glData->indexStart);
+	DynBufElement indexFreePos = textIndexMap.at(glData->indexStart);
+
+	textVertMap.erase(glData->indexStart);
+	textIndexMap.erase(glData->indexStart);
 
 	freeFromList(textAllocList, nextAlloc, vertFreePos);
 	freeFromList(textIndexAllocList, nextIndexAlloc, indexFreePos);

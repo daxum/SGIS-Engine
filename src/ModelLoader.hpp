@@ -63,7 +63,7 @@ public:
 	 * @param pass The render pass to render the model in.
 	 * @param viewCull Whether to cull the object when it can't be seen by the camera.
 	 */
-	void loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, RenderPass pass, bool viewCull = true);
+	void loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, bool viewCull = true);
 
 protected:
 	//The logger

@@ -93,7 +93,7 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 	AxisAlignedBB box(glm::vec3(0.0, lowestY, -0.01), glm::vec3(farthestX, 0.0, 0.01));
 
 	std::shared_ptr<RenderMeshObject> modelData = renderer->getMemoryManager()->addTextMesh(vertices, indices);
-	Model textModel(modelData, box, radius, font.getTexture(), shader, fontLight, RenderPass::TRANSLUCENT);
+	Model textModel(modelData, box, radius, font.getTexture(), shader, fontLight);
 
 	return textModel;
 }

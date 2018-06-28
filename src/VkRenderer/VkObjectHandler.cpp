@@ -503,7 +503,7 @@ void VkObjectHandler::createFramebuffers() {
 
 	for (size_t i = 0; i < imageViews.size(); i++) {
 		VkImageView attachments[] = {
-			imageViews.at(i);
+			imageViews.at(i)
 		};
 
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
@@ -515,7 +515,7 @@ void VkObjectHandler::createFramebuffers() {
 		framebufferCreateInfo.height = swapchainExtent.height;
 		framebufferCreateInfo.layers = 1;
 
-		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers.at(i)) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &framebuffers.at(i)) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create framebuffer!");
 		}
 	}

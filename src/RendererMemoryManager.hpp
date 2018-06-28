@@ -53,5 +53,5 @@ public:
 	 * Marks the memory previously occupied by the model data as unused.
 	 * @param data The model data to free.
 	 */
-	virtual void freeTextMesh(const MeshRenderData& data) = 0;
+	virtual void freeTextMesh(const std::shared_ptr<RenderMeshObject> data) = 0;
 };

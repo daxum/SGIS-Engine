@@ -42,5 +42,6 @@ void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> re
 }
 
 std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(const Model& model) {
-	return renderComponents.at(model.pass)[model.shader];
+	//TODO: Fix
+	return renderComponents.at(0)[model.shader];
 }

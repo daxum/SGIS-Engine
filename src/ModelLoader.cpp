@@ -24,7 +24,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, RenderPass pass, bool viewCull) {
+void ModelLoader::loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, bool viewCull) {
 	std::shared_ptr<ModelData> data = loadFromDisk(filename);
 	//Always static for now
 	std::shared_ptr<RenderMeshObject> mesh = renderer->getMemoryManager()->addStaticMesh(data->vertices, data->indices);
@@ -35,7 +35,7 @@ void ModelLoader::loadModel(std::string name, std::string filename, std::string 
 	float radius = calculateMaxRadius(data, box.getCenter());
 	logger.debug("Radius of model is " + std::to_string(radius));
 
-	models.insert(std::make_pair(name, Model(mesh, box, radius, texture, shader, lighting, pass, viewCull)));
+	models.insert(std::make_pair(name, Model(mesh, box, radius, texture, shader, lighting, viewCull)));
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 

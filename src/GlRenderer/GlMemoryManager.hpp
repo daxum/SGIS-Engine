@@ -72,7 +72,7 @@ public:
 	 * Marks the memory previously occupied by the model data as unused.
 	 * @param data The model data to free.
 	 */
-	void freeTextMesh(const MeshRenderData& data);
+	void freeTextMesh(const std::shared_ptr<RenderMeshObject> data);
 
 	/**
 	 * Uploads static data to gpu to prepare for drawing.
