@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <vulkan/vulkan.h>
+#include <GLFW/glfw3.h>
 
 #include "Logger.hpp"
 
@@ -42,14 +43,24 @@ struct SwapchainSupportDetails {
 class VkObjectHandler {
 public:
 	/**
-	 * Initializes vulkan objects.
+	 * Sets logger.
 	 */
-	VkObjectHandler(Logger& logger, GLFWwindow* window);
+	VkObjectHandler(Logger& logger);
 
 	/**
 	 *Destroys all active objects.
 	 */
 	~VkObjectHandler();
+
+	/**
+	 * Initializes all objects.
+	 */
+	void init(GLFWwindow* window);
+
+
+	VkDevice getDevice() { return device; }
+	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
+	VkRenderPass getRenderPass() { return renderPass; }
 
 private:
 	//The logger
@@ -74,7 +85,7 @@ private:
 	VkExtent2D swapchainExtent;
 
 	//List of enabled validation layers
-	std::vector<const char*> enabledLayerNames;
+	std::vector<std::string> enabledLayerNames;
 
 	/**
 	 * Creates the instance object.

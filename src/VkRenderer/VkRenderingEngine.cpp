@@ -18,11 +18,12 @@
 
 #include "VkRenderingEngine.hpp"
 #include "Engine.hpp"
+#include "VkShaderLoader.hpp"
 
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-	RenderingEngine(/** TODO **/ nullptr, nullptr, rendererLog, loaderLog),
+	RenderingEngine(/** TODO **/ std::shared_ptr<TextureLoader>(), std::make_shared<VkShaderLoader>(objectHandler, loaderLogger, shaderMap), rendererLog, loaderLog),
 	interface(display, this),
-	objectHandler(nullptr) {
+	objectHandler(logger) {
 
 	if (!glfwInit()) {
 		throw std::runtime_error("Couldn't initialize glfw");
@@ -30,9 +31,6 @@ VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& re
 }
 
 VkRenderingEngine::~VkRenderingEngine() {
-	//Cleans up vulkan
-	delete objectHandler;
-
 	GLFWwindow* window = interface.getWindow();
 
 	if (window != nullptr) {
@@ -67,11 +65,7 @@ void VkRenderingEngine::init() {
 
 	//Create vulkan objects
 
-	if (objectHandler != nullptr) {
-		throw std::runtime_error("Init called more than once in VkRenderingEngine!");
-	}
-
-	objectHandler = new VkObjectHandler(logger, window);
+	objectHandler.init(window);
 }
 
 void VkRenderingEngine::finishLoad() {

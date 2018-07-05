@@ -16,27 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#include "VkShader.hpp"
 
-#include <string>
+VkShader::VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout) :
+	device(device),
+	pipeline(pipeline),
+	pipelineLayout(pipelineLayout) {
 
-#include "Shader.hpp"
+}
 
-//Render passes for the engine.
-//Each shader is part of one render pass.
-enum RenderPass {
-	OPAQUE = 0,
-	TRANSPARENT,
-	TRANSLUCENT
-};
+VkShader::~VkShader() {
+	vkDestroyPipeline(device, pipeline, nullptr);
+	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+}
 
-struct ShaderInfo {
-	//Path to vertex shader.
-	std::string vertex;
-	//Path to fragment shader.
-	std::string fragment;
-	//Shader object for setting uniforms.
-	std::shared_ptr<Shader> shaderObject;
-	//The render pass the shader is part of.
-	RenderPass pass;
-};
+void VkShader::bind() {
+	/** TODO **/
+}
+
+void VkShader::setUniform(UniformType type, const std::string& name, const void* data) {
+	/** TODO **/
+}
+
+void VkShader::setTexture(const std::string& name, unsigned int index) {
+	/** TODO **/
+}

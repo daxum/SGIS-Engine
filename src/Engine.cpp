@@ -70,11 +70,6 @@ void Engine::run(GameInterface& game) {
 	renderer->init();
 	logger.info("Renderer initialization complete.");
 
-	//Testing for vulkan loading, remove later.
-	if (config.renderer.renderType == Renderer::VULKAN) {
-		return;
-	}
-
 	//Pre-loading of a splash screen might go here
 
 	//Load resources
@@ -82,6 +77,11 @@ void Engine::run(GameInterface& game) {
 
 	game.loadShaders(renderer->getShaderLoader());
 	logger.info("Finshed loading shaders.");
+
+	//Testing for vulkan loading, remove later.
+	if (config.renderer.renderType == Renderer::VULKAN) {
+		return;
+	}
 
 	game.loadTextures(renderer->getTextureLoader());
 	logger.info("Finished loading textures.");

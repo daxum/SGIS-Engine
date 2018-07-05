@@ -1,4 +1,4 @@
-set(ENGINE_FILES 
+set(ENGINE_FILES
 	Engine.cpp
 	TextureLoader.cpp
 	ExtraMath.cpp
@@ -43,10 +43,12 @@ if (USE_VULKAN)
 		VkRenderer/VkRenderingEngine.cpp
 		VkRenderer/VkObjectHandler.cpp
 		VkRenderer/VkExtensionFuncDefs.cpp
+		VkRenderer/VkShaderLoader.cpp
+		VkRenderer/VkShader.cpp
 	)
 endif()
 
-add_library(Engine STATIC ${ENGINE_FILES})	
+add_library(Engine STATIC ${ENGINE_FILES})
 
 set_target_properties(Engine PROPERTIES
 	CXX_STANDARD 11

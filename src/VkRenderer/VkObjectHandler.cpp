@@ -18,7 +18,6 @@
 
 #include <unordered_set>
 #include <vulkan/vulkan.h>
-#include <GLFW/glfw3.h>
 
 #include "VkObjectHandler.hpp"
 #include "Engine.hpp"
@@ -37,9 +36,12 @@ namespace {
 	};
 };
 
-VkObjectHandler::VkObjectHandler(Logger& logger, GLFWwindow* window) :
+VkObjectHandler::VkObjectHandler(Logger& logger) :
 	logger(logger) {
 
+}
+
+void VkObjectHandler::init(GLFWwindow* window) {
 	createInstance();
 
 	size_t numFailed = loadInstanceExtensionFunctions(instance);
@@ -155,6 +157,13 @@ void VkObjectHandler::createInstance() {
 		logger.warn("Not all validation layers loaded!");
 	}
 
+	std::vector<const char*> layerCStr;
+	layerCStr.reserve(enabledLayerNames.size());
+
+	for (const std::string& s : enabledLayerNames) {
+		layerCStr.push_back(s.c_str());
+	}
+
 	//Create instance
 
 	VkInstanceCreateInfo instanceCreateInfo = {};
@@ -162,8 +171,8 @@ void VkObjectHandler::createInstance() {
 	instanceCreateInfo.pApplicationInfo = &appInfo;
 	instanceCreateInfo.enabledExtensionCount = extensionNames.size();
 	instanceCreateInfo.ppEnabledExtensionNames = extensionNames.data();
-	instanceCreateInfo.enabledLayerCount = enabledLayerNames.size();
-	instanceCreateInfo.ppEnabledLayerNames = enabledLayerNames.data();
+	instanceCreateInfo.enabledLayerCount = layerCStr.size();
+	instanceCreateInfo.ppEnabledLayerNames = layerCStr.data();
 
 	if (vkCreateInstance(&instanceCreateInfo, nullptr, &instance) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create vulkan instance!");
@@ -320,13 +329,20 @@ void VkObjectHandler::createLogicalDevice() {
 		deviceExtensions.push_back(s.c_str());
 	}
 
+	std::vector<const char*> layerCStr;
+	layerCStr.reserve(enabledLayerNames.size());
+
+	for (const std::string& s : enabledLayerNames) {
+		layerCStr.push_back(s.c_str());
+	}
+
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 	deviceCreateInfo.queueCreateInfoCount = queueCreateInfos.size();
 	deviceCreateInfo.pEnabledFeatures = &usedDeviceFeatures;
-	deviceCreateInfo.enabledLayerCount = enabledLayerNames.size();
-	deviceCreateInfo.ppEnabledLayerNames = enabledLayerNames.data();
+	deviceCreateInfo.enabledLayerCount = layerCStr.size();
+	deviceCreateInfo.ppEnabledLayerNames = layerCStr.data();
 	deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
 	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 

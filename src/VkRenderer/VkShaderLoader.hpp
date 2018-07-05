@@ -21,13 +21,14 @@
 #include <vector>
 
 #include "ShaderLoader.hpp"
+#include "VkObjectHandler.hpp"
 
-class VkShaderLoader {
+class VkShaderLoader : public ShaderLoader {
 public:
 	/**
 	 * Constructor
 	 */
-	VkShaderLoader(VkDevice device, const VkExtent2D& swapchainExtent, Logger& logger) : ShaderLoader(logger), device(device), swapchainExtent(swapchainExtent) {}
+	VkShaderLoader(VkObjectHandler& vkObjects, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap);
 
 	/**
 	 * Loads the shaders from disk and constructs a program object from them.
@@ -37,10 +38,10 @@ public:
 	void loadShader(std::string name, const ShaderInfo& info);
 
 private:
-	//Device got from VkObjectHandler.
-	VkDevice device;
-	//Swapchain image size.
-	const VkExtent2D& swapchainExtent;
+	//Map loaded shaders are added to.
+	std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap;
+	//Object handling all vulkan objects.
+	VkObjectHandler& vkObjects;
 
 	/**
 	 * Loads shader bytecode from disk and creates a shader module for it.
@@ -54,6 +55,6 @@ private:
 	 * @param filename The file to load.
 	 * @return The binary data the file contained.
 	 */
-	std::vector<unsigned char> loadFromDisk(const std::string& filename);
+	std::vector<char> loadFromDisk(const std::string& filename);
 };
 

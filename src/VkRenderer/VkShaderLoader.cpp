@@ -19,13 +19,20 @@
 #include <fstream>
 
 #include "VkShaderLoader.hpp"
+#include "VkShader.hpp"
+
+VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap) :
+	ShaderLoader(logger),
+	shaderMap(shaderMap),
+	vkObjects(vkObjects) {
+
+}
 
 void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
-	if (info.extra == nullptr) {
-		throw std::runtime_error("Missing VkShaderInfo for shader \"" + name + "\"!");
-	}
+	logger.debug("Loading shader \"" + name + "\"");
 
-	VkShaderInfo vkInfo = *(VkShaderInfo*) info.extra;
+	VkDevice device = vkObjects.getDevice();
+	const VkExtent2D& swapchainExtent = vkObjects.getSwapchainExtent();
 
 	const VkShaderModule vertShader = createShaderModule(info.vertex);
 	const VkShaderModule fragShader = createShaderModule(info.fragment);
@@ -69,8 +76,8 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	scissor.offset = {0, 0};
 	scissor.extent = swapchainExtent;
 
-	VkPipelineViewStateCreateInfo viewStateCreateInfo = {};
-	viewStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEW_STATE_CREATE_INFO;
+	VkPipelineViewportStateCreateInfo viewStateCreateInfo = {};
+	viewStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewStateCreateInfo.viewportCount = 1;
 	viewStateCreateInfo.pViewports = &viewport;
 	viewStateCreateInfo.scissorCount = 1;
@@ -99,10 +106,10 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	blendAttach.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	blendAttach.blendEnable = (info.pass == RenderPass::TRANSLUCENT) ? VK_TRUE : VK_FALSE;
 	blendAttach.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	blendAttach.destColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	blendAttach.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	blendAttach.colorBlendOp = VK_BLEND_OP_ADD;
 	blendAttach.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	blendAttach.destAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	blendAttach.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	blendAttach.alphaBlendOp = VK_BLEND_OP_ADD;
 
 	VkPipelineColorBlendStateCreateInfo blendStateCreateInfo = {};
@@ -125,7 +132,9 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	VkPipelineLayoutCreateInfo layoutCreateInfo = {};
 	layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 
-	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	VkPipelineLayout pipelineLayout;
+
+	if (vkCreatePipelineLayout(device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create pipeline layout for shader \"" + name + "\"");
 	}
 
@@ -142,24 +151,27 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	pipelineCreateInfo.pColorBlendState = &blendStateCreateInfo;
 	pipelineCreateInfo.pDynamicState = nullptr; //TODO
 	pipelineCreateInfo.layout = pipelineLayout;
-	pipelineCreateInfo.renderPass = renderPass; //TODO: get render pass
-	pipelineCreateInfo.subPass = 0;
+	pipelineCreateInfo.renderPass = vkObjects.getRenderPass();
+	pipelineCreateInfo.subpass = 0;
 
 	VkPipeline graphicsPipeline;
 
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create graphics pipeline for shader \"" + name + "\"!");
 	}
 
-	//TODO: destroy pipeline layout (shader object destructor, make sure before device is removed)
-	//TODO: destroy pipeline object
+	//Add to shader map
+	info.shaderObject->setRenderInterface(std::make_shared<VkShader>(device, graphicsPipeline, pipelineLayout));
+	shaderMap.insert(std::make_pair(name, info.shaderObject));
 
 	vkDestroyShaderModule(device, vertShader, nullptr);
 	vkDestroyShaderModule(device, fragShader, nullptr);
+
+	logger.debug("Loaded shader \"" + name + "\"");
 }
 
 VkShaderModule VkShaderLoader::createShaderModule(const std::string& filename) {
-	std::vector<unsigned char> byteCode = loadFromDisk(filename);
+	std::vector<char> byteCode = loadFromDisk(filename);
 	VkShaderModule module;
 
 	VkShaderModuleCreateInfo moduleCreateInfo = {};
@@ -167,18 +179,20 @@ VkShaderModule VkShaderLoader::createShaderModule(const std::string& filename) {
 	moduleCreateInfo.codeSize = byteCode.size();
 	moduleCreateInfo.pCode = (const uint32_t*) byteCode.data();
 
-	if (vkCreateShaderModule(device, &moduleCreateInfo, nullptr, &module) != VK_SUCCESS) {
+	if (vkCreateShaderModule(vkObjects.getDevice(), &moduleCreateInfo, nullptr, &module) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create shader module for file \"" + filename + "\"!");
 	}
 
 	return module;
 }
 
-std::shared_ptr<unsigned char> VkShaderLoader::loadFromDisk(const std::string& filename) {
-	std::vector<unsigned char> fileData;
+std::vector<char> VkShaderLoader::loadFromDisk(const std::string& filename) {
+	std::vector<char> fileData;
 
 	try {
-		std::ifstream inFile(filename, std::ios::ate | std::ios::binary | std::ifstream::failbit | std::ifstream::badbit);
+		std::ifstream inFile(filename, std::ios::ate | std::ios::binary);
+		inFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
 		size_t fileSize = inFile.tellg();
 		fileData.resize(fileSize);
 

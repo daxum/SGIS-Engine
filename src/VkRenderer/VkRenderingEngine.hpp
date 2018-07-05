@@ -94,6 +94,8 @@ private:
 	//Interface with the window system.
 	GlfwInterface interface;
 	//Handles all internal vulkan objects.
-	VkObjectHandler* objectHandler;
+	VkObjectHandler objectHandler;
+	//Shader map
+	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
 
 };
