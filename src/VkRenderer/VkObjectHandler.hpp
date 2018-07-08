@@ -48,19 +48,28 @@ public:
 	VkObjectHandler(Logger& logger);
 
 	/**
-	 *Destroys all active objects.
-	 */
-	~VkObjectHandler();
-
-	/**
 	 * Initializes all objects.
 	 */
 	void init(GLFWwindow* window);
 
+	/**
+	 * Destroys all objects.
+	 */
+	void deinit();
 
 	VkDevice getDevice() { return device; }
 	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
 	VkRenderPass getRenderPass() { return renderPass; }
+	VkSwapchainKHR getSwapchain() { return swapchain; }
+	VkQueue getGraphicsQueue() { return graphicsQueue; }
+	VkQueue getPresentQueue() { return presentQueue; }
+
+	/**
+	 * Gets a vector of command buffers from the command pool, one for each swapchain image.
+	 * @param pipeline The pipeline to use when recording the command buffer.
+	 * @return The allocated command buffers.
+	 */
+	std::vector<VkCommandBuffer> getCommandBuffers(VkPipeline pipeline);
 
 private:
 	//The logger
@@ -76,6 +85,7 @@ private:
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapchain;
 	VkRenderPass renderPass;
+	VkCommandPool commandPool;
 
 	//Swapchain stuff
 	std::vector<VkImage> swapchainImages;
@@ -169,6 +179,11 @@ private:
 	 * Creates the framebuffers.
 	 */
 	void createFramebuffers();
+
+	/**
+	 * Creates a command pool.
+	 */
+	void createCommandPool();
 
 	/**
 	 * Vulkan debug callback.

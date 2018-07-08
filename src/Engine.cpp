@@ -78,11 +78,6 @@ void Engine::run(GameInterface& game) {
 	game.loadShaders(renderer->getShaderLoader());
 	logger.info("Finshed loading shaders.");
 
-	//Testing for vulkan loading, remove later.
-	if (config.renderer.renderType == Renderer::VULKAN) {
-		return;
-	}
-
 	game.loadTextures(renderer->getTextureLoader());
 	logger.info("Finished loading textures.");
 

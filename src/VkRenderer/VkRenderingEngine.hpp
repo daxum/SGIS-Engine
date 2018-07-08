@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <array>
+
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
@@ -91,11 +93,21 @@ public:
 	const WindowSystemInterface& getWindowInterface() const { return interface; }
 
 private:
+	constexpr static size_t MAX_ACTIVE_FRAMES = 2;
+
 	//Interface with the window system.
 	GlfwInterface interface;
 	//Handles all internal vulkan objects.
 	VkObjectHandler objectHandler;
 	//Shader map
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
+
+	//Rendering semaphores, one for each frame
+	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> imageAvailable;
+	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> renderFinished;
+	std::array<VkFence, MAX_ACTIVE_FRAMES> renderFences;
+
+	//The current frame being rendered, always between 0 and MAX_ACTIVE_FRAMES
+	size_t currentFrame;
 
 };

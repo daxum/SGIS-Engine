@@ -19,8 +19,8 @@
 #include "VkShader.hpp"
 
 VkShader::VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout) :
-	device(device),
 	pipeline(pipeline),
+	device(device),
 	pipelineLayout(pipelineLayout) {
 
 }

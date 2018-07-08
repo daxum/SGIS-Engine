@@ -19,11 +19,18 @@
 #include "VkRenderingEngine.hpp"
 #include "Engine.hpp"
 #include "VkShaderLoader.hpp"
+#include "VkShader.hpp"
+
+namespace {
+	//Temporary, for testing purposes only!
+	std::vector<VkCommandBuffer> commandBuffers;
+}
 
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(/** TODO **/ std::shared_ptr<TextureLoader>(), std::make_shared<VkShaderLoader>(objectHandler, loaderLogger, shaderMap), rendererLog, loaderLog),
 	interface(display, this),
-	objectHandler(logger) {
+	objectHandler(logger),
+	currentFrame(0) {
 
 	if (!glfwInit()) {
 		throw std::runtime_error("Couldn't initialize glfw");
@@ -31,6 +38,18 @@ VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& re
 }
 
 VkRenderingEngine::~VkRenderingEngine() {
+	//Don't destroy things while rendering.
+	vkDeviceWaitIdle(objectHandler.getDevice());
+
+	for (size_t i = 0; i < MAX_ACTIVE_FRAMES; i++) {
+		vkDestroySemaphore(objectHandler.getDevice(), imageAvailable.at(i), nullptr);
+		vkDestroySemaphore(objectHandler.getDevice(), renderFinished.at(i), nullptr);
+		vkDestroyFence(objectHandler.getDevice(), renderFences.at(i), nullptr);
+	}
+
+	shaderMap.clear();
+	objectHandler.deinit();
+
 	GLFWwindow* window = interface.getWindow();
 
 	if (window != nullptr) {
@@ -66,14 +85,69 @@ void VkRenderingEngine::init() {
 	//Create vulkan objects
 
 	objectHandler.init(window);
+
+	//Create semaphores
+
+	VkSemaphoreCreateInfo semaphoreInfo = {};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for (size_t i = 0; i < MAX_ACTIVE_FRAMES; i++) {
+		if (vkCreateSemaphore(objectHandler.getDevice(), &semaphoreInfo, nullptr, &imageAvailable.at(i)) != VK_SUCCESS ||
+			vkCreateSemaphore(objectHandler.getDevice(), &semaphoreInfo, nullptr, &renderFinished.at(i)) != VK_SUCCESS ||
+			vkCreateFence(objectHandler.getDevice(), &fenceInfo, nullptr, &renderFences.at(i)) != VK_SUCCESS) {
+
+			throw std::runtime_error("Failed to create semaphores or fences!");
+		}
+	}
 }
 
 void VkRenderingEngine::finishLoad() {
+	//Very nasty, but temporary, hack.
+	commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
 	/** TODO **/
 }
 
 void VkRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	/** TODO **/
+	vkWaitForFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame), VK_TRUE, 0xFFFFFFFFFFFFFFFF);
+	vkResetFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame));
+
+	uint32_t imageIndex = 0;
+
+	vkAcquireNextImageKHR(objectHandler.getDevice(), objectHandler.getSwapchain(), 0xFFFFFFFFFFFFFFFF, imageAvailable.at(currentFrame), VK_NULL_HANDLE, &imageIndex);
+
+	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &imageAvailable.at(currentFrame);
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers.at(imageIndex);
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &renderFinished.at(currentFrame);
+
+	if (vkQueueSubmit(objectHandler.getGraphicsQueue(), 1, &submitInfo, renderFences.at(currentFrame)) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to submit command buffer.");
+	}
+
+	VkSwapchainKHR swapchain = objectHandler.getSwapchain();
+
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &renderFinished.at(currentFrame);
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &swapchain;
+	presentInfo.pImageIndices = &imageIndex;
+
+	vkQueuePresentKHR(objectHandler.getPresentQueue(), &presentInfo);
+
+	currentFrame = (currentFrame + 1) % MAX_ACTIVE_FRAMES;
 }
 
 void VkRenderingEngine::clearBuffers() {

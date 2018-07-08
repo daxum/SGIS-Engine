@@ -24,6 +24,9 @@
 
 class VkShader : public ShaderInterface {
 public:
+	//The pipeline representing the shader, used by the rendering engine.
+	const VkPipeline pipeline;
+
 	/**
 	 * Constructor.
 	 * @param device The logical device this shader is owned by.
@@ -60,7 +63,5 @@ public:
 private:
 	//Used for deleting.
 	VkDevice device;
-	//One or both of these probably needs to be made public const for usage in rendering engine.
-	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
 };
