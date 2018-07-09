@@ -64,25 +64,90 @@ void VkObjectHandler::init(GLFWwindow* window) {
 }
 
 void VkObjectHandler::deinit() {
-	vkDestroyDebugReportCallbackEXT(instance, callback, nullptr);
-
-	for (VkFramebuffer framebuffer : framebuffers) {
-		vkDestroyFramebuffer(device, framebuffer, nullptr);
-	}
-
-	for (VkImageView view : imageViews) {
-		vkDestroyImageView(device, view, nullptr);
-	}
-
+	destroySwapchain();
 	vkDestroyCommandPool(device, commandPool, nullptr);
-	vkDestroyRenderPass(device, renderPass, nullptr);
-	vkDestroySwapchainKHR(device, swapchain, nullptr);
 	vkDestroyDevice(device, nullptr);
+	vkDestroyDebugReportCallbackEXT(instance, callback, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
 
 	//This is perfectly safe, the instance isn't accessed in any way.
 	destroyInstanceExtensionFunctions(instance);
+}
+
+std::vector<VkCommandBuffer> VkObjectHandler::getCommandBuffers(VkPipeline pipeline) {
+	std::vector<VkCommandBuffer> commandBuffers(framebuffers.size());
+
+	VkCommandBufferAllocateInfo bufferAllocInfo = {};
+	bufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	bufferAllocInfo.commandPool = commandPool;
+	bufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	bufferAllocInfo.commandBufferCount = commandBuffers.size();
+
+	if (vkAllocateCommandBuffers(device, &bufferAllocInfo, commandBuffers.data()) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to allocate command buffers!");
+	}
+
+	for (size_t i = 0; i < commandBuffers.size(); i++) {
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
+		if (vkBeginCommandBuffer(commandBuffers.at(i), &beginInfo) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to start recording command buffer!");
+		}
+
+		VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
+
+		VkRenderPassBeginInfo passBeginInfo = {};
+		passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		passBeginInfo.renderPass = renderPass;
+		passBeginInfo.framebuffer = framebuffers.at(i);
+		passBeginInfo.renderArea.offset = {0, 0};
+		passBeginInfo.renderArea.extent = swapchainExtent;
+		passBeginInfo.clearValueCount = 1;
+		passBeginInfo.pClearValues = &clearColor;
+
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float) swapchainExtent.width;
+		viewport.height = (float) swapchainExtent.height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+
+		VkRect2D scissor = {};
+		scissor.offset = {0, 0};
+		scissor.extent = swapchainExtent;
+
+		vkCmdBeginRenderPass(commandBuffers.at(i), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		//This line might need to be changed later for different pipelines?
+		vkCmdBindPipeline(commandBuffers.at(i), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+		vkCmdSetViewport(commandBuffers.at(i), 0, 1, &viewport);
+		vkCmdSetScissor(commandBuffers.at(i), 0, 1, &scissor);
+		//This definitely needs to go to model loading.
+		//This won't work properly except in one very specific scenario, change later.
+		vkCmdDraw(commandBuffers.at(i), 3, 1, 0, 0);
+		vkCmdEndRenderPass(commandBuffers.at(i));
+
+		if (vkEndCommandBuffer(commandBuffers.at(i)) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to record command buffer.");
+		}
+	}
+
+	return commandBuffers;
+}
+
+void VkObjectHandler::recreateSwapchain() {
+	vkDeviceWaitIdle(device);
+
+	//TODO: Create old while using new?
+	destroySwapchain();
+
+	createSwapchain();
+	createImageViews();
+	createRenderPass();
+	createFramebuffers();
 }
 
 void VkObjectHandler::createInstance() {
@@ -561,53 +626,20 @@ void VkObjectHandler::createCommandPool() {
 	}
 }
 
-std::vector<VkCommandBuffer> VkObjectHandler::getCommandBuffers(VkPipeline pipeline) {
-	std::vector<VkCommandBuffer> commandBuffers(framebuffers.size());
-
-	VkCommandBufferAllocateInfo bufferAllocInfo = {};
-	bufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	bufferAllocInfo.commandPool = commandPool;
-	bufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	bufferAllocInfo.commandBufferCount = commandBuffers.size();
-
-	if (vkAllocateCommandBuffers(device, &bufferAllocInfo, commandBuffers.data()) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to allocate command buffers!");
+void VkObjectHandler::destroySwapchain() {
+	for (VkFramebuffer framebuffer : framebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
 	}
 
-	for (size_t i = 0; i < commandBuffers.size(); i++) {
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+	//Remove command buffers here
 
-		if (vkBeginCommandBuffer(commandBuffers.at(i), &beginInfo) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to start recording command buffer!");
-		}
+	vkDestroyRenderPass(device, renderPass, nullptr);
 
-		VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
-
-		VkRenderPassBeginInfo passBeginInfo = {};
-		passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		passBeginInfo.renderPass = renderPass;
-		passBeginInfo.framebuffer = framebuffers.at(i);
-		passBeginInfo.renderArea.offset = {0, 0};
-		passBeginInfo.renderArea.extent = swapchainExtent;
-		passBeginInfo.clearValueCount = 1;
-		passBeginInfo.pClearValues = &clearColor;
-
-		vkCmdBeginRenderPass(commandBuffers.at(i), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-		//This line might need to be changed later for different pipelines?
-		vkCmdBindPipeline(commandBuffers.at(i), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		//This definately needs to go to model loading.
-		//This won't work properly except in one very specific scenario, change later.
-		vkCmdDraw(commandBuffers.at(i), 3, 1, 0, 0);
-		vkCmdEndRenderPass(commandBuffers.at(i));
-
-		if (vkEndCommandBuffer(commandBuffers.at(i)) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to record command buffer.");
-		}
+	for (VkImageView view : imageViews) {
+		vkDestroyImageView(device, view, nullptr);
 	}
 
-	return commandBuffers;
+	vkDestroySwapchainKHR(device, swapchain, nullptr);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {

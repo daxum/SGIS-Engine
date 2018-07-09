@@ -71,6 +71,7 @@ void GlfwInterface::setViewport(GLFWwindow* window, int nWidth, int nHeight) {
 	interface->width = (float) nWidth;
 	interface->height = (float) nHeight;
 
+	interface->renderer->setViewport(nWidth, nHeight);
 	interface->display.updateProjections();
 }
 

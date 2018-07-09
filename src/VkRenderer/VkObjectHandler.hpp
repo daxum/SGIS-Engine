@@ -63,6 +63,7 @@ public:
 	VkSwapchainKHR getSwapchain() { return swapchain; }
 	VkQueue getGraphicsQueue() { return graphicsQueue; }
 	VkQueue getPresentQueue() { return presentQueue; }
+	VkCommandPool getCommandPool() { return commandPool; }
 
 	/**
 	 * Gets a vector of command buffers from the command pool, one for each swapchain image.
@@ -70,6 +71,11 @@ public:
 	 * @return The allocated command buffers.
 	 */
 	std::vector<VkCommandBuffer> getCommandBuffers(VkPipeline pipeline);
+
+	/**
+	 * Recreates the swap chain. This almost definitely doesn't belong here.
+	 */
+	void recreateSwapchain();
 
 private:
 	//The logger
@@ -184,6 +190,11 @@ private:
 	 * Creates a command pool.
 	 */
 	void createCommandPool();
+
+	/**
+	 * Detroys the old swapchain for recreation.
+	 */
+	void destroySwapchain();
 
 	/**
 	 * Vulkan debug callback.

@@ -112,12 +112,29 @@ void VkRenderingEngine::finishLoad() {
 }
 
 void VkRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	vkWaitForFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame), VK_TRUE, 0xFFFFFFFFFFFFFFFF);
-	vkResetFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame));
+	//Crash if a frame takes too long to render - this usually happens because something is wrong with the fences. There are 9 0's in the second number below.
+	if (vkWaitForFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame), VK_TRUE, 20u * 1000000000u) == VK_TIMEOUT) {
+		throw std::runtime_error("Fence wait timed out!");
+	}
 
 	uint32_t imageIndex = 0;
 
-	vkAcquireNextImageKHR(objectHandler.getDevice(), objectHandler.getSwapchain(), 0xFFFFFFFFFFFFFFFF, imageAvailable.at(currentFrame), VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(objectHandler.getDevice(), objectHandler.getSwapchain(), 0xFFFFFFFFFFFFFFFF, imageAvailable.at(currentFrame), VK_NULL_HANDLE, &imageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		//TODO: this is in three places, and needs to be moved somewhere where it can be handled for all models at once.
+		vkDeviceWaitIdle(objectHandler.getDevice());
+		vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
+		objectHandler.recreateSwapchain();
+		commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
+		return;
+	}
+	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		throw std::runtime_error("Failed to get image!");
+	}
+
+	//Reset fence here because of the return above
+	vkResetFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame));
 
 	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
@@ -145,7 +162,17 @@ void VkRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 	presentInfo.pSwapchains = &swapchain;
 	presentInfo.pImageIndices = &imageIndex;
 
-	vkQueuePresentKHR(objectHandler.getPresentQueue(), &presentInfo);
+	result = vkQueuePresentKHR(objectHandler.getPresentQueue(), &presentInfo);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+		vkDeviceWaitIdle(objectHandler.getDevice());
+		vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
+		objectHandler.recreateSwapchain();
+		commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
+	}
+	else if (result != VK_SUCCESS) {
+		throw std::runtime_error("Failed to present!");
+	}
 
 	currentFrame = (currentFrame + 1) % MAX_ACTIVE_FRAMES;
 }
@@ -159,5 +186,9 @@ void VkRenderingEngine::present() {
 }
 
 void VkRenderingEngine::setViewport(int width, int height) {
-	/** TODO **/
+	//Width / height unused, retrieved from window interface in below function.
+	vkDeviceWaitIdle(objectHandler.getDevice());
+	vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
+	objectHandler.recreateSwapchain();
+	commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
 }

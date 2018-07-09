@@ -118,15 +118,15 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	blendStateCreateInfo.attachmentCount = 1;
 	blendStateCreateInfo.pAttachments = &blendAttach;
 
-	//TODO: dynamic state
-	/*VkDynamicState dynamicStates[] = {
-		VK_DYNAMIC_STATE_VIEWPORT
+	VkDynamicState dynamicStates[] = {
+		VK_DYNAMIC_STATE_VIEWPORT,
+		VK_DYNAMIC_STATE_SCISSOR
 	};
 
 	VkPipelineDynamicStateCreateInfo dynamicCreateInfo = {};
 	dynamicCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicCreateInfo.dynamicStateCount = 1;
-	dynamicCreateInfo.pDynamicStates = dynamicStates;*/
+	dynamicCreateInfo.dynamicStateCount = 2;
+	dynamicCreateInfo.pDynamicStates = dynamicStates;
 
 	//TODO: Move into shader object
 	VkPipelineLayoutCreateInfo layoutCreateInfo = {};
@@ -149,7 +149,7 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	pipelineCreateInfo.pMultisampleState = &sampleCreateInfo;
 	pipelineCreateInfo.pDepthStencilState = nullptr; //TODO
 	pipelineCreateInfo.pColorBlendState = &blendStateCreateInfo;
-	pipelineCreateInfo.pDynamicState = nullptr; //TODO
+	pipelineCreateInfo.pDynamicState = &dynamicCreateInfo;
 	pipelineCreateInfo.layout = pipelineLayout;
 	pipelineCreateInfo.renderPass = vkObjects.getRenderPass();
 	pipelineCreateInfo.subpass = 0;
