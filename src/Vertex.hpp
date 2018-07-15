@@ -23,6 +23,8 @@
 #include <cstring>
 #include <utility>
 
+#include <glm/glm.hpp>
+
 enum class VertexElementType {
 	FLOAT,
 	VEC2,
@@ -30,18 +32,24 @@ enum class VertexElementType {
 	VEC4
 };
 
+size_t sizeFromVertexType(VertexElementType type) {
+	switch(type) {
+		case VertexElementType::FLOAT: return sizeof(float);
+		case VertexElementType::VEC2: return sizeof(glm::vec2);
+		case VertexElementType::VEC3: return sizeof(glm::vec3);
+		case VertexElementType::VEC4: return sizeof(glm::vec4);
+		default: return 0;
+	}
+}
+
 struct VertexElement {
 	//Type of the vertex element.
 	VertexElementType type;
-	//Size in bytes of the element.
-	size_t size;
-	//Offset of the element into the vertex structure.
-	size_t offset;
 	//Name of the element.
 	std::string name;
 
 	friend bool operator==(const VertexElement& e1, const VertexElement& e2) {
-		return e1.type == e2.type && e1.size == e2.size && e1.offset == e2.offset && e1.name == e2.name;
+		return e1.type == e2.type && e1.name == e2.name;
 	}
 };
 
@@ -67,6 +75,18 @@ public:
 	 * Deletes the vertex data.
 	 */
 	~Vertex();
+
+	/**
+	 * "Setting" functions, sets the value of the name in the data buffer to the provided value.
+	 * @param name The name to set.
+	 * @param value The value to set the name to.
+	 * @throw std::runtime_error if the name doesn't exist in the element array or if the type
+	 *     for the name doesn't match the function's type.
+	 */
+	void setFloat(const std::string& name, float value);
+	void setVec2(const std::string& name, const glm::vec2& value);
+	void setVec3(const std::string& name, const glm::vec3& value);
+	void setVec4(const std::string& name, const glm::vec4& value);
 
 	/**
 	 * Returns the vertex data for copying into a buffer, along with its size.
@@ -136,9 +156,34 @@ private:
 	/**
 	 * Find an element's index in the element array given the name.
 	 * @param name The name to find.
-	 * @return The index of the element, or the maximum value of an unsigned 64-bit integer if not found.
+	 * @return The index of the element, or the maximum value of size_t if not found.
 	 */
 	size_t getElementIndex(const std::string& name);
+
+	/**
+	 * Gets the offset (in bytes) into the vertexData buffer for the given name.
+	 * @param name The name to get the offset for.
+	 * @return The offset into the buffer where the data for the name is stored,
+	 *     or the maximum value of size_t if not found.
+	 */
+	size_t getElementOffset(const std::string& name);
+
+	/**
+	 * Checks whether the type of the given name matches the provided type.
+	 * @param name The name to get the type for.
+	 * @param type The type to check.
+	 * @return whether the types matched.
+	 */
+	bool checkType(const std::string& name, VertexElementType type);
+
+	/**
+	 * Helper function for the set* functions above. Directly copies the data
+	 * into the data buffer.
+	 * @param name The element's name.
+	 * @param data The data to copy. Size inferred from name's entry in elements vector.
+	 * @throw std::runtime_error if name not found.
+	 */
+	void setData(const std::string& name, const void* data);
 };
 
 namespace std {
