@@ -16,44 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include <stdexcept>
-
-#include "Vertex.hpp"
 #include "VertexBuffer.hpp"
 
-Vertex::Vertex(VertexBuffer* parentBuffer, size_t vertexSize) :
-	buffer(parentBuffer),
-	size(vertexSize),
-	vertexData(new unsigned char[vertexSize]) {
+VertexBuffer::VertexBuffer(const std::vector<VertexElement>& vertexFormat) :
+	vertexElements(),
+	vertexSize(0) {
 
-}
+	size_t totalSize = 0;
 
-Vertex::Vertex(const Vertex& v) :
-	buffer(v.buffer),
-	size(v.size),
-	vertexData(new unsigned char[v.size]) {
+	for (const VertexElement& element : vertexFormat) {
+		VertexElementData data = {
+			element.type,
+			totalSize,
+			sizeFromVertexType(element.type)
+		};
 
-}
+		totalSize += data.size;
 
-Vertex::Vertex(Vertex&& v) noexcept :
-	buffer(std::exchange(v.buffer, nullptr)),
-	size(std::exchange(v.size, 0)),
-	vertexData(std::exchange(v.vertexData, nullptr)) {
-
-}
-
-Vertex::~Vertex() {
-	if (vertexData) {
-		delete[] vertexData;
+		vertexElements.insert({element.name, data});
 	}
-}
 
-void Vertex::setData(const std::string& name, VertexElementType expectedType, const void* data) {
-	if (!buffer->checkType(name, expectedType)) {
-		throw std::runtime_error("Type for vertex element \"" + name + "\" doesn't match!");
-	}
-	size_t offset = buffer->getElementOffset(name);
-	size_t dataSize = buffer->getElementSize(name);
-
-	memcpy(vertexData + offset, data, dataSize);
+	vertexSize = totalSize;
 }

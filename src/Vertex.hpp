@@ -25,6 +25,8 @@
 
 #include <glm/glm.hpp>
 
+class VertexBuffer;
+
 enum class VertexElementType {
 	FLOAT,
 	VEC2,
@@ -42,24 +44,14 @@ size_t sizeFromVertexType(VertexElementType type) {
 	}
 }
 
-struct VertexElement {
-	//Type of the vertex element.
-	VertexElementType type;
-	//Name of the element.
-	std::string name;
-
-	friend bool operator==(const VertexElement& e1, const VertexElement& e2) {
-		return e1.type == e2.type && e1.name == e2.name;
-	}
-};
-
 class Vertex {
 public:
 	/**
 	 * Constructor.
-	 * @param elements A list of vertex elements that will be placed in a buffer.
+	 * @param parentBuffer The buffer that owns this vertex - determines vertex format.
+	 * @param vertexSize The size of one vertex in the parent buffer.
 	 */
-	Vertex(const std::vector<VertexElement>& elements);
+	Vertex(VertexBuffer* parentBuffer, size_t vertexSize);
 
 	/**
 	 * Copy constructor.
@@ -83,22 +75,27 @@ public:
 	 * @throw std::runtime_error if the name doesn't exist in the element array or if the type
 	 *     for the name doesn't match the function's type.
 	 */
-	void setFloat(const std::string& name, float value);
-	void setVec2(const std::string& name, const glm::vec2& value);
-	void setVec3(const std::string& name, const glm::vec3& value);
-	void setVec4(const std::string& name, const glm::vec4& value);
+	void setFloat(const std::string& name, float value) { setData(name, VertexElementType::FLOAT, &value); }
+	void setVec2(const std::string& name, const glm::vec2& value) { setData(name, VertexElementType::VEC2, &value); }
+	void setVec3(const std::string& name, const glm::vec3& value) { setData(name, VertexElementType::VEC3, &value); }
+	void setVec4(const std::string& name, const glm::vec4& value) { setData(name, VertexElementType::VEC4, &value); }
 
 	/**
-	 * Returns the vertex data for copying into a buffer, along with its size.
+	 * Returns the vertex data for copying into a buffer.
 	 */
-	std::pair<const unsigned char*, size_t> getData() const { return {vertexData, size}; }
+	const unsigned char* getData() const { return vertexData; }
+
+	/**
+	 * Returns the size of the vertex, in bytes.
+	 */
+	size_t getSize() const { return size; }
 
 	/**
 	 * Returns whether the two vertices are equal.
 	 */
 	friend bool operator==(const Vertex& v1, const Vertex& v2) {
 		//memcmp returns zero if blocks match.
-		return v1.size == v2.size && v1.elements == v2.elements && !memcmp(v1.vertexData, v2.vertexData, v1.size);
+		return v1.buffer == v2.buffer && v1.size == v2.size && !memcmp(v1.vertexData, v2.vertexData, v1.size);
 	}
 
 	/**
@@ -121,7 +118,7 @@ public:
 				size = v.size;
 			}
 
-			elements = v.elements;
+			buffer = v.buffer;
 			memcpy(vertexData, v.vertexData, size);
 		}
 
@@ -136,15 +133,15 @@ public:
 			delete[] vertexData;
 			vertexData = std::exchange(v.vertexData, nullptr);
 			size = std::exchange(v.size, 0);
-			elements = std::move(v.elements);
+			buffer = std::exchange(v.buffer, nullptr);
 		}
 
 		return *this;
 	}
 
 private:
-	//The vertex format
-	std::vector<VertexElement> elements;
+	//The parent buffer, determines vertex format.
+	VertexBuffer* buffer;
 	//Size of vertex, in bytes. Also size of below memory block.
 	size_t size;
 	//The data for this vertex. Originally this was going to use template metaprogramming
@@ -154,54 +151,34 @@ private:
 	unsigned char* vertexData;
 
 	/**
-	 * Find an element's index in the element array given the name.
-	 * @param name The name to find.
-	 * @return The index of the element, or the maximum value of size_t if not found.
-	 */
-	size_t getElementIndex(const std::string& name);
-
-	/**
-	 * Gets the offset (in bytes) into the vertexData buffer for the given name.
-	 * @param name The name to get the offset for.
-	 * @return The offset into the buffer where the data for the name is stored,
-	 *     or the maximum value of size_t if not found.
-	 */
-	size_t getElementOffset(const std::string& name);
-
-	/**
-	 * Checks whether the type of the given name matches the provided type.
-	 * @param name The name to get the type for.
-	 * @param type The type to check.
-	 * @return whether the types matched.
-	 */
-	bool checkType(const std::string& name, VertexElementType type);
-
-	/**
 	 * Helper function for the set* functions above. Directly copies the data
 	 * into the data buffer.
 	 * @param name The element's name.
+	 * @param expected type The expected type of the element stored under name.
 	 * @param data The data to copy. Size inferred from name's entry in elements vector.
-	 * @throw std::runtime_error if name not found.
+	 * @throw std::runtime_error if name not found or if name's type doesn't match expectedType.
 	 */
-	void setData(const std::string& name, const void* data);
+	void setData(const std::string& name, VertexElementType expectedType, const void* data);
 };
 
 namespace std {
 	template<> struct hash<Vertex> {
 		size_t operator()(const Vertex& v) const {
-			std::pair<const unsigned char*, size_t> vertexData = v.getData();
-			size_t blocks = vertexData.second >> 3;
-			size_t extra = vertexData.second - (blocks << 3);
+			const unsigned char* vertexData = v.getData();
+			size_t vertexSize = v.getSize();
+
+			size_t blocks = vertexSize >> 3;
+			size_t extra = vertexSize - (blocks << 3);
 
 			size_t hashedVal = 0;
 
 			for (size_t i = 0; i < blocks; i++) {
-				hashedVal ^= ((const uint64_t*)vertexData.first)[i] << 1;
+				hashedVal ^= ((const uint64_t*)vertexData)[i] << 1;
 			}
 
 			if (extra) {
 				uint64_t extraData = 0;
-				memcpy(&extraData, &((const uint64_t*)vertexData.first)[blocks], extra);
+				memcpy(&extraData, &((const uint64_t*)vertexData)[blocks], extra);
 
 				hashedVal ^= extraData << 1;
 			}
