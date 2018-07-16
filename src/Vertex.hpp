@@ -72,7 +72,7 @@ public:
 	 * "Setting" functions, sets the value of the name in the data buffer to the provided value.
 	 * @param name The name to set.
 	 * @param value The value to set the name to.
-	 * @throw std::runtime_error if the name doesn't exist in the element array or if the type
+	 * @throw std::out_of_range if the name doesn't exist or std::runtime_error if the type
 	 *     for the name doesn't match the function's type.
 	 */
 	void setFloat(const std::string& name, float value) { setData(name, VertexElementType::FLOAT, &value); }
@@ -155,8 +155,8 @@ private:
 	 * into the data buffer.
 	 * @param name The element's name.
 	 * @param expected type The expected type of the element stored under name.
-	 * @param data The data to copy. Size inferred from name's entry in elements vector.
-	 * @throw std::runtime_error if name not found or if name's type doesn't match expectedType.
+	 * @param data The data to copy.
+	 * @throw std::out_of_range if name not found or std::runtime_error if name's type doesn't match expectedType.
 	 */
 	void setData(const std::string& name, VertexElementType expectedType, const void* data);
 };
