@@ -2,7 +2,7 @@ set(ENGINE_FILES
 	Engine.cpp
 	TextureLoader.cpp
 	ExtraMath.cpp
-	ModelLoader.cpp
+	#ModelLoader.cpp
 	Model.cpp
 	Logger.cpp
 	DisplayEngine.cpp
@@ -20,11 +20,13 @@ set(ENGINE_FILES
 	RenderComponentManager.cpp
 	InputHandler.cpp
 	GuiComponentManager.cpp
-	FontManager.cpp
-	TextComponent.cpp
+	#FontManager.cpp
+	#TextComponent.cpp
 	SplineAnimation.cpp
 	AnimationComponent.cpp
 	GlfwInterface.cpp
+	Vertex.cpp
+	VertexBuffer.cpp
 )
 
 if (USE_OPENGL)
@@ -51,7 +53,7 @@ endif()
 add_library(Engine STATIC ${ENGINE_FILES})
 
 set_target_properties(Engine PROPERTIES
-	CXX_STANDARD 11
+	CXX_STANDARD 14
 	CXX_STANDARD_REQUIRED ON
 )
 
