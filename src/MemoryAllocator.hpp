@@ -51,7 +51,7 @@ public:
 	 * and the block will be evicted as needed. In addition, the evicted value
 	 * of the returned block should always be checked before setting inUse to
 	 * true (for when a block is needed again).
-	 * @param size The number of bytes to allocate. Unused for already allocated blocks.
+	 * @param size The number of bytes to allocate.
 	 * @return Allocation information for the given name.
 	 * @throw std::runtime_error if out of memory, std::out_of_range if size is zero.
 	 */
