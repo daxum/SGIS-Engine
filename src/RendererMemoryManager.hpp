@@ -20,20 +20,11 @@
 
 #include <vector>
 #include <cstdint>
+#include <string>
+#include <unordered_map>
 
 #include "VertexBuffer.hpp"
-
-enum class BufferUsage {
-	//Reference counted buffer located in gpu memory, if possible. Meshes remain in
-	//the buffer even if nothing references them, for possible reuse later.
-	//They are only evicted if memory runs out.
-	DEDICATED_LAZY,
-	//Similar to above, except unused meshes are immediately invalidated and
-	//have to be reuploaded if used again.
-	DEDICATED_SINGLE,
-	//This is just a stream buffer.
-	STREAM
-};
+#include "MemoryAllocator.hpp"
 
 //All the information needed to create a vertex buffer.
 struct VertexBufferInfo {
@@ -42,7 +33,21 @@ struct VertexBufferInfo {
 	//Buffer usage, determines where the buffer is stored and the eviction policy.
 	BufferUsage usage;
 	//Size of the buffer.
-	uint64_t size;
+	size_t size;
+};
+
+//Stores a buffer with its allocators and allocations.
+struct BufferData {
+	//The buffer metadata.
+	VertexBuffer buffer;
+
+	//Allocators for the vertex and index buffers.
+	MemoryAllocator vertexAllocator;
+	MemoryAllocator indexAllocator;
+
+	//All allocations made from this buffer.
+	std::unordered_map<std::string, std::shared_ptr<AllocInfo>> vertexAllocations;
+	std::unordered_map<std::string, std::shared_ptr<AllocInfo>> indexAllocations;
 };
 
 //An interface to the rendering engine's memory manager.
@@ -57,8 +62,17 @@ public:
 	 * Adds a vertex buffer to the memory manager. Currently also creates an index buffer as well.
 	 * @param name The name of the buffer.
 	 * @param info Initialization info for the buffer.
+	 * @throw std::runtime_error if not enough memory.
 	 */
-	virtual void addBuffer(const std::string& name, const VertexBufferInfo& info) = 0;
+	void addBuffer(const std::string& name, const VertexBufferInfo& info);
+
+	/**
+	 * Returns the vertex buffer with the given name, primarily used during model loading.
+	 * @param name The name to retrieve.
+	 * @return The vertex buffer with the given name.
+	 * @throw std::out_of_range if the buffer doesn't exist.
+	 */
+	VertexBuffer& getBuffer(const std::string& name);
 
 	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
@@ -69,28 +83,52 @@ public:
 	 * @param indices Indices for the mesh to load into an index buffer.
 	 * @throw std::runtime_error If the name already exists.
 	 */
-	virtual void addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, const std::vector<uint32_t>& indices) = 0;
+	void addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, const std::vector<uint32_t>& indices);
 
 	/**
-	 * Gets whether the mesh is already present in the given buffer.
+	 * Checks whether the mesh's data is stored in the given buffer. If it is, it is marked
+	 * as in use if it wasn't already. If it isn't present, nothing happens, and the data
+	 * needs to be reuploaded to be usable.
 	 * @param mesh The name of the mesh to check.
 	 * @param buffer The buffer to check for the name.
-	 * @return Whether a mesh with the given name exists in the buffer.
+	 * @return true if the mesh was present, false if it wasn't and the data needs to be reuploaded.
 	 */
-	virtual bool hasMesh(const std::string& mesh, const std::string& buffer) = 0;
+	bool markUsed(const std::string& mesh, const std::string& buffer);
 
 	/**
-	 * Adds another user for the given mesh.
-	 * @param mesh The name of the mesh.
-	 * @param buffer The name of the buffer the mesh resides in.
-	 */
-	virtual void addUser(const std::string& mesh, const std::string& buffer) = 0;
-
-	/**
-	 * Removes a user of the given mesh. If the mesh has no users and is not part of
-	 * a lazy removal buffer, the memory it used is freed.
-	 * @param mesh The mesh to remove a user for.
+	 * Marks the mesh as unused. If the mesh is transitory, all references
+	 * to it will be completely deleted from the buffer, otherwise it will
+	 * only be marked as unused.
+	 * @param mesh The mesh to free.
 	 * @param buffer The buffer that contains the mesh.
 	 */
-	virtual void removeUser(const std::string& mesh, const std::string& buffer) = 0;
+	void freeMesh(const std::string& mesh, const std::string& buffer);
+
+protected:
+	/**
+	 * Creates a buffer with the underlying rendering api and returns a pointer to the data
+	 * to be stored with the buffer object.
+	 * @param usage The way the buffer is intended to be used - determines which memory type
+	 *     it is stored in.
+	 * @param size The size of the buffer to create.
+	 * @return A pointer to renderer-specific data to be stored with the buffer object.
+	 * @throw std::runtime_error if out of memory.
+	 */
+	virtual std::shared_ptr<RenderBufferData> createBuffer(BufferUsage usage, size_t size) = 0;
+
+	/**
+	 * Uploads the vertex and index data into the given buffer.
+	 * @param buffer The render data for the buffer to upload to.
+	 * @param offset The offset into the vertex buffer to place the vertex data.
+	 * @param size The size of the vertex data.
+	 * @param vertexData The vertex data to upload.
+	 * @param indexOffset The offset into the index buffer to place the index data.
+	 * @param indexSize The size of the index data.
+	 * @param indexData The index data to upload.
+	 */
+	virtual void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) = 0;
+
+private:
+	//Stores all created vertex buffers.
+	std::unordered_map<std::string, BufferData> buffers;
 };

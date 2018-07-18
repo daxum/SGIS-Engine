@@ -20,8 +20,21 @@
 
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include "Vertex.hpp"
+
+enum class BufferUsage {
+	//Reference counted buffer located in gpu memory, if possible. Meshes remain in
+	//the buffer even if nothing references them, for possible reuse later.
+	//They are only evicted if memory runs out.
+	DEDICATED_LAZY,
+	//Similar to above, except unused meshes are immediately invalidated and
+	//have to be reuploaded if used again.
+	DEDICATED_SINGLE,
+	//This is just a stream buffer.
+	STREAM
+};
 
 //External representation of vertex elements, supplied to constructor.
 struct VertexElement {
@@ -41,13 +54,18 @@ struct VertexElementData {
 	size_t size;
 };
 
+struct RenderBufferData {};
+
 class VertexBuffer {
 public:
 	/**
 	 * Constructor.
 	 * @param vertexFormat The layout of a single vertex in the buffer.
+	 * @param size The size of the buffer.
+	 * @param usage Where the buffer is stored, and how meshes stored in it should be deleted.
+	 * @param renderData A renderer-specific pointer to buffer data (VkBuffer, GLuint, etc).
 	 */
-	VertexBuffer(const std::vector<VertexElement>& vertexFormat);
+	VertexBuffer(const std::vector<VertexElement>& vertexFormat, size_t size, BufferUsage usage, std::shared_ptr<RenderBufferData> renderData);
 
 	/**
 	 * Creates a vertex with this buffer as its parent. The created vertex
@@ -94,4 +112,10 @@ private:
 	std::unordered_map<std::string, VertexElementData> vertexElements;
 	//Size of one vertex using this buffer's format.
 	size_t vertexSize;
+	//Size of the vertex buffer.
+	size_t bufferSize;
+	//How the buffer is used.
+	BufferUsage usage;
+	//Renderer specific data.
+	std::shared_ptr<RenderBufferData> renderData;
 };

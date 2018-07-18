@@ -18,9 +18,12 @@
 
 #include "VertexBuffer.hpp"
 
-VertexBuffer::VertexBuffer(const std::vector<VertexElement>& vertexFormat) :
+VertexBuffer::VertexBuffer(const std::vector<VertexElement>& vertexFormat, size_t size, BufferUsage usage, std::shared_ptr<RenderBufferData> renderData) :
 	vertexElements(),
-	vertexSize(0) {
+	vertexSize(0),
+	bufferSize(size),
+	usage(usage),
+	renderData(renderData) {
 
 	size_t totalSize = 0;
 
