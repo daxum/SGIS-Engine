@@ -27,13 +27,6 @@
 class WindowSystemInterface {
 public:
 	/**
-	 * Initializes the interface. This should do things like register callbacks.
-	 * @param arg A pointer to an object or objects needed to initialize the interface,
-	 *     determined by subclass. For example, the glfw interface takes a GLFWwindow*.
-	 */
-	virtual void init(void* arg) = 0;
-
-	/**
 	 * Indicates whether the window was closed by the user, and the
 	 * game should stop.
 	 * @return Whether to terminate the game due to a closed window.

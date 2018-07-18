@@ -78,9 +78,8 @@ public:
 	const EngineConfig& getConfig() const { return config; }
 
 	/**
-	 * Gets a constant version of the current rendering engine.
-	 * Used to get things like the projection matrix and window size.
-	 * @return The rendering engine.
+	 * Gets the window system interface, used to get things like the window size.
+	 * @return The window interface.
 	 */
 	const WindowSystemInterface& getWindowInterface() const { return renderer->getWindowInterface(); }
 

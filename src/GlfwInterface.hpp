@@ -39,9 +39,8 @@ public:
 	 * Registers callbacks.
 	 * @param newWindow The window to register callbacks for.
 	 *     This will be stored in this object as well.
-	 *     The type is actually a GLFWwindow*.
 	 */
-	void init(void* newWindow);
+	void init(GLFWwindow* window);
 
 	/**
 	 * Indicates whether the window was closed by the user, and the
