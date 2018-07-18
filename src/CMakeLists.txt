@@ -27,6 +27,7 @@ set(ENGINE_FILES
 	GlfwInterface.cpp
 	Vertex.cpp
 	VertexBuffer.cpp
+	MemoryAllocator.cpp
 )
 
 if (USE_OPENGL)
