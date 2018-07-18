@@ -77,6 +77,18 @@ public:
 	}
 
 	/**
+	 * Retrieves the stored renderData.
+	 * @return The renderData.
+	 */
+	std::shared_ptr<RenderBufferData> getRenderData() { return renderData; }
+
+	/**
+	 * Gets the BufferUsage provided in the constructor.
+	 * @return The usage for the buffer.
+	 */
+	BufferUsage getUsage() { return usage; }
+
+	/**
 	 * Checks whether the type of the given name matches the provided type.
 	 * @param name The name to get the type for.
 	 * @param type The type to check.

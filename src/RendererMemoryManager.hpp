@@ -72,7 +72,7 @@ public:
 	 * @return The vertex buffer with the given name.
 	 * @throw std::out_of_range if the buffer doesn't exist.
 	 */
-	VertexBuffer& getBuffer(const std::string& name);
+	VertexBuffer& getBuffer(const std::string& name) { return buffers.at(name).buffer; }
 
 	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
@@ -81,7 +81,7 @@ public:
 	 * @param vertexData The data to add to the buffer.
 	 * @param dataSize The size of the data to add, in bytes.
 	 * @param indices Indices for the mesh to load into an index buffer.
-	 * @throw std::runtime_error If the name already exists.
+	 * @throw std::runtime_error If the name already exists or if out of memory.
 	 */
 	void addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, const std::vector<uint32_t>& indices);
 
@@ -96,9 +96,9 @@ public:
 	bool markUsed(const std::string& mesh, const std::string& buffer);
 
 	/**
-	 * Marks the mesh as unused. If the mesh is transitory, all references
-	 * to it will be completely deleted from the buffer, otherwise it will
-	 * only be marked as unused.
+	 * Marks the mesh as unused. If the mesh is transitory (BufferUsage::DEDICATED_SINGLE),
+	 * all references to it will be completely deleted from the buffer, otherwise it will
+	 * only be marked as unused. If the mesh doesn't exist, nothing happens.
 	 * @param mesh The mesh to free.
 	 * @param buffer The buffer that contains the mesh.
 	 */
@@ -127,6 +127,19 @@ protected:
 	 * @param indexData The index data to upload.
 	 */
 	virtual void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) = 0;
+
+	/**
+	 * Marks the provided range as invalid, so other objects can be uploaded there. The implementor of this
+	 * function should ensure that the old data is not overwritten while still in use if a new mesh is uploaded
+	 * to the memory (due to the nature of the allocator, this should not happen often, and only in memory constrained
+	 * scenarios).
+	 * @param buffer The buffer the range is for (vertex and index at the moment, will be split later).
+	 * @param offset The offset into the vertex buffer.
+	 * @param size The size of the range in the vertex buffer.
+	 * @param indexOffset The offset into the index buffer.
+	 * @param indexSize The size of the range into the index buffer.
+	 */
+	virtual void invalidateRange(std::shared_ptr<RenderBufferData> buffer, size_t offset, size_t size, size_t indexOffset, size_t indexSize) = 0;
 
 private:
 	//Stores all created vertex buffers.

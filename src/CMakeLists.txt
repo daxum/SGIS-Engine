@@ -28,6 +28,7 @@ set(ENGINE_FILES
 	Vertex.cpp
 	VertexBuffer.cpp
 	MemoryAllocator.cpp
+	RendererMemoryManager.cpp
 )
 
 if (USE_OPENGL)
