@@ -59,6 +59,7 @@ public:
 	 */
 	void addMesh(const std::string& name, const Mesh& mesh) {
 		meshMap.insert({name, mesh});
+		logger.info("Added mesh \"" + name + "\"");
 	}
 
 	/**
@@ -71,6 +72,7 @@ public:
 	 */
 	void addModel(const std::string& name, const Model& model) {
 		modelMap.insert({name, model});
+		logger.info("Added model \"" + name + "\"");
 	}
 
 	/**

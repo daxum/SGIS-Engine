@@ -73,4 +73,6 @@ struct EngineConfig {
 	LogConfig rendererLog;
 	//Loader logger.
 	LogConfig loaderLog;
+	//Model manager logger.
+	LogConfig modelLog;
 };

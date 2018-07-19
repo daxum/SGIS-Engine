@@ -31,7 +31,7 @@ Engine::Engine(const EngineConfig& config) :
 	config(config),
 	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
 	display(),
-	modelManager(config.loaderLog),
+	modelManager(config.modelLog),
 	fontManager(renderer) {
 
 	if (instance) {
