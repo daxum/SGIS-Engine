@@ -18,13 +18,4 @@
 
 #include "Model.hpp"
 
-Model::Model(std::shared_ptr<RenderMeshObject> mesh, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, bool viewCull) :
-	mesh(mesh),
-	texture(texture),
-	meshBox(meshBox),
-	radius(radius),
-	shader(shader),
-	lighting(light),
-	viewCull(viewCull) {
-
-}
+/** TODO **/

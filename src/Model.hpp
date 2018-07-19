@@ -20,50 +20,139 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
 #include <memory>
 
 #include "AxisAlignedBB.hpp"
+#include "Vertex.hpp"
 
-//Object containing renderer-specific information for the mesh.
-class RenderMeshObject {
+class Mesh {
 public:
-	virtual ~RenderMeshObject() {}
+	/**
+	 * Creates a mesh with the given vertices and indices.
+	 * @param buffer The buffer to place the mesh in for rendering.
+	 * @param vertices The vertices for the mesh. Their internal data is copied into the mesh.
+	 * @param indices The index data for the mesh.
+	 */
+	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+
+	/**
+	 * Gets the buffer the mesh is stored in.
+	 */
+	const std::string& getBuffer() const { return buffer; }
+
+	/**
+	 * Adds a user to this mesh.
+	 */
+	void addUser() { users++; }
+
+	/**
+	 * Removes a user of this mesh.
+	 */
+	void removeUser() {
+		if (users > 0) {
+			users--;
+		}
+	}
+
+	/**
+	 * Returns the number of users of this mesh.
+	 * @return the number of users.
+	 */
+	size_t getUsers() { return users; }
+
+	/**
+	 * Retrieves all the mesh data, for uploading into a vertex / index buffer.
+	 */
+	const std::tuple<unsigned char*, size_t, const std::vector<uint32_t>&> getMeshData() {
+		return {vertexData, vertexSize, indices};
+	}
+
+private:
+	//The mesh's vertex data and size.
+	unsigned char* vertexData;
+	size_t vertexSize;
+
+	//Indices for the vertices.
+	std::vector<uint32_t> indices;
+
+	//The buffer this mesh belongs in.
+	std::string buffer;
+
+	//Possibly useful dimensions for the mesh, calculated on construction.
+	AxisAlignedBB box;
+	float radius;
+
+	//How many models use this mesh.
+	size_t users;
 };
 
-struct LightInfo {
-	glm::vec3 ka;
-	glm::vec3 ks;
-	float s;
-};
-
-//Stores all model data, like mesh information, lighting parameters, and others.
 class Model {
 public:
 	/**
-	 * Constructs a model using the given mesh
-	 * @param meshData This model's mesh information
-	 * @param meshBox The axis aligned bounding box for this model's mesh.
-	 * @param radius The radius of the model.
-	 * @param texture The name of the texture to use
-	 * @param shader The shader the model uses.
-	 * @param pass The render pass to render the model in.
+	 * Creates a new model.
+	 * @param mesh The name of the model's mesh.
+	 * @param shader The model's shader.
+	 * @param viewCull Whether to use view culling on this model.
 	 */
-	Model(std::shared_ptr<RenderMeshObject> mesh, AxisAlignedBB meshBox, float radius, std::string texture, std::string shader, LightInfo light, bool viewCull = true);
+	Model(std::string mesh, std::string shader, bool viewCull = true) :
+		mesh(mesh),
+		shader(shader),
+		uniformMap(),
+		viewCull(viewCull),
+		references(0) {}
+
+	//The name of this model's mesh.
+	std::string mesh;
+	//The shader the model uses.
+	std::string shader;
+	//A map of uniforms for the model.
+	std::unordered_map<std::string, std::shared_ptr<void>> uniformMap;
+	//Whether to use view culling on the model.
+	bool viewCull;
+
+	//Amount of references this model has.
+	size_t references;
+};
+
+class ModelRef {
+public:
+	/**
+	 * Creates a reference to the given model.
+	 * @param modelName The name of the model this reference is referencing.
+	 * @param model The model to reference.
+	 * @param mesh The model's mesh, used to avoid repeated lookups from the name
+	 *     stored in the model.
+	 */
+	ModelRef(const std::string& modelName, Model& model, Mesh& mesh);
 
 	/**
-	 * Casts the mesh object to the specified type.
-	 * Only should be called from the rendering engine.
-	 * @return The mesh object cast to the given type.
+	 * Decrements the model's reference count.
 	 */
-	template<typename T> std::shared_ptr<T> getMesh() {
-		return std::static_pointer_cast<T>(mesh);
-	}
+	~ModelRef();
 
-	std::shared_ptr<RenderMeshObject> mesh;
-	std::string texture;
-	AxisAlignedBB meshBox;
-	float radius;
-	std::string shader;
-	LightInfo lighting;
-	bool viewCull;
+	/**
+	 * Returns the model this reference is referencing. The returned
+	 * reference is only guarenteed to have the same lifespan as the
+	 * reference object it was retrieved from.
+	 */
+	const Model& getModel() { return model; }
+
+	/**
+	 * Gets the model's mesh, has same restrictions as the model.
+	 */
+	const Mesh& getMesh() { return mesh; }
+
+	/**
+	 * Gets the name of the model this reference is referencing.
+	 */
+	const std::string& getName() { return modelName; }
+
+private:
+	//The model this object is referencing.
+	Model& model;
+	//The model's mesh.
+	Mesh& mesh;
+	//The name of the above model.
+	const std::string& modelName;
 };

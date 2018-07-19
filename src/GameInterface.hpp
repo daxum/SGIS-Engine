@@ -19,6 +19,7 @@
 #pragma once
 
 #include <memory>
+
 #include "TextureLoader.hpp"
 #include "ModelLoader.hpp"
 #include "DisplayEngine.hpp"

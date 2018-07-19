@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+
 #include "EngineConfig.hpp"
 
 enum LogLevel {

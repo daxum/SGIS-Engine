@@ -38,6 +38,12 @@ struct ModelData {
 	std::vector<uint32_t> indices;
 };
 
+struct LightInfo {
+	glm::vec3 ka;
+	glm::vec3 ks;
+	float s;
+};
+
 class ModelLoader {
 public:
 	/**
@@ -60,7 +66,6 @@ public:
 	 * @param texture The texture to use for the model.
 	 * @param shader The shader to use for the model.
 	 * @param lighting The lighting information for the model.
-	 * @param pass The render pass to render the model in.
 	 * @param viewCull Whether to cull the object when it can't be seen by the camera.
 	 */
 	void loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, bool viewCull = true);
