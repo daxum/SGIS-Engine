@@ -24,7 +24,7 @@ std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
 	Model& model = modelMap.at(modelName);
 	Mesh& mesh = meshMap.at(model.mesh);
 
-	std::shared_ptr<ModelRef> ref = std::make_shared<ModelRef>(modelName, model, mesh);
+	std::shared_ptr<ModelRef> ref = std::make_shared<ModelRef>(this, modelName, model, mesh);
 
 	mesh.addUser();
 	model.references++;

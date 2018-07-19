@@ -17,5 +17,35 @@
  ******************************************************************************/
 
 #include "Model.hpp"
+#include "ModelManager.hpp"
 
-/** TODO **/
+Mesh::Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const AxisAlignedBB& box, float radius) :
+	vertexData(new unsigned char[vertices.at(0).getSize() * vertices.size()]),
+	vertexSize(vertices.at(0).getSize() * vertices.size()),
+	indices(indices),
+	buffer(buffer),
+	box(box),
+	radius(radius),
+	users(0) {
+
+	size_t vertSize = vertices.at(0).getSize();
+	size_t offset = 0;
+
+	//Copy over all vertex data
+	for (const Vertex& vertex : vertices) {
+		memcpy(&vertexData[offset], vertex.getData(), vertSize);
+		offset += vertSize;
+	}
+}
+
+ModelRef::ModelRef(ModelManager* manager, const std::string& modelName, Model& model, Mesh& mesh) :
+	manager(manager),
+	model(model),
+	mesh(mesh),
+	modelName(modelName) {
+
+}
+
+ModelRef::~ModelRef() {
+	manager->removeReference(modelName);
+}

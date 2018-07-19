@@ -26,6 +26,8 @@
 #include "AxisAlignedBB.hpp"
 #include "Vertex.hpp"
 
+class ModelManager;
+
 class Mesh {
 public:
 	/**
@@ -33,8 +35,11 @@ public:
 	 * @param buffer The buffer to place the mesh in for rendering.
 	 * @param vertices The vertices for the mesh. Their internal data is copied into the mesh.
 	 * @param indices The index data for the mesh.
+	 * TODO: calculate two below in constructor.
+	 * @param box The bounding box for the mesh.
+	 * @param radius The radius of the mesh.
 	 */
-	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const AxisAlignedBB& box, float radius);
 
 	/**
 	 * Gets the buffer the mesh is stored in.
@@ -119,12 +124,13 @@ class ModelRef {
 public:
 	/**
 	 * Creates a reference to the given model.
+	 * @param manager The model manager that created this reference.
 	 * @param modelName The name of the model this reference is referencing.
 	 * @param model The model to reference.
 	 * @param mesh The model's mesh, used to avoid repeated lookups from the name
 	 *     stored in the model.
 	 */
-	ModelRef(const std::string& modelName, Model& model, Mesh& mesh);
+	ModelRef(ModelManager* manager, const std::string& modelName, Model& model, Mesh& mesh);
 
 	/**
 	 * Decrements the model's reference count.
@@ -149,6 +155,8 @@ public:
 	const std::string& getName() { return modelName; }
 
 private:
+	//The parent model manager.
+	ModelManager* manager;
 	//The model this object is referencing.
 	Model& model;
 	//The model's mesh.
