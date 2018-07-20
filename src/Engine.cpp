@@ -32,6 +32,7 @@ Engine::Engine(const EngineConfig& config) :
 	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
 	display(),
 	modelManager(config.modelLog),
+	modelLoader(config.modelLog, modelManager),
 	fontManager(modelManager) {
 
 	if (instance) {
@@ -82,8 +83,7 @@ void Engine::run(GameInterface& game) {
 	game.loadTextures(renderer->getTextureLoader());
 	logger.info("Finished loading textures.");
 
-	//game.loadModels(modelManager.getLoader());
-	throw std::runtime_error("Uncomment model loading in Engine.cpp line 84 and remove this error!");
+	game.loadModels(modelLoader);
 	logger.info("Finished loading models.");
 
 	game.loadScreens(display);

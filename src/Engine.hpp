@@ -116,6 +116,8 @@ private:
 	std::shared_ptr<RenderingEngine> renderer;
 	//Manages all models loaded by the game
 	ModelManager modelManager;
+	//Loads static models for the game.
+	ModelLoader modelLoader;
 	//Manages all loaded fonts
 	FontManager fontManager;
 
