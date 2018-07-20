@@ -43,8 +43,15 @@ public:
 
 	/**
 	 * Gets the buffer the mesh is stored in.
+	 * @return the vertex buffer this mesh belongs to.
 	 */
 	const std::string& getBuffer() const { return buffer; }
+
+	/**
+	 * Gets the mesh's bounding box.
+	 * @return the bounding box of the mesh.
+	 */
+	const AxisAlignedBB& getBox() const { return box; }
 
 	/**
 	 * Adds a user to this mesh.

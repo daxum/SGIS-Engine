@@ -41,7 +41,7 @@ public:
 	 * @param color The color to render the object as.
 	 * @param renderScale The scale of the object.
 	 */
-	RenderComponent(const Model& model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
+	RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Returns the translation of this object.
@@ -83,13 +83,13 @@ public:
 	 * Returns the model to be used in rendering this object.
 	 * @return The model.
 	 */
-	const Model& getModel() { return model; }
+	std::shared_ptr<const ModelRef> getModel() { return model; }
 
 	/**
 	 * Changes the component's model to the specified one.
 	 * @param newModel The new model to use.
 	 */
-	void setModel(const Model& newModel);
+	void setModel(std::shared_ptr<ModelRef> newModel);
 
 	/**
 	 * Only to be called from RenderComponentManager.
@@ -98,7 +98,7 @@ public:
 
 private:
 	//Which model to use for this object.
-	Model model;
+	std::shared_ptr<ModelRef> model;
 
 	//The color of the object
 	glm::vec3 color;

@@ -27,14 +27,32 @@ Font& FontManager::addFont(const std::string& name, int spaceWidth, size_t size)
 	return fontMap.at(name);
 }
 
-Model FontManager::createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader) {
+std::shared_ptr<ModelRef> FontManager::createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer) {
+	std::string meshName = getMeshName(fontName, text, buffer);
+
+	if (!modelManager.hasMesh(meshName)) {
+		createTextMesh(fontName, text, buffer);
+	}
+
+	std::string modelName = meshName + shader + "_mdl__";
+
+	if (!modelManager.hasModel(modelName)) {
+		modelManager.addModel(modelName, Model(meshName, shader, true));
+	}
+
+	return modelManager.getModel(modelName);
+}
+
+void FontManager::createTextMesh(const std::string& fontName, const std::u32string& text, const std::string& buffer) {
 	float xPos = 0.0f;
 	float yPos = 0.0f;
 
 	const Font& font = fontMap.at(fontName);
 
-	std::vector<TextVertex> vertices;
+	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
+
+	VertexBuffer& vertexBuffer = modelManager.getVertexBuffer(buffer);
 
 	float farthestX = 0.0f;
 	float lowestY = 0.0f;
@@ -60,14 +78,24 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 
 		//Place vertices.
 
+		Vertex vertex = vertexBuffer.getVertex();
+
 		//Top left
-		vertices.push_back({glm::vec2(xPos + data.bearing.x, baseline + data.bearing.y), glm::vec2(data.fPos.x, data.fPos.y)});
+		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x, baseline + data.bearing.y));
+		vertex.setVec2("tex", glm::vec2(data.fPos.x, data.fPos.y));
+		vertices.push_back(vertex);
 		//Top right
-		vertices.push_back({glm::vec2(xPos + data.bearing.x + data.size.x, baseline + data.bearing.y), glm::vec2(data.fPos.z, data.fPos.y)});
+		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x + data.size.x, baseline + data.bearing.y));
+		vertex.setVec2("tex", glm::vec2(data.fPos.z, data.fPos.y));
+		vertices.push_back(vertex);
 		//Bottom left
-		vertices.push_back({glm::vec2(xPos + data.bearing.x, baseline - (data.size.y - data.bearing.y)), glm::vec2(data.fPos.x, data.fPos.w)});
+		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x, baseline - (data.size.y - data.bearing.y)));
+		vertex.setVec2("tex", glm::vec2(data.fPos.x, data.fPos.w));
+		vertices.push_back(vertex);
 		//Bottom right
-		vertices.push_back({glm::vec2(xPos + data.bearing.x + data.size.x, baseline - (data.size.y - data.bearing.y)), glm::vec2(data.fPos.z, data.fPos.w)});
+		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x + data.size.x, baseline - (data.size.y - data.bearing.y)));
+		vertex.setVec2("tex", glm::vec2(data.fPos.z, data.fPos.w));
+		vertices.push_back(vertex);
 
 		//Add indices.
 
@@ -82,18 +110,24 @@ Model FontManager::createTextModel(const std::string& fontName, const std::u32st
 		lowestY = std::min(baseline - (data.size.y - data.bearing.y), lowestY);
 	}
 
-	//Temporary, fix models later.
-	LightInfo fontLight = {
-		glm::vec3(1.0, 1.0, 1.0),
-		glm::vec3(1.0, 1.0, 1.0),
-		1.0f
-	};
-
 	float radius = glm::length(glm::vec2(farthestX, lowestY)) / 2.0f;
 	AxisAlignedBB box(glm::vec3(0.0, lowestY, -0.01), glm::vec3(farthestX, 0.0, 0.01));
 
-	std::shared_ptr<RenderMeshObject> modelData = renderer->getMemoryManager()->addTextMesh(vertices, indices);
-	Model textModel(modelData, box, radius, font.getTexture(), shader, fontLight);
+	modelManager.addMesh(getMeshName(fontName, text, buffer), Mesh(buffer, vertices, indices, box, radius));
+}
 
-	return textModel;
+std::string FontManager::getMeshName(const std::string& fontName, const std::u32string& text, const std::string& buffer) const {
+	std::string out = "__fnt_mng_mesh_";
+	out += fontName + "_";
+
+	//I wouldn't try to print this
+	const unsigned char* textPtr = (const unsigned char*) text.data();
+
+	for (size_t i = 0; i < text.size() * 4; i++) {
+		out += textPtr[i];
+	}
+
+	out += std::string("_") + buffer + "__";
+
+	return out;
 }

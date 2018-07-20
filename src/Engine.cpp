@@ -32,7 +32,7 @@ Engine::Engine(const EngineConfig& config) :
 	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
 	display(),
 	modelManager(config.modelLog),
-	fontManager(renderer) {
+	fontManager(modelManager) {
 
 	if (instance) {
 		throw std::runtime_error("Engine already initialized!");

@@ -17,11 +17,11 @@ set(ENGINE_FILES
 	PhysicsComponent.cpp
 	Object.cpp
 	BoxPhysicsObject.cpp
-	RenderComponentManager.cpp
+	#RenderComponentManager.cpp
 	InputHandler.cpp
 	GuiComponentManager.cpp
-	#FontManager.cpp
-	#TextComponent.cpp
+	FontManager.cpp
+	TextComponent.cpp
 	SplineAnimation.cpp
 	AnimationComponent.cpp
 	GlfwInterface.cpp

@@ -63,6 +63,18 @@ public:
 	}
 
 	/**
+	 * Returns whether a mesh with the provided name has already been uploaded.
+	 * @return true if the mesh exists, false otherwise.
+	 */
+	bool hasMesh(const std::string& name) const { return meshMap.count(name); }
+
+	/**
+	 * Returns whether a model with the provided name has already been uploaded.
+	 * @return true if the model exists, false otherwise.
+	 */
+	bool hasModel(const std::string name) const { return modelMap.count(name); }
+
+	/**
 	 * Adds a model to the manager. The mesh the model references will have its
 	 * reference count increased, but will not be uploaded to the renderer until
 	 * the model is referenced. The model will also never be removed until it is
@@ -89,6 +101,13 @@ public:
 	 * @param manager A pointer the renderer's memory manager.
 	 */
 	void setMemoryManager(RendererMemoryManager* manager) { memoryManager = manager; }
+
+	/**
+	 * Fetches a vertex buffer from the memory manager, to allow model loaders to get
+	 * vertex formats.
+	 * @param name The buffer to get.
+	 */
+	VertexBuffer& getVertexBuffer(const std::string& name) { return memoryManager->getBuffer(name); }
 
 private:
 	//The logger

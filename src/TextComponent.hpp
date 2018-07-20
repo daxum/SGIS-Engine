@@ -41,11 +41,12 @@ public:
 	 * @param text The text to render.
 	 * @param font The font to use.
 	 * @param shader The shader to use to render the text.
+	 * @param buffer The buffer for the text model to reside in.
 	 * @param scale The scale of the text. Might need to be rather small for
 	 *     large font sizes.
 	 * @param color The color of the text.
 	 */
-	TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0), glm::vec3 color = glm::vec3(0.0, 0.0, 0.0));
+	TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0), glm::vec3 color = glm::vec3(0.0, 0.0, 0.0));
 
 	/**
 	 * Frees the text's model from the fontmanager.
@@ -71,7 +72,7 @@ public:
 	void setFont(const std::string& font);
 
 	/**
-	 * Sets the model's shader.
+	 * Sets the model's shader. Also regenerates the text model.
 	 * @param shader The new shader.
 	 */
 	void setShader(const std::string& shader);
@@ -93,9 +94,8 @@ public:
 
 private:
 	std::string currentFont;
-	std::string currentShader;
 	std::u32string currentText;
-	Model textModel;
+	std::shared_ptr<ModelRef> textModel;
 
 	//Only used in onParentSet.
 	glm::vec3 initScale;

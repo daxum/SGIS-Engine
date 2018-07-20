@@ -22,17 +22,17 @@
 #include <memory>
 
 #include "Font.hpp"
-#include "RenderingEngine.hpp"
+#include "ModelManager.hpp"
 #include "AxisAlignedBB.hpp"
 
 //Stores all the fonts used by the game.
 class FontManager {
 public:
 	/**
-	 * Creates a font. Uses same pointer-reference shenanigans as ModelLoader.
-	 * @param renderer The rendering engine to use.
+	 * Creates a font manager.
+	 * @param modelManager The model manager to load text models to.
 	 */
-	FontManager(std::shared_ptr<RenderingEngine>& renderer) : renderer(renderer) {}
+	FontManager(ModelManager& modelManager) : modelManager(modelManager) {}
 
 	/**
 	 * Creates an empty font with the given name.
@@ -47,13 +47,32 @@ public:
 	 * Creates a model for the given text using the provided font.
 	 * @param fontName The name of the font to use.
 	 * @param text The text to generate a model for.
-	 * @return a model for the given text.
+	 * @param shader The shader to use to render the text.
+	 * @param buffer The buffer to upload the text model to.
+	 * @return a reference to a model for the given text.
 	 */
-	Model createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader);
+	std::shared_ptr<ModelRef> createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer);
 
 private:
-	//The rendering engine.
-	std::shared_ptr<RenderingEngine>& renderer;
+	//The model manager.
+	ModelManager& modelManager;
 	//A map of fonts.
 	std::unordered_map<std::string, Font> fontMap;
+
+	/**
+	 * Creates a mesh object for the given text and adds it to the model manager.
+	 * @param fontName The font to use.
+	 * @param text The text to generate a mesh for.
+	 * @param buffer The buffer to upload the mesh to.
+	 */
+	void createTextMesh(const std::string& fontName, const std::u32string& text, const std::string& buffer);
+
+	/**
+	 * Generates a unique name for a text mesh based on its creation parameters.
+	 * @param fontName The name of the font.
+	 * @param text The text the mesh contains.
+	 * @param buffer The buffer the mesh is loaded into.
+	 * @return a unique name for the mesh.
+	 */
+	std::string getMeshName(const std::string& fontName, const std::u32string& text, const std::string& buffer) const;
 };
