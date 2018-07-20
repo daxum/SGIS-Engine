@@ -7,7 +7,7 @@ set(ENGINE_FILES
 	Logger.cpp
 	DisplayEngine.cpp
 	Screen.cpp
-	#RenderComponent.cpp
+	RenderComponent.cpp
 	ComponentManager.cpp
 	AIComponentManager.cpp
 	PhysicsComponentManager.cpp

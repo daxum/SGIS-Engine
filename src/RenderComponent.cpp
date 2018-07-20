@@ -17,21 +17,18 @@
  ******************************************************************************/
 
 #include "RenderComponent.hpp"
-#include "AxisAlignedBB.hpp"
-#include "Object.hpp"
-#include "PhysicsComponent.hpp"
 #include "Engine.hpp"
 #include "RenderComponentManager.hpp"
 
 RenderComponent::RenderComponent(std::string model, glm::vec3 color, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
-	model(Engine::instance->getModelManager().getModel(model)),
+	model(Engine::instance->getModel(model)),
 	color(color),
 	scale(renderScale) {
 
 }
 
-RenderComponent::RenderComponent(const Model& model, glm::vec3 color, glm::vec3 renderScale) :
+RenderComponent::RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 color, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
 	model(model),
 	color(color),
@@ -55,8 +52,8 @@ glm::vec3 RenderComponent::getColor() {
 	return color;
 }
 
-void RenderComponent::setModel(const Model& newModel) {
-	const Model oldModel = model;
+void RenderComponent::setModel(std::shared_ptr<ModelRef> newModel) {
+	std::shared_ptr<ModelRef> oldModel = model;
 	model = newModel;
 
 	if (manager) {

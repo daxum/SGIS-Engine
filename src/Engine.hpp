@@ -66,10 +66,14 @@ public:
 	void run(GameInterface& game);
 
 	/**
-	 * Returns the model manager for this engine. Const because it should
-	 * only be used for looking up model properties.
+	 * Retrieves a model from the model manager. This used to expose the entire
+	 * manager, but some of the public functions can do very bad things if called
+	 * at the wrong time.
+	 * @param name The name of the model to retreive.
+	 * @return A reference to the requested model.
+	 * @throw std::out_of_range if the model isn't present.
 	 */
-	const ModelManager& getModelManager() const { return modelManager; }
+	std::shared_ptr<ModelRef> getModel(const std::string& name) { return modelManager.getModel(name); }
 
 	/**
 	 * Gets the configuration the engine was created with.

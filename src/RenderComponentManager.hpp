@@ -54,7 +54,7 @@ public:
 	 * @param renderComp The component to reload.
 	 * @param oldModel The model the component previously used.
 	 */
-	void reloadComponent(std::shared_ptr<RenderComponent> renderComp, const Model& oldModel);
+	void reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::shared_ptr<ModelRef> oldModel);
 
 private:
 	//Sorts all RenderComponents by their shader for less context switching.
@@ -77,5 +77,5 @@ private:
 	 * @param model The model of the render component to fetch the set for.
 	 * @return The set the component belongs in.
 	 */
-	std::unordered_set<std::shared_ptr<RenderComponent>>& getComponentSet(const Model& model);
+	std::unordered_set<std::shared_ptr<RenderComponent>>& getComponentSet(std::shared_ptr<ModelRef> model);
 };
