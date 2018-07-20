@@ -64,7 +64,7 @@ void ModelManager::removeReference(const std::string& modelName) {
 	mesh.removeUser();
 
 	if (mesh.getUsers() == 0) {
-		logger.debug("Removing unused mesh \"" + model.mesh + "\"from vertex buffers...");
+		logger.debug("Removing unused mesh \"" + model.mesh + "\" from vertex buffers...");
 		memoryManager->freeMesh(model.mesh, mesh.getBuffer());
 
 		//If mesh is not persistent, completely remove it
