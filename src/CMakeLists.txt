@@ -17,7 +17,7 @@ set(ENGINE_FILES
 	PhysicsComponent.cpp
 	Object.cpp
 	BoxPhysicsObject.cpp
-	#RenderComponentManager.cpp
+	RenderComponentManager.cpp
 	InputHandler.cpp
 	GuiComponentManager.cpp
 	FontManager.cpp

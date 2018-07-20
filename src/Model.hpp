@@ -149,17 +149,17 @@ public:
 	 * reference is only guarenteed to have the same lifespan as the
 	 * reference object it was retrieved from.
 	 */
-	const Model& getModel() { return model; }
+	const Model& getModel() const { return model; }
 
 	/**
 	 * Gets the model's mesh, has same restrictions as the model.
 	 */
-	const Mesh& getMesh() { return mesh; }
+	const Mesh& getMesh() const { return mesh; }
 
 	/**
 	 * Gets the name of the model this reference is referencing.
 	 */
-	const std::string& getName() { return modelName; }
+	const std::string& getName() const { return modelName; }
 
 private:
 	//The parent model manager.

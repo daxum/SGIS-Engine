@@ -34,14 +34,14 @@ void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) 
 	renderComp->setManager(nullptr);
 }
 
-void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> renderComp, const Model& oldModel) {
-	const Model& model = renderComp->getModel();
+void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::shared_ptr<const ModelRef> oldModel) {
+	std::shared_ptr<const ModelRef> model = renderComp->getModel();
 
 	getComponentSet(oldModel).erase(renderComp);
 	getComponentSet(model).insert(renderComp);
 }
 
-std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(const Model& model) {
+std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(std::shared_ptr<const ModelRef> model) {
 	//TODO: Fix
-	return renderComponents.at(0)[model.shader];
+	return renderComponents.at(0)[model->getModel().shader];
 }
