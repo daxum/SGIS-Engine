@@ -52,8 +52,17 @@ void Vertex::setData(const std::string& name, VertexElementType expectedType, co
 	if (!buffer->checkType(name, expectedType)) {
 		throw std::runtime_error("Type for vertex element \"" + name + "\" doesn't match!");
 	}
+
 	size_t offset = buffer->getElementOffset(name);
 	size_t dataSize = buffer->getElementSize(name);
 
 	memcpy(vertexData + offset, data, dataSize);
+}
+
+void* Vertex::getData(const std::string& name, VertexElementType expectedType) {
+	if (!buffer->checkType(name, expectedType)) {
+		throw std::runtime_error("Type for vertex element \"" + name + "\" doesn't match!");
+	}
+
+	return vertexData + buffer->getElementOffset(name);
 }

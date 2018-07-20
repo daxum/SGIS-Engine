@@ -18,16 +18,14 @@
 
 #include <stdexcept>
 #include <unordered_map>
+
 #include "ModelLoader.hpp"
-#include "RenderingEngine.hpp"
-#include "Engine.hpp"
+#include "ModelManager.hpp"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, bool viewCull) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename);
-	//Always static for now
-	std::shared_ptr<RenderMeshObject> mesh = renderer->getMemoryManager()->addStaticMesh(data->vertices, data->indices);
+void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const LightInfo& lighting, bool viewCull) {
+	std::shared_ptr<ModelData> data = loadFromDisk(filename, buffer);
 
 	AxisAlignedBB box = calculateBox(data);
 	logger.debug("Calculated box " + box.toString() + " for model " + name);
@@ -35,11 +33,17 @@ void ModelLoader::loadModel(std::string name, std::string filename, std::string 
 	float radius = calculateMaxRadius(data, box.getCenter());
 	logger.debug("Radius of model is " + std::to_string(radius));
 
-	models.insert(std::make_pair(name, Model(mesh, box, radius, texture, shader, lighting, viewCull)));
+	//TODO: load meshes separately to share between models.
+	modelManager.addMesh(name, Mesh(buffer, data->vertices, data->indices, box, radius));
+
+	Model model(name, shader, viewCull);
+	model.uniformMap.insert({"light", std::make_shared<LightInfo>(lighting)});
+
+	modelManager.addModel(name, model);
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 
-std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
+std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const std::string& vertexBuffer) {
 	std::shared_ptr<ModelData> data = std::make_shared<ModelData>();
 
 	logger.debug("Loading model \"" + filename + "\".");
@@ -54,32 +58,33 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 		throw std::runtime_error(error);
 	}
 
+	VertexBuffer& buffer = modelManager.getVertexBuffer(vertexBuffer);
 	std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
 	for (const tinyobj::shape_t& shape : shapes) {
 		for (const tinyobj::index_t& index : shape.mesh.indices) {
-			Vertex vertex = {};
+			Vertex vertex = buffer.getVertex();
 
-			vertex.pos = {
+			vertex.setVec3(VERTEX_ELEMENT_POSITION, glm::vec3(
 				attributes.vertices[3 * index.vertex_index],
 				attributes.vertices[3 * index.vertex_index + 1],
 				attributes.vertices[3 * index.vertex_index + 2]
-			};
+			));
 
-			vertex.normal = {
+			vertex.setVec3(VERTEX_ELEMENT_NORMAL, glm::vec3(
 				attributes.normals[3 * index.normal_index],
 				attributes.normals[3 * index.normal_index + 1],
 				attributes.normals[3 * index.normal_index + 2]
-			};
+			));
 
 			if (!attributes.texcoords.empty()) {
-				vertex.texCoords = {
+				vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(
 					attributes.texcoords[2 * index.texcoord_index],
 					attributes.texcoords[2 * index.texcoord_index + 1]
-				};
+				));
 			}
 			else {
-				vertex.texCoords = {0.0, 0.0};
+				vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(0.0, 0.0));
 			}
 
 			if (uniqueVertices.count(vertex) == 0) {
@@ -87,14 +92,14 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(std::string filename) {
 				data->vertices.push_back(vertex);
 			}
 
-			data->indices.push_back(uniqueVertices[vertex]);
+			data->indices.push_back(uniqueVertices.at(vertex));
 		}
 	}
 
 	logger.debug("File \"" + filename + "\" loaded from disk. Stats:" +
 				 "\n\tVertices:          " + std::to_string(data->vertices.size()) +
 				 "\n\tIndices:           " + std::to_string(data->indices.size()) +
-				 "\n\tTotal loaded size: " + std::to_string(data->vertices.size() * sizeof(Vertex) + data->indices.size() * sizeof(uint32_t)) + " bytes");
+				 "\n\tTotal loaded size: " + std::to_string(data->vertices.size() * (data->vertices.empty() ? 0 : data->vertices.at(0).getSize()) + data->indices.size() * sizeof(uint32_t)) + " bytes");
 
 	return data;
 }
@@ -105,11 +110,11 @@ AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) {
 		return AxisAlignedBB(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
 	}
 
-	glm::vec3 max(data->vertices[0].pos.x, data->vertices[0].pos.y, data->vertices[0].pos.z);
+	glm::vec3 max = data->vertices.at(0).getVec3(VERTEX_ELEMENT_POSITION);
 	glm::vec3 min(max);
 
 	for (size_t i = 1; i < data->vertices.size(); i++) {
-		const glm::vec3& current = data->vertices[i].pos;
+		const glm::vec3 current = data->vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
 
 		max.x = std::max(max.x, current.x);
 		max.y = std::max(max.y, current.y);
@@ -132,7 +137,7 @@ float ModelLoader::calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3
 	float maxDistSq = 0.0f;
 
 	for (size_t i = 0; i < data->vertices.size(); i++) {
-		const glm::vec3& current = data->vertices[i].pos;
+		const glm::vec3 current = data->vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
 
 		float vertDistSq = glm::dot(current, current);
 

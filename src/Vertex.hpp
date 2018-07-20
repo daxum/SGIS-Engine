@@ -27,6 +27,11 @@
 
 class VertexBuffer;
 
+//Some vertex element names, to prevent mistyping.
+const std::string VERTEX_ELEMENT_POSITION = "pos";
+const std::string VERTEX_ELEMENT_NORMAL = "nor";
+const std::string VERTEX_ELEMENT_TEXTURE = "tex";
+
 enum class VertexElementType {
 	FLOAT,
 	VEC2,
@@ -79,6 +84,19 @@ public:
 	void setVec2(const std::string& name, const glm::vec2& value) { setData(name, VertexElementType::VEC2, &value); }
 	void setVec3(const std::string& name, const glm::vec3& value) { setData(name, VertexElementType::VEC3, &value); }
 	void setVec4(const std::string& name, const glm::vec4& value) { setData(name, VertexElementType::VEC4, &value); }
+
+	/**
+	 * "Getting" functions, gets the value of the name in the data buffer.
+	 * If the name was never set, these have undefined behaviour!
+	 * @param name The name to get.
+	 * @return The value stored at the name.
+	 * @throw std::out_of_range if the name doesn't exist or std::runtime_error if the type
+	 *     for the name doesn't match the function's type.
+	 */
+	float getFloat(const std::string& name) { return *(float*) getData(name, VertexElementType::FLOAT); }
+	glm::vec2 getVec2(const std::string& name) { return *(glm::vec2*) getData(name, VertexElementType::VEC2); }
+	glm::vec3 getVec3(const std::string& name) { return *(glm::vec3*) getData(name, VertexElementType::VEC3); }
+	glm::vec4 getVec4(const std::string& name) { return *(glm::vec4*) getData(name, VertexElementType::VEC4); }
 
 	/**
 	 * Returns the vertex data for copying into a buffer.
@@ -159,6 +177,15 @@ private:
 	 * @throw std::out_of_range if name not found or std::runtime_error if name's type doesn't match expectedType.
 	 */
 	void setData(const std::string& name, VertexElementType expectedType, const void* data);
+
+	/**
+	 * Helper function for the get* functions. Gets the stored value in the data buffer.
+	 * @param name The elements name.
+	 * @param expectedType The type of the retrieved element, checked against the vertex format.
+	 * @return The data stored at the given name.
+	 * @throw std::out_of_range if name not found, std::runtime_error if name has the wrong type.
+	 */
+	void* getData(const std::string& name, VertexElementType expectedType);
 };
 
 namespace std {

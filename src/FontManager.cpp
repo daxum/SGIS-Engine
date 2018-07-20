@@ -81,20 +81,20 @@ void FontManager::createTextMesh(const std::string& fontName, const std::u32stri
 		Vertex vertex = vertexBuffer.getVertex();
 
 		//Top left
-		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x, baseline + data.bearing.y));
-		vertex.setVec2("tex", glm::vec2(data.fPos.x, data.fPos.y));
+		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x, baseline + data.bearing.y));
+		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.x, data.fPos.y));
 		vertices.push_back(vertex);
 		//Top right
-		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x + data.size.x, baseline + data.bearing.y));
-		vertex.setVec2("tex", glm::vec2(data.fPos.z, data.fPos.y));
+		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x + data.size.x, baseline + data.bearing.y));
+		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.z, data.fPos.y));
 		vertices.push_back(vertex);
 		//Bottom left
-		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x, baseline - (data.size.y - data.bearing.y)));
-		vertex.setVec2("tex", glm::vec2(data.fPos.x, data.fPos.w));
+		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x, baseline - (data.size.y - data.bearing.y)));
+		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.x, data.fPos.w));
 		vertices.push_back(vertex);
 		//Bottom right
-		vertex.setVec2("pos", glm::vec2(xPos + data.bearing.x + data.size.x, baseline - (data.size.y - data.bearing.y)));
-		vertex.setVec2("tex", glm::vec2(data.fPos.z, data.fPos.w));
+		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x + data.size.x, baseline - (data.size.y - data.bearing.y)));
+		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.z, data.fPos.w));
 		vertices.push_back(vertex);
 
 		//Add indices.

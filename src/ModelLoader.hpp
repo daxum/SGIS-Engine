@@ -22,24 +22,23 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
-#include <unordered_map>
 
 #include "Vertex.hpp"
 #include "Logger.hpp"
-#include "Model.hpp"
 #include "AxisAlignedBB.hpp"
 
-class RenderingEngine;
+class ModelManager;
 
 struct ModelData {
-	//The vertices in the model's mesh
+	//The vertices in the model's mesh.
 	std::vector<Vertex> vertices;
-	//The indices for the draw order of the vertices
+	//The indices for the draw order of the vertices.
 	std::vector<uint32_t> indices;
 };
 
 struct LightInfo {
 	glm::vec3 ka;
+	glm::vec3 kd;
 	glm::vec3 ks;
 	float s;
 };
@@ -48,11 +47,12 @@ class ModelLoader {
 public:
 	/**
 	 * Constructs a model loader.
-	 * @param renderer The rendering engine to upload models to.
-	 * @param modelMap The map to store loaded models in.
-	 * @param logger The logger to use.
+	 * @param logConfig The configuration for the logger.
+	 * @param modelManager The manager to load the models to.
 	 */
-	ModelLoader(std::shared_ptr<RenderingEngine>& renderer, std::unordered_map<std::string, Model>& modelMap, Logger& logger) : logger(logger), renderer(renderer), models(modelMap) {}
+	ModelLoader(const LogConfig& logConfig, ModelManager& modelManager) :
+		logger(logConfig.type, logConfig.mask, logConfig.outputFile),
+		modelManager(modelManager) {}
 
 	/**
 	 * Virtual destructor, does nothing.
@@ -61,34 +61,32 @@ public:
 
 	/**
 	 * Loads a model from disk and makes it ready for use in drawing.
+	 * This is a temporary interface until the model loader gets rewritten
+	 * to be more flexible. For now, it only supports .obj models.
 	 * @param name The name to store the loaded model under.
 	 * @param filename The filename for the model to load.
 	 * @param texture The texture to use for the model.
 	 * @param shader The shader to use for the model.
+	 * @param buffer The buffer the model's mesh goes in.
 	 * @param lighting The lighting information for the model.
 	 * @param viewCull Whether to cull the object when it can't be seen by the camera.
 	 */
-	void loadModel(std::string name, std::string filename, std::string texture, std::string shader, LightInfo lighting, bool viewCull = true);
+	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const LightInfo& lighting, bool viewCull = true);
 
 protected:
-	//The logger
-	Logger& logger;
-
-	//The rendering engine used. Keeping a reference is rather silly and
-	//mostly undesired, but it solves the initialization order problem in Engine.
-	//Hopefully can find a better way later.
-	std::shared_ptr<RenderingEngine>& renderer;
-
-	//A map to load models to.
-	std::unordered_map<std::string, Model>& models;
+	//The logger.
+	Logger logger;
+	//Model manager to load models to.
+	ModelManager& modelManager;
 
 	/**
 	 * Loads a model from disk (currently only .obj is supported).
 	 * @param filename The filename of the model to load.
+	 * @param vertexBuffer The buffer the mesh goes in, determines vertex format.
 	 * @return a pointer to the loaded model data.
 	 * @throw runtime_error if model loading failed.
 	 */
-	std::shared_ptr<ModelData> loadFromDisk(std::string filename);
+	std::shared_ptr<ModelData> loadFromDisk(const std::string& filename, const std::string& vertexBuffer);
 
 	/**
 	 * Calculates a bounding box for a model's mesh.

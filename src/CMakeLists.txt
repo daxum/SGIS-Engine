@@ -2,7 +2,7 @@ set(ENGINE_FILES
 	Engine.cpp
 	TextureLoader.cpp
 	ExtraMath.cpp
-	#ModelLoader.cpp
+	ModelLoader.cpp
 	Model.cpp
 	Logger.cpp
 	DisplayEngine.cpp
