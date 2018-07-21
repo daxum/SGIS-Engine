@@ -24,8 +24,8 @@
 
 //Render passes for the engine.
 //Each shader is part of one render pass.
-enum RenderPass {
-	OPAQUE = 0,
+enum class RenderPass {
+	OPAQUE,
 	TRANSPARENT,
 	TRANSLUCENT
 };

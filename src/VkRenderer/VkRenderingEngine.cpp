@@ -111,7 +111,23 @@ void VkRenderingEngine::finishLoad() {
 	/** TODO **/
 }
 
-void VkRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+void VkRenderingEngine::clearBuffers() {
+	/** TODO **/
+}
+
+void VkRenderingEngine::present() {
+	/** TODO **/
+}
+
+void VkRenderingEngine::setViewport(int width, int height) {
+	//Width / height unused, retrieved from window interface in below function.
+	vkDeviceWaitIdle(objectHandler.getDevice());
+	vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
+	objectHandler.recreateSwapchain();
+	commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
+}
+
+void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
 	//Crash if a frame takes too long to render - this usually happens because something is wrong with the fences. There are 9 0's in the second number below.
 	if (vkWaitForFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame), VK_TRUE, 20u * 1000000000u) == VK_TIMEOUT) {
 		throw std::runtime_error("Fence wait timed out!");
@@ -175,20 +191,4 @@ void VkRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std
 	}
 
 	currentFrame = (currentFrame + 1) % MAX_ACTIVE_FRAMES;
-}
-
-void VkRenderingEngine::clearBuffers() {
-	/** TODO **/
-}
-
-void VkRenderingEngine::present() {
-	/** TODO **/
-}
-
-void VkRenderingEngine::setViewport(int width, int height) {
-	//Width / height unused, retrieved from window interface in below function.
-	vkDeviceWaitIdle(objectHandler.getDevice());
-	vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
-	objectHandler.recreateSwapchain();
-	commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
 }

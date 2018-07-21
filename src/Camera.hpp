@@ -28,13 +28,13 @@ public:
 	 * Calculates a view matrix to use in rendering.
 	 * @return the view matrix.
 	 */
-	virtual glm::mat4 getView() = 0;
+	virtual glm::mat4 getView() const = 0;
 
 	/**
 	 * Fetches a projection matrix.
 	 * @return the projection matrix.
 	 */
-	virtual glm::mat4 getProjection() = 0;
+	virtual glm::mat4 getProjection() const = 0;
 
 	/**
 	 * Called whenever the window changes to reset the projection matrix.
@@ -45,7 +45,13 @@ public:
 	 * Retrieves the near and far plane.
 	 * @return A pair with the near plane as the first element and the far plane as the second.
 	 */
-	virtual std::pair<float, float> getNearFar() = 0;
+	virtual std::pair<float, float> getNearFar() const = 0;
+
+	/**
+	 * Gets the field of view. For orthographic projection, this should return 0.
+	 * @return The field of view.
+	 */
+	virtual float getFOV() const = 0;
 
 	/**
 	 * Updates the camera.

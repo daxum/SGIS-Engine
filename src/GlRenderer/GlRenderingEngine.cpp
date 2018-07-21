@@ -133,31 +133,6 @@ RendererMemoryManager* GlRenderingEngine::getMemoryManager() {
 	return &memoryManager;
 }
 
-void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	//Don't render without a render component.
-	if (!data) {
-		return;
-	}
-
-	MatrixStack matStack;
-
-	matStack.multiply(camera->getView());
-	const auto nearFar = camera->getNearFar();
-	const CameraBox cameraBox = getCameraCollisionData(camera->getView(), camera->getProjection(), nearFar.first, nearFar.second);
-	const RenderComponentManager::RenderPassList& transparencyPassList = data->getComponentList();
-
-	//Opaque objects
-	renderTransparencyPass(transparencyPassList.at(0), matStack, camera, cameraBox, state);
-
-	//Transparent objects
-	renderTransparencyPass(transparencyPassList.at(1), matStack, camera, cameraBox, state);
-
-	//Translucent objects
-	renderTransparencyPass(transparencyPassList.at(2), matStack, camera, cameraBox, state, true);
-
-	glBindVertexArray(0);
-}
-
 void GlRenderingEngine::clearBuffers() {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
@@ -171,6 +146,22 @@ void GlRenderingEngine::setViewport(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
+void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+	MatrixStack matStack;
+	matStack.multiply(camera->getView());
+
+	//Opaque objects
+	//renderTransparencyPass(transparencyPassList.at(0), matStack, camera, cameraBox, state);
+
+	//Transparent objects
+	//renderTransparencyPass(transparencyPassList.at(1), matStack, camera, cameraBox, state);
+
+	//Translucent objects
+	//renderTransparencyPass(transparencyPassList.at(2), matStack, camera, cameraBox, state, true);
+
+	glBindVertexArray(0);
+}
+
 void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state) {
 	matStack.push();
 
@@ -182,7 +173,7 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shad
 	matStack.pop();
 }
 
-void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state, bool blend) {
+void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
 	//TODO
 	/*
 	bool blendOn = false;
@@ -234,63 +225,4 @@ void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::Ren
 	if (blendOn) {
 		glDisable(GL_BLEND);
 	}*/
-}
-
-bool GlRenderingEngine::checkVisible(const std::pair<glm::vec3, float>& sphere, const CameraBox& camera) {
-	for (const auto& plane : camera) {
-		glm::vec3 planeVec = sphere.first - plane.first;
-		//Signed distance
-		float distance = glm::dot(planeVec, plane.second);
-
-		if (std::abs(distance) > sphere.second && distance > 0.0) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-GlRenderingEngine::CameraBox GlRenderingEngine::getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane) {
-	const RenderConfig renderConfig = Engine::instance->getConfig().renderer;
-	const float width = interface.getWindowWidth();
-	const float height = interface.getWindowHeight();
-
-	auto topLeft = ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, view, width, height, nearPlane, farPlane);
-	auto topRight = ExMath::screenToWorld(glm::vec2(width, 0.0), projection, view, width, height, nearPlane, farPlane);
-	auto bottomLeft = ExMath::screenToWorld(glm::vec2(0.0, height), projection, view, width, height, nearPlane, farPlane);
-	auto bottomRight = ExMath::screenToWorld(glm::vec2(width, height), projection, view, width, height, nearPlane, farPlane);
-
-	CameraBox posNorVec;
-
-	//Near plane
-	glm::vec3 pos = ExMath::bilinear3D(std::make_tuple(topLeft.first, topRight.first, bottomLeft.first, bottomRight.first), 0.5f, 0.5f);
-	glm::vec3 normal = glm::normalize(glm::cross(topRight.first - pos, topLeft.first - pos));
-	posNorVec[0] = std::make_pair(pos, normal);
-
-	//Right plane
-	pos = ExMath::bilinear3D(std::make_tuple(topRight.first, topRight.second, bottomRight.first, bottomRight.second), 0.5f, 0.5f);
-	normal = glm::normalize(glm::cross(bottomRight.second - pos, topRight.second - pos));
-	posNorVec[1] = std::make_pair(pos, normal);
-
-	//Far plane
-	pos = ExMath::bilinear3D(std::make_tuple(topLeft.second, topRight.second, bottomLeft.second, bottomRight.second), 0.5f, 0.5f);
-	normal = glm::normalize(glm::cross(topLeft.second - pos, topRight.second - pos));
-	posNorVec[2] = std::make_pair(pos, normal);
-
-	//Left plane
-	pos = ExMath::bilinear3D(std::make_tuple(topLeft.first, topLeft.second, bottomLeft.first, bottomLeft.second), 0.5f, 0.5f);
-	normal = glm::normalize(glm::cross(bottomLeft.first - pos, topLeft.first - pos));
-	posNorVec[3] = std::make_pair(pos, normal);
-
-	//Top plane
-	pos = ExMath::bilinear3D(std::make_tuple(topLeft.first, topRight.first, topLeft.second, topRight.second), 0.5f, 0.5f);
-	normal = glm::normalize(glm::cross(topLeft.first - pos, topRight.first - pos));
-	posNorVec[4] = std::make_pair(pos, normal);
-
-	//Bottom plane
-	pos = ExMath::bilinear3D(std::make_tuple(bottomLeft.first, bottomRight.first, bottomLeft.second, bottomRight.second), 0.5f, 0.5f);
-	normal = glm::normalize(glm::cross(bottomRight.first - pos, bottomLeft.first - pos));
-	posNorVec[5] = std::make_pair(pos, normal);
-
-	return posNorVec;
 }

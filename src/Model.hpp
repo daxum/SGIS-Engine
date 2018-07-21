@@ -69,6 +69,12 @@ public:
 	const AxisAlignedBB& getBox() const { return box; }
 
 	/**
+	 * Get's the mesh's radius.
+	 * @return The radius of the mesh.
+	 */
+	const float getRadius() const { return radius; }
+
+	/**
 	 * Adds a user to this mesh.
 	 */
 	void addUser() { users++; }

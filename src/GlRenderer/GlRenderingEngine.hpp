@@ -76,13 +76,6 @@ public:
 	void finishLoad() {}
 
 	/**
-	 * Renders the passed in object.
-	 * @param data The object to render.
-	 * @param camera The camera.
-	 */
-	void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
-
-	/**
 	 * Clears the depth and stencil buffers.
 	 */
 	void clearBuffers();
@@ -105,9 +98,17 @@ public:
 	 */
 	const WindowSystemInterface& getWindowInterface() const { return interface; }
 
+protected:
+	/**
+	 * Renders the passed in objects.
+	 * @param objects The objects to render.
+	 * @param sortedObjects A sorted map of maps of maps of sets of all the possible objects to render.
+	 * @param camera The camera.
+	 * @param state User-supplied screen state.
+	 */
+	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
+
 private:
-	//The type for the camera view box.
-	typedef std::array<std::pair<glm::vec3, glm::vec3>, 6> CameraBox;
 	//A map to store texture data
 	std::unordered_map<std::string, GlTextureData> textureMap;
 	//A map to store the shaders used by the engine
@@ -126,32 +127,10 @@ private:
 
 	/**
 	 * Renders all the objects in objects. Transparency stuff is set up before this function is called.
+	 * @param pass The current rendering pass.
 	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
 	 * @param camera The camera to use when rendering.
-	 * @param viewBox The view box of the camera, used for culling.
 	 * @param state The screen state, passed to shaders when setting uniforms.
-	 * @param blend Whether to enable blend when rendering an object.
 	 */
-	void renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state, bool blend = false);
-
-	/**
-	 * Checks whether the given sphere is in the camera's view.
-	 * @param sphere A sphere represented by a position and a radius.
-	 * @param camera A deformed box representing the camera's view, where each entry defines a
-	 *     plane with a position and a normal.
-	 * @return Whether the sphere is intersecting the camera's view.
-	 */
-	bool checkVisible(const std::pair<glm::vec3, float>& sphere, const CameraBox& camera);
-
-	/**
-	 * Gets a deformed collision box of the camera with normals for each face.
-	 * @param view The camera's view matrix.
-	 * @param projection The camera's projection matrix.
-	 * @param nearPlane The near plane.
-	 * @param farplane The far plane.
-	 * @return a set of pairs of vectors. The first vector contains the center
-	 *     position of one of the faces, and the second contains the normal
-	 *     for that face.
-	 */
-	CameraBox getCameraCollisionData(glm::mat4 view, glm::mat4 projection, float nearPlane, float farPlane);
+	void renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
 };

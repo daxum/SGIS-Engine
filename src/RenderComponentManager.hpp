@@ -20,7 +20,6 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <array>
 #include <string>
 
 #include "ComponentManager.hpp"
@@ -28,10 +27,8 @@
 
 class RenderComponentManager : public ComponentManager {
 public:
-	//In case it's not clear, this is a map from strings to sets of pointers to renderComponents.
-	typedef std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RenderComponent>>> RenderPassObjects;
-	//0 - opaque, 1 - transparent, 2 - translucent
-	typedef std::array<RenderPassObjects, 3> RenderPassList;
+	//Sorts the RenderComponents by buffer, then shader, then model.
+	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Model*, std::unordered_set<std::shared_ptr<RenderComponent>>>>> RenderPassList;
 
 	/**
 	 * Constructor, sets name.
@@ -44,13 +41,19 @@ public:
 	void update() {}
 
 	/**
-	 * Called by the renderer to get all render components
-	 * @return A list of all render components (needs casting).
+	 * Gets a sorted list of all render components (by buffer, then shader, then model).
+	 * @return A sorted list of render components.
 	 */
 	const RenderPassList& getComponentList() const { return renderComponents; }
 
 	/**
-	 * Removes and readds the component to the render component map.
+	 * Returns an unsorted set of all render components.
+	 * @return A set of render components.
+	 */
+	const std::unordered_set<std::shared_ptr<RenderComponent>>& getComponentSet() { return renderComponentSet; }
+
+	/**
+	 * Removes and readds the component to the render component list.
 	 * @param renderComp The component to reload.
 	 * @param oldModel The model the component previously used.
 	 */
@@ -59,6 +62,8 @@ public:
 private:
 	//Sorts all RenderComponents by their shader for less context switching.
 	RenderPassList renderComponents;
+	//A set of all RenderComponents, to avoid unneccessary casting.
+	std::unordered_set<std::shared_ptr<RenderComponent>> renderComponentSet;
 
 	/**
 	 * Adds the component to one of the internal lists based on its model.

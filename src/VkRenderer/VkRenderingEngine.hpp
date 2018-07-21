@@ -60,14 +60,6 @@ public:
 	void finishLoad();
 
 	/**
-	 * Renders the passed in object.
-	 * @param data The stuff to render.
-	 * @param camera The camera to use.
-	 * @param state User-set screen state, passed to shader when setting uniforms.
-	 */
-	void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
-
-	/**
 	 * Called clearBuffers for lack of a better name. Clears the depth and stencil
 	 * buffers, but not the color buffer.
 	 */
@@ -91,6 +83,16 @@ public:
 	 * @return The interface to the window system.
 	 */
 	const WindowSystemInterface& getWindowInterface() const { return interface; }
+
+protected:
+	/**
+	 * Renders the visible objects, using the sorted map.
+	 * @param objects A set of objects that have been determined to be visible.
+	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
+	 * @param camera The current camera.
+	 * @param state User-provided screen state.
+	 */
+	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
 
 private:
 	constexpr static size_t MAX_ACTIVE_FRAMES = 2;

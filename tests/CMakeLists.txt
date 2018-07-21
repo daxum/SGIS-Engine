@@ -29,5 +29,6 @@ set_target_properties(vertexTest PROPERTIES
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-	target_compile_options(memAllocTest PRIVATE "-Wall")
+	target_compile_options(vertexTest PRIVATE "-Wall")
 endif()
+

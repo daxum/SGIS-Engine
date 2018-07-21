@@ -30,6 +30,7 @@ set(ENGINE_FILES
 	MemoryAllocator.cpp
 	RendererMemoryManager.cpp
 	ModelManager.cpp
+	RenderingEngine.cpp
 )
 
 if (USE_OPENGL)

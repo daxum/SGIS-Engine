@@ -22,6 +22,7 @@
 #include <string>
 
 #include <glm/glm.hpp>
+#include <tbb/concurrent_unordered_set.h>
 
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
@@ -100,12 +101,13 @@ public:
 	std::shared_ptr<ShaderLoader> getShaderLoader() { return shaderLoader; }
 
 	/**
-	 * Renders the passed in object.
+	 * Renders the passed in object. This function performs view culling if needed and
+	 * passed all visible renderComponents to the underlying graphics rendering api
 	 * @param data The stuff to render.
 	 * @param camera The camera to use.
 	 * @param state User-set screen state, passed to shader when setting uniforms.
 	 */
-	virtual void render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) = 0;
+	void render(std::shared_ptr<RenderComponentManager> renderManager, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
 
 	/**
 	 * Called clearBuffers for lack of a better name. Clears the depth and stencil
@@ -133,11 +135,34 @@ public:
 	virtual const WindowSystemInterface& getWindowInterface() const = 0;
 
 protected:
+	//The texture loader.
 	std::shared_ptr<TextureLoader> texLoader;
+	//The shader loader.
 	std::shared_ptr<ShaderLoader> shaderLoader;
-
 	//The general rendering logger
 	Logger logger;
 	//The loader logger
 	Logger loaderLogger;
+
+	/**
+	 * Renders the visible objects, using the sorted map.
+	 * @param objects A set of objects that have been determined to be visible.
+	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
+	 * @param camera The current camera.
+	 * @param state User-provided screen state.
+	 */
+	virtual void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) = 0;
+
+private:
+	/**
+	 * Checks whether the given object is visible from the camera.
+	 * @param cameraRadius The radius of the camera at the near plane (maximum radius of near plane box).
+	 * @param viewMat The view matrix, used to transform object position into camera space.
+	 * @param object The object to check.
+	 * @param fov The camera's field of view. Set to 0 for orthographic projection.
+	 * @param nearDist The distance for the near plane.
+	 * @param farDist The distance for the far plane.
+	 * @return Whether the object can be seen from the camera.
+	 */
+	bool checkVisible(float cameraRadius, const glm::mat4& viewMat, std::shared_ptr<RenderComponent> object, float fov, float nearDist, float farDist);
 };

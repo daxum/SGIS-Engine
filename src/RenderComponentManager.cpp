@@ -24,6 +24,7 @@ void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	getComponentSet(renderComp->getModel()).insert(renderComp);
+	renderComponentSet.insert(renderComp);
 	renderComp->setManager(this);
 }
 
@@ -31,6 +32,7 @@ void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) 
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	getComponentSet(renderComp->getModel()).erase(renderComp);
+	renderComponentSet.erase(renderComp);
 	renderComp->setManager(nullptr);
 }
 
@@ -42,6 +44,16 @@ void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> re
 }
 
 std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(std::shared_ptr<const ModelRef> model) {
-	//TODO: Fix
-	return renderComponents.at(0)[model->getModel().shader];
+	const std::string& buffer = model->getMesh().getBuffer();
+	const std::string& shader = model->getModel().shader;
+	const Model* modelPtr = &model->getModel();
+
+	auto& shaderMap = renderComponents[buffer];
+	auto& modelMap = shaderMap[shader];
+
+	if (!modelMap.count(modelPtr)) {
+		modelMap.insert({modelPtr, std::unordered_set<std::shared_ptr<RenderComponent>>()});
+	}
+
+	return modelMap.at(modelPtr);
 }

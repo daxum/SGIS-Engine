@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <tbb/parallel_for.h>
+
 #include "Engine.hpp"
 #include "GlRenderer/GlRenderingEngine.hpp"
 #include "VkRenderer/VkRenderingEngine.hpp"
 #include "ExtraMath.hpp"
-
 #include "LinearMath/btThreads.h"
-#include "tbb/parallel_for.h"
 
 Engine* Engine::instance = nullptr;
 
