@@ -43,7 +43,7 @@ public:
 	 * @return A pair with the position as the first component and the rotation
 	 *     as the second.
 	 */
-	std::pair<glm::vec3, glm::quat> getLocation(float time);
+	std::pair<glm::vec3, glm::quat> getLocation(float time) const;
 
 	//Default matrix for bezier curve.
 	static const glm::mat4 B;
@@ -66,7 +66,7 @@ private:
 	 * @param percent The percent along the line segment, always between 0 and 1.
 	 * @return The position at the point.
 	 */
-	glm::vec3 getPos(size_t index, float percent);
+	glm::vec3 getPos(size_t index, float percent) const;
 
 	/**
 	 * Same as above, but gets the rotation instead.
@@ -74,19 +74,19 @@ private:
 	 * @param percent The percent along the line segment.
 	 * @return The rotation at the given point.
 	 */
-	glm::quat getRot(size_t index, float percent);
+	glm::quat getRot(size_t index, float percent) const;
 
 	/**
 	 * Converts a quaternion to a vec4.
 	 */
-	glm::vec4 quatToVec4(glm::quat q) {
+	glm::vec4 quatToVec4(glm::quat q) const {
 		return glm::vec4(q.x, q.y, q.z, q.w);
 	}
 
 	/**
 	 * Converts a vec4 to a quaternion.
 	 */
-	glm::quat vec4ToQuat(glm::vec4 vec) {
+	glm::quat vec4ToQuat(glm::vec4 vec) const {
 		return glm::quat(vec.w, vec.x, vec.y, vec.z);
 	}
 };

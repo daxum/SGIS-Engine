@@ -92,7 +92,7 @@ SplineAnimation::SplineAnimation(const std::vector<std::pair<glm::vec3, glm::qua
 	}
 }
 
-std::pair<glm::vec3, glm::quat> SplineAnimation::getLocation(float time) {
+std::pair<glm::vec3, glm::quat> SplineAnimation::getLocation(float time) const {
 	time = std::fmod(time, maxTime);
 
 	//TODO: binary search
@@ -137,7 +137,7 @@ std::pair<glm::vec3, glm::quat> SplineAnimation::getLocation(float time) {
 	throw std::runtime_error("SplineAnimation: Couldn't find time in lookup table");
 }
 
-glm::vec3 SplineAnimation::getPos(size_t index, float percent) {
+glm::vec3 SplineAnimation::getPos(size_t index, float percent) const {
 	glm::mat4 points;
 	points[0] = glm::vec4(controlPoints.at(index).first, 0.0);
 	points[1] = glm::vec4(controlPoints.at(index + 1).first, 0.0);
@@ -149,7 +149,7 @@ glm::vec3 SplineAnimation::getPos(size_t index, float percent) {
 	return points * (matrix * vec);
 }
 
-glm::quat SplineAnimation::getRot(size_t index, float percent) {
+glm::quat SplineAnimation::getRot(size_t index, float percent) const {
 	glm::mat4 points;
 	points[0] = quatToVec4(controlPoints.at(index).second);
 	points[1] = quatToVec4(controlPoints.at(index + 1).second);
