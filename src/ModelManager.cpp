@@ -45,7 +45,9 @@ void ModelManager::removeReference(const std::string& modelName) {
 	logger.debug("Removing reference to model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
-	Mesh& mesh = meshMap.at(model.mesh);
+	const std::string meshName = model.mesh;
+
+	Mesh& mesh = meshMap.at(meshName);
 
 	//Get vertex buffer to determine model / mesh persistence
 	BufferUsage usage = memoryManager->getBuffer(mesh.getBuffer()).getUsage();
@@ -59,6 +61,8 @@ void ModelManager::removeReference(const std::string& modelName) {
 		modelMap.erase(modelName);
 	}
 
+	//Model might not exist past this point! Don't use it!
+
 	//Remove mesh user even if model is still present; this is so unreferenced meshes don't
 	//take up unnecessary space in the vertex buffers when they're not in use (they will remain
 	//present in the buffers, however, unless memory runs out)
@@ -66,13 +70,13 @@ void ModelManager::removeReference(const std::string& modelName) {
 	logger.debug("Remaining mesh users: " + std::to_string(mesh.getUsers()));
 
 	if (mesh.getUsers() == 0) {
-		logger.debug("Removing unused mesh \"" + model.mesh + "\" from vertex buffers...");
-		memoryManager->freeMesh(model.mesh, mesh.getBuffer());
+		logger.debug("Removing unused mesh \"" + meshName + "\" from vertex buffers...");
+		memoryManager->freeMesh(meshName, mesh.getBuffer());
 
 		//If mesh is not persistent, completely remove it
 		if (!persistent) {
-			logger.debug("Deleting transitory mesh \"" + model.mesh + "\"");
-			meshMap.erase(model.mesh);
+			logger.debug("Deleting transitory mesh \"" + meshName + "\"");
+			meshMap.erase(meshName);
 		}
 	}
 }

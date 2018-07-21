@@ -38,6 +38,30 @@ Mesh::Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const
 	}
 }
 
+Mesh::Mesh(const Mesh& mesh) :
+	vertexData(new unsigned char[mesh.vertexSize]),
+	vertexSize(mesh.vertexSize),
+	indices(mesh.indices),
+	buffer(mesh.buffer),
+	box(mesh.box),
+	radius(mesh.radius),
+	users(mesh.users) {
+
+	memcpy(vertexData, mesh.vertexData, mesh.vertexSize);
+}
+
+Mesh::Mesh(Mesh&& mesh) :
+	vertexData(std::exchange(mesh.vertexData, nullptr)),
+	vertexSize(std::exchange(mesh.vertexSize, 0)),
+	indices(std::move(mesh.indices)),
+	buffer(std::move(mesh.buffer)),
+	box(std::move(mesh.box)),
+	radius(std::exchange(mesh.radius, 0.0f)),
+	users(std::exchange(mesh.users, 0)) {
+
+}
+
+
 ModelRef::ModelRef(ModelManager* manager, const std::string& modelName, Model& model, Mesh& mesh) :
 	manager(manager),
 	model(model),

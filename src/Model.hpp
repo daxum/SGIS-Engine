@@ -42,6 +42,16 @@ public:
 	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const AxisAlignedBB& box, float radius);
 
 	/**
+	 * Copy constructor.
+	 */
+	Mesh(const Mesh& mesh);
+
+	/**
+	 * Move constructor.
+	 */
+	Mesh(Mesh&& mesh);
+
+	/**
 	 * Destructor.
 	 */
 	~Mesh() { delete[] vertexData; }
@@ -83,6 +93,47 @@ public:
 	 */
 	const std::tuple<unsigned char*, size_t, const std::vector<uint32_t>&> getMeshData() {
 		return {vertexData, vertexSize, indices};
+	}
+
+	/**
+	 * Copy assignment.
+	 */
+	Mesh& operator=(const Mesh& mesh) {
+		if (this != &mesh) {
+			if (vertexSize != mesh.vertexSize) {
+				delete[] vertexData;
+				vertexSize = 0;
+				vertexData = nullptr;
+				vertexData  = new unsigned char[mesh.vertexSize];
+				vertexSize = mesh.vertexSize;
+			}
+
+			memcpy(vertexData, mesh.vertexData, vertexSize);
+			indices = mesh.indices;
+			buffer = mesh.buffer;
+			box = mesh.box;
+			radius = mesh.radius;
+			users = mesh.users;
+		}
+
+		return *this;
+	}
+
+	/**
+	 * Move assignment.
+	 */
+	Mesh& operator=(Mesh&& mesh) {
+		if (this != &mesh) {
+			vertexData = std::exchange(mesh.vertexData, nullptr);
+			vertexSize = std::exchange(mesh.vertexSize, 0);
+			indices = std::move(mesh.indices);
+			buffer = std::move(mesh.buffer);
+			box = std::move(mesh.box);
+			radius = std::exchange(mesh.radius, 0.0f);
+			users = std::exchange(mesh.users, 0);
+		}
+
+		return *this;
 	}
 
 private:
