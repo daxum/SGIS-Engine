@@ -42,6 +42,11 @@ public:
 	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const AxisAlignedBB& box, float radius);
 
 	/**
+	 * Destructor.
+	 */
+	~Mesh() { delete[] vertexData; }
+
+	/**
 	 * Gets the buffer the mesh is stored in.
 	 * @return the vertex buffer this mesh belongs to.
 	 */
@@ -107,7 +112,7 @@ public:
 	 * @param shader The model's shader.
 	 * @param viewCull Whether to use view culling on this model.
 	 */
-	Model(std::string mesh, std::string shader, bool viewCull = true) :
+	Model(const std::string& mesh, const std::string& shader, bool viewCull = true) :
 		mesh(mesh),
 		shader(shader),
 		uniformMap(),
