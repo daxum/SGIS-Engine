@@ -33,6 +33,7 @@ Vertex::Vertex(const Vertex& v) :
 	size(v.size),
 	vertexData(new unsigned char[v.size]) {
 
+	memcpy(vertexData, v.vertexData, v.size);
 }
 
 Vertex::Vertex(Vertex&& v) noexcept :
