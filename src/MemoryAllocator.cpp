@@ -26,6 +26,25 @@ MemoryAllocator::MemoryAllocator(size_t bufferSize) :
 
 }
 
+MemoryAllocator::MemoryAllocator(const MemoryAllocator& memAlloc) :
+	allocationList(memAlloc.allocationList),
+	currentPos(allocationList.begin()) {
+
+	for (auto i = memAlloc.allocationList.begin(); i != memAlloc.allocationList.end(); i++) {
+		if (i == memAlloc.currentPos) {
+			break;
+		}
+
+		currentPos++;
+	}
+}
+
+MemoryAllocator::MemoryAllocator(MemoryAllocator&& memAlloc) :
+	allocationList(std::move(memAlloc.allocationList)),
+	currentPos(std::move(memAlloc.currentPos)) {
+
+}
+
 std::shared_ptr<AllocInfo> MemoryAllocator::getMemory(size_t size) {
 	if (size == 0) {
 		throw std::out_of_range("Attempt to allocate 0 bytes!");

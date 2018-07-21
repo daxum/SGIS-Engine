@@ -52,6 +52,7 @@ void ModelManager::removeReference(const std::string& modelName) {
 	bool persistent = usage == BufferUsage::DEDICATED_LAZY;
 
 	model.references--;
+	logger.debug("Remaining references: " + std::to_string(model.references));
 
 	if (model.references == 0 && !persistent) {
 		logger.debug("Removing transitory model \"" + modelName + "\"");
@@ -62,6 +63,7 @@ void ModelManager::removeReference(const std::string& modelName) {
 	//take up unnecessary space in the vertex buffers when they're not in use (they will remain
 	//present in the buffers, however, unless memory runs out)
 	mesh.removeUser();
+	logger.debug("Remaining mesh users: " + std::to_string(mesh.getUsers()));
 
 	if (mesh.getUsers() == 0) {
 		logger.debug("Removing unused mesh \"" + model.mesh + "\" from vertex buffers...");

@@ -14,3 +14,20 @@ set_target_properties(memAllocTest PROPERTIES
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	target_compile_options(memAllocTest PRIVATE "-Wall")
 endif()
+
+#Now vertices get lightly tested too!
+
+add_executable(vertexTest
+	vertexTest.cpp
+	../src/Vertex.cpp
+	../src/VertexBuffer.cpp
+)
+
+set_target_properties(vertexTest PROPERTIES
+	CXX_STANDARD 14
+	CXX_STANDARD_REQUIRED ON
+)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	target_compile_options(memAllocTest PRIVATE "-Wall")
+endif()

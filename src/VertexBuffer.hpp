@@ -54,7 +54,9 @@ struct VertexElementData {
 	size_t size;
 };
 
-struct RenderBufferData {};
+struct RenderBufferData {
+	virtual ~RenderBufferData() {}
+};
 
 class VertexBuffer {
 public:

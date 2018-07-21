@@ -25,6 +25,8 @@
 
 #include "VertexBuffer.hpp"
 #include "MemoryAllocator.hpp"
+#include "EngineConfig.hpp"
+#include "Logger.hpp"
 
 //All the information needed to create a vertex buffer.
 struct VertexBufferInfo {
@@ -53,6 +55,12 @@ struct BufferData {
 //An interface to the rendering engine's memory manager.
 class RendererMemoryManager {
 public:
+	/**
+	 * Creates a memory manager and initializes a logger.
+	 * @param logConfig The logger configuration.
+	 */
+	RendererMemoryManager(const LogConfig& logConfig);
+
 	/**
 	 * Destructor.
 	 */
@@ -105,20 +113,28 @@ public:
 	void freeMesh(const std::string& mesh, const std::string& buffer);
 
 protected:
+	//Logger, logs things.
+	Logger logger;
+
 	/**
 	 * Creates a buffer with the underlying rendering api and returns a pointer to the data
 	 * to be stored with the buffer object.
+	 * @param vertexFormat The format of the vertices in the buffer.
 	 * @param usage The way the buffer is intended to be used - determines which memory type
 	 *     it is stored in.
 	 * @param size The size of the buffer to create.
 	 * @return A pointer to renderer-specific data to be stored with the buffer object.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	virtual std::shared_ptr<RenderBufferData> createBuffer(BufferUsage usage, size_t size) = 0;
+	virtual std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) = 0;
 
 	/**
-	 * Uploads the vertex and index data into the given buffer.
+	 * Uploads the vertex and index data into the given buffer. The implementor of this
+	 * function should ensure that any old data that might have occupied that memory is not
+	 * overwritten while still in use (due to the nature of the allocator, this should not
+	 * happen often, and only in memory constrained scenarios).
 	 * @param buffer The render data for the buffer to upload to.
+	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
 	 * @param offset The offset into the vertex buffer to place the vertex data.
 	 * @param size The size of the vertex data.
 	 * @param vertexData The vertex data to upload.
@@ -126,20 +142,13 @@ protected:
 	 * @param indexSize The size of the index data.
 	 * @param indexData The index data to upload.
 	 */
-	virtual void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) = 0;
+	virtual void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) = 0;
 
 	/**
-	 * Marks the provided range as invalid, so other objects can be uploaded there. The implementor of this
-	 * function should ensure that the old data is not overwritten while still in use if a new mesh is uploaded
-	 * to the memory (due to the nature of the allocator, this should not happen often, and only in memory constrained
-	 * scenarios).
-	 * @param buffer The buffer the range is for (vertex and index at the moment, will be split later).
-	 * @param offset The offset into the vertex buffer.
-	 * @param size The size of the range in the vertex buffer.
-	 * @param indexOffset The offset into the index buffer.
-	 * @param indexSize The size of the range into the index buffer.
+	 * Completely removes the mesh from the rendering engine, so that it must be reuploaded to be used again.
+	 * @param mesh The mesh being removed, used to delete renderer specific data (index offset, size, command buffer, etc).
 	 */
-	virtual void invalidateRange(std::shared_ptr<RenderBufferData> buffer, size_t offset, size_t size, size_t indexOffset, size_t indexSize) = 0;
+	virtual void invalidateMesh(const std::string& mesh) = 0;
 
 private:
 	//Stores all created vertex buffers.

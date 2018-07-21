@@ -3,276 +3,141 @@
 
 #include "GlMemoryManager.hpp"
 
-GlMemoryManager::GlMemoryManager(Logger& logger) :
-	logger(logger),
-	initialized(false) {
+GlMemoryManager::GlMemoryManager(const LogConfig& logConfig) :
+	RendererMemoryManager(logConfig),
+	meshData(),
+	transferBuffer(0),
+	transferSize(0) {
 
 }
 
 GlMemoryManager::~GlMemoryManager() {
-	glDeleteVertexArrays(BUFFER_COUNT, vaos);
-	glDeleteBuffers(BUFFER_COUNT, vertexBuffers);
-	glDeleteBuffers(BUFFER_COUNT, indexBuffers);
+	glDeleteBuffers(1, &transferBuffer);
+	transferBuffer = 0;
+	transferSize = 0;
 }
 
-std::shared_ptr<RenderMeshObject> GlMemoryManager::addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
-	if (initialized) {
-		throw std::runtime_error("Cannot add static meshes after initialization!");
+void GlMemoryManager::bindBuffer(const std::string& buffer) {
+	std::shared_ptr<GlBufferData> data = std::static_pointer_cast<GlBufferData>(getBuffer(buffer).getRenderData());
+	glBindVertexArray(data->vertexArray);
+}
+
+std::shared_ptr<RenderBufferData> GlMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {
+	std::shared_ptr<GlBufferData> data = std::make_shared<GlBufferData>();
+
+	//Create array and buffers
+	glGenVertexArrays(1, &data->vertexArray);
+	glGenBuffers(1, &data->vertexBufferId);
+	glGenBuffers(1, &data->indexBufferId);
+
+	//Determine usage
+	GLenum glUsage = 0;
+
+	switch (usage) {
+		case BufferUsage::DEDICATED_LAZY: glUsage = GL_STATIC_COPY; break;
+		case BufferUsage::DEDICATED_SINGLE: glUsage = GL_STATIC_COPY; break;
+		case BufferUsage::STREAM: glUsage = GL_STREAM_DRAW; break;
+		default: throw std::runtime_error("Missing BufferUsage case in switch statement!");
 	}
 
-	std::shared_ptr<GlRenderMeshObject> data = std::make_shared(MeshType::STATIC, staticIndices.size() * sizeof(uint32_t), 0, this);
-	size_t indexStartSize = staticIndices.size();
+	data->useTransfer = usage == BufferUsage::DEDICATED_LAZY || usage == BufferUsage::DEDICATED_SINGLE;
 
-	logger.debug("Adding mesh to static data...");
+	//Buffer memory allocation
+	glBindVertexArray(data->vertexArray);
 
-	for (const uint32_t i : indices) {
-		const Vertex& vertex = vertices[i];
+	logger.debug("Creating " + std::to_string(size) + " byte vertex buffer.");
 
-		//If vertex is unique to all static meshes
-		if (staticUniqueVertices.count(vertex) == 0) {
-			//Add new vertex and index
-			staticUniqueVertices[vertex] = staticVertices.size();
-			staticVertices.push_back(vertex);
-		}
+	glBindBuffer(GL_ARRAY_BUFFER, data->vertexBufferId);
+	glBufferData(GL_ARRAY_BUFFER, size, nullptr, glUsage);
 
-		//Add index for vertex, index may refer to vertex of another mesh
-		staticIndices.push_back(staticUniqueVertices[vertex]);
+	logger.debug("Creating " + std::to_string(size) + " byte index buffer.");
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data->indexBufferId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, glUsage);
+
+	//Enable array things from vertex format
+	size_t vertexSize = 0;
+
+	for (const VertexElement& elem : vertexFormat) {
+		size += sizeFromVertexType(elem.type);
 	}
 
-	data->indexCount = staticIndices.size() - indexStartSize;
+	size_t offset = 0;
+
+	for (size_t i = 0; i < vertexFormat.size(); i++) {
+		size_t elementSize = sizeFromVertexType(vertexFormat.at(i).type);
+
+		glEnableVertexAttribArray(i);
+		glVertexAttribPointer(i, (uint32_t) (elementSize / sizeof(float)), GL_FLOAT, GL_FALSE, vertexSize, (void*) offset);
+
+		offset += elementSize;
+	}
+
+	glBindVertexArray(0);
 
 	return data;
 }
 
-std::shared_ptr<RenderMeshObject> GlMemoryManager::addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices) {
-	const size_t vertSize = vertices.size() * sizeof(TextVertex);
-	const size_t indexSize = indices.size() * sizeof(uint32_t);
+void GlMemoryManager::uploadMeshData(std::shared_ptr<RenderBufferData> buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) {
+	std::shared_ptr<GlBufferData> glBuffer = std::static_pointer_cast<GlBufferData>(buffer);
 
-	DynBufElement vertexElement = allocateFromList(textAllocList, nextAlloc, vertSize);
-	DynBufElement indexElement = allocateFromList(textIndexAllocList, nextIndexAlloc, indexSize);
+	if (glBuffer->useTransfer) {
+		logger.debug("Using transfer for mesh \"" + mesh + "\"");
 
-	//Adjust indices for vertex start.
-	uint32_t indexOffset = vertexElement->start / sizeof(TextVertex);
-
-	std::vector<uint32_t> adjIndices(indices);
-
-	for (uint32_t& i : adjIndices) {
-		i += indexOffset;
-	}
-
-	//Upload mesh data.
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[MeshType::DYNAMIC_TEXT]);
-	void* bufferData = glMapBufferRange(GL_ARRAY_BUFFER, vertexElement->start, vertSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
-	memcpy(bufferData, vertices.data(), vertSize);
-	glUnmapBuffer(GL_ARRAY_BUFFER);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffers[MeshType::DYNAMIC_TEXT]);
-	void* indexBufferData = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, indexElement->start, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
-	memcpy(indexBufferData, adjIndices.data(), indexSize);
-	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-
-	//Add to map. Yes, the vertex map gets the index element's start. That is intended.
-	textVertMap.insert({indexElement->start, vertexElement});
-	textIndexMap.insert({indexElement->start, indexElement});
-
-	return std::make_shared<GlRenderMeshObject>(DYNAMIC_TEXT, indexElement->start, indices.size(), this);
-}
-
-void GlMemoryManager::freeTextMesh(const std::shared_ptr<RenderMeshObject> data) {
-	std::shared_ptr<GlRenderMeshObject> glData = std::static_pointer_cast<GlRenderMeshObject>(data);
-
-	DynBufElement vertFreePos = textVertMap.at(glData->indexStart);
-	DynBufElement indexFreePos = textIndexMap.at(glData->indexStart);
-
-	textVertMap.erase(glData->indexStart);
-	textIndexMap.erase(glData->indexStart);
-
-	freeFromList(textAllocList, nextAlloc, vertFreePos);
-	freeFromList(textIndexAllocList, nextIndexAlloc, indexFreePos);
-
-	//Invalidating the buffer ranges would go here if supported.
-}
-
-void GlMemoryManager::upload() {
-	if (initialized) {
-		throw std::runtime_error("upload called twice for memory manager!");
-	}
-
-	//Static mesh data
-	logger.debug("Uploading static mesh data...");
-	//Don't ask.
-	logger.debug(std::string("Static mesh stats:") +
-				 "\n\tVertices:   " + std::to_string(staticVertices.size()) +
-				 "\n\tIndices:    " + std::to_string(staticIndices.size()) +
-				 "\n\tTotal size: " + std::to_string(staticVertices.size() * sizeof(Vertex) + staticIndices.size() * sizeof(uint32_t)) + " bytes");
-
-	glBindVertexArray(vaos[MeshType::STATIC]);
-
-	logger.debug("Creating " + std::to_string(staticVertices.size() * sizeof(Vertex)) + " byte vertex buffer for static data.");
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[MeshType::STATIC]);
-	glBufferData(GL_ARRAY_BUFFER, staticVertices.size() * sizeof(Vertex), staticVertices.data(), GL_STATIC_DRAW);
-
-	logger.debug("Creating " + std::to_string(staticIndices.size() * sizeof(uint32_t)) + " byte index buffer for static data.");
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffers[MeshType::STATIC]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, staticIndices.size() * sizeof(uint32_t), staticIndices.data(), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, pos));
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, normal));
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*) offsetof(Vertex, texCoords));
-
-	glBindVertexArray(0);
-
-	//Delete mesh caches
-	logger.info("Deleting mesh caches... (will save around " + std::to_string(staticVertices.size() * sizeof(Vertex) +
-				staticIndices.size() * sizeof(uint32_t) + staticUniqueVertices.size() * sizeof(Vertex) +
-				staticUniqueVertices.size() * sizeof(uint32_t)) + " bytes)");
-
-	std::vector<Vertex>().swap(staticVertices);
-	std::vector<uint32_t>().swap(staticIndices);
-	std::unordered_map<Vertex, uint32_t>().swap(staticUniqueVertices);
-
-	initialized = true;
-}
-
-void GlMemoryManager::init() {
-	//Generate all buffers
-	glGenVertexArrays(BUFFER_COUNT, vaos);
-	glGenBuffers(BUFFER_COUNT, vertexBuffers);
-	glGenBuffers(BUFFER_COUNT, indexBuffers);
-
-	//Allocate text buffers
-	glBindVertexArray(vaos[MeshType::DYNAMIC_TEXT]);
-
-	logger.debug("Creating " + std::to_string(textBufferSize) + " byte vertex buffer for text data.");
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffers[MeshType::DYNAMIC_TEXT]);
-	glBufferData(GL_ARRAY_BUFFER, textBufferSize, nullptr, GL_DYNAMIC_DRAW);
-
-	logger.debug("Creating " + std::to_string(textIndexBufferSize) + " byte index buffer for text data.");
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffers[MeshType::DYNAMIC_TEXT]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, textIndexBufferSize, nullptr, GL_DYNAMIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*) offsetof(TextVertex, pos));
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertex), (void*) offsetof(TextVertex, tex));
-
-	glBindVertexArray(0);
-
-	//Initialize text buffer free lists
-	textAllocList.clear();
-	textIndexAllocList.clear();
-
-	textAllocList.push_back({0, textBufferSize, true});
-	textIndexAllocList.push_back({0, textIndexBufferSize, true});
-
-	nextAlloc = textAllocList.begin();
-	nextIndexAlloc = textIndexAllocList.begin();
-}
-
-void GlMemoryManager::bindBuffer(MeshType type) {
-	if (type >= BUFFER_COUNT) {
-		throw std::runtime_error("Invalid meshtype in bindBuffer!");
-	}
-
-	glBindVertexArray(vaos[type]);
-}
-
-GlMemoryManager::DynBufElement GlMemoryManager::allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize) {
-	DynBufElement start = current;
-
-	//Find free segment of proper size.
-	while (current->size < allocSize || !current->free) {
-		current++;
-
-		if (current == list.end()) {
-			current = list.begin();
+		if (transferSize == 0) {
+			glGenBuffers(1, &transferBuffer);
 		}
 
-		if (current == start) {
-			throw std::runtime_error("Failed to allocate " + std::to_string(allocSize) + " bytes from dynamic buffer");
+		glBindBuffer(GL_COPY_READ_BUFFER, transferBuffer);
+
+		if (transferSize < size || transferSize < indexSize) {
+			transferSize = std::max(size, indexSize);
+			glBufferData(GL_COPY_READ_BUFFER, transferSize, nullptr, GL_STREAM_DRAW);
 		}
+
+		//Transfer vertex data
+		void* bufferData = glMapBufferRange(GL_COPY_READ_BUFFER, 0, transferSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+		memcpy(bufferData, vertexData, size);
+		glUnmapBuffer(GL_COPY_READ_BUFFER);
+
+		glBindBuffer(GL_COPY_WRITE_BUFFER, glBuffer->vertexBufferId);
+
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, offset, size);
+
+		//Transfer index data
+		bufferData = glMapBufferRange(GL_COPY_READ_BUFFER, 0, transferSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+		memcpy(bufferData, indexData, indexSize);
+		glUnmapBuffer(GL_COPY_READ_BUFFER);
+
+		glBindBuffer(GL_COPY_WRITE_BUFFER, glBuffer->indexBufferId);
+
+		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, indexOffset, indexSize);
+	}
+	//No transfer, eg. stream buffers (or integrated gpus, if there's a way to detect them...)
+	else {
+		logger.debug("Directly copying mesh data for mesh \"" + mesh + "\"");
+
+		//Copy vertex data
+		glBindBuffer(GL_COPY_WRITE_BUFFER, glBuffer->vertexBufferId);
+
+		void* bufferData = glMapBufferRange(GL_COPY_WRITE_BUFFER, offset, size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+		memcpy(bufferData, vertexData, size);
+		glUnmapBuffer(GL_COPY_WRITE_BUFFER);
+
+		//Copy index data
+		glBindBuffer(GL_COPY_WRITE_BUFFER, glBuffer->indexBufferId);
+
+		bufferData = glMapBufferRange(GL_COPY_WRITE_BUFFER, indexOffset, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+		memcpy(bufferData, indexData, indexSize);
+		glUnmapBuffer(GL_COPY_WRITE_BUFFER);
+
 	}
 
-	//Found segment, allocate it.
-	current->free = false;
-
-	//Split segment if needed.
-	size_t extra = current->size - allocSize;
-
-	if (extra > 0) {
-		DynBufElement next = current;
-		next++;
-
-		current->size -= extra;
-		list.insert(next, {current->start + current->size, extra, true});
-	}
-
-	DynBufElement allocated = current;
-
-	//Increment current, loop if needed.
-	current++;
-
-	if (current == list.end()) {
-		current = list.begin();
-	}
-
-	return allocated;
+	//Add mesh to data map
+	meshData.insert({mesh, GlMeshRenderData{indexOffset, (uint32_t) (indexSize / sizeof(uint32_t))}});
 }
 
-void GlMemoryManager::freeFromList(std::list<AllocInfo>& list, DynBufElement& current, DynBufElement freePos) {
-	if (freePos->free) {
-		throw std::runtime_error("Invalid free attempt from dynamic buffer!");
-	}
-
-	freePos->free = true;
-
-	//Merge with previous.
-	DynBufElement prev = freePos;
-	prev--;
-
-	if (freePos != list.begin() && prev->free) {
-		DynBufElement next = freePos;
-		freePos = prev;
-
-		freePos->size += next->size;
-		list.erase(next);
-
-		//Move current past merged element if needed.
-		if (current == freePos) {
-			current++;
-
-			if (current == list.end()) {
-				current = list.begin();
-			}
-		}
-	}
-
-	//Merge with next.
-	DynBufElement next = freePos;
-	next++;
-
-	if (next != list.end() && next->free) {
-		//Move current past to-be-merged element.
-		if (current == next) {
-			current++;
-
-			if (current == list.end()) {
-				current = list.begin();
-			}
-		}
-
-		//Merge elements.
-		freePos->size += next->size;
-		list.erase(next);
-	}
+void GlMemoryManager::invalidateMesh(const std::string& mesh) {
+	meshData.erase(mesh);
+	logger.debug("Removed mesh data for mesh \"" + mesh + "\"from rendering engine");
 }

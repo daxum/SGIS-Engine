@@ -33,11 +33,11 @@
 
 GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
-					std::make_shared<GlShaderLoader>(loaderLogger, shaderMap, textureMap),
+					std::make_shared<GlShaderLoader>(loaderLogger, &memoryManager, shaderMap, textureMap),
 					rendererLog,
 					loaderLog),
 	interface(display, this),
-	memoryManager(logger) {
+	memoryManager(rendererLog) {
 
 	if (!glfwInit()) {
 		throw std::runtime_error("Couldn't initialize glfw");
@@ -126,19 +126,11 @@ void GlRenderingEngine::init() {
 	glClearColor(0.0, 0.2, 0.5, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	//Initialize memory manager
-
-	memoryManager.init();
-
 	logger.info("OpenGL initialization complete.");
 }
 
 RendererMemoryManager* GlRenderingEngine::getMemoryManager() {
 	return &memoryManager;
-}
-
-void GlRenderingEngine::finishLoad() {
-	memoryManager.upload();
 }
 
 void GlRenderingEngine::render(std::shared_ptr<RenderComponentManager> data, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
@@ -184,13 +176,15 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shad
 
 	shader->setPerObjectUniforms(data, matStack, state);
 
-	const std::shared_ptr<GlRenderMeshObject> mesh = data->getModel().getMesh<GlRenderMeshObject>();
-	glDrawElements(GL_TRIANGLES, mesh->indexCount, GL_UNSIGNED_INT, (void*) mesh->indexStart);
+	const GlMeshRenderData& renderData = memoryManager.getMeshData(data->getModel()->getModel().mesh);
+	glDrawElements(GL_TRIANGLES, renderData.indexCount, GL_UNSIGNED_INT, (void*) renderData.indexStart);
 
 	matStack.pop();
 }
 
 void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::RenderPassObjects& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, const CameraBox& viewBox, std::shared_ptr<ScreenState> state, bool blend) {
+	//TODO
+	/*
 	bool blendOn = false;
 
 	//For each buffer type.
@@ -239,7 +233,7 @@ void GlRenderingEngine::renderTransparencyPass(const RenderComponentManager::Ren
 	//Turn off blend if enabled.
 	if (blendOn) {
 		glDisable(GL_BLEND);
-	}
+	}*/
 }
 
 bool GlRenderingEngine::checkVisible(const std::pair<glm::vec3, float>& sphere, const CameraBox& camera) {

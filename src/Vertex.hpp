@@ -39,7 +39,7 @@ enum class VertexElementType {
 	VEC4
 };
 
-size_t sizeFromVertexType(VertexElementType type) {
+constexpr size_t sizeFromVertexType(const VertexElementType type) {
 	switch(type) {
 		case VertexElementType::FLOAT: return sizeof(float);
 		case VertexElementType::VEC2: return sizeof(glm::vec2);

@@ -17,8 +17,7 @@
  ******************************************************************************/
 
 #include "Engine.hpp"
-//TODO: reenable
-//#include "GlRenderer/GlRenderingEngine.hpp"
+#include "GlRenderer/GlRenderingEngine.hpp"
 #include "VkRenderer/VkRenderingEngine.hpp"
 #include "ExtraMath.hpp"
 
@@ -42,10 +41,10 @@ Engine::Engine(const EngineConfig& config) :
 	instance = this;
 
 	switch(config.renderer.renderType) {
-		/*case Renderer::OPEN_GL:
+		case Renderer::OPEN_GL:
 			logger.info("Using OpenGL renderer.");
 			renderer.reset(new GlRenderingEngine(display, config.rendererLog, config.loaderLog));
-			break;*/
+			break;
 		case Renderer::VULKAN:
 			logger.info("Using Vulkan renderer.");
 			renderer.reset(new VkRenderingEngine(display, config.rendererLog, config.loaderLog));

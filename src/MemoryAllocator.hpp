@@ -46,6 +46,16 @@ public:
 	MemoryAllocator(size_t bufferSize);
 
 	/**
+	 * Copy Constructor.
+	 */
+	MemoryAllocator(const MemoryAllocator& memAlloc);
+
+	/**
+	 * Move constructor.
+	 */
+	MemoryAllocator(MemoryAllocator&& memAlloc);
+
+	/**
 	 * Allocates a new block of memory for the given name. When the memory is
 	 * no longer needed, simply set the inUse member of the result to false
 	 * and the block will be evicted as needed. In addition, the evicted value
@@ -71,6 +81,38 @@ public:
 	 * For debugging, prints out the contents of the allocation list and currentPos.
 	 */
 	std::string printMemory();
+
+	/**
+	 * Copy assignment.
+	 */
+	MemoryAllocator& operator=(const MemoryAllocator& memAlloc) {
+		if (this != &memAlloc) {
+			allocationList = memAlloc.allocationList;
+
+			//Find correct current position by iterating through other's allocation list.
+			currentPos = allocationList.begin();
+
+			for (auto i = memAlloc.allocationList.begin(); i != memAlloc.allocationList.end(); i++) {
+				if (i == memAlloc.currentPos) {
+					break;
+				}
+
+				currentPos++;
+			}
+		}
+
+		return *this;
+	}
+
+	/**
+	 * Move assignment.
+	 */
+	MemoryAllocator& operator=(MemoryAllocator&& memAlloc) {
+		allocationList = std::move(memAlloc.allocationList);
+		currentPos = std::move(memAlloc.currentPos);
+
+		return *this;
+	}
 
 private:
 	typedef std::list<std::shared_ptr<AllocInfo>>::iterator AllocPos;

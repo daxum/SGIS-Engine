@@ -29,7 +29,8 @@ GlfwInterface::GlfwInterface(DisplayEngine& display, RenderingEngine* renderer) 
 	glfwSetErrorCallback(GlfwInterface::glfwError);
 }
 
-void GlfwInterface::init(GLFWwindow* window) {
+void GlfwInterface::init(GLFWwindow* newWindow) {
+	window = newWindow;
 	glfwSetWindowUserPointer(window, this);
 
 	//Set callbacks

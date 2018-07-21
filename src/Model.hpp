@@ -169,5 +169,5 @@ private:
 	//The model's mesh.
 	Mesh& mesh;
 	//The name of the above model.
-	const std::string& modelName;
+	std::string modelName;
 };

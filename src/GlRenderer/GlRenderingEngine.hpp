@@ -71,9 +71,9 @@ public:
 	RendererMemoryManager* getMemoryManager();
 
 	/**
-	 * Uploads data to gpu and sets some state stuff.
+	 * This used to do stuff.
 	 */
-	void finishLoad();
+	void finishLoad() {}
 
 	/**
 	 * Renders the passed in object.
@@ -114,7 +114,6 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
 	//Callback handler object
 	GlfwInterface interface;
-
 	//The memory manager, for buffer management and such.
 	GlMemoryManager memoryManager;
 

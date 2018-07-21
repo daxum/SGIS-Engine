@@ -53,6 +53,7 @@ public:
 
 	/**
 	 * Called to load the game's shaders.
+	 * Also adds vertex buffers.
 	 * @param loader The shader loader used to load the shaders.
 	 */
 	virtual void loadShaders(std::shared_ptr<ShaderLoader> loader) = 0;

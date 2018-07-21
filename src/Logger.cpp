@@ -36,31 +36,31 @@ Logger::~Logger() {
 	}
 }
 
-void Logger::debug(std::string out) {
+void Logger::debug(const std::string& out) {
 	if (logMask & DEBUG) {
 		*output << "D::" + out + "\n";
 	}
 }
 
-void Logger::info(std::string out) {
+void Logger::info(const std::string& out) {
 	if (logMask & INFO) {
 		*output << "I::" + out + "\n";
 	}
 }
 
-void Logger::warn(std::string out) {
+void Logger::warn(const std::string& out) {
 	if (logMask & WARN) {
 		*output << "W::" + out + "\n";
 	}
 }
 
-void Logger::error(std::string out) {
+void Logger::error(const std::string& out) {
 	if (logMask & ERROR) {
 		*output << "E::" + out + "\n";
 	}
 }
 
-void Logger::fatal(std::string out) {
+void Logger::fatal(const std::string& out) {
 	if (logMask & FATAL) {
 		*output << "F::" + out + "\n";
 	}

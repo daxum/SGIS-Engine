@@ -22,8 +22,8 @@
 #include "GlShaderLoader.hpp"
 #include "GlShader.hpp"
 
-GlShaderLoader::GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap) :
-	ShaderLoader(logger),
+GlShaderLoader::GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap) :
+	ShaderLoader(logger, memoryManager),
 	shaderMap(shaderMap),
 	textureMap(textureMap) {
 

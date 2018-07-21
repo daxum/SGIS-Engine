@@ -22,13 +22,18 @@
 
 #include "Logger.hpp"
 #include "ShaderInfo.hpp"
+#include "RendererMemoryManager.hpp"
 
 class ShaderLoader {
 public:
 	/**
-	 * Default constructor. Sets up logging.
+	 * Constructor.
+	 * @param logger The logger to use.
+	 * @param memoryManager The memory manager to load buffers to.
 	 */
-	ShaderLoader(Logger& logger) : logger(logger) {}
+	ShaderLoader(Logger& logger, RendererMemoryManager* memoryManager) :
+		logger(logger),
+		memoryManager(memoryManager) {}
 
 	/**
 	 * Destructor. Here for subclasses.
@@ -43,6 +48,17 @@ public:
 	 */
 	virtual void loadShader(std::string name, const ShaderInfo& info) = 0;
 
+	/**
+	 * Here for lack of a better place. Creates a buffer for meshes to load to and
+	 * shaders to read from.
+	 * @param name The name of the buffer.
+	 * @param info The information for the buffer (format, size, etc).
+	 */
+	void createBuffer(const std::string& name, const VertexBufferInfo& info) { memoryManager->addBuffer(name, info); }
+
 protected:
 	Logger& logger;
+
+private:
+	RendererMemoryManager* memoryManager;
 };

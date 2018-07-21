@@ -26,126 +26,97 @@
 #include "Vertex.hpp"
 #include "CombinedGl.h"
 #include "Model.hpp"
-#include "Logger.hpp"
 #include "RendererMemoryManager.hpp"
 
-//Used for allocations in dynamic buffers.
-//All values in bytes.
-struct AllocInfo {
-	size_t start;
-	size_t size;
-	bool free;
+struct GlBufferData : public RenderBufferData {
+	GLuint vertexArray;
+	GLuint vertexBufferId;
+	GLuint indexBufferId;
+	bool useTransfer;
+
+	GlBufferData() :
+		vertexArray(0),
+		vertexBufferId(0),
+		indexBufferId(0),
+		useTransfer(false) {}
+
+	~GlBufferData() {
+		glDeleteVertexArrays(1, &vertexArray);
+		glDeleteBuffers(1, &vertexBufferId);
+		glDeleteBuffers(1, &indexBufferId);
+	}
+};
+
+struct GlMeshRenderData {
+	uintptr_t indexStart;
+	uint32_t indexCount;
 };
 
 class GlMemoryManager : public RendererMemoryManager {
 public:
 	/**
-	 * Initializes the memory manager - this does NOT allocate any
-	 * gpu memory.
-	 * @param logger The logger with which to log.
+	 * Initializes the memory manager.
+	 * @param logConfig The configuration of the logger with which to log.
 	 */
-	GlMemoryManager(Logger& logger);
+	GlMemoryManager(const LogConfig& logConfig);
 
 	/**
-	 * Frees any allocated gpu memory.
+	 * Destructor. Deletes the transfer buffer.
 	 */
 	~GlMemoryManager();
 
 	/**
-	 * Adds a static mesh (vertices + indices) to be uploaded to the gpu at a later time.
-	 * @param vertices The vertices for the mesh to be uploaded.
-	 * @param indices The vertex indices for the mesh to be uploaded.
-	 * @return a MeshData struct that can be used for drawing.
-	 * @throw runtime_error if the memory manager has already been initialized.
-	 */
-	std::shared_ptr<RenderMeshObject> addStaticMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
-
-	/**
-	 * Dynamically uploads text model data to the gpu. Must call free later!
-	 * @param vertices The vertices for the text model.
-	 * @param indices The indices for the text model.
-	 * @return model data with which to render the text.
-	 */
-	std::shared_ptr<RenderMeshObject> addTextMesh(const std::vector<TextVertex>& vertices, const std::vector<uint32_t>& indices);
-
-	/**
-	 * Marks the memory previously occupied by the model data as unused.
-	 * @param data The model data to free.
-	 */
-	void freeTextMesh(const std::shared_ptr<RenderMeshObject> data);
-
-	/**
-	 * Uploads static data to gpu to prepare for drawing.
-	 * @throw runtime_error if data has already been uploaded.
-	 */
-	void upload();
-
-	/**
-	 * Initializes the dynamic buffers.
-	 */
-	void init();
-
-	/**
 	 * Binds the specified buffer for drawing.
-	 * @param type The buffer to bind.
+	 * @param buffer The buffer to bind.
 	 */
-	void bindBuffer(MeshType type);
+	void bindBuffer(const std::string& buffer);
+
+	/**
+	 * Returns the data needed to render the mesh with the given name.
+	 * @param name The name of the mesh.
+	 * @return The render data for the mesh.
+	 * @throw std::out_of_range if the mesh isn't present.
+	 */
+	const GlMeshRenderData& getMeshData(const std::string& name) { return meshData.at(name); }
+
+protected:
+	/**
+	 * Creates a buffer.
+	 * @param vertexFormat The format of the vertices in the buffer.
+	 * @param usage The way the buffer is intended to be used. This will use
+	 *     GL_STATIC_DRAW for all buffers that should be in dedicated memory,
+	 *     and GL_STREAM_DRAW for all buffers that should be in system memory.
+	 *     Hopefully the driver cooperates...
+	 * @param size The size of the buffer to create.
+	 * @return A pointer to a GlBufferData struct that contains the vertex and index buffer ids.
+	 * @throw std::runtime_error if out of memory.
+	 */
+	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size);
+
+	/**
+	 * Uploads the vertex and index data into the given buffer.
+	 * @param buffer The render data for the buffer to upload to.
+	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
+	 * @param offset The offset into the vertex buffer to place the vertex data.
+	 * @param size The size of the vertex data.
+	 * @param vertexData The vertex data to upload.
+	 * @param indexOffset The offset into the index buffer to place the index data.
+	 * @param indexSize The size of the index data.
+	 * @param indexData The index data to upload.
+	 */
+	void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData);
+
+	/**
+	 * Removes the mesh's render data from the render map.
+	 * @param mesh The name of the mesh to remove.
+	 */
+	void invalidateMesh(const std::string& mesh);
 
 private:
-	//Just a logger
-	Logger& logger;
-	//Whether init has been called.
-	bool initialized;
-
-	//Data for STATIC MeshType meshes.
-	std::vector<Vertex> staticVertices;
-	std::unordered_map<Vertex, uint32_t> staticUniqueVertices;
-	std::vector<uint32_t> staticIndices;
-
-	//Buffers.
-	GLuint vaos[BUFFER_COUNT];
-	GLuint vertexBuffers[BUFFER_COUNT];
-	GLuint indexBuffers[BUFFER_COUNT];
-
-	//Text buffer stuff.
-	//Maybe make this configurable later. 8MB is enough for around 130,000 characters.
-	const size_t textBufferSize = 8388608;
-	//For every 4 vertices, there are 6 indices.
-	//The full equation is: textBufferSize * ((indices * indexSize) / (vertices * vertexSize)),
-	//which results in textBufferSize * ((6*4) / (4*16)). Simplifying gives the below equation.
-	const size_t textIndexBufferSize = (6 * textBufferSize) / sizeof(TextVertex);
-
-	//Text memory management
-	typedef std::list<AllocInfo>::iterator DynBufElement;
-
-	//Stores current text buffer allocations.
-	std::list<AllocInfo> textAllocList;
-	//Same for index buffer
-	std::list<AllocInfo> textIndexAllocList;
-	//Points to next free segment in text buffer.
-	DynBufElement nextAlloc;
-	DynBufElement nextIndexAlloc;
-	//Maps from index start to free list positions.
-	std::unordered_map<size_t, DynBufElement> textVertMap;
-	std::unordered_map<size_t, DynBufElement> textIndexMap;
-
-	/**
-	 * Allocates a section from the list.
-	 * @param list The free list for the memory being allocated.
-	 * @param current The current allocation position in the list.
-	 * @param allocSize The amount of memory to allocate.
-	 * @return The allocated element.
-	 * @throw runtime_error if the allocation failed.
-	 */
-	DynBufElement allocateFromList(std::list<AllocInfo>& list, DynBufElement& current, size_t allocSize);
-
-	/**
-	 * Frees a section of the list and merges with adjacent free segments.
-	 * Current will be moved past the merged segment if needed, to prevent
-	 * immediate reallocation.
-	 * @param list The list to free from.
-	 * @param current The next segment to be used for allocation.
-	 * @param freePos The position in the list to free.
-	 */
-	void freeFromList(std::list<AllocInfo>& list, DynBufElement& current, DynBufElement freePos);
+	//Stores the rendering data for all uploaded meshes.
+	std::unordered_map<std::string, GlMeshRenderData> meshData;
+	//Transfer buffer for uploading mesh data to static buffers on the gpu.
+	GLuint transferBuffer;
+	//Current size of the transfer buffer, will grow for larger meshes.
+	size_t transferSize;
 };

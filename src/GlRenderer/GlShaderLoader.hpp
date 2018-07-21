@@ -31,10 +31,11 @@ public:
 	/**
 	 * Constructs a GlShaderLoader that stores loaded shaders in the provided map.
 	 * @param logger The logger to use.
+	 * @param memoryManager The memory manager for the rendering engine.
 	 * @param shaderMap The map to store loaded shaders in.
 	 * @param textureMap Map passed in the GlShaders, will never be accessed during loading.
 	 */
-	GlShaderLoader(Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap);
+	GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap);
 
 	/**
 	 * Loads a program object using the given shader files.

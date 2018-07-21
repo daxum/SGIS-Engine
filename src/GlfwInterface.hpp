@@ -40,7 +40,7 @@ public:
 	 * @param newWindow The window to register callbacks for.
 	 *     This will be stored in this object as well.
 	 */
-	void init(GLFWwindow* window);
+	void init(GLFWwindow* newWindow);
 
 	/**
 	 * Indicates whether the window was closed by the user, and the

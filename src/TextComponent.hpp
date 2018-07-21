@@ -49,11 +49,6 @@ public:
 	TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0), glm::vec3 color = glm::vec3(0.0, 0.0, 0.0));
 
 	/**
-	 * Frees the text's model from the fontmanager.
-	 */
-	~TextComponent();
-
-	/**
 	 * Called from Component, sets the rendering component if one is not
 	 * already present.
 	 */

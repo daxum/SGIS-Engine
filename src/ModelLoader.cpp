@@ -38,6 +38,7 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 
 	Model model(name, shader, viewCull);
 	model.uniformMap.insert({"light", std::make_shared<LightInfo>(lighting)});
+	model.uniformMap.insert({"texture", std::make_shared<std::string>(texture)});
 
 	modelManager.addModel(name, model);
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");

@@ -55,11 +55,11 @@ public:
 	 * If that level's bit is not set, nothing will be written.
 	 * @param out The message to write.
 	 */
-	void debug(std::string out);
-	void info(std::string out);
-	void warn(std::string out);
-	void error(std::string out);
-	void fatal(std::string out);
+	void debug(const std::string& out);
+	void info(const std::string& out);
+	void warn(const std::string& out);
+	void error(const std::string& out);
+	void fatal(const std::string& out);
 
 private:
 	//A pointer to the output stream to log messages to.
