@@ -37,7 +37,7 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 
 	logger.debug("Constructing shader from \"" + info.vertex + "\" and \"" + info.fragment + "\".");
 
-	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), textureMap);
+	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, textureMap);
 	info.shaderObject->setRenderInterface(shader);
 
 	shaderMap.insert(std::make_pair(name, info.shaderObject));

@@ -18,7 +18,12 @@
 
 #include "GlShader.hpp"
 
-GlShader::GlShader(GLuint id, const std::unordered_map<std::string, GlTextureData>& textureMap) : id(id), textureMap(textureMap) {}
+GlShader::GlShader(GLuint id, RenderPass pass, const std::unordered_map<std::string, GlTextureData>& textureMap) :
+	id(id),
+	renderPass(pass),
+	textureMap(textureMap) {
+
+}
 
 GlShader::~GlShader() {
 	glDeleteProgram(id);

@@ -37,7 +37,12 @@ std::shared_ptr<ModelRef> FontManager::createTextModel(const std::string& fontNa
 	std::string modelName = meshName + shader + "_mdl__";
 
 	if (!modelManager.hasModel(modelName)) {
-		modelManager.addModel(modelName, Model(meshName, shader, true));
+		const Font& font = fontMap.at(fontName);
+
+		Model model(meshName, shader, true);
+		model.uniformMap.insert({"texture", std::make_shared<std::string>(font.getTexture())});
+
+		modelManager.addModel(modelName, model);
 	}
 
 	return modelManager.getModel(modelName);

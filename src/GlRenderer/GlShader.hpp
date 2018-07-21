@@ -24,13 +24,16 @@
 #include "CombinedGl.h"
 #include "ShaderInterface.hpp"
 #include "GlTextureLoader.hpp"
+#include "ShaderInfo.hpp"
 
 //Encapsulates an OpenGL program object, to make things like setting
 //uniforms easier.
 class GlShader : public ShaderInterface {
 public:
-	//The program id for this shader
+	//The program id for this shader.
 	const GLuint id;
+	//The render pass this shader is in.
+	const RenderPass renderPass;
 
 	/**
 	 * Creates a GlShader with the given id.
@@ -38,7 +41,7 @@ public:
 	 * @param textureMap A reference to the rendering engine's texture map, used
 	 *     for setting textures.
 	 */
-	GlShader(GLuint id, const std::unordered_map<std::string, GlTextureData>& textureMap);
+	GlShader(GLuint id, RenderPass pass, const std::unordered_map<std::string, GlTextureData>& textureMap);
 
 	/**
 	 * Destructor. Destroys the program object.

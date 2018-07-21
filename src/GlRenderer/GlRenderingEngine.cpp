@@ -30,6 +30,7 @@
 #include "RenderComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
+#include "GlShader.hpp"
 
 GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
@@ -151,13 +152,13 @@ void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	matStack.multiply(camera->getView());
 
 	//Opaque objects
-	//renderTransparencyPass(transparencyPassList.at(0), matStack, camera, cameraBox, state);
+	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, matStack, camera, state);
 
 	//Transparent objects
-	//renderTransparencyPass(transparencyPassList.at(1), matStack, camera, cameraBox, state);
+	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, matStack, camera, state);
 
 	//Translucent objects
-	//renderTransparencyPass(transparencyPassList.at(2), matStack, camera, cameraBox, state, true);
+	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, matStack, camera, state);
 
 	glBindVertexArray(0);
 }
@@ -173,56 +174,54 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shad
 	matStack.pop();
 }
 
-void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	//TODO
-	/*
+void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+	std::string currentBuffer = "";
+	std::string currentShader = "";
+	bool enableBlend = pass == RenderPass::TRANSLUCENT;
 	bool blendOn = false;
 
-	//For each buffer type.
-	for (MeshType i = MeshType::STATIC; i < MeshType::BUFFER_COUNT; i = (MeshType)((int)(i) + 1)) {
-		bool bufferBound = false;
+	for (const auto& shaderObjectMap : objects) {
+		const std::string& buffer = shaderObjectMap.first;
 
-		//For each shader used in the current buffer.
-		for (const auto& object : objects.at(i)) {
-			if (object.second.size() == 0) {
+		for (const auto& modelMap : shaderObjectMap.second) {
+			const std::string& shader = modelMap.first;
+			const std::shared_ptr<Shader> shaderInter = shaderMap.at(shader);
+			const std::shared_ptr<GlShader> shaderObj = std::static_pointer_cast<GlShader>(shaderInter->getRenderInterface());
+
+			//Skip these objects if their shader isn't in the current render pass
+			if (shaderObj->renderPass != pass) {
 				continue;
 			}
 
-			std::shared_ptr<Shader> shader = shaderMap.at(object.first);
-			shader->getRenderInterface()->bind();
+			for (const auto& objectSet : modelMap.second) {
+				for (const std::shared_ptr<RenderComponent> comp : objectSet.second) {
+					if (visibleObjects.count(comp.get())) {
+						//Set shader / buffer / blend if needed
+						if (currentShader != shader) {
+							logger.debug("Setting shader to \"" + shader + "\"");
+							glUseProgram(shaderObj->id);
+						}
 
-			shader->setGlobalUniforms(camera, state);
+						if (currentBuffer != buffer) {
+							logger.debug("Setting buffer to \"" + buffer + "\"");
+							memoryManager.bindBuffer(buffer);
+						}
 
-			//For each object that uses the current shader and buffer.
-			for (const std::shared_ptr<RenderComponent> renderComponent : object.second) {
-				//Check whether the object is visible from the camera (sphere-plane collision with six planes).
-				const Model& model = renderComponent->getModel();
-				const glm::vec3 scale = renderComponent->getScale();
-				const float maxScale = std::max({scale.x, scale.y, scale.z});
+						if (enableBlend && !blendOn) {
+							logger.debug("Enabling blend");
+							glEnable(GL_BLEND);
+							blendOn = true;
+						}
 
-				const std::pair<glm::vec3, float> sphere = std::make_pair(renderComponent->getTranslation(), model.radius * maxScale);
-
-				if (!model.viewCull || checkVisible(sphere, viewBox)) {
-					//Bind buffer here to avoid binding buffers with no objects using them.
-					if (!bufferBound) {
-						memoryManager.bindBuffer(i);
-						bufferBound = true;
+						renderObject(matStack, shaderInter,comp, state);
 					}
-
-					//Same for blend.
-					if (blend && !blendOn) {
-						glEnable(GL_BLEND);
-						blendOn = true;
-					}
-
-					renderObject(matStack, shader, renderComponent, state);
 				}
 			}
 		}
 	}
 
-	//Turn off blend if enabled.
 	if (blendOn) {
+		logger.debug("Disabling blend");
 		glDisable(GL_BLEND);
-	}*/
+	}
 }

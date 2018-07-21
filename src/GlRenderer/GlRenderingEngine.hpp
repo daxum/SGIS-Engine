@@ -128,9 +128,10 @@ private:
 	/**
 	 * Renders all the objects in objects. Transparency stuff is set up before this function is called.
 	 * @param pass The current rendering pass.
+	 * @param visibleObjects A set of objects visible on the screen.
 	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
 	 * @param camera The camera to use when rendering.
 	 * @param state The screen state, passed to shaders when setting uniforms.
 	 */
-	void renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
 };
