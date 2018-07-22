@@ -65,3 +65,9 @@ void Logger::fatal(const std::string& out) {
 		*output << "F::" + out + "\n";
 	}
 }
+
+void Logger::spam(const std::string& out) {
+	if (logMask & SPAM) {
+		*output << "S::" + out + "\n";
+	}
+}

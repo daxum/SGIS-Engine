@@ -60,7 +60,7 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 	//Render all visible objects
 
-	logger.debug("Found " + std::to_string(visibleComponents.size()) + " visible objects");
+	logger.spam("Found " + std::to_string(visibleComponents.size()) + " visible objects");
 
 	renderObjects(visibleComponents, renderManager->getComponentList(), camera, state);
 }

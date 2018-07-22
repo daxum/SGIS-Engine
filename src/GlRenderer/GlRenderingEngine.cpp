@@ -169,6 +169,8 @@ void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shad
 	shader->setPerObjectUniforms(data, matStack, state);
 
 	const GlMeshRenderData& renderData = memoryManager.getMeshData(data->getModel()->getModel().mesh);
+
+	logger.spam("Drawing \"" + data->getModel()->getModel().mesh + "\": " + std::to_string(renderData.indexStart) + ", " + std::to_string(renderData.indexCount));
 	glDrawElements(GL_TRIANGLES, renderData.indexCount, GL_UNSIGNED_INT, (void*) renderData.indexStart);
 
 	matStack.pop();
@@ -198,17 +200,17 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 					if (visibleObjects.count(comp.get())) {
 						//Set shader / buffer / blend if needed
 						if (currentShader != shader) {
-							logger.debug("Setting shader to \"" + shader + "\"");
+							logger.spam("Setting shader to \"" + shader + "\"");
 							glUseProgram(shaderObj->id);
 						}
 
 						if (currentBuffer != buffer) {
-							logger.debug("Setting buffer to \"" + buffer + "\"");
+							logger.spam("Setting buffer to \"" + buffer + "\"");
 							memoryManager.bindBuffer(buffer);
 						}
 
 						if (enableBlend && !blendOn) {
-							logger.debug("Enabling blend");
+							logger.spam("Enabling blend");
 							glEnable(GL_BLEND);
 							blendOn = true;
 						}
@@ -221,7 +223,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 	}
 
 	if (blendOn) {
-		logger.debug("Disabling blend");
+		logger.spam("Disabling blend");
 		glDisable(GL_BLEND);
 	}
 }

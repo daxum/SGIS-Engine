@@ -30,7 +30,8 @@ enum LogLevel {
 	INFO = 2,
 	WARN = 4,
 	ERROR = 8,
-	FATAL = 16
+	FATAL = 16,
+	SPAM = 32
 };
 
 //A simple thread-safe logger.
@@ -51,7 +52,7 @@ public:
 	~Logger();
 
 	/**
-	 * The below five functions write messages at their respective logging levels.
+	 * The below six functions write messages at their respective logging levels.
 	 * If that level's bit is not set, nothing will be written.
 	 * @param out The message to write.
 	 */
@@ -60,6 +61,7 @@ public:
 	void warn(const std::string& out);
 	void error(const std::string& out);
 	void fatal(const std::string& out);
+	void spam(const std::string& out);
 
 private:
 	//A pointer to the output stream to log messages to.

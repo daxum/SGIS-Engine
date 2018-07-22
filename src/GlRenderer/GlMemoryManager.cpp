@@ -96,7 +96,7 @@ void GlMemoryManager::uploadMeshData(std::shared_ptr<RenderBufferData> buffer, c
 		}
 
 		//Transfer vertex data
-		void* bufferData = glMapBufferRange(GL_COPY_READ_BUFFER, 0, transferSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+		void* bufferData = glMapBufferRange(GL_COPY_READ_BUFFER, 0, size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
 		memcpy(bufferData, vertexData, size);
 		glUnmapBuffer(GL_COPY_READ_BUFFER);
 
@@ -104,14 +104,18 @@ void GlMemoryManager::uploadMeshData(std::shared_ptr<RenderBufferData> buffer, c
 
 		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, offset, size);
 
+		logger.debug("Copied vertex data into buffer at offset " + std::to_string(offset) + " and size " + std::to_string(size));
+
 		//Transfer index data
-		bufferData = glMapBufferRange(GL_COPY_READ_BUFFER, 0, transferSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+		bufferData = glMapBufferRange(GL_COPY_READ_BUFFER, 0, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
 		memcpy(bufferData, indexData, indexSize);
 		glUnmapBuffer(GL_COPY_READ_BUFFER);
 
 		glBindBuffer(GL_COPY_WRITE_BUFFER, glBuffer->indexBufferId);
 
 		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, indexOffset, indexSize);
+
+		logger.debug("Copied index data into buffer at offset " + std::to_string(indexOffset) + " and size " + std::to_string(indexSize));
 	}
 	//No transfer, eg. stream buffers (or integrated gpus, if there's a way to detect them...)
 	else {

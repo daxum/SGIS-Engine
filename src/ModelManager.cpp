@@ -19,7 +19,7 @@
 #include "ModelManager.hpp"
 
 std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
-	logger.debug("Retrieving reference for model \"" + modelName + "\"");
+	logger.spam("Retrieving reference for model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
 	Mesh& mesh = meshMap.at(model.mesh);
@@ -42,7 +42,7 @@ std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
 }
 
 void ModelManager::removeReference(const std::string& modelName) {
-	logger.debug("Removing reference to model \"" + modelName + "\"");
+	logger.spam("Removing reference to model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
 	const std::string meshName = model.mesh;
@@ -54,7 +54,7 @@ void ModelManager::removeReference(const std::string& modelName) {
 	bool persistent = usage == BufferUsage::DEDICATED_LAZY;
 
 	model.references--;
-	logger.debug("Remaining references: " + std::to_string(model.references));
+	logger.spam("Remaining references: " + std::to_string(model.references));
 
 	if (model.references == 0 && !persistent) {
 		logger.debug("Removing transitory model \"" + modelName + "\"");
@@ -67,7 +67,7 @@ void ModelManager::removeReference(const std::string& modelName) {
 	//take up unnecessary space in the vertex buffers when they're not in use (they will remain
 	//present in the buffers, however, unless memory runs out)
 	mesh.removeUser();
-	logger.debug("Remaining mesh users: " + std::to_string(mesh.getUsers()));
+	logger.spam("Remaining mesh users: " + std::to_string(mesh.getUsers()));
 
 	if (mesh.getUsers() == 0) {
 		logger.debug("Removing unused mesh \"" + meshName + "\" from vertex buffers...");
