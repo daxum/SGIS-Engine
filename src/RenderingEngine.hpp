@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <array>
 
 #include <glm/glm.hpp>
 #include <tbb/concurrent_unordered_set.h>
@@ -156,7 +157,8 @@ protected:
 private:
 	/**
 	 * Checks whether the given object is visible from the camera.
-	 * @param cameraRadius The radius of the camera at the near plane (maximum radius of near plane box).
+	 * @param cameraBox The box of the camera, in camera coordinates. Goes
+	 *     {top left, top right, bottom left, bottom right}.
 	 * @param viewMat The view matrix, used to transform object position into camera space.
 	 * @param object The object to check.
 	 * @param fov The camera's field of view. Set to 0 for orthographic projection.
@@ -164,5 +166,5 @@ private:
 	 * @param farDist The distance for the far plane.
 	 * @return Whether the object can be seen from the camera.
 	 */
-	bool checkVisible(float cameraRadius, const glm::mat4& viewMat, RenderComponent* object, float fov, float nearDist, float farDist);
+	bool checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, RenderComponent* object, float nearDist, float farDist);
 };

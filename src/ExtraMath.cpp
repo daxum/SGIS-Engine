@@ -29,14 +29,6 @@ namespace {
 	thread_local std::mt19937 engine(ExMath::getTimeMillis() * ExMath::getTimeMillis());
 }
 
-float ExMath::interpolate(float start, float finish, float percent) {
-	return (finish - start) * percent + start;
-}
-
-glm::vec3 ExMath::interpolate3D(glm::vec3 start, glm::vec3 finish, float percent) {
-	return (1.0f - percent) * start + percent * finish;
-}
-
 glm::vec3 ExMath::bilinear3D(std::tuple<glm::vec3, glm::vec3, glm::vec3, glm::vec3> corners, float xWeight, float yWeight) {
 	return (1.0f - yWeight) * ((1.0f - xWeight) * std::get<0>(corners) + xWeight * std::get<1>(corners)) +
 			yWeight * ((1.0f - xWeight) * std::get<2>(corners) + xWeight * std::get<3>(corners));

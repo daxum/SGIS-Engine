@@ -61,16 +61,10 @@ namespace ExMath {
 	 * @param percent The percent to interpolate.
 	 * @return The interpolated value.
 	 */
-	float interpolate(float start, float finish, float percent);
-
-	/**
-	 * Similar to interpolate, but between two 3d points.
-	 * @param start Where to start interpolating.
-	 * @param finish Where to stop interpolating.
-	 * @param percent The percent to interpolate between the two points.
-	 * @return The interpolated point.
-	 */
-	glm::vec3 interpolate3D(glm::vec3 start, glm::vec3 finish, float percent);
+	template<typename T>
+	T interpolate(const T& start, const T& finish, const float percent) {
+		return (1.0f - percent) * start + percent * finish;
+	}
 
 	/**
 	 * Bilinear interpolation between three dimensional points.

@@ -40,18 +40,22 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 	glm::mat4 projection = camera->getProjection();
 	glm::mat4 view = camera->getView();
-	float fov = camera->getFOV();
 	float nearDist = camera->getNearFar().first;
 	float farDist = camera->getNearFar().second;
 
-	glm::vec3 corner = ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, view, width, height, nearDist, farDist).first;
-	glm::vec3 center = ExMath::screenToWorld(glm::vec2(width / 2.0f, height / 2.0f), projection, view, width, height, nearDist, farDist).first;
-
-	//TODO: use camera box
-	float cameraRadius = glm::distance(corner, center);
+	const std::array<std::pair<glm::vec2, glm::vec2>, 4> cameraBox = {
+		//Top left
+		ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, glm::mat4(1.0f), width, height, nearDist, farDist),
+		//Top right
+		ExMath::screenToWorld(glm::vec2(width, 0.0), projection, glm::mat4(1.0f), width, height, nearDist, farDist),
+		//Bottom left
+		ExMath::screenToWorld(glm::vec2(0.0, height), projection, glm::mat4(1.0f), width, height, nearDist, farDist),
+		//Bottom right
+		ExMath::screenToWorld(glm::vec2(width, height), projection, glm::mat4(1.0f), width, height, nearDist, farDist)
+	};
 
 	Engine::instance->parallelFor(0, components.size(), [&](size_t index) {
-		if (!(componentVec.at(index)->getModel()->getModel().viewCull) || checkVisible(cameraRadius, view, componentVec.at(index), fov, nearDist, farDist)) {
+		if (!(componentVec.at(index)->getModel()->getModel().viewCull) || checkVisible(cameraBox, view, componentVec.at(index), nearDist, farDist)) {
 			visibleComponents.insert(componentVec.at(index));
 		}
 	});
@@ -61,41 +65,79 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 	renderObjects(visibleComponents, renderManager->getComponentList(), camera, state);
 }
 
-bool RenderingEngine::checkVisible(float cameraRadius, const glm::mat4& viewMat, RenderComponent* object, float fov, float nearDist, float farDist) {
-	glm::vec3 objectPosCamera = glm::vec3(viewMat * glm::vec4(object->getTranslation(), 1.0f));
-	glm::vec3 renderScale = object->getScale();
-	float objectRadius = object->getModel()->getMesh().getRadius() * std::max({renderScale.x, renderScale.y, renderScale.z});
+bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, RenderComponent* object, float nearDist, float farDist) {
+	const float near = -nearDist;
+	const float far = -farDist;
 
-	//If object is behind near plane or beyond far plane, it can't be seen
-	if ((objectPosCamera.z - objectRadius) > -nearDist || (objectPosCamera.z + objectRadius) < -farDist) {
+	const glm::vec3 objectPosCamera = viewMat * glm::vec4(object->getTranslation(), 1.0f);
+	const float objectRadius = object->getModel()->getMesh().getRadius() * std::max({object->getScale().x, object->getScale().y, object->getScale().z});
+
+	//Object behind near plane or beyond far plane
+	if ((objectPosCamera.z - objectRadius) > near || (objectPosCamera.z + objectRadius) < far) {
 		return false;
 	}
 
-	//If object intersects camera, it's visible
-	if (glm::length(objectPosCamera) <= (cameraRadius + objectRadius)) {
-		return true;
+	//Object intersects near plane
+	if (((objectPosCamera.z + objectRadius) < near) != ((objectPosCamera.z - objectRadius) < near)) {
+		const float objectDist = near - objectPosCamera.z;
+		const float objectRadiusPlane = sqrt(objectRadius * objectRadius + objectDist * objectDist);
+
+		//Create bounding box from object sphere (top, bottom, right, left)
+		const glm::vec4 objectBoxSides(
+			objectPosCamera.y + objectRadiusPlane,
+			objectPosCamera.y - objectRadiusPlane,
+			objectPosCamera.x + objectRadiusPlane,
+			objectPosCamera.x - objectRadiusPlane
+		);
+
+		//Create bounding box from camera near plane
+		const glm::vec4 cameraBoxSides(
+			cameraBox.at(0).first.y,
+			cameraBox.at(2).first.y,
+			cameraBox.at(1).first.x,
+			cameraBox.at(3).first.x
+		);
+
+		return objectBoxSides.y < cameraBoxSides.x &&
+			   objectBoxSides.x > cameraBoxSides.y &&
+			   objectBoxSides.w < cameraBoxSides.z &&
+			   objectBoxSides.z > cameraBoxSides.w;
 	}
 
-	//If field of view 0, orthographic projection. Check if object intersects camera circle in x and y directions
-	if (fov == 0.0f) {
-		return glm::length(glm::vec3(objectPosCamera.x, objectPosCamera.y, 0.0f)) <= (cameraRadius + objectRadius);
+	//Object intersects far plane
+	if (((objectPosCamera.z + objectRadius) < far) != ((objectPosCamera.z - objectRadius) < far)) {
+		const float objectDist = far - objectPosCamera.z;
+		const float objectRadiusPlane = sqrt(objectRadius * objectRadius + objectDist * objectDist);
+
+		//Create bounding box from object sphere (top, bottom, right, left)
+		const glm::vec4 objectBoxSides(
+			objectPosCamera.y + objectRadiusPlane,
+			objectPosCamera.y - objectRadiusPlane,
+			objectPosCamera.x + objectRadiusPlane,
+			objectPosCamera.x - objectRadiusPlane
+		);
+
+		//Create bounding box from camera far plane
+		const glm::vec4 cameraBoxSides(
+			cameraBox.at(0).second.y,
+			cameraBox.at(2).second.y,
+			cameraBox.at(1).second.x,
+			cameraBox.at(3).second.x
+		);
+
+		return objectBoxSides.y < cameraBoxSides.x &&
+			   objectBoxSides.x > cameraBoxSides.y &&
+			   objectBoxSides.w < cameraBoxSides.z &&
+			   objectBoxSides.z > cameraBoxSides.w;
 	}
 
-	//Check against fov
+	const float percent = (near + objectPosCamera.z) / far;
 
-	glm::vec2 unitPos = glm::normalize(objectPosCamera);
+	//Width and height of the plane parallel to the near and far planes with same z coordinate as the object
+	const glm::vec2 cameraPlaneSize = {
+		std::abs(ExMath::interpolate<glm::vec2>(cameraBox.at(1).first, cameraBox.at(1).second, percent).x),
+		std::abs(ExMath::interpolate<glm::vec2>(cameraBox.at(1).first, cameraBox.at(1).second, percent).y)
+	};
 
-	//Translate towards camera by radius amount in the x and y directions
-	objectPosCamera -= glm::vec3(unitPos * objectRadius, 0.0f);
-
-	//Translate away from camera by the radius of the near plane's bounding box
-	glm::vec3 posStart = glm::vec3(unitPos * cameraRadius, 0.0f);
-
-	//Test if angle of vector in x and y directions is greater than field of view
-	glm::vec3 posVec = objectPosCamera - posStart;
-
-	float angleX = std::abs(asin(posVec.y / glm::length(posVec)));
-	float angleY = std::abs(asin(posVec.x / glm::length(posVec)));
-
-	return angleX <= fov && angleY <= fov;
+	return (std::abs(objectPosCamera.x) - objectRadius) <= cameraPlaneSize.x && (std::abs(objectPosCamera.y) - objectRadius) <= cameraPlaneSize.y;
 }
