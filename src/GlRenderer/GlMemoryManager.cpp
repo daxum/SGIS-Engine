@@ -59,16 +59,20 @@ std::shared_ptr<RenderBufferData> GlMemoryManager::createBuffer(const std::vecto
 	size_t vertexSize = 0;
 
 	for (const VertexElement& elem : vertexFormat) {
-		size += sizeFromVertexType(elem.type);
+		vertexSize += sizeFromVertexType(elem.type);
 	}
 
 	size_t offset = 0;
 
+	logger.debug("Buffer format:");
+
 	for (size_t i = 0; i < vertexFormat.size(); i++) {
 		size_t elementSize = sizeFromVertexType(vertexFormat.at(i).type);
+		uint32_t elementCount = (uint32_t) (elementSize / sizeof(float));
 
 		glEnableVertexAttribArray(i);
-		glVertexAttribPointer(i, (uint32_t) (elementSize / sizeof(float)), GL_FLOAT, GL_FALSE, vertexSize, (void*) offset);
+		glVertexAttribPointer(i, elementCount, GL_FLOAT, GL_FALSE, vertexSize, (void*) offset);
+		logger.debug("    Binding " + std::to_string(i) + ": Components=" + std::to_string(elementCount) + ", Stride=" + std::to_string(vertexSize) + ", offset=" + std::to_string(offset));
 
 		offset += elementSize;
 	}
