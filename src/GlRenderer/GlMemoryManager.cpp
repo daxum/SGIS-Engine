@@ -138,7 +138,6 @@ void GlMemoryManager::uploadMeshData(std::shared_ptr<RenderBufferData> buffer, c
 		bufferData = glMapBufferRange(GL_COPY_WRITE_BUFFER, indexOffset, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
 		memcpy(bufferData, indexData, indexSize);
 		glUnmapBuffer(GL_COPY_WRITE_BUFFER);
-
 	}
 
 	//Add mesh to data map
