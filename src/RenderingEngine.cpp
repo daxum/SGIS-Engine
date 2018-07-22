@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <algorithm>
+
 #include "RenderingEngine.hpp"
 #include "Engine.hpp"
 #include "ExtraMath.hpp"
@@ -67,7 +69,8 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 bool RenderingEngine::checkVisible(float cameraRadius, const glm::mat4& viewMat, std::shared_ptr<RenderComponent> object, float fov, float nearDist, float farDist) {
 	glm::vec3 objectPosCamera = glm::vec3(viewMat * glm::vec4(object->getTranslation(), 1.0f));
-	float objectRadius = object->getModel()->getMesh().getRadius();
+	glm::vec3 renderScale = object->getScale();
+	float objectRadius = object->getModel()->getMesh().getRadius() * std::max({renderScale.x, renderScale.y, renderScale.z});
 
 	//If object is behind near plane or beyond far plane, it can't be seen
 	if ((objectPosCamera.z - objectRadius) > nearDist || (objectPosCamera.z + objectRadius) < farDist) {
