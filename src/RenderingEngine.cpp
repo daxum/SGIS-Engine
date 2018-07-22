@@ -72,17 +72,10 @@ bool RenderingEngine::checkVisible(float cameraRadius, const glm::mat4& viewMat,
 	glm::vec3 renderScale = object->getScale();
 	float objectRadius = object->getModel()->getMesh().getRadius() * std::max({renderScale.x, renderScale.y, renderScale.z});
 
-	logger.spam("Object " + std::to_string((uintptr_t)object.get()) + " position: " + std::to_string(objectPosCamera.x) + ", " + std::to_string(objectPosCamera.y) + ", " + std::to_string(objectPosCamera.z) +
-				" | Radius: " + std::to_string(objectRadius));
-
 	//If object is behind near plane or beyond far plane, it can't be seen
 	if ((objectPosCamera.z - objectRadius) > -nearDist || (objectPosCamera.z + objectRadius) < -farDist) {
-		logger.spam("Object " + std::to_string((uintptr_t)object.get()) + " not within planes: z-rad=" + std::to_string(objectPosCamera.z - objectRadius) + ", -nearDist=" + std::to_string(-nearDist) +
-					", z+rad=" + std::to_string(objectPosCamera.z + objectRadius) + ", -farDist=" + std::to_string(-farDist));
 		return false;
 	}
-
-	logger.spam("Object " + std::to_string((uintptr_t)object.get()) + " within planes");
 
 	//If object intersects camera, it's visible
 	if (glm::length(objectPosCamera) <= (cameraRadius + objectRadius)) {
@@ -110,6 +103,5 @@ bool RenderingEngine::checkVisible(float cameraRadius, const glm::mat4& viewMat,
 	float angleX = std::abs(asin(posVec.y / glm::length(posVec)));
 	float angleY = std::abs(asin(posVec.x / glm::length(posVec)));
 
-	logger.spam("Calculated angles " + std::to_string(angleX) + " and " + std::to_string(angleY) + " with fov=" + std::to_string(fov));
 	return angleX <= fov && angleY <= fov;
 }

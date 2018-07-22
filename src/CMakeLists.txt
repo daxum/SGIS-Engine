@@ -4,7 +4,6 @@ set(ENGINE_FILES
 	ExtraMath.cpp
 	ModelLoader.cpp
 	Model.cpp
-	Logger.cpp
 	DisplayEngine.cpp
 	Screen.cpp
 	RenderComponent.cpp

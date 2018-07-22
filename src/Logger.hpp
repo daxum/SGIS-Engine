@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <fstream>
 
 #include "EngineConfig.hpp"
 
@@ -44,24 +45,66 @@ public:
 	 *     for a level is set, the logger will write messages for that level.
 	 * @param filename The filename to write to. Only used for LogType FILE.
 	 */
-	Logger(const LogType type, uint32_t mask, const std::string& filename = "");
+	Logger(const LogType type, uint32_t mask, const std::string& filename = "") :
+		freeOut(true),
+		logMask(mask) {
+
+		switch (type) {
+			case LogType::STDOUT: output = &std::cout; freeOut = false; break;
+			case LogType::FILE: output = new std::ofstream(filename); break;
+			default: throw std::runtime_error("Incomplete switch in Logger!");
+		}
+	}
 
 	/**
 	 * If necessary, frees the output stream.
 	 */
-	~Logger();
+	~Logger() {
+		if (freeOut) {
+			delete output;
+		}
+	}
 
 	/**
 	 * The below six functions write messages at their respective logging levels.
 	 * If that level's bit is not set, nothing will be written.
 	 * @param out The message to write.
 	 */
-	void debug(const std::string& out);
-	void info(const std::string& out);
-	void warn(const std::string& out);
-	void error(const std::string& out);
-	void fatal(const std::string& out);
-	void spam(const std::string& out);
+	void debug(const std::string& out) {
+		if (logMask & DEBUG) {
+			*output << "D::" + out + "\n";
+		}
+	}
+
+	void info(const std::string& out) {
+		if (logMask & INFO) {
+			*output << "I::" + out + "\n";
+		}
+	}
+
+	void warn(const std::string& out) {
+		if (logMask & WARN) {
+			*output << "W::" + out + "\n";
+		}
+	}
+
+	void error(const std::string& out) {
+		if (logMask & ERROR) {
+			*output << "E::" + out + "\n";
+		}
+	}
+
+	void fatal(const std::string& out) {
+		if (logMask & FATAL) {
+			*output << "F::" + out + "\n";
+		}
+	}
+
+	void spam(const std::string& out) {
+		if (logMask & SPAM) {
+			*output << "S::" + out + "\n";
+		}
+	}
 
 private:
 	//A pointer to the output stream to log messages to.
