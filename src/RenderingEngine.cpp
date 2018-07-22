@@ -31,6 +31,8 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 	//View culling to check if objects are within the camera's view
 
 	const std::unordered_set<std::shared_ptr<RenderComponent>>& components = renderManager->getComponentSet();
+	//Copy into vector for indexing later
+	std::vector<std::shared_ptr<RenderComponent>> componentVec(components.begin(), components.end());
 	tbb::concurrent_unordered_set<RenderComponent*> visibleComponents;
 
 	const float width = getWindowInterface().getWindowWidth();
@@ -48,15 +50,8 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 	float cameraRadius = glm::distance(corner, center);
 
 	Engine::instance->parallelFor(0, components.size(), [&](size_t index) {
-		auto iter = components.begin();
-
-		//This seems slow, but it's probably faster than copying everything into a vector.
-		for (size_t i = 0; i < index; i++) {
-			iter++;
-		}
-
-		if (!((*iter)->getModel()->getModel().viewCull) || checkVisible(cameraRadius, view, *iter, fov, nearDist, farDist)) {
-			visibleComponents.insert((*iter).get());
+		if (!(componentVec.at(index)->getModel()->getModel().viewCull) || checkVisible(cameraRadius, view, componentVec.at(index), fov, nearDist, farDist)) {
+			visibleComponents.insert(componentVec.at(index).get());
 		}
 	});
 
