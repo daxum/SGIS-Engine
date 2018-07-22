@@ -35,15 +35,15 @@ glm::vec3 ExMath::bilinear3D(std::tuple<glm::vec3, glm::vec3, glm::vec3, glm::ve
 }
 
 float ExMath::randomFloat(float min, float max) {
-	return interpolate(min, max, std::uniform_real_distribution<float>(0.0f, 1.0f)(engine));
+	return std::uniform_real_distribution<float>(min, max)(engine);
 }
 
 bool ExMath::randomBool() {
-	return (bool)(std::uniform_int_distribution<int>()(engine) & 1);
+	return std::uniform_int_distribution<unsigned char>(0, 1)(engine);
 }
 
 int ExMath::randomInt(int min, int max) {
-	return std::uniform_int_distribution<int>()(engine) % (max - min + 1) + min;
+	return std::uniform_int_distribution<int>(min, max)(engine);// % (max - min + 1) + min;
 }
 
 double ExMath::getTimeMillis() {
