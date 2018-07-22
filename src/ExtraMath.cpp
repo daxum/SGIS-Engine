@@ -43,7 +43,7 @@ bool ExMath::randomBool() {
 }
 
 int ExMath::randomInt(int min, int max) {
-	return std::uniform_int_distribution<int>(min, max)(engine);// % (max - min + 1) + min;
+	return std::uniform_int_distribution<int>(min, max)(engine);
 }
 
 double ExMath::getTimeMillis() {
