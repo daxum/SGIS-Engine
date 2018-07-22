@@ -50,7 +50,7 @@ public:
 	 * Returns an unsorted set of all render components.
 	 * @return A set of render components.
 	 */
-	const std::unordered_set<std::shared_ptr<RenderComponent>>& getComponentSet() { return renderComponentSet; }
+	const std::unordered_set<RenderComponent*>& getComponentSet() { return renderComponentSet; }
 
 	/**
 	 * Removes and readds the component to the render component list.
@@ -63,7 +63,7 @@ private:
 	//Sorts all RenderComponents by their shader for less context switching.
 	RenderPassList renderComponents;
 	//A set of all RenderComponents, to avoid unneccessary casting.
-	std::unordered_set<std::shared_ptr<RenderComponent>> renderComponentSet;
+	std::unordered_set<RenderComponent*> renderComponentSet;
 
 	/**
 	 * Adds the component to one of the internal lists based on its model.

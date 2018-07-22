@@ -24,7 +24,7 @@ void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	getComponentSet(renderComp->getModel()).insert(renderComp);
-	renderComponentSet.insert(renderComp);
+	renderComponentSet.insert(renderComp.get());
 	renderComp->setManager(this);
 }
 
@@ -32,7 +32,7 @@ void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) 
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	getComponentSet(renderComp->getModel()).erase(renderComp);
-	renderComponentSet.erase(renderComp);
+	renderComponentSet.erase(renderComp.get());
 	renderComp->setManager(nullptr);
 }
 

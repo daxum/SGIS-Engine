@@ -30,9 +30,9 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 	//View culling to check if objects are within the camera's view
 
-	const std::unordered_set<std::shared_ptr<RenderComponent>>& components = renderManager->getComponentSet();
+	const std::unordered_set<RenderComponent*>& components = renderManager->getComponentSet();
 	//Copy into vector for indexing later
-	std::vector<std::shared_ptr<RenderComponent>> componentVec(components.begin(), components.end());
+	std::vector<RenderComponent*> componentVec(components.begin(), components.end());
 	tbb::concurrent_unordered_set<RenderComponent*> visibleComponents;
 
 	const float width = getWindowInterface().getWindowWidth();
@@ -47,11 +47,12 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 	glm::vec3 corner = ExMath::screenToWorld(glm::vec2(0.0, 0.0), projection, view, width, height, nearDist, farDist).first;
 	glm::vec3 center = ExMath::screenToWorld(glm::vec2(width / 2.0f, height / 2.0f), projection, view, width, height, nearDist, farDist).first;
 
+	//TODO: use camera box
 	float cameraRadius = glm::distance(corner, center);
 
 	Engine::instance->parallelFor(0, components.size(), [&](size_t index) {
 		if (!(componentVec.at(index)->getModel()->getModel().viewCull) || checkVisible(cameraRadius, view, componentVec.at(index), fov, nearDist, farDist)) {
-			visibleComponents.insert(componentVec.at(index).get());
+			visibleComponents.insert(componentVec.at(index));
 		}
 	});
 
@@ -60,7 +61,7 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 	renderObjects(visibleComponents, renderManager->getComponentList(), camera, state);
 }
 
-bool RenderingEngine::checkVisible(float cameraRadius, const glm::mat4& viewMat, std::shared_ptr<RenderComponent> object, float fov, float nearDist, float farDist) {
+bool RenderingEngine::checkVisible(float cameraRadius, const glm::mat4& viewMat, RenderComponent* object, float fov, float nearDist, float farDist) {
 	glm::vec3 objectPosCamera = glm::vec3(viewMat * glm::vec4(object->getTranslation(), 1.0f));
 	glm::vec3 renderScale = object->getScale();
 	float objectRadius = object->getModel()->getMesh().getRadius() * std::max({renderScale.x, renderScale.y, renderScale.z});

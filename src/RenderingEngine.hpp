@@ -164,5 +164,5 @@ private:
 	 * @param farDist The distance for the far plane.
 	 * @return Whether the object can be seen from the camera.
 	 */
-	bool checkVisible(float cameraRadius, const glm::mat4& viewMat, std::shared_ptr<RenderComponent> object, float fov, float nearDist, float farDist);
+	bool checkVisible(float cameraRadius, const glm::mat4& viewMat, RenderComponent* object, float fov, float nearDist, float farDist);
 };
