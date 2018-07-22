@@ -161,7 +161,6 @@ private:
 	 *     {top left, top right, bottom left, bottom right}.
 	 * @param viewMat The view matrix, used to transform object position into camera space.
 	 * @param object The object to check.
-	 * @param fov The camera's field of view. Set to 0 for orthographic projection.
 	 * @param nearDist The distance for the near plane.
 	 * @param farDist The distance for the far plane.
 	 * @return Whether the object can be seen from the camera.
