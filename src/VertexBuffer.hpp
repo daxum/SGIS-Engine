@@ -121,6 +121,12 @@ public:
 		return vertexElements.at(name).size;
 	}
 
+	/**
+	 * Gets the size of one vertex in the buffer.
+	 * @return The size of a single vertex.
+	 */
+	size_t getVertexSize() { return vertexSize; }
+
 private:
 	//Vertex element map.
 	std::unordered_map<std::string, VertexElementData> vertexElements;

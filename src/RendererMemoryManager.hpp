@@ -91,7 +91,7 @@ public:
 	 * @param indices Indices for the mesh to load into an index buffer.
 	 * @throw std::runtime_error If the name already exists or if out of memory.
 	 */
-	void addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, const std::vector<uint32_t>& indices);
+	void addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, std::vector<uint32_t> indices);
 
 	/**
 	 * Checks whether the mesh's data is stored in the given buffer. If it is, it is marked

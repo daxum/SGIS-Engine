@@ -34,7 +34,7 @@ void RendererMemoryManager::addBuffer(const std::string& name, const VertexBuffe
 	logger.info("Created buffer \"" + name + "\"");
 }
 
-void RendererMemoryManager::addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, const std::vector<uint32_t>& indices) {
+void RendererMemoryManager::addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, std::vector<uint32_t> indices) {
 	BufferData& bufferData = buffers.at(buffer);
 
 	if (bufferData.vertexAllocations.count(name)) {
@@ -46,6 +46,11 @@ void RendererMemoryManager::addMesh(const std::string& name, const std::string& 
 
 	bufferData.vertexAllocations.insert({name, vertexAlloc});
 	bufferData.indexAllocations.insert({name, indexAlloc});
+
+	//Set index offsets
+	for (size_t i = 0; i < indices.size(); i++) {
+		indices.at(i) += vertexAlloc->start / bufferData.buffer.getVertexSize();
+	}
 
 	uploadMeshData(bufferData.buffer.getRenderData(), name, vertexAlloc->start, vertexAlloc->size, vertexData, indexAlloc->start, indexAlloc->size, indices.data());
 
