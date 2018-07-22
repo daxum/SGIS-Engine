@@ -202,11 +202,13 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 						if (currentShader != shader) {
 							logger.spam("Setting shader to \"" + shader + "\"");
 							glUseProgram(shaderObj->id);
+							currentShader = shader;
 						}
 
 						if (currentBuffer != buffer) {
 							logger.spam("Setting buffer to \"" + buffer + "\"");
 							memoryManager.bindBuffer(buffer);
+							currentBuffer = buffer;
 						}
 
 						if (enableBlend && !blendOn) {
