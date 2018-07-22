@@ -200,6 +200,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 						//Set shader / buffer / blend if needed
 						if (currentShader != shader) {
 							glUseProgram(shaderObj->id);
+							shaderInter->setGlobalUniforms(camera, state);
 							currentShader = shader;
 						}
 
