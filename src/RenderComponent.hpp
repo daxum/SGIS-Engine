@@ -59,13 +59,13 @@ public:
 	 * Returns the scale of this object.
 	 * @return The scale of this object.
 	 */
-	glm::vec3 getScale();
+	glm::vec3 getScale() { return scale; }
 
 	/**
 	 * Returns the color of this object.
 	 * @return The color of this object.
 	 */
-	glm::vec3 getColor();
+	glm::vec3 getColor() { return color; }
 
 	/**
 	 * Sets the renderComponent's scale.
@@ -99,13 +99,10 @@ public:
 private:
 	//Which model to use for this object.
 	std::shared_ptr<ModelRef> model;
-
 	//The color of the object
 	glm::vec3 color;
-
 	//The scale of the object's model.
 	glm::vec3 scale;
-
 	//The manager for this component, null if none.
 	RenderComponentManager* manager;
 };

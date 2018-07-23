@@ -24,7 +24,8 @@ RenderComponent::RenderComponent(std::string model, glm::vec3 color, glm::vec3 r
 	Component(RENDER_COMPONENT_NAME),
 	model(Engine::instance->getModel(model)),
 	color(color),
-	scale(renderScale) {
+	scale(renderScale),
+	manager(nullptr) {
 
 }
 
@@ -32,7 +33,8 @@ RenderComponent::RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 colo
 	Component(RENDER_COMPONENT_NAME),
 	model(model),
 	color(color),
-	scale(renderScale) {
+	scale(renderScale),
+	manager(nullptr) {
 
 }
 
@@ -42,14 +44,6 @@ glm::vec3 RenderComponent::getTranslation() {
 
 glm::quat RenderComponent::getRotation() {
 	return  lockParent()->getPhysics()->getRotation();
-}
-
-glm::vec3 RenderComponent::getScale() {
-	return scale;
-}
-
-glm::vec3 RenderComponent::getColor() {
-	return color;
 }
 
 void RenderComponent::setModel(std::shared_ptr<ModelRef> newModel) {
