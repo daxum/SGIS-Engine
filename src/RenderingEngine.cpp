@@ -95,7 +95,7 @@ bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::ve
 			cameraBox.at(0).first.y,
 			cameraBox.at(2).first.y,
 			cameraBox.at(1).first.x,
-			cameraBox.at(3).first.x
+			cameraBox.at(0).first.x
 		);
 
 		return objectBoxSides.y < cameraBoxSides.x &&
@@ -122,7 +122,7 @@ bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::ve
 			cameraBox.at(0).second.y,
 			cameraBox.at(2).second.y,
 			cameraBox.at(1).second.x,
-			cameraBox.at(3).second.x
+			cameraBox.at(0).second.x
 		);
 
 		return objectBoxSides.y < cameraBoxSides.x &&

@@ -43,6 +43,8 @@ public:
 
 	/**
 	 * Retrieves the near and far plane.
+	 * Note: For orthographic projection, the near plane should probably be 1.0f,
+	 * due to how screen coordinates are reversed.
 	 * @return A pair with the near plane as the first element and the far plane as the second.
 	 */
 	virtual std::pair<float, float> getNearFar() const = 0;
