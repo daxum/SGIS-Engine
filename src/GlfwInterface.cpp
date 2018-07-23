@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "GlfwInterface.hpp"
-#include "GlRenderer/GlfwKeyTranslator.hpp"
+#include "GlfwKeyTranslator.hpp"
 
 GlfwInterface::GlfwInterface(DisplayEngine& display, RenderingEngine* renderer) :
 	display(display),

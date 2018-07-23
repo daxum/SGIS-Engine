@@ -19,10 +19,16 @@
 #include <tbb/parallel_for.h>
 
 #include "Engine.hpp"
-#include "GlRenderer/GlRenderingEngine.hpp"
-#include "VkRenderer/VkRenderingEngine.hpp"
 #include "ExtraMath.hpp"
 #include "LinearMath/btThreads.h"
+
+#ifdef USE_OPENGL
+	#include "GlRenderer/GlRenderingEngine.hpp"
+#endif
+
+#ifdef USE_VULKAN
+	#include "VkRenderer/VkRenderingEngine.hpp"
+#endif
 
 Engine* Engine::instance = nullptr;
 
@@ -42,13 +48,23 @@ Engine::Engine(const EngineConfig& config) :
 
 	switch(config.renderer.renderType) {
 		case Renderer::OPEN_GL:
+#ifdef USE_OPENGL
 			logger.info("Using OpenGL renderer.");
 			renderer.reset(new GlRenderingEngine(display, config.rendererLog, config.loaderLog));
 			break;
+#else
+			logger.fatal("Attempt to use openGL rendering engine when opengl isn't enabled!");
+			throw std::runtime_error("OpenGL rendering engine isn't enabled!");
+#endif
 		case Renderer::VULKAN:
+#ifdef USE_VULKAN
 			logger.info("Using Vulkan renderer.");
 			renderer.reset(new VkRenderingEngine(display, config.rendererLog, config.loaderLog));
 			break;
+#else
+			logger.fatal("Attempt to use vulkan rendering engine when vulkan isn't enabled!");
+			throw std::runtime_error("Vulkan rendering engine isn't enabled!");
+#endif
 		default:
 			logger.fatal("Unknown renderer requested!");
 			throw std::runtime_error("Incomplete switch in Engine::Engine()");

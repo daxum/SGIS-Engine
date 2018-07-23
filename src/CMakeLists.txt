@@ -41,6 +41,9 @@ if (USE_OPENGL)
 		GlRenderer/GlMemoryManager.cpp
 		GlRenderer/gl_core_4_1.c
 	)
+
+	#TODO: add_compile_definitions(USE_OPENGL) - cmake 3.12
+	add_definitions(-DUSE_OPENGL)
 endif()
 
 if (USE_VULKAN)
@@ -51,6 +54,8 @@ if (USE_VULKAN)
 		VkRenderer/VkShaderLoader.cpp
 		VkRenderer/VkShader.cpp
 	)
+
+	add_definitions(-DUSE_VULKAN)
 endif()
 
 add_library(Engine STATIC ${ENGINE_FILES})
