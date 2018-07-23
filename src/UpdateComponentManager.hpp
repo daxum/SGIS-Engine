@@ -27,5 +27,5 @@ public:
 	/**
 	 * Updates all the update components, non-concurrently.
 	 */
-	void update();
+	void update() override;
 };

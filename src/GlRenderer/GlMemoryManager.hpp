@@ -91,7 +91,7 @@ protected:
 	 * @return A pointer to a GlBufferData struct that contains the vertex and index buffer ids.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size);
+	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) override;
 
 	/**
 	 * Uploads the vertex and index data into the given buffer.
@@ -104,13 +104,13 @@ protected:
 	 * @param indexSize The size of the index data.
 	 * @param indexData The index data to upload.
 	 */
-	void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData);
+	void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override;
 
 	/**
 	 * Removes the mesh's render data from the render map.
 	 * @param mesh The name of the mesh to remove.
 	 */
-	void invalidateMesh(const std::string& mesh);
+	void invalidateMesh(const std::string& mesh) override;
 
 private:
 	//Stores the rendering data for all uploaded meshes.

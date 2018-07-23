@@ -32,20 +32,20 @@ public:
 	 * Calculates a view matrix to use in rendering.
 	 * @return the view matrix.
 	 */
-	glm::mat4 getView() const { return glm::lookAt(pos, pos + lookDir, up); }
+	glm::mat4 getView() const override { return glm::lookAt(pos, pos + lookDir, up); }
 
 	/**
 	 * Creates a projection matrix.
 	 * @return the projection matrix.
 	 */
-	glm::mat4 getProjection() const { return projection; }
+	glm::mat4 getProjection() const override { return projection; }
 
 	/**
 	 * Sets the projection matrix.
 	 * This will be called before the parent screen is added to the
 	 * display, so be careful.
 	 */
-	void setProjection() {
+	void setProjection() override {
 		float width = Engine::instance->getWindowInterface().getWindowWidth();
 		float height = Engine::instance->getWindowInterface().getWindowHeight();
 
@@ -55,17 +55,17 @@ public:
 	/**
 	 * Gets the near and far planes.
 	 */
-	std::pair<float, float> getNearFar() const { return {near, far}; }
+	std::pair<float, float> getNearFar() const override { return {near, far}; }
 
 	/**
 	 * Gets the field of view.
 	 */
-	float getFOV() const { return ExMath::PI / 4.0f; }
+	float getFOV() const override { return ExMath::PI / 4.0f; }
 
 	/**
 	 * Updates the camera. Does nothing.
 	 */
-	void update() {}
+	void update() override {}
 
 	//Simple camera variables.
 	glm::vec3 pos;

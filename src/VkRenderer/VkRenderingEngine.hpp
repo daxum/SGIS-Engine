@@ -46,43 +46,43 @@ public:
 	/**
 	 * Initializes vulkan.
 	 */
-	void init();
+	void init() override;
 
 	/**
 	 * Gets the memory manager.
 	 * @return the memory manager.
 	 */
-	RendererMemoryManager* getMemoryManager() { return nullptr; /** TODO **/ }
+	RendererMemoryManager* getMemoryManager() override { return nullptr; /** TODO **/ }
 
 	/**
 	 * Finishes initialization, uploads stuff to the gpu.
 	 */
-	void finishLoad();
+	void finishLoad() override;
 
 	/**
 	 * Called clearBuffers for lack of a better name. Clears the depth and stencil
 	 * buffers, but not the color buffer.
 	 */
-	void clearBuffers();
+	void clearBuffers() override;
 
 	/**
 	 * Called when drawing is done and the results can be displayed on the screen.
 	 * Also sets up the pipeline for the next frame.
 	 */
-	void present();
+	void present() override;
 
 	/**
 	 * Called when the window size has changed and the viewport needs to be updated.
 	 * @param width The new window width.
 	 * @param height The new window height.
 	 */
-	void setViewport(int width, int height);
+	void setViewport(int width, int height) override;
 
 	/**
 	 * Gets the interface to the window, provides things like window size.
 	 * @return The interface to the window system.
 	 */
-	const WindowSystemInterface& getWindowInterface() const { return interface; }
+	const WindowSystemInterface& getWindowInterface() const override { return interface; }
 
 protected:
 	/**
@@ -92,7 +92,7 @@ protected:
 	 * @param camera The current camera.
 	 * @param state User-provided screen state.
 	 */
-	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
+	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) override;
 
 private:
 	constexpr static size_t MAX_ACTIVE_FRAMES = 2;

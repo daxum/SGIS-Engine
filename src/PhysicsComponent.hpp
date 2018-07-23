@@ -49,7 +49,7 @@ public:
 	/**
 	 * Called from Component when the parent object is set.
 	 */
-	void onParentSet();
+	void onParentSet() override;
 
 	/**
 	 * Returns the physics body associated with this component.
@@ -64,12 +64,12 @@ public:
 	/**
 	 * Used by rendering.
 	 */
-	glm::vec3 getTranslation();
+	glm::vec3 getTranslation() override;
 
 	/**
 	 * Also used by rendering.
 	 */
-	glm::quat getRotation();
+	glm::quat getRotation() override;
 
 	/**
 	 * Returns a unit vector representing the direction the object is facing.

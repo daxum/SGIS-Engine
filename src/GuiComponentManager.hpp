@@ -33,12 +33,12 @@ public:
 	 * Does nothing at the moment, might change later to allow gui components to update themselves.
 	 * @param screen The parent screen of this gui.
 	 */
-	void update() {}
+	void update() override {}
 
 	/**
 	 * See InputListener.hpp.
 	 */
-	bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event);
+	bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override;
 
 private:
 	//The component the mouse is currently over.
@@ -65,5 +65,5 @@ private:
 	 * Sets the current hovered component to nullptr if neccessary.
 	 * @param comp The component that was removed.
 	 */
-	void onComponentRemove(std::shared_ptr<Component> comp);
+	void onComponentRemove(std::shared_ptr<Component> comp) override;
 };

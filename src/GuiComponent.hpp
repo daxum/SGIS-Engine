@@ -33,7 +33,7 @@ public:
 	/**
 	 * Sets this component as the physics provider if there isn't one already.
 	 */
-	void onParentSet() {
+	void onParentSet() override {
 		if (!lockParent()->hasPhysics()) {
 			lockParent()->setPhysics(this);
 		}
@@ -86,7 +86,7 @@ public:
 	 * Gets the translation of the object.
 	 * @return The translation of the object.
 	 */
-	glm::vec3 getTranslation() { return pos; }
+	glm::vec3 getTranslation() override { return pos; }
 
 protected:
 	//The position of the object.

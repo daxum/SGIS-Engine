@@ -28,5 +28,5 @@ public:
 	/**
 	 * Updates all ai components, by calling their update functions.
 	 */
-	void update();
+	void update() override;
 };

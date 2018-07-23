@@ -35,7 +35,7 @@ public:
 	 * @param name A name given to the loaded shader.
 	 * @param info Information about the shader to be loaded.
 	 */
-	void loadShader(std::string name, const ShaderInfo& info);
+	void loadShader(std::string name, const ShaderInfo& info) override;
 
 private:
 	//Map loaded shaders are added to.

@@ -25,7 +25,7 @@ class AnimationComponentManager : public ComponentManager {
 public:
 	AnimationComponentManager() : ComponentManager(ANIMATION_COMPONENT_NAME) {}
 
-	void update() {
+	void update() override {
 		for (std::shared_ptr<Component> comp : components) {
 			std::static_pointer_cast<AnimationComponent>(comp)->update();
 		}

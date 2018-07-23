@@ -43,7 +43,7 @@ public:
 	/**
 	 * Binds the shader for use in rendering.
 	 */
-	void bind();
+	void bind() override;
 
 	/**
 	 * Sets a uniform variable.
@@ -51,14 +51,14 @@ public:
 	 * @param name The name of the uniform in the shader.
 	 * @param data The value to set the uniform data to.
 	 */
-	void setUniform(UniformType type, const std::string& name, const void* data);
+	void setUniform(UniformType type, const std::string& name, const void* data) override;
 
 	/**
 	 * Sets the texture at the given index to the provided name.
 	 * @param name The name of the texture to bind.
 	 * @param index The texture unit to bind the texture to.
 	 */
-	void setTexture(const std::string& name, unsigned int index);
+	void setTexture(const std::string& name, unsigned int index) override;
 
 private:
 	//Used for deleting.

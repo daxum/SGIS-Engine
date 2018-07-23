@@ -52,7 +52,7 @@ public:
 	 * Called from Component, sets the rendering component if one is not
 	 * already present.
 	 */
-	void onParentSet();
+	void onParentSet() override;
 
 	/**
 	 * Sets the text to be rendered. Regenerates the text model.

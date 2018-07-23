@@ -38,7 +38,7 @@ public:
 	/**
 	 * RenderComponents don't update.
 	 */
-	void update() {}
+	void update() override {}
 
 	/**
 	 * Gets a sorted list of all render components (by buffer, then shader, then model).
@@ -69,13 +69,13 @@ private:
 	 * Adds the component to one of the internal lists based on its model.
 	 * @param comp The component to be added.
 	 */
-	void onComponentAdd(std::shared_ptr<Component> comp);
+	void onComponentAdd(std::shared_ptr<Component> comp) override;
 
 	/**
 	 * Undoes onComponentAdd.
 	 * @param comp The component to un-add.
 	 */
-	void onComponentRemove(std::shared_ptr<Component> comp);
+	void onComponentRemove(std::shared_ptr<Component> comp) override;
 
 	/**
 	 * Helper function to get the set a component belongs in.

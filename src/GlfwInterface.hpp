@@ -47,33 +47,33 @@ public:
 	 * game should stop.
 	 * @return Whether to terminate the game due to a closed window.
 	 */
-	bool windowClosed() const { return glfwWindowShouldClose(window); }
+	bool windowClosed() const override { return glfwWindowShouldClose(window); }
 
 	/**
 	 * Polls for mouse / keyboard / etc events.
 	 */
-	void pollEvents() const { glfwPollEvents(); }
+	void pollEvents() const override { glfwPollEvents(); }
 
 	/**
 	 * Captures / uncaptures the mouse.
 	 * @param capture Whether to capture the mouse or not.
  	 */
-	void captureMouse(bool capture) const;
+	void captureMouse(bool capture) const override;
 
 	/**
 	 * Gets the window's width, in pixels.
 	 */
-	float getWindowWidth() const { return width; }
+	float getWindowWidth() const override { return width; }
 
 	/**
 	 * Gets the window's height, in pixels.
 	 */
-	float getWindowHeight() const { return height; }
+	float getWindowHeight() const override { return height; }
 
 	/**
 	 * Gets the mouse position from the system.
 	 */
-	glm::vec2 queryMousePos() const;
+	glm::vec2 queryMousePos() const override;
 
 	/**
 	 * Gets the internal window object.

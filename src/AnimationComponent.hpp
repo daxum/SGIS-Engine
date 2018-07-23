@@ -40,7 +40,7 @@ public:
 	/**
 	 * Sets the animation component as the physics provider.
 	 */
-	void onParentSet();
+	void onParentSet() override;
 
 	/**
 	 * Sets the position's offset.
@@ -52,13 +52,13 @@ public:
 	 * Gets the translation of the object from the animation.
 	 * @return The translation of the object.
 	 */
-	glm::vec3 getTranslation();
+	glm::vec3 getTranslation() override;
 
 	/**
 	 * Gets the rotation of the object.
 	 * @return The rotation.
 	 */
-	glm::quat getRotation();
+	glm::quat getRotation() override;
 
 private:
 	//The spline curve that defines this animation.

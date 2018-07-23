@@ -43,7 +43,7 @@ public:
 	 * @param info The information about the shader.
 	 * @throw runtime_error if loading failed.
 	 */
-	void loadShader(std::string name, const ShaderInfo& info);
+	void loadShader(std::string name, const ShaderInfo& info) override;
 
 private:
 	std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap;

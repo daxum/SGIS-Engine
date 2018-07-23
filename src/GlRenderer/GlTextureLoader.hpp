@@ -55,7 +55,7 @@ public:
 	 * @param mipmap Whether to generate mipmaps for the texture.
 	 * @throw runtime_error if the texture could not be created.
 	 */
-	void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap);
+	void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap) override;
 
 	/**
 	 * Loads a cubemap texture.
@@ -66,7 +66,7 @@ public:
 	 * @param magFilter The filter to use the upscaling.
 	 * @param mipmap Whether to generate mipmaps.
 	 */
-	void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap);
+	void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) override;
 
 protected:
 	/**

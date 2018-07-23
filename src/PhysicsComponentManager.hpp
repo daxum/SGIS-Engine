@@ -34,7 +34,7 @@ public:
 	 * Updates all physics components.
 	 * @param screen The screen that owns this PhysicsComponentManager.
 	 */
-	void update();
+	void update() override;
 
 	/**
 	 * Sets the gravity for the world.
@@ -66,12 +66,12 @@ private:
 	/**
 	 * Overridden from ComponentManager.
 	 */
-	void onComponentAdd(std::shared_ptr<Component> comp);
+	void onComponentAdd(std::shared_ptr<Component> comp) override;
 
 	/**
 	 * Overridden from ComponentManager.
 	 */
-	void onComponentRemove(std::shared_ptr<Component> comp);
+	void onComponentRemove(std::shared_ptr<Component> comp) override;
 
 	/**
 	 * Called from bullet, used for collision callbacks in physics objects.
