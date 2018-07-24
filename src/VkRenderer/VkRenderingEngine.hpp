@@ -27,6 +27,7 @@
 #include "DisplayEngine.hpp"
 #include "GlfwInterface.hpp"
 #include "VkObjectHandler.hpp"
+#include "VkMemoryManager.hpp"
 
 class VkRenderingEngine : public RenderingEngine {
 public:
@@ -58,12 +59,6 @@ public:
 	 * Finishes initialization, uploads stuff to the gpu.
 	 */
 	void finishLoad() override;
-
-	/**
-	 * Called clearBuffers for lack of a better name. Clears the depth and stencil
-	 * buffers, but not the color buffer.
-	 */
-	void clearBuffers() override;
 
 	/**
 	 * Called when drawing is done and the results can be displayed on the screen.
@@ -103,6 +98,8 @@ private:
 	VkObjectHandler objectHandler;
 	//Shader map
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
+	//Vulkan memory manager, handles buffers and such.
+	VkMemoryManager* memoryManager;
 
 	//Rendering semaphores, one for each frame
 	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> imageAvailable;

@@ -76,11 +76,6 @@ public:
 	void finishLoad() override {}
 
 	/**
-	 * Clears the depth and stencil buffers.
-	 */
-	void clearBuffers() override;
-
-	/**
 	 * Swaps the buffers and clears for the next frame.
 	 */
 	void present() override;

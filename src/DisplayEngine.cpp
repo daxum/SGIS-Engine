@@ -114,7 +114,6 @@ void DisplayEngine::render(float partialTicks) {
 	//don't effect each other's rendering.
 	for (std::shared_ptr<Screen> screen : screenStack.back()) {
 		renderer->render(screen->getRenderData(), screen->getCamera(), screen->getState());
-		renderer->clearBuffers();
 	}
 
 	renderer->present();

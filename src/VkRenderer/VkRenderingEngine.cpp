@@ -30,6 +30,7 @@ VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& re
 	RenderingEngine(/** TODO **/ std::shared_ptr<TextureLoader>(), std::make_shared<VkShaderLoader>(objectHandler, loaderLogger, shaderMap), rendererLog, loaderLog),
 	interface(display, this),
 	objectHandler(logger),
+	memoryManager(nullptr),
 	currentFrame(0) {
 
 	if (!glfwInit()) {
@@ -48,6 +49,7 @@ VkRenderingEngine::~VkRenderingEngine() {
 	}
 
 	shaderMap.clear();
+	delete memoryManager;
 	objectHandler.deinit();
 
 	GLFWwindow* window = interface.getWindow();
@@ -82,9 +84,10 @@ void VkRenderingEngine::init() {
 
 	interface.init(window);
 
-	//Create vulkan objects
+	//Create vulkan objects and memory manager
 
 	objectHandler.init(window);
+	memoryManager = new VkMemoryManager(Engine::instance->getConfig().rendererLog, objectHandler);
 
 	//Create semaphores
 
@@ -111,10 +114,6 @@ void VkRenderingEngine::finishLoad() {
 	/** TODO **/
 }
 
-void VkRenderingEngine::clearBuffers() {
-	/** TODO **/
-}
-
 void VkRenderingEngine::present() {
 	/** TODO **/
 }
@@ -128,8 +127,8 @@ void VkRenderingEngine::setViewport(int width, int height) {
 }
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	//Crash if a frame takes too long to render - this usually happens because something is wrong with the fences. There are 9 0's in the second number below.
-	if (vkWaitForFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame), VK_TRUE, 20u * 1000000000u) == VK_TIMEOUT) {
+	//Crash if a frame takes too long to render - this usually happens because something is wrong with the fences.
+	if (vkWaitForFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame), VK_TRUE, 20u * 1'000'000'000u) == VK_TIMEOUT) {
 		throw std::runtime_error("Fence wait timed out!");
 	}
 

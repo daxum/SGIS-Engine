@@ -53,6 +53,7 @@ if (USE_VULKAN)
 		VkRenderer/VkExtensionFuncDefs.cpp
 		VkRenderer/VkShaderLoader.cpp
 		VkRenderer/VkShader.cpp
+		VkRenderer/VkMemoryManager.cpp
 	)
 
 	add_definitions(-DUSE_VULKAN)

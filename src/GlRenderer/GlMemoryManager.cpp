@@ -82,8 +82,8 @@ std::shared_ptr<RenderBufferData> GlMemoryManager::createBuffer(const std::vecto
 	return data;
 }
 
-void GlMemoryManager::uploadMeshData(std::shared_ptr<RenderBufferData> buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) {
-	std::shared_ptr<GlBufferData> glBuffer = std::static_pointer_cast<GlBufferData>(buffer);
+void GlMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) {
+	std::shared_ptr<const GlBufferData> glBuffer = std::static_pointer_cast<const GlBufferData>(buffer.getRenderData());
 
 	if (glBuffer->useTransfer) {
 		logger.debug("Using transfer for mesh \"" + mesh + "\"");

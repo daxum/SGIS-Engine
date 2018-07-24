@@ -19,18 +19,20 @@
 #pragma once
 
 #include <vector>
+#include <bitset>
+
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 #include "Logger.hpp"
 
 struct QueueFamilyIndices {
-	int graphicsFamily = -1;
-	int presentFamily = -1;
+	uint32_t graphicsFamily;
+	uint32_t presentFamily;
+	uint32_t transferFamily;
 
-	bool isComplete() {
-		return graphicsFamily >= 0 && presentFamily >= 0;
-	}
+	//1 bit - graphics, 2 bit - present, 4 bit - transfer
+	std::bitset<3> foundFamilies;
 };
 
 struct SwapchainSupportDetails {
@@ -57,6 +59,22 @@ public:
 	 */
 	void deinit();
 
+	/**
+	 * Returns whether the graphics and present queues are separate.
+	 * @return true if graphics and present queues are different, false if same.
+	 */
+	bool hasUniquePresent() { return presentQueueIndex != graphicsQueueIndex; }
+
+	/**
+	 * Returns whether the graphics and transfer queues are separate.
+	 * @return true if graphics and transfer queues are different, false if same.
+	 */
+	bool hasUniqueTransfer() { return transferQueueIndex != graphicsQueueIndex; }
+
+	/**
+	 * Tons of getters.
+	 */
+	VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
 	VkDevice getDevice() { return device; }
 	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
 	VkRenderPass getRenderPass() { return renderPass; }
@@ -78,41 +96,41 @@ public:
 	void recreateSwapchain();
 
 private:
-	//The logger
+	//The logger.
 	Logger& logger;
 
-	//Vulkan Objects
+	//Vulkan Objects.
 	VkInstance instance;
 	VkPhysicalDevice physicalDevice;
 	VkDevice device;
 	VkDebugReportCallbackEXT callback;
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
+	VkQueue transferQueue;
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapchain;
 	VkRenderPass renderPass;
 	VkCommandPool commandPool;
 
-	//Swapchain stuff
+	//Queue indices for physical device.
+	uint32_t graphicsQueueIndex;
+	uint32_t presentQueueIndex;
+	uint32_t transferQueueIndex;
+
+	//Swapchain stuff.
 	std::vector<VkImage> swapchainImages;
 	std::vector<VkImageView> imageViews;
 	std::vector<VkFramebuffer> framebuffers;
 	VkFormat swapchainImageFormat;
 	VkExtent2D swapchainExtent;
 
-	//List of enabled validation layers
+	//List of enabled validation layers.
 	std::vector<std::string> enabledLayerNames;
 
 	/**
 	 * Creates the instance object.
 	 */
 	void createInstance();
-
-	/**
-	 * Creates the window surface for rendering.
-	 * @param window The window to create the surface for.
-	 */
-	void createSurface(GLFWwindow* window);
 
 	/**
 	 * Sets the debug callback.

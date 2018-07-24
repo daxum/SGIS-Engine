@@ -37,7 +37,10 @@ namespace {
 };
 
 VkObjectHandler::VkObjectHandler(Logger& logger) :
-	logger(logger) {
+	logger(logger),
+	graphicsQueueIndex(0),
+	presentQueueIndex(0),
+	transferQueueIndex(0) {
 
 }
 
@@ -53,7 +56,11 @@ void VkObjectHandler::init(GLFWwindow* window) {
 	}
 
 	setDebugCallback();
-	createSurface(window);
+
+	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create window surface!");
+	}
+
 	setPhysicalDevice();
 	createLogicalDevice();
 	createSwapchain();
@@ -248,12 +255,6 @@ void VkObjectHandler::createInstance() {
 	logger.debug("Created vulkan instance");
 }
 
-void VkObjectHandler::createSurface(GLFWwindow* window) {
-	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create window surface!");
-	}
-}
-
 void VkObjectHandler::setDebugCallback() {
 	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
 	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -301,6 +302,11 @@ void VkObjectHandler::setPhysicalDevice() {
 	if (!deviceSet) {
 		physicalDevice = devices.at(0);
 	}
+
+	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
+	graphicsQueueIndex = queueIndices.graphicsFamily;
+	presentQueueIndex = queueIndices.presentFamily;
+	transferQueueIndex = queueIndices.transferFamily;
 }
 
 void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices) {
@@ -312,7 +318,7 @@ void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& d
 		vkGetPhysicalDeviceProperties(physDevice, &properties);
 		vkGetPhysicalDeviceFeatures(physDevice, &features);
 
-		if (!findQueueFamilies(physDevice).isComplete() || !deviceHasAllExtensions(physDevice, requiredExtensions)) {
+		if (!findQueueFamilies(physDevice).foundFamilies.all() || !deviceHasAllExtensions(physDevice, requiredExtensions)) {
 			devices.erase(devices.begin() + (i - 1));
 			continue;
 		}
@@ -351,31 +357,47 @@ QueueFamilyIndices VkObjectHandler::findQueueFamilies(VkPhysicalDevice physDevic
 	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, queueFamilies.data());
 
 	for (size_t i = 0; i < queueFamilies.size(); i++) {
-		if (queueFamilies.at(i).queueCount > 0 && queueFamilies.at(i).queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+		//Why would this happen...?
+		if (queueFamilies.at(i).queueCount == 0) {
+			continue;
+		}
+
+		if (queueFamilies.at(i).queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 			out.graphicsFamily = i;
+			out.foundFamilies.set(0);
+		}
+		else if (queueFamilies.at(i).queueFlags & VK_QUEUE_TRANSFER_BIT) {
+			out.transferFamily = i;
+			out.foundFamilies.set(1);
 		}
 
-		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentSupport);
+		if (!out.foundFamilies.test(2) || !out.foundFamilies.test(0) || out.presentFamily != out.graphicsFamily) {
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentSupport);
 
-		if (queueFamilies.at(i).queueCount > 0 && presentSupport) {
-			out.presentFamily = i;
+			if (presentSupport) {
+				out.presentFamily = i;
+				out.foundFamilies.set(2);
+			}
 		}
 
-		if (out.isComplete()) {
+		if (out.foundFamilies.all()) {
 			break;
 		}
+	}
+
+	if (!out.foundFamilies.test(1)) {
+		out.transferFamily = out.graphicsFamily;
 	}
 
 	return out;
 }
 
 void VkObjectHandler::createLogicalDevice() {
-	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
 	float queuePriority = 1.0f;
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::unordered_set<int> uniqueQueueFamilies = { queueIndices.graphicsFamily, queueIndices.presentFamily };
+	std::unordered_set<uint32_t> uniqueQueueFamilies = { graphicsQueueIndex, presentQueueIndex, transferQueueIndex };
 
 	for (int queueFamily : uniqueQueueFamilies) {
 		VkDeviceQueueCreateInfo queueCreateInfo = {};
@@ -417,8 +439,9 @@ void VkObjectHandler::createLogicalDevice() {
 		throw std::runtime_error("Failed to create logical device");
 	}
 
-	vkGetDeviceQueue(device, queueIndices.graphicsFamily, 0, &graphicsQueue);
-	vkGetDeviceQueue(device, queueIndices.presentFamily, 0, &presentQueue);
+	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &graphicsQueue);
+	vkGetDeviceQueue(device, presentQueueIndex, 0, &presentQueue);
+	vkGetDeviceQueue(device, transferQueueIndex, 0, &transferQueue);
 }
 
 SwapchainSupportDetails VkObjectHandler::querySwapChainSupport(VkPhysicalDevice physDevice) {
@@ -472,10 +495,9 @@ void VkObjectHandler::createSwapchain() {
 	swapchainCreateInfo.clipped = VK_TRUE;
 	swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-	uint32_t queueFamilyIndices[] = { (uint32_t) indices.presentFamily, (uint32_t) indices.graphicsFamily };
+	uint32_t queueFamilyIndices[] = { presentQueueIndex, graphicsQueueIndex };
 
-	if (indices.graphicsFamily != indices.presentFamily) {
+	if (hasUniquePresent()) {
 		swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		swapchainCreateInfo.queueFamilyIndexCount = 2;
 		swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -615,11 +637,9 @@ void VkObjectHandler::createFramebuffers() {
 }
 
 void VkObjectHandler::createCommandPool() {
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-
 	VkCommandPoolCreateInfo poolCreateInfo = {};
 	poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolCreateInfo.queueFamilyIndex = indices.graphicsFamily;
+	poolCreateInfo.queueFamilyIndex = graphicsQueueIndex;
 
 	if (vkCreateCommandPool(device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create command pool!");

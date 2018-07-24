@@ -111,12 +111,6 @@ public:
 	void render(std::shared_ptr<RenderComponentManager> renderManager, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
 
 	/**
-	 * Called clearBuffers for lack of a better name. Clears the depth and stencil
-	 * buffers, but not the color buffer.
-	 */
-	virtual void clearBuffers() = 0;
-
-	/**
 	 * Called when drawing is done and the results can be displayed on the screen.
 	 * Also sets up the pipeline for the next frame.
 	 */
@@ -147,6 +141,8 @@ protected:
 
 	/**
 	 * Renders the visible objects, using the sorted map.
+	 * The depth and stencil buffers should be cleared before or after this function
+	 * so different screens don't effect each other's rendering.
 	 * @param objects A set of objects that have been determined to be visible.
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
 	 * @param camera The current camera.

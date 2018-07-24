@@ -134,13 +134,9 @@ RendererMemoryManager* GlRenderingEngine::getMemoryManager() {
 	return &memoryManager;
 }
 
-void GlRenderingEngine::clearBuffers() {
-	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-}
-
 void GlRenderingEngine::present() {
 	glfwSwapBuffers(interface.getWindow());
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void GlRenderingEngine::setViewport(int width, int height) {
@@ -161,6 +157,9 @@ void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, matStack, camera, state);
 
 	glBindVertexArray(0);
+
+	//Clear depth and stencil for next screen
+	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
 void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state) {

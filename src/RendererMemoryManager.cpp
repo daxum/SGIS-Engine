@@ -52,7 +52,7 @@ void RendererMemoryManager::addMesh(const std::string& name, const std::string& 
 		indices.at(i) += vertexAlloc->start / bufferData.buffer.getVertexSize();
 	}
 
-	uploadMeshData(bufferData.buffer.getRenderData(), name, vertexAlloc->start, vertexAlloc->size, vertexData, indexAlloc->start, indexAlloc->size, indices.data());
+	uploadMeshData(bufferData.buffer, name, vertexAlloc->start, vertexAlloc->size, vertexData, indexAlloc->start, indexAlloc->size, indices.data());
 
 	logger.debug("Uploaded mesh \"" + name + "\" to rendering engine");
 }

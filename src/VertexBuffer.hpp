@@ -83,6 +83,7 @@ public:
 	 * @return The renderData.
 	 */
 	std::shared_ptr<RenderBufferData> getRenderData() { return renderData; }
+	std::shared_ptr<const RenderBufferData> getRenderData() const { return renderData; }
 
 	/**
 	 * Gets the BufferUsage provided in the constructor.

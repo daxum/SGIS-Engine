@@ -95,7 +95,7 @@ protected:
 
 	/**
 	 * Uploads the vertex and index data into the given buffer.
-	 * @param buffer The render data for the buffer to upload to.
+	 * @param buffer The buffer to upload to.
 	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
 	 * @param offset The offset into the vertex buffer to place the vertex data.
 	 * @param size The size of the vertex data.
@@ -104,7 +104,7 @@ protected:
 	 * @param indexSize The size of the index data.
 	 * @param indexData The index data to upload.
 	 */
-	void uploadMeshData(std::shared_ptr<RenderBufferData> buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override;
+	void uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override;
 
 	/**
 	 * Removes the mesh's render data from the render map.
