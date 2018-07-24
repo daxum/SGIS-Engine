@@ -36,6 +36,9 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	objects(objects),
 	allocator(VK_NULL_HANDLE) {
 
+}
+
+void VkMemoryManager::init() {
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
 	allocatorCreateInfo.physicalDevice = objects.getPhysicalDevice();
 	allocatorCreateInfo.device = objects.getDevice();
@@ -43,7 +46,7 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 }
 
-VkMemoryManager::~VkMemoryManager() {
+void VkMemoryManager::deinit() {
 	deleteBuffers();
 	vmaDestroyAllocator(allocator);
 }

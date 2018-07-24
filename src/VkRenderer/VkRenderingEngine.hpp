@@ -53,7 +53,7 @@ public:
 	 * Gets the memory manager.
 	 * @return the memory manager.
 	 */
-	RendererMemoryManager* getMemoryManager() override { return memoryManager; }
+	RendererMemoryManager* getMemoryManager() override { return &memoryManager; }
 
 	/**
 	 * Finishes initialization, uploads stuff to the gpu.
@@ -99,7 +99,7 @@ private:
 	//Shader map
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
 	//Vulkan memory manager, handles buffers and such.
-	VkMemoryManager* memoryManager;
+	VkMemoryManager memoryManager;
 
 	//Rendering semaphores, one for each frame
 	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> imageAvailable;

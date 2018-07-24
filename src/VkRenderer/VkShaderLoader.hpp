@@ -29,7 +29,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	VkShaderLoader(VkObjectHandler& vkObjects, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap);
+	VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap);
 
 	/**
 	 * Loads the shaders from disk and constructs a program object from them.
@@ -37,12 +37,6 @@ public:
 	 * @param info Information about the shader to be loaded.
 	 */
 	void loadShader(std::string name, const ShaderInfo& info) override;
-
-	/**
-	 * Called from VkRenderingEngine because its memory manager is only created once init is called.
-	 * @param manager The new memory manager.
-	 */
-	void setMemoryManager(VkMemoryManager* manager) { memoryManager = manager; }
 
 private:
 	//Map loaded shaders are added to.

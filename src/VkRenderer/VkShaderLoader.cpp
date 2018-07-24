@@ -21,8 +21,8 @@
 #include "VkShaderLoader.hpp"
 #include "VkShader.hpp"
 
-VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap) :
-	ShaderLoader(logger, nullptr),
+VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap) :
+	ShaderLoader(logger, memoryManager),
 	shaderMap(shaderMap),
 	vkObjects(vkObjects) {
 

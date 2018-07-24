@@ -49,9 +49,14 @@ public:
 	VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& objects);
 
 	/**
+	 * Creates internal allocator.
+	 */
+	void init();
+
+	/**
 	 * Destroys allocator.
 	 */
-	~VkMemoryManager();
+	void deinit();
 
 protected:
 	/**

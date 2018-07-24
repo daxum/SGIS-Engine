@@ -27,10 +27,10 @@ namespace {
 }
 
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-	RenderingEngine(/** TODO **/ std::shared_ptr<TextureLoader>(), std::make_shared<VkShaderLoader>(objectHandler, loaderLogger, shaderMap), rendererLog, loaderLog),
+	RenderingEngine(/** TODO **/ std::shared_ptr<TextureLoader>(), std::make_shared<VkShaderLoader>(objectHandler, &memoryManager, loaderLogger, shaderMap), rendererLog, loaderLog),
 	interface(display, this),
 	objectHandler(logger),
-	memoryManager(nullptr),
+	memoryManager(rendererLog, objectHandler),
 	currentFrame(0) {
 
 	if (!glfwInit()) {
@@ -49,7 +49,7 @@ VkRenderingEngine::~VkRenderingEngine() {
 	}
 
 	shaderMap.clear();
-	delete memoryManager;
+	memoryManager.deinit();
 	objectHandler.deinit();
 
 	GLFWwindow* window = interface.getWindow();
@@ -87,8 +87,7 @@ void VkRenderingEngine::init() {
 	//Create vulkan objects and memory manager
 
 	objectHandler.init(window);
-	memoryManager = new VkMemoryManager(Engine::instance->getConfig().rendererLog, objectHandler);
-	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->setMemoryManager(memoryManager);
+	memoryManager.init();
 
 	//Create semaphores
 
