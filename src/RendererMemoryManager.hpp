@@ -117,6 +117,12 @@ protected:
 	Logger logger;
 
 	/**
+	 * Function available for subclasses if they need buffers deleted before their destructor completes.
+	 * Destroys all created buffers.
+	 */
+	void deleteBuffers() { buffers.clear(); }
+
+	/**
 	 * Creates a buffer with the underlying rendering api and returns a pointer to the data
 	 * to be stored with the buffer object.
 	 * @param vertexFormat The format of the vertices in the buffer.

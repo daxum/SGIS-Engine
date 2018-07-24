@@ -53,7 +53,7 @@ public:
 	 * Gets the memory manager.
 	 * @return the memory manager.
 	 */
-	RendererMemoryManager* getMemoryManager() override { return nullptr; /** TODO **/ }
+	RendererMemoryManager* getMemoryManager() override { return memoryManager; }
 
 	/**
 	 * Finishes initialization, uploads stuff to the gpu.

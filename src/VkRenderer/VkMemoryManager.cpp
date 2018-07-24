@@ -44,6 +44,7 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 }
 
 VkMemoryManager::~VkMemoryManager() {
+	deleteBuffers();
 	vmaDestroyAllocator(allocator);
 }
 

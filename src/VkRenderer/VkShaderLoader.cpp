@@ -22,7 +22,7 @@
 #include "VkShader.hpp"
 
 VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap) :
-	ShaderLoader(logger, nullptr), //TODO: replace with VkMemoryManager*
+	ShaderLoader(logger, nullptr),
 	shaderMap(shaderMap),
 	vkObjects(vkObjects) {
 

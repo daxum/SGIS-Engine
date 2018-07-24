@@ -58,7 +58,5 @@ public:
 
 protected:
 	Logger& logger;
-
-private:
 	RendererMemoryManager* memoryManager;
 };

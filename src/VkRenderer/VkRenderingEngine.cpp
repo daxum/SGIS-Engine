@@ -88,6 +88,7 @@ void VkRenderingEngine::init() {
 
 	objectHandler.init(window);
 	memoryManager = new VkMemoryManager(Engine::instance->getConfig().rendererLog, objectHandler);
+	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->setMemoryManager(memoryManager);
 
 	//Create semaphores
 
