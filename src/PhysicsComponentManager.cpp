@@ -93,7 +93,7 @@ void PhysicsComponentManager::onComponentRemove(std::shared_ptr<Component> comp)
 void PhysicsComponentManager::tickCallback() {
 	int manifoldCount = world->getDispatcher()->getNumManifolds();
 
-	for (int i = 0; i < manifoldCount; i++) {
+	Engine::instance->parallelFor(0, manifoldCount, [&](size_t i) {
 		btPersistentManifold* manifold = world->getDispatcher()->getManifoldByIndexInternal(i);
 
 		PhysicsComponent* object1 = static_cast<PhysicsComponent*>(manifold->getBody0()->getUserPointer());
@@ -101,5 +101,5 @@ void PhysicsComponentManager::tickCallback() {
 
 		object1->onCollide(screen, object2);
 		object2->onCollide(screen, object1);
-	}
+	});
 }

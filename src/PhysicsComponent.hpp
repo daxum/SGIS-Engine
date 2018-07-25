@@ -33,6 +33,13 @@ struct CollisionHandler {
 	//Set by physics component when added.
 	PhysicsComponent* parent;
 
+	/**
+	 * Handles collision with the provided object. This function MUST
+	 * be threadsafe.
+	 * @param screen The parent screen, for adding / removing objects and
+	 *     modifying screen state.
+	 * @param hitObject The object that was hit.
+	 */
 	virtual void handleCollision(Screen* screen, PhysicsComponent* hitObject) = 0;
 };
 
