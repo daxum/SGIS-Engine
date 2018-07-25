@@ -37,11 +37,12 @@ void Screen::update() {
 	}
 
 	//Add queued objects
-	for (std::shared_ptr<Object> object : additionList) {
-		addObjectToList(object);
-	}
+	std::shared_ptr<Object> toAdd;
 
-	additionList.clear();
+	while (!additionList.empty()) {
+		additionList.try_pop(toAdd);
+		addObjectToList(toAdd);
+	}
 
 	//Update components
 	for (std::shared_ptr<ComponentManager> manager : managers) {
@@ -52,11 +53,12 @@ void Screen::update() {
 	camera->update();
 
 	//Remove queued objects
-	for (std::shared_ptr<Object> object : removalList) {
-		deleteObject(object);
-	}
+	std::shared_ptr<Object> toRemove;
 
-	removalList.clear();
+	while (!removalList.empty()) {
+		removalList.try_pop(toRemove);
+		deleteObject(toRemove);
+	}
 }
 
 void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
@@ -76,11 +78,11 @@ void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
 }
 
 void Screen::addObject(std::shared_ptr<Object> object) {
-	additionList.push_back(object);
+	additionList.push(object);
 }
 
 void Screen::removeObject(std::shared_ptr<Object> object) {
-	removalList.push_back(object);
+	removalList.push(object);
 }
 
 void Screen::setCamera(std::shared_ptr<Camera> newCamera) {

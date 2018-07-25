@@ -20,6 +20,8 @@
 
 #include <unordered_set>
 
+#include <tbb/concurrent_queue.h>
+
 #include "KeyList.hpp"
 #include "Object.hpp"
 #include "ModelManager.hpp"
@@ -64,12 +66,14 @@ public:
 
 	/**
 	 * Queues an object and its components to be added to the screen.
+	 * This function is threadsafe.
 	 * @param object The object to add.
 	 */
 	void addObject(std::shared_ptr<Object> object);
 
 	/**
 	 * Queues an object for removal at the end of the tick.
+	 * This function is threadsafe.
 	 * @param object The object to remove.
 	 */
 	void removeObject(std::shared_ptr<Object> object);
@@ -147,10 +151,10 @@ protected:
 	std::unordered_set<std::shared_ptr<Object>> objects;
 
 	//Objects to be removed at the end of the update.
-	std::vector<std::shared_ptr<Object>> removalList;
+	tbb::concurrent_queue<std::shared_ptr<Object>> removalList;
 
 	//Objects to be added after an update.
-	std::vector<std::shared_ptr<Object>> additionList;
+	tbb::concurrent_queue<std::shared_ptr<Object>> additionList;
 
 	//User-defined state for the screen.
 	std::shared_ptr<ScreenState> state;
