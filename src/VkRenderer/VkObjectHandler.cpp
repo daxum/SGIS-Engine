@@ -67,12 +67,17 @@ void VkObjectHandler::init(GLFWwindow* window) {
 	createImageViews();
 	createRenderPass();
 	createFramebuffers();
-	createCommandPool();
+	createCommandPools();
 }
 
 void VkObjectHandler::deinit() {
 	destroySwapchain();
 	vkDestroyCommandPool(device, commandPool, nullptr);
+
+	if (hasUniqueTransfer()) {
+		vkDestroyCommandPool(device, transferCommandPool, nullptr);
+	}
+
 	vkDestroyDevice(device, nullptr);
 	vkDestroyDebugReportCallbackEXT(instance, callback, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -636,13 +641,24 @@ void VkObjectHandler::createFramebuffers() {
 	}
 }
 
-void VkObjectHandler::createCommandPool() {
+void VkObjectHandler::createCommandPools() {
 	VkCommandPoolCreateInfo poolCreateInfo = {};
 	poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolCreateInfo.queueFamilyIndex = graphicsQueueIndex;
 
 	if (vkCreateCommandPool(device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create command pool!");
+	}
+
+	if (hasUniqueTransfer()) {
+		poolCreateInfo.queueFamilyIndex = transferQueueIndex;
+
+		if (vkCreateCommandPool(device, &poolCreateInfo, nullptr, &transferCommandPool) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create transfer command pool!");
+		}
+	}
+	else {
+		transferCommandPool = commandPool;
 	}
 }
 

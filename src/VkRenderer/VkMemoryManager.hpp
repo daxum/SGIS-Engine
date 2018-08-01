@@ -130,6 +130,8 @@ private:
 	size_t transferOffset;
 	//Size of the transfer buffer.
 	size_t transferSize;
+	//Indicates that the transfer buffer needs to be reallocated.
+	bool growTransfer;
 	//All queued transfer operations.
 	std::queue<TransferOperation> pendingTransfers;
 

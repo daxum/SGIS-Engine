@@ -80,6 +80,7 @@ public:
 	VkRenderPass getRenderPass() { return renderPass; }
 	VkSwapchainKHR getSwapchain() { return swapchain; }
 	VkCommandPool getCommandPool() { return commandPool; }
+	VkCommandPool getTransferCommandPool() { return transferCommandPool; }
 
 	/**
 	 * Queue getters.
@@ -119,6 +120,7 @@ private:
 	VkSwapchainKHR swapchain;
 	VkRenderPass renderPass;
 	VkCommandPool commandPool;
+	VkCommandPool transferCommandPool;
 
 	//Queue indices for physical device.
 	uint32_t graphicsQueueIndex;
@@ -213,9 +215,9 @@ private:
 	void createFramebuffers();
 
 	/**
-	 * Creates a command pool.
+	 * Creates all command pools.
 	 */
-	void createCommandPool();
+	void createCommandPools();
 
 	/**
 	 * Detroys the old swapchain for recreation.

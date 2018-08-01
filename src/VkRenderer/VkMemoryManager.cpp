@@ -40,6 +40,7 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	transferFence(VK_NULL_HANDLE),
 	transferOffset(0),
 	transferSize(0),
+	growTransfer(true),
 	pendingTransfers() {
 
 }
@@ -65,7 +66,7 @@ void VkMemoryManager::init() {
 void VkMemoryManager::deinit() {
 	deleteBuffers();
 
-	if (transferSize != 0) {
+	if (transferBuffer != VK_NULL_HANDLE) {
 		vmaDestroyBuffer(allocator, transferBuffer, transferAllocation);
 	}
 
@@ -74,9 +75,130 @@ void VkMemoryManager::deinit() {
 
 	while (!pendingTransfers.empty()) {
 		TransferOperation& transferOp = pendingTransfers.front();
-		delete transferOp.data;
+		delete[] transferOp.data;
 		pendingTransfers.pop();
 	}
+}
+
+void VkMemoryManager::executeTransfers() {
+	//Nothing to transfer
+	if (pendingTransfers.empty()) {
+		return;
+	}
+
+	//Wait for any previous transfers to complete
+	vkWaitForFences(objects.getDevice(), 1, &transferFence, VK_TRUE, 0);
+	vkResetFences(objects.getDevice(), 1, &transferFence);
+
+	//Resize transfer buffer if needed
+	if (growTransfer) {
+		logger.debug("Resizing transfer buffer to " + std::to_string(transferSize) + " bytes");
+
+		VkBufferCreateInfo transferCreateInfo = {};
+		transferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		transferCreateInfo.size = transferSize;
+		transferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		transferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VmaAllocationCreateInfo allocCreateInfo = {};
+		allocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+
+		//Destroy old transfer buffer if needed
+		if (transferBuffer != VK_NULL_HANDLE) {
+			vmaDestroyBuffer(allocator, transferBuffer, transferAllocation);
+		}
+
+		//Create new transfer buffer
+		if (vmaCreateBuffer(allocator, &transferCreateInfo, &allocCreateInfo, &transferBuffer, &transferAllocation, nullptr) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create transfer buffer!");
+		}
+
+		growTransfer = false;
+	}
+
+	//Copy data to be transferred into transfer buffer
+	//TODO: Persistently map?
+	unsigned char* bufferData = nullptr;
+	if (vmaMapMemory(allocator, transferAllocation, (void**) &bufferData) != VK_SUCCESS) {
+		throw std::runtime_error("Wait a second. How did this happen? We're smarter than this. (Error while mapping transfer buffer)");
+	}
+
+	//Sorts transfers by destination buffer
+	std::unordered_map<VkBuffer, std::vector<VkBufferCopy>> copyData;
+
+	while (!pendingTransfers.empty()) {
+		TransferOperation& transferOp = pendingTransfers.front();
+		memcpy(bufferData + transferOp.srcOffset, transferOp.data, transferOp.size);
+
+		VkBufferCopy copyRegion = {};
+		copyRegion.srcOffset = transferOp.srcOffset;
+		copyRegion.dstOffset = transferOp.dstOffset;
+		copyRegion.size = transferOp.size;
+
+		//Stupid operator[] not working with pointers...
+		if (!copyData.count(transferOp.buffer)) {
+			copyData.insert({transferOp.buffer, std::vector<VkBufferCopy>()});
+		}
+
+		copyData.at(transferOp.buffer).push_back(copyRegion);
+
+		delete[] transferOp.data;
+		pendingTransfers.pop();
+	}
+
+	vmaUnmapMemory(allocator, transferAllocation);
+
+	//Execute transfer
+	VkCommandBuffer transferCommands;
+
+	VkCommandBufferAllocateInfo cmdBufferInfo = {};
+	cmdBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cmdBufferInfo.commandPool = objects.getTransferCommandPool();
+	cmdBufferInfo.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers(objects.getDevice(), &cmdBufferInfo, &transferCommands) != VK_SUCCESS) {
+		throw std::runtime_error("Well that's not good... (Out of memory)");
+	}
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	if (vkBeginCommandBuffer(transferCommands, &beginInfo) != VK_SUCCESS) {
+		throw std::runtime_error("We appear to be suffering temporary amnesia... (Memory ran out)");
+	}
+
+	//TODO: semaphore for previous frame to prevent overwriting buffers while in use,
+	//separate one for uniforms when it gets to that.
+	//index / vertex - VK_ACCESS_INDEX_READ_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT
+	//Uniforms need to be delayed longer, past fragment shading.
+	//Segment by buffer if figure out how, seems overly complex.
+	//If no transfers, insert dummy wait on graphics queue to reset semaphore for that frame, ie. wait to clear then immediately signal again after input assembly (not here though).
+	//Unless there's a better way?
+
+	for (const auto& element : copyData) {
+		const std::vector<VkBufferCopy>& copyVec = element.second;
+		const VkBuffer& dstBuffer = element.first;
+
+		vkCmdCopyBuffer(transferCommands, transferBuffer, dstBuffer, copyVec.size(), copyVec.data());
+	}
+
+	if (vkEndCommandBuffer(transferCommands) != VK_SUCCESS) {
+		throw std::runtime_error("But why? (No more memory)");
+	}
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &transferCommands;
+
+	if (vkQueueSubmit(objects.getTransferQueue(), 1, &submitInfo, transferFence) != VK_SUCCESS) {
+		throw std::runtime_error("Er.. driver? Hello? Are you still there...? (transfer queue submission failed)");
+	}
+
+	//Reset offset for next frame
+	transferOffset = 0;
 }
 
 std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {
@@ -142,10 +264,18 @@ void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 }
 
 void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data) {
-	if (transferOffset + size < transferSize) {
-		transferOffset = 0;
+	//Grow transfer buffer if not big enough (actual reallocation happens in executeTransfers)
+	if (transferSize < size) {
+		transferSize = size * 2;
+		growTransfer = true;
 	}
 
+	if (transferOffset + size < transferSize) {
+		transferSize += size * 2;
+		growTransfer = true;
+	}
+
+	//Add data to queued transfers
 	TransferOperation transferOp = {
 		buffer,
 		new unsigned char[size],
