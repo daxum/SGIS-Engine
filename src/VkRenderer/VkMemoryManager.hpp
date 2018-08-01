@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include <queue>
+#include <vector>
+
 #include <vulkan/vulkan.h>
 
 #include "RendererMemoryManager.hpp"
@@ -27,17 +30,35 @@
 struct VkBufferData : public RenderBufferData {
 	VmaAllocator allocator;
 
-	VkBuffer buffer;
-	VmaAllocation allocation;
+	VkBuffer vertexBuffer;
+	VkBuffer indexBuffer;
+	VmaAllocation vertexAllocation;
+	VmaAllocation indexAllocation;
 
-	VkBufferData(VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation) :
+	VkBufferData(VmaAllocator allocator, VkBuffer vertexBuffer, VkBuffer indexBuffer, VmaAllocation vertexAllocation, VmaAllocation indexAllocation) :
 		allocator(allocator),
-		buffer(buffer),
-		allocation(allocation) {}
+		vertexBuffer(vertexBuffer),
+		indexBuffer(indexBuffer),
+		vertexAllocation(vertexAllocation),
+		indexAllocation(indexAllocation) {}
 
 	~VkBufferData() {
-		vmaDestroyBuffer(allocator, buffer, allocation);
+		vmaDestroyBuffer(allocator, vertexBuffer, vertexAllocation);
+		vmaDestroyBuffer(allocator, indexBuffer, indexAllocation);
 	}
+};
+
+struct TransferOperation {
+	//The buffer to transfer to.
+	VkBuffer buffer;
+	//The data to transfer.
+	unsigned char* data;
+	//The size of the data.
+	size_t size;
+	//Offset into the destination buffer to place the data.
+	size_t dstOffset;
+	//Offset into the transfer buffer to place the data.
+	size_t srcOffset;
 };
 
 class VkMemoryManager : public RendererMemoryManager {
@@ -58,6 +79,11 @@ public:
 	 */
 	void deinit();
 
+	/**
+	 * Sends all pending transfer operations to their destinations.
+	 */
+	void executeTransfers();
+
 protected:
 	/**
 	 * Creates a buffer and allocation with the given parameters.
@@ -71,7 +97,7 @@ protected:
 	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) override;
 
 	/**
-	 * Uploads the vertex and index data into the given buffer.
+	 * Queues the index and vertex data to be transferred before the next frame is drawn.
 	 * @param buffer The vertex buffer to upload to.
 	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
 	 * @param offset The offset into the vertex buffer to place the vertex data.
@@ -81,7 +107,7 @@ protected:
 	 * @param indexSize The size of the index data.
 	 * @param indexData The index data to upload.
 	 */
-	void uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override { /** TODO **/ }
+	void uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override;
 
 	/**
 	 * Removes the mesh from the rendering engine by deleting its command buffer. No allocated memory is modified.
@@ -94,4 +120,25 @@ private:
 	VkObjectHandler& objects;
 	//Allocator for the vertex buffers.
 	VmaAllocator allocator;
+	//Transfer buffer.
+	VkBuffer transferBuffer;
+	//Allocation for transfer buffer.
+	VmaAllocation transferAllocation;
+	//Fence to prevent overwriting in-transit memory.
+	VkFence transferFence;
+	//Current offset into transfer buffer, reset to 0 after each transfer operation.
+	size_t transferOffset;
+	//Size of the transfer buffer.
+	size_t transferSize;
+	//All queued transfer operations.
+	std::queue<TransferOperation> pendingTransfers;
+
+	/**
+	 * Adds a transfer operation to the pending transfer queue.
+	 * @param buffer The destination buffer for the transfer.
+	 * @param offset The offset into the destination buffer to place the data.
+	 * @param size The size of the data.
+	 * @param data The data to transfer.
+	 */
+	void queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data);
 };

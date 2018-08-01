@@ -31,6 +31,9 @@
 
 class VkRenderingEngine : public RenderingEngine {
 public:
+	//Max number of queued frames to be rendered.
+	constexpr static size_t MAX_ACTIVE_FRAMES = 2;
+
 	/**
 	 * Initializes a vulkan rendering engine.
 	 * @param display A reference to the display engine, for input callbacks.
@@ -90,8 +93,6 @@ protected:
 	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) override;
 
 private:
-	constexpr static size_t MAX_ACTIVE_FRAMES = 2;
-
 	//Interface with the window system.
 	GlfwInterface interface;
 	//Handles all internal vulkan objects.

@@ -72,16 +72,24 @@ public:
 	bool hasUniqueTransfer() { return transferQueueIndex != graphicsQueueIndex; }
 
 	/**
-	 * Tons of getters.
+	 * Device related getters.
 	 */
 	VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
 	VkDevice getDevice() { return device; }
 	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
 	VkRenderPass getRenderPass() { return renderPass; }
 	VkSwapchainKHR getSwapchain() { return swapchain; }
+	VkCommandPool getCommandPool() { return commandPool; }
+
+	/**
+	 * Queue getters.
+	 */
 	VkQueue getGraphicsQueue() { return graphicsQueue; }
 	VkQueue getPresentQueue() { return presentQueue; }
-	VkCommandPool getCommandPool() { return commandPool; }
+	VkQueue getTransferQueue() { return transferQueue; }
+	uint32_t getGraphicsQueueIndex() { return graphicsQueueIndex; }
+	uint32_t getPresentQueueIndex() { return presentQueueIndex; }
+	uint32_t getTransferQueueIndex() { return transferQueueIndex; }
 
 	/**
 	 * Gets a vector of command buffers from the command pool, one for each swapchain image.
