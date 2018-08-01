@@ -127,6 +127,9 @@ void VkRenderingEngine::setViewport(int width, int height) {
 }
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+	//TODO: This needs to go in a new function that happens before view culling
+	memoryManager.executeTransfers();
+
 	//Crash if a frame takes too long to render - this usually happens because something is wrong with the fences.
 	if (vkWaitForFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame), VK_TRUE, 20u * 1'000'000'000u) == VK_TIMEOUT) {
 		throw std::runtime_error("Fence wait timed out!");
