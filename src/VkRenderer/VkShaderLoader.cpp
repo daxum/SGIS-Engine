@@ -51,13 +51,21 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 
 	VkPipelineShaderStageCreateInfo infos[] = { vertCreateInfo, fragCreateInfo };
 
-	//TODO: Fix this - actual vertex formats
+	const VertexBuffer& buffer = memoryManager->getBuffer(info.buffer);
+
+	VkVertexInputBindingDescription bindingDescription = {};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = buffer.getVertexSize();
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions = getVertexAttributeDescription(buffer);
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo assemblyCreateInfo = {};
 	assemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -168,6 +176,27 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	vkDestroyShaderModule(device, fragShader, nullptr);
 
 	logger.debug("Loaded shader \"" + name + "\"");
+}
+
+std::vector<VkVertexInputAttributeDescription> VkShaderLoader::getVertexAttributeDescription(const VertexBuffer& buffer) const {
+	std::vector<VkVertexInputAttributeDescription> descriptions;
+	const std::vector<VertexElement>& bufferFormat = buffer.getVertexFormat();
+
+	descriptions.reserve(bufferFormat.size());
+	uint32_t location = 0;
+
+	for (const VertexElement& element : bufferFormat) {
+		VkVertexInputAttributeDescription descr = {};
+		descr.binding = 0;
+		descr.location = location;
+		descr.format = formatFromVertexType(element.type);
+		descr.offset = buffer.getElementOffset(element.name);
+
+		descriptions.push_back(descr);
+		location++;
+	}
+
+	return descriptions;
 }
 
 VkShaderModule VkShaderLoader::createShaderModule(const std::string& filename) {

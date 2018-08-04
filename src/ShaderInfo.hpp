@@ -39,4 +39,8 @@ struct ShaderInfo {
 	std::shared_ptr<Shader> shaderObject;
 	//The render pass the shader is part of.
 	RenderPass pass;
+	//The vertex buffer this shader takes its format from. This does not
+	//restrict the shader to use only this buffer, other buffers with
+	//the same format will also work.
+	std::string buffer;
 };

@@ -89,7 +89,7 @@ public:
 	 * Gets the BufferUsage provided in the constructor.
 	 * @return The usage for the buffer.
 	 */
-	BufferUsage getUsage() { return usage; }
+	BufferUsage getUsage() const { return usage; }
 
 	/**
 	 * Checks whether the type of the given name matches the provided type.
@@ -98,7 +98,7 @@ public:
 	 * @return whether the types matched.
 	 * @throw std::out_of_range if the name is not part of the buffer.
 	 */
-	bool checkType(const std::string& name, VertexElementType type) {
+	bool checkType(const std::string& name, VertexElementType type) const {
 		return vertexElements.at(name).type == type;
 	}
 
@@ -108,7 +108,7 @@ public:
 	 * @return The offset into the vertex for the element with the given name.
 	 * @throw std::out_of_range if the name is not part of the buffer.
 	 */
-	size_t getElementOffset(const std::string& name) {
+	size_t getElementOffset(const std::string& name) const {
 		return vertexElements.at(name).offset;
 	}
 
@@ -118,7 +118,7 @@ public:
 	 * @return The size of the given element.
 	 * @throw std::out_of_range if the name is not part of the buffer.
 	 */
-	size_t getElementSize(const std::string& name) {
+	size_t getElementSize(const std::string& name) const {
 		return vertexElements.at(name).size;
 	}
 
@@ -126,9 +126,17 @@ public:
 	 * Gets the size of one vertex in the buffer.
 	 * @return The size of a single vertex.
 	 */
-	size_t getVertexSize() { return vertexSize; }
+	size_t getVertexSize() const { return vertexSize; }
+
+	/**
+	 * Gets the format of the buffer.
+	 * @return The vertex layout of the vertex buffer.
+	 */
+	const std::vector<VertexElement>& getVertexFormat() const { return format; }
 
 private:
+	//Vertex format vector.
+	std::vector<VertexElement> format;
 	//Vertex element map.
 	std::unordered_map<std::string, VertexElementData> vertexElements;
 	//Size of one vertex using this buffer's format.

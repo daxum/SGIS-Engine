@@ -45,6 +45,13 @@ private:
 	VkObjectHandler& vkObjects;
 
 	/**
+	 * Creates attribute descriptions for the passed in vertex format.
+	 * @param bufferFormat The format of the buffers that will be used with this shader.
+	 * @return A vector of attribute description structures.
+	 */
+	std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescription(const VertexBuffer& buffer) const;
+
+	/**
 	 * Loads shader bytecode from disk and creates a shader module for it.
 	 * @param filename The file containing the bytecode.
 	 * @return A shader module for the shader.
@@ -57,5 +64,20 @@ private:
 	 * @return The binary data the file contained.
 	 */
 	std::vector<char> loadFromDisk(const std::string& filename);
+
+	/**
+	 * Converts the type to a VkFormat.
+	 * @param type The type to convert.
+	 * @return The corresponding format.
+	 */
+	static VkFormat formatFromVertexType(const VertexElementType& type) {
+		switch (type) {
+			case VertexElementType::FLOAT: return VK_FORMAT_R32_SFLOAT;
+			case VertexElementType::VEC2: return VK_FORMAT_R32G32_SFLOAT;
+			case VertexElementType::VEC3: return VK_FORMAT_R32G32B32_SFLOAT;
+			case VertexElementType::VEC4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			default: return VK_FORMAT_UNDEFINED;
+		}
+	}
 };
 
