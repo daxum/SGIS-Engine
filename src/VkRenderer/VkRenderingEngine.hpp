@@ -103,7 +103,7 @@ private:
 	GlfwInterface interface;
 	//Handles all internal vulkan objects.
 	VkObjectHandler objectHandler;
-	//Shader map
+	//Shader map.
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
 	//Vulkan memory manager, handles buffers and such.
 	VkMemoryManager memoryManager;
@@ -112,12 +112,12 @@ private:
 	//Current swapchain image index.
 	uint32_t currentImageIndex;
 
-	//Rendering semaphores, one for each frame
+	//Rendering semaphores, one for each frame.
 	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> imageAvailable;
 	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> renderFinished;
 	std::array<VkFence, MAX_ACTIVE_FRAMES> renderFences;
 
-	//The current frame being rendered, always between 0 and MAX_ACTIVE_FRAMES
+	//The current frame being rendered, always between 0 and MAX_ACTIVE_FRAMES.
 	size_t currentFrame;
 
 };
