@@ -64,6 +64,12 @@ public:
 	void finishLoad() override;
 
 	/**
+	 * Called at the very start of a frame. Begins the command buffer
+	 * and executes any pending transfers.
+	 */
+	void beginFrame() override;
+
+	/**
 	 * Called when drawing is done and the results can be displayed on the screen.
 	 * Also sets up the pipeline for the next frame.
 	 */
@@ -101,6 +107,10 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
 	//Vulkan memory manager, handles buffers and such.
 	VkMemoryManager memoryManager;
+	//Command buffers used to render stuff.
+	std::array<VkCommandBuffer, MAX_ACTIVE_FRAMES> commandBuffers;
+	//Current swapchain image index.
+	uint32_t currentImageIndex;
 
 	//Rendering semaphores, one for each frame
 	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> imageAvailable;

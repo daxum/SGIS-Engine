@@ -79,6 +79,7 @@ public:
 	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
 	VkRenderPass getRenderPass() { return renderPass; }
 	VkSwapchainKHR getSwapchain() { return swapchain; }
+	VkFramebuffer getFramebuffer(size_t index) { return framebuffers.at(index); }
 	VkCommandPool getCommandPool() { return commandPool; }
 	VkCommandPool getTransferCommandPool() { return transferCommandPool; }
 
@@ -91,13 +92,6 @@ public:
 	uint32_t getGraphicsQueueIndex() { return graphicsQueueIndex; }
 	uint32_t getPresentQueueIndex() { return presentQueueIndex; }
 	uint32_t getTransferQueueIndex() { return transferQueueIndex; }
-
-	/**
-	 * Gets a vector of command buffers from the command pool, one for each swapchain image.
-	 * @param pipeline The pipeline to use when recording the command buffer.
-	 * @return The allocated command buffers.
-	 */
-	std::vector<VkCommandBuffer> getCommandBuffers(VkPipeline pipeline);
 
 	/**
 	 * Recreates the swap chain. This almost definitely doesn't belong here.

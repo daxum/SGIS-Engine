@@ -109,9 +109,9 @@ void DisplayEngine::render(float partialTicks) {
 		return;
 	}
 
+	renderer->beginFrame();
+
 	//Render all screens in the overlay stack from botom to top.
-	//Clear the depth and stencil buffers after each one so they
-	//don't effect each other's rendering.
 	for (std::shared_ptr<Screen> screen : screenStack.back()) {
 		renderer->render(screen->getRenderData(), screen->getCamera(), screen->getState());
 	}

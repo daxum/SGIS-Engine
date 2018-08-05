@@ -76,6 +76,11 @@ public:
 	void finishLoad() override {}
 
 	/**
+	 * Nothing needs to happen here.
+	 */
+	void beginFrame() override {}
+
+	/**
 	 * Swaps the buffers and clears for the next frame.
 	 */
 	void present() override;

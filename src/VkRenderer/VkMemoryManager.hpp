@@ -20,6 +20,7 @@
 
 #include <queue>
 #include <vector>
+#include <unordered_map>
 
 #include <vulkan/vulkan.h>
 
@@ -48,6 +49,11 @@ struct VkBufferData : public RenderBufferData {
 	}
 };
 
+struct VkMeshRenderData {
+	uintptr_t indexStart;
+	uint32_t indexCount;
+};
+
 struct TransferOperation {
 	//The buffer to transfer to.
 	VkBuffer buffer;
@@ -66,6 +72,7 @@ public:
 	/**
 	 * Initializes a VkMemoryManager.
 	 * @param logConfig The configuration for the logger.
+	 * @param objects Vulkan objects.
 	 */
 	VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& objects);
 
@@ -110,10 +117,10 @@ protected:
 	void uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override;
 
 	/**
-	 * Removes the mesh from the rendering engine by deleting its command buffer. No allocated memory is modified.
+	 * Removes the mesh from the rendering engine. No allocated memory is modified.
 	 * @param mesh The mesh being removed.
 	 */
-	void invalidateMesh(const std::string& mesh) override { /** TODO **/ }
+	void invalidateMesh(const std::string& mesh) override { meshMap.erase(mesh); }
 
 private:
 	//Object handler for vulkan objects.
@@ -134,6 +141,8 @@ private:
 	bool growTransfer;
 	//All queued transfer operations.
 	std::queue<TransferOperation> pendingTransfers;
+	//Map of uploaded mesh data.
+	std::unordered_map<std::string, VkMeshRenderData> meshMap;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.

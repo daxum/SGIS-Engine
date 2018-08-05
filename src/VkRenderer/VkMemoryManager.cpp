@@ -41,7 +41,8 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	transferOffset(0),
 	transferSize(0),
 	growTransfer(true),
-	pendingTransfers() {
+	pendingTransfers(),
+	meshMap() {
 
 }
 
@@ -261,6 +262,9 @@ void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 
 	queueTransfer(bufferData->vertexBuffer, offset, size, vertexData);
 	queueTransfer(bufferData->indexBuffer, indexOffset, indexSize, (const unsigned char*) indexData);
+
+	//Add to mesh map
+	meshMap.insert({mesh, VkMeshRenderData{indexOffset, (uint32_t) (indexSize / sizeof(uint32_t))}});
 }
 
 void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data) {

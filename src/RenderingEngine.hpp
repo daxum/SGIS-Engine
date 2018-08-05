@@ -102,6 +102,12 @@ public:
 	std::shared_ptr<ShaderLoader> getShaderLoader() { return shaderLoader; }
 
 	/**
+	 * Called at the very start of a frame. Does any work needed to set
+	 * up the engine for the frame.
+	 */
+	virtual void beginFrame() = 0;
+
+	/**
 	 * Renders the passed in object. This function performs view culling if needed and
 	 * passed all visible renderComponents to the underlying graphics rendering api
 	 * @param data The stuff to render.

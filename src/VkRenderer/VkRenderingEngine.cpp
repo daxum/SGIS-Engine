@@ -21,16 +21,12 @@
 #include "VkShaderLoader.hpp"
 #include "VkShader.hpp"
 
-namespace {
-	//Temporary, for testing purposes only!
-	std::vector<VkCommandBuffer> commandBuffers;
-}
-
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(/** TODO **/ std::shared_ptr<TextureLoader>(), std::make_shared<VkShaderLoader>(objectHandler, &memoryManager, loaderLogger, shaderMap), rendererLog, loaderLog),
 	interface(display, this),
 	objectHandler(logger),
 	memoryManager(rendererLog, objectHandler),
+	currentImageIndex(0),
 	currentFrame(0) {
 
 	if (!glfwInit()) {
@@ -89,6 +85,18 @@ void VkRenderingEngine::init() {
 	objectHandler.init(window);
 	memoryManager.init();
 
+	//Allocate command buffers
+
+	VkCommandBufferAllocateInfo bufferAllocInfo = {};
+	bufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	bufferAllocInfo.commandPool = objectHandler.getCommandPool();
+	bufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	bufferAllocInfo.commandBufferCount = commandBuffers.size();
+
+	if (vkAllocateCommandBuffers(objectHandler.getDevice(), &bufferAllocInfo, commandBuffers.data()) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to allocate command buffers!");
+	}
+
 	//Create semaphores
 
 	VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -109,25 +117,10 @@ void VkRenderingEngine::init() {
 }
 
 void VkRenderingEngine::finishLoad() {
-	//Very nasty, but temporary, hack.
-	commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
-	/** TODO **/
+	/** TODO: Something might go here. At some point. Maybe. **/
 }
 
-void VkRenderingEngine::present() {
-	/** TODO **/
-}
-
-void VkRenderingEngine::setViewport(int width, int height) {
-	//Width / height unused, retrieved from window interface in below function.
-	vkDeviceWaitIdle(objectHandler.getDevice());
-	vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
-	objectHandler.recreateSwapchain();
-	commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
-}
-
-void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	//TODO: This needs to go in a new function that happens before view culling
+void VkRenderingEngine::beginFrame() {
 	memoryManager.executeTransfers();
 
 	//Crash if a frame takes too long to render - this usually happens because something is wrong with the fences.
@@ -135,16 +128,15 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 		throw std::runtime_error("Fence wait timed out!");
 	}
 
-	uint32_t imageIndex = 0;
+	currentImageIndex = 0;
 
-	VkResult result = vkAcquireNextImageKHR(objectHandler.getDevice(), objectHandler.getSwapchain(), 0xFFFFFFFFFFFFFFFF, imageAvailable.at(currentFrame), VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(objectHandler.getDevice(), objectHandler.getSwapchain(), 0xFFFFFFFFFFFFFFFF, imageAvailable.at(currentFrame), VK_NULL_HANDLE, &currentImageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		//TODO: this is in three places, and needs to be moved somewhere where it can be handled for all models at once.
 		vkDeviceWaitIdle(objectHandler.getDevice());
-		vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
 		objectHandler.recreateSwapchain();
-		commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
+		//Eventually this'll work
+		beginFrame();
 		return;
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -154,6 +146,21 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	//Reset fence here because of the return above
 	vkResetFences(objectHandler.getDevice(), 1, &renderFences.at(currentFrame));
 
+	//Begin command buffer for this frame
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to start recording command buffer!");
+	}
+}
+
+void VkRenderingEngine::present() {
+	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to record command buffer.");
+	}
+
 	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
 	VkSubmitInfo submitInfo = {};
@@ -162,7 +169,7 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	submitInfo.pWaitSemaphores = &imageAvailable.at(currentFrame);
 	submitInfo.pWaitDstStageMask = waitStages;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers.at(imageIndex);
+	submitInfo.pCommandBuffers = &commandBuffers.at(currentFrame);
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &renderFinished.at(currentFrame);
 
@@ -178,19 +185,66 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	presentInfo.pWaitSemaphores = &renderFinished.at(currentFrame);
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = &swapchain;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &currentImageIndex;
 
-	result = vkQueuePresentKHR(objectHandler.getPresentQueue(), &presentInfo);
+	VkResult result = vkQueuePresentKHR(objectHandler.getPresentQueue(), &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		vkDeviceWaitIdle(objectHandler.getDevice());
-		vkFreeCommandBuffers(objectHandler.getDevice(), objectHandler.getCommandPool(), commandBuffers.size(), commandBuffers.data());
 		objectHandler.recreateSwapchain();
-		commandBuffers = objectHandler.getCommandBuffers(std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
 	}
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("Failed to present!");
 	}
 
 	currentFrame = (currentFrame + 1) % MAX_ACTIVE_FRAMES;
+}
+
+void VkRenderingEngine::setViewport(int width, int height) {
+	//Width / height unused, retrieved from window interface in below function.
+	vkDeviceWaitIdle(objectHandler.getDevice());
+	objectHandler.recreateSwapchain();
+}
+
+void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+	//TODO: fix all this
+	VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
+
+	VkRenderPassBeginInfo passBeginInfo = {};
+	passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	passBeginInfo.renderPass = objectHandler.getRenderPass();
+	passBeginInfo.framebuffer = objectHandler.getFramebuffer(currentImageIndex);
+	passBeginInfo.renderArea.offset = {0, 0};
+	passBeginInfo.renderArea.extent = objectHandler.getSwapchainExtent();
+	passBeginInfo.clearValueCount = 1;
+	passBeginInfo.pClearValues = &clearColor;
+
+	VkViewport viewport = {};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = (float) objectHandler.getSwapchainExtent().width;
+	viewport.height = (float) objectHandler.getSwapchainExtent().height;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	VkRect2D scissor = {};
+	scissor.offset = {0, 0};
+	scissor.extent = objectHandler.getSwapchainExtent();
+
+	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	//Hmmm...
+	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
+
+	//HMMMMMM....
+	const VkDeviceSize zero = 0;
+	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer("triangle").getRenderData())->vertexBuffer, &zero);
+	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer("triangle").getRenderData())->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
+	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
+
+	vkCmdDrawIndexed(commandBuffers.at(currentFrame), 3, 1, 0, 0, 0);
+
+	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 }
