@@ -41,11 +41,6 @@ public:
 	~VkShader();
 
 	/**
-	 * Binds the shader for use in rendering.
-	 */
-	void bind() override;
-
-	/**
 	 * Sets a uniform variable.
 	 * @param type The type of the uniform.
 	 * @param name The name of the uniform in the shader.

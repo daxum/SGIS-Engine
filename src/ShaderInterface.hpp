@@ -36,11 +36,6 @@ public:
 	virtual ~ShaderInterface() {}
 
 	/**
-	 * Binds the shader for use in rendering.
-	 */
-	virtual void bind() = 0;
-
-	/**
 	 * Sets a uniform variable.
 	 * @param type The type of the uniform.
 	 * @param name The name of the uniform in the shader.

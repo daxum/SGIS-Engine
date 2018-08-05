@@ -30,10 +30,6 @@ VkShader::~VkShader() {
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 }
 
-void VkShader::bind() {
-	/** TODO **/
-}
-
 void VkShader::setUniform(UniformType type, const std::string& name, const void* data) {
 	/** TODO **/
 }

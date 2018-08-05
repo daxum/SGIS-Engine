@@ -49,11 +49,6 @@ public:
 	~GlShader();
 
 	/**
-	 * Sets this shader program as active with OpenGL.
-	 */
-	void bind() override;
-
-	/**
 	 * Sets a uniform variable.
 	 * @param type The type of the uniform.
 	 * @param name The name of the uniform in the shader.

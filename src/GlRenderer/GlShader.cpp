@@ -29,10 +29,6 @@ GlShader::~GlShader() {
 	glDeleteProgram(id);
 }
 
-void GlShader::bind() {
-	glUseProgram(id);
-}
-
 void GlShader::setUniform(UniformType type, const std::string& name, const void* data) {
 	GLuint uniformLoc = glGetUniformLocation(id, name.c_str());
 
