@@ -143,6 +143,8 @@ private:
 	std::queue<TransferOperation> pendingTransfers;
 	//Map of uploaded mesh data.
 	std::unordered_map<std::string, VkMeshRenderData> meshMap;
+	//Last used command buffer for vertex transfers.
+	VkCommandBuffer lastVertexTransferBuffer;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.

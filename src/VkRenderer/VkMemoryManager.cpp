@@ -42,7 +42,8 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	transferSize(0),
 	growTransfer(true),
 	pendingTransfers(),
-	meshMap() {
+	meshMap(),
+	lastVertexTransferBuffer(VK_NULL_HANDLE) {
 
 }
 
@@ -90,6 +91,11 @@ void VkMemoryManager::executeTransfers() {
 	//Wait for any previous transfers to complete
 	vkWaitForFences(objects.getDevice(), 1, &transferFence, VK_TRUE, 0);
 	vkResetFences(objects.getDevice(), 1, &transferFence);
+
+	//Slaughter old buffer
+	if (lastVertexTransferBuffer != VK_NULL_HANDLE) {
+		vkFreeCommandBuffers(objects.getDevice(), objects.getTransferCommandPool(), 1, &lastVertexTransferBuffer);
+	}
 
 	//Resize transfer buffer if needed
 	if (growTransfer) {
@@ -197,6 +203,8 @@ void VkMemoryManager::executeTransfers() {
 	if (vkQueueSubmit(objects.getTransferQueue(), 1, &submitInfo, transferFence) != VK_SUCCESS) {
 		throw std::runtime_error("Er.. driver? Hello? Are you still there...? (transfer queue submission failed)");
 	}
+
+	lastVertexTransferBuffer = transferCommands;
 
 	//Reset offset for next frame
 	transferOffset = 0;
