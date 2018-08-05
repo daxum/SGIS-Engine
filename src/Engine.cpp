@@ -112,8 +112,13 @@ void Engine::run(GameInterface& game) {
 
 	double currentTime = ExMath::getTimeMillis();
 	double lag = 0.0;
+	double lastReportTime = currentTime;
+	double totalFrameTime = 0.0;
+	size_t numFrames = 0;
 
 	while (!shouldExit()) {
+		double frameStart = ExMath::getTimeMillis();
+
 		//Poll for window / input events
 		renderer->getWindowInterface().pollEvents();
 
@@ -145,6 +150,23 @@ void Engine::run(GameInterface& game) {
 
 		//Render the game.
 		display.render((float)lag / config.timestep);
+
+		double frameEnd = ExMath::getTimeMillis();
+
+		totalFrameTime += frameEnd - frameStart;
+		numFrames++;
+
+		if (frameEnd - lastReportTime > config.frameReportFrequency) {
+			double averageFrames = totalFrameTime / numFrames;
+
+			logger.debug(std::to_string(numFrames) + " frames completed in " +
+						 std::to_string(totalFrameTime) + "ms. Average frame time: " + std::to_string(averageFrames) + "ms - " +
+						 std::to_string(numFrames / (totalFrameTime / 1000)) + " fps");
+
+			totalFrameTime = 0.0;
+			numFrames = 0;
+			lastReportTime = frameEnd;
+		}
 	}
 
 	//Clean up resources, exit game

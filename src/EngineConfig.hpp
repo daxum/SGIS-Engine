@@ -67,6 +67,8 @@ struct EngineConfig {
 	double timestep;
 	//Time for physics engine updates, in seconds.
 	float physicsTimestep;
+	//Controls how often average frame times are reported, in milliseconds.
+	double frameReportFrequency;
 	//General logging for engine.
 	LogConfig generalLog;
 	//General renderer logger.
