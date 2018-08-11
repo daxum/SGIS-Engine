@@ -21,11 +21,17 @@
 #include "VkShaderLoader.hpp"
 #include "VkShader.hpp"
 
-VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap) :
+VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap) :
 	ShaderLoader(logger, memoryManager),
 	shaderMap(shaderMap),
 	vkObjects(vkObjects) {
 
+}
+
+VkShaderLoader::~VkShaderLoader() {
+	for (const auto& layout : descriptorLayouts) {
+		vkDestroyDescriptorSetLayout(vkObjects.getDevice(), layout.second, nullptr);
+	}
 }
 
 void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
@@ -169,13 +175,72 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	}
 
 	//Add to shader map
-	info.shaderObject->setRenderInterface(std::make_shared<VkShader>(device, graphicsPipeline, pipelineLayout));
-	shaderMap.insert(std::make_pair(name, info.shaderObject));
+	shaderMap.insert(std::make_pair(name, std::make_shared<VkShader>(device, graphicsPipeline, pipelineLayout)));
 
 	vkDestroyShaderModule(device, vertShader, nullptr);
 	vkDestroyShaderModule(device, fragShader, nullptr);
 
 	logger.debug("Loaded shader \"" + name + "\"");
+}
+
+void VkShaderLoader::addUniformSet(const UniformSet& set, const std::string& name) {
+	if (set.pushConstantSet) {
+		pushConstantLayouts.insert({name, set.uniforms});
+		return;
+	}
+
+	std::bitset<2> uboUseStages;
+	uint32_t nextBinding = 0;
+	bool hasUbo = false;
+
+	for (const UniformDescription& descr : set.uniforms) {
+		if (!isSampler(descr.type)) {
+			uboUseStages |= descr.shaderStages;
+		}
+	}
+
+	std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+	for (const UniformDescription& descr : set.uniforms) {
+		if (!isSampler(descr.type)) {
+			if (hasUbo) {
+				continue;
+			}
+
+			VkDescriptorSetLayoutBinding binding = {};
+			binding.binding = nextBinding;
+			binding.descriptorType = descriptorTypeFromBuffer(set.bufferType);
+			binding.descriptorCount = 1;
+			binding.stageFlags = uboUseStages.to_ulong();
+
+			bindings.push_back(binding);
+			nextBinding++;
+			hasUbo = true;
+		}
+		else {
+			VkDescriptorSetLayoutBinding binding = {};
+			binding.binding = nextBinding;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			binding.descriptorCount = 1;
+			binding.stageFlags = descr.shaderStages.to_ulong();
+
+			bindings.push_back(binding);
+			nextBinding++;
+		}
+	}
+
+	VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
+	layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutCreateInfo.bindingCount = bindings.size();
+	layoutCreateInfo.pBindings = bindings.data();
+
+	VkDescriptorSetLayout setLayout;
+
+	if (vkCreateDescriptorSetLayout(vkObjects.getDevice(), &layoutCreateInfo, nullptr, &setLayout) != VK_SUCCESS) {
+		throw std::runtime_error("Could not create descriptor set layout");
+	}
+
+	descriptorLayouts.insert({name, setLayout});
 }
 
 std::vector<VkVertexInputAttributeDescription> VkShaderLoader::getVertexAttributeDescription(const VertexBuffer& buffer) const {

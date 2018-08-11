@@ -28,6 +28,7 @@
 #include "GlfwInterface.hpp"
 #include "VkObjectHandler.hpp"
 #include "VkMemoryManager.hpp"
+#include "VkShader.hpp"
 
 class VkRenderingEngine : public RenderingEngine {
 public:
@@ -104,7 +105,7 @@ private:
 	//Handles all internal vulkan objects.
 	VkObjectHandler objectHandler;
 	//Shader map.
-	std::unordered_map<std::string, std::shared_ptr<Shader>> shaderMap;
+	std::unordered_map<std::string, std::shared_ptr<VkShader>> shaderMap;
 	//Vulkan memory manager, handles buffers and such.
 	VkMemoryManager memoryManager;
 	//Command buffers used to render stuff.

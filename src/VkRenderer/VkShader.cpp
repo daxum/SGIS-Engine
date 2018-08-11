@@ -29,11 +29,3 @@ VkShader::~VkShader() {
 	vkDestroyPipeline(device, pipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 }
-
-void VkShader::setUniform(UniformType type, const std::string& name, const void* data) {
-	/** TODO **/
-}
-
-void VkShader::setTexture(const std::string& name, unsigned int index) {
-	/** TODO **/
-}

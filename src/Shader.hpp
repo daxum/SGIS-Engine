@@ -23,7 +23,6 @@
 #include "Camera.hpp"
 #include "RenderComponent.hpp"
 #include "MatrixStack.hpp"
-#include "ShaderInterface.hpp"
 #include "Screen.hpp"
 
 //An interface to the shaders from game code.
@@ -48,20 +47,4 @@ public:
 	 * @param state User-set screen state.
 	 */
 	virtual void setPerObjectUniforms(std::shared_ptr<RenderComponent> object, MatrixStack& matStack, std::shared_ptr<ScreenState> state) = 0;
-
-	/**
-	 * Internal engine use only. Sets the interface to the graphics api to use when setting uniforms.
-	 * @param program The interface to the rendering engine.
-	 */
-	void setRenderInterface(std::shared_ptr<ShaderInterface> interface) { shaderInterface = interface; }
-
-	/**
-	 * Internal use only. Gets the api interface for this shader.
-	 * @return The shader interface object.
-	 */
-	std::shared_ptr<ShaderInterface> getRenderInterface() { return shaderInterface; }
-
-protected:
-	//The shader api interface. Used to set uniforms.
-	std::shared_ptr<ShaderInterface> shaderInterface;
 };

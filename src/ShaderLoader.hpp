@@ -56,6 +56,13 @@ public:
 	 */
 	void createBuffer(const std::string& name, const VertexBufferInfo& info) { memoryManager->addBuffer(name, info); }
 
+	/**
+	 * Adds a set of uniforms that can be used in a shader.
+	 * @param set The set to add.
+	 * @param name The name of the set.
+	 */
+	virtual void addUniformSet(const UniformSet& set, const std::string& name) = 0;
+
 protected:
 	Logger& logger;
 	RendererMemoryManager* memoryManager;

@@ -20,9 +20,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "ShaderInterface.hpp"
-
-class VkShader : public ShaderInterface {
+class VkShader {
 public:
 	//The pipeline representing the shader, used by the rendering engine.
 	const VkPipeline pipeline;
@@ -39,21 +37,6 @@ public:
 	 * Destroys the pipeline and pipeline layout.
 	 */
 	~VkShader();
-
-	/**
-	 * Sets a uniform variable.
-	 * @param type The type of the uniform.
-	 * @param name The name of the uniform in the shader.
-	 * @param data The value to set the uniform data to.
-	 */
-	void setUniform(UniformType type, const std::string& name, const void* data) override;
-
-	/**
-	 * Sets the texture at the given index to the provided name.
-	 * @param name The name of the texture to bind.
-	 * @param index The texture unit to bind the texture to.
-	 */
-	void setTexture(const std::string& name, unsigned int index) override;
 
 private:
 	//Used for deleting.
