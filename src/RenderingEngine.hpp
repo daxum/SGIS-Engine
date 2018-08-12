@@ -33,6 +33,7 @@
 #include "RendererMemoryManager.hpp"
 #include "Screen.hpp"
 #include "WindowSystemInterface.hpp"
+#include "Camera.hpp"
 
 //A generic rendering engine. Provides the base interfaces, like resource loading
 //and rendering, but leaves the implementation to api-specific subclasses, like
@@ -155,6 +156,29 @@ protected:
 	 * @param state User-provided screen state.
 	 */
 	virtual void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) = 0;
+
+	/**
+	 * Fetches a uniform value. The place it gets it from depends on the provider type.
+	 * @param name The name of the uniform to fetch.
+	 * @param provider The uniform provider type, determines where the value is fetched from.
+	 * @param screenState The state of the rendered screen, used for the SCREEN_STATE provider.
+	 * @param camera The camera of the screen being rendered, used for the projection and view matrices.
+	 * @param model The model used for the MATERIAL provider, can be null otherwise.
+	 * @param object Only used for the OBJECT_* providers, can be null otherwise.
+	 */
+	template<typename T>
+	const T* getUniformValue(const std::string& name, UniformProviderType provider, std::shared_ptr<const ScreenState> screenState, std::shared_ptr<const Camera> camera, const Model* model, const RenderComponent* object) const {
+		switch (provider) {
+			case UniformProviderType::CAMERA_PROJECTION: return (const T*) &camera->getProjection();
+			case UniformProviderType::CAMERA_VIEW: return (const T*) &camera->getView();
+			case UniformProviderType::SCREEN_STATE: return (const T*) screenState->getRenderValue(name);
+			case UniformProviderType::OBJECT_MODEL_VIEW:
+			case UniformProviderType::OBJECT_TRANSFORM: throw std::runtime_error("Object transforms must be calculated separately (for now)!");
+			case UniformProviderType::OBJECT_STATE: return (const T*) object->getParentState()->getRenderValue(name);
+			case UniformProviderType::MATERIAL: return (const T*) model->uniformMap.at(name).get();
+			default: throw std::runtime_error("Unknown uniform provider!");
+		}
+	}
 
 private:
 	/**

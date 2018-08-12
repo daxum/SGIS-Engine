@@ -79,4 +79,5 @@ protected:
 	 *     the parent has been destructed or wasn't set.
 	 */
 	std::shared_ptr<Object> lockParent() { return parent.lock(); }
+	std::shared_ptr<const Object> lockParent() const { return parent.lock(); }
 };

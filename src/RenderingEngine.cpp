@@ -21,7 +21,6 @@
 #include "RenderingEngine.hpp"
 #include "Engine.hpp"
 #include "ExtraMath.hpp"
-#include "Camera.hpp"
 
 void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManager, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
 	//Don't render without render component

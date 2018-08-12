@@ -21,6 +21,7 @@
 #include <string>
 #include <bitset>
 #include <vector>
+#include <stdexcept>
 
 //Render passes for the engine.
 //Each shader is part of one render pass.
@@ -77,6 +78,18 @@ constexpr bool isSampler(const UniformType type) {
 	}
 }
 
+constexpr uint32_t uniformSize(const UniformType type) {
+	switch (type) {
+		case UniformType::FLOAT: return sizeof(float);
+		case UniformType::VEC2: return 2 * sizeof(float);
+		case UniformType::VEC3: return 3 * sizeof(float);
+		case UniformType::VEC4: return 4 * sizeof(float);
+		case UniformType::MAT3: return 9 * sizeof(float);
+		case UniformType::MAT4: return 16 * sizeof(float);
+		default: throw std::runtime_error("Uniform size missing!");
+	}
+}
+
 //Shader stages. This should match VkShaderStageFlagBits.
 enum UniformShaderUsage {
 	USE_VERTEX_SHADER = 0x00000001,
@@ -115,18 +128,19 @@ enum class UniformBufferType {
 //The first non-sampler uniform will determine the
 //uniform buffer's binding, and each sampler will
 //be assigned to the next binding, in order.
-//Push constants work in a similar fashion with regards
-//to their offsets.
 struct UniformSet {
-	//Whether this uniform set will have its data stored in a buffer
-	//or be pushed during rendering.
-	bool pushConstantSet;
-	//Which buffer to pull non-sampler uniform values from. This is
-	//ignored for push constants.
+	//Which buffer to pull non-sampler uniform values from.
 	UniformBufferType bufferType;
-	//The uniforms in the set. Try to group push constants with
-	//same shader stages together!
+	//The uniforms in the set.
 	std::vector<UniformDescription> uniforms;
+};
+
+//A set of push constants. Be very careful with size here - the
+//minimum required in vulkan is 128 bytes. These are probably
+//best used with things that change frequently.
+struct PushConstantSet {
+	//Careful with order here - try to group same shader stages together.
+	std::vector<UniformDescription> pushConstants;
 };
 
 struct ShaderInfo {
@@ -143,7 +157,8 @@ struct ShaderInfo {
 	//Names of all the uniform sets used in the shader. Order is very important
 	//here, as it affects which uniforms need to be rebound when the shader changes.
 	//In general, from the values in UniformBufferType, prefer PER_FRAME, then
-	//*_MODEL, then PER_OBJECT. In addition, there can only be one push constant
-	//set per shader.
+	//*_MODEL, then PER_OBJECT.
 	std::vector<std::string> uniformSets;
+	//All push constant values used in the shader.
+	PushConstantSet pushConstants;
 };

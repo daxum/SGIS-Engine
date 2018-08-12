@@ -86,7 +86,7 @@ public:
 	 * Gets the translation of the object.
 	 * @return The translation of the object.
 	 */
-	glm::vec3 getTranslation() override { return pos; }
+	glm::vec3 getTranslation() const override { return pos; }
 
 protected:
 	//The position of the object.

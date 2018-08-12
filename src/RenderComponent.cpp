@@ -38,14 +38,6 @@ RenderComponent::RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 colo
 
 }
 
-glm::vec3 RenderComponent::getTranslation() {
-	return lockParent()->getPhysics()->getTranslation();
-}
-
-glm::quat RenderComponent::getRotation() {
-	return  lockParent()->getPhysics()->getRotation();
-}
-
 void RenderComponent::setModel(std::shared_ptr<ModelRef> newModel) {
 	std::shared_ptr<ModelRef> oldModel = model;
 	model = newModel;

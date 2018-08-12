@@ -52,13 +52,13 @@ public:
 	 * Gets the translation of the object from the animation.
 	 * @return The translation of the object.
 	 */
-	glm::vec3 getTranslation() override;
+	glm::vec3 getTranslation() const override;
 
 	/**
 	 * Gets the rotation of the object.
 	 * @return The rotation.
 	 */
-	glm::quat getRotation() override;
+	glm::quat getRotation() const override;
 
 private:
 	//The spline curve that defines this animation.

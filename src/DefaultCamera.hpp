@@ -26,19 +26,19 @@
 
 class DefaultCamera : public Camera {
 public:
-	DefaultCamera() : pos(0.0, 0.0, 1.0), lookDir(0.0, 0.0, -1.0), up(0.0, 1.0, 0.0), near(0.1f), far(100.0f) {}
+	DefaultCamera() : near(0.1f), far(100.0f), pos(0.0, 0.0, 1.0), lookDir(0.0, 0.0, -1.0), up(0.0, 1.0, 0.0) {}
 
 	/**
 	 * Calculates a view matrix to use in rendering.
 	 * @return the view matrix.
 	 */
-	glm::mat4 getView() const override { return glm::lookAt(pos, pos + lookDir, up); }
+	const glm::mat4& getView() const override { return view; }
 
 	/**
 	 * Creates a projection matrix.
 	 * @return the projection matrix.
 	 */
-	glm::mat4 getProjection() const override { return projection; }
+	const glm::mat4& getProjection() const override { return projection; }
 
 	/**
 	 * Sets the projection matrix.
@@ -67,10 +67,12 @@ public:
 	 */
 	void update() override {}
 
-	//Simple camera variables.
-	glm::vec3 pos;
-	glm::vec3 lookDir;
-	glm::vec3 up;
+	/**
+	 * Sets the pos, look, and up variables, updating the view matrix in the process.
+	 */
+	void setPos(const glm::vec3& newPos) { pos = newPos; view = glm::lookAt(pos, pos + lookDir, up); }
+	void setLook(const glm::vec3& newLook) { lookDir = newLook; view = glm::lookAt(pos, pos + lookDir, up); }
+	void setUp(const glm::vec3& newUp) { up = newUp; view = glm::lookAt(pos, pos + lookDir, up); }
 
 	//Near and far plane.
 	float near;
@@ -78,5 +80,13 @@ public:
 
 	//Projection matrix.
 	glm::mat4 projection;
+	//View matrix.
+	glm::mat4 view;
+
+private:
+	//Simple camera variables.
+	glm::vec3 pos;
+	glm::vec3 lookDir;
+	glm::vec3 up;
 };
 

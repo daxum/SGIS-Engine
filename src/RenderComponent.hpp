@@ -22,6 +22,7 @@
 
 #include "Component.hpp"
 #include "Model.hpp"
+#include "Object.hpp"
 
 class RenderComponentManager;
 
@@ -47,25 +48,25 @@ public:
 	 * Returns the translation of this object.
 	 * @return A translation vector for this object.
 	 */
-	glm::vec3 getTranslation();
+	glm::vec3 getTranslation() const { return lockParent()->getPhysics()->getTranslation(); }
 
 	/**
 	 * Returns the rotation of this object.
 	 * @return A quaternion for this object's rotation.
 	 */
-	glm::quat getRotation();
+	glm::quat getRotation() const { return  lockParent()->getPhysics()->getRotation(); }
 
 	/**
 	 * Returns the scale of this object.
 	 * @return The scale of this object.
 	 */
-	glm::vec3 getScale() { return scale; }
+	glm::vec3 getScale() const { return scale; }
 
 	/**
 	 * Returns the color of this object.
 	 * @return The color of this object.
 	 */
-	glm::vec3 getColor() { return color; }
+	glm::vec3 getColor() const { return color; }
 
 	/**
 	 * Sets the renderComponent's scale.
@@ -83,7 +84,7 @@ public:
 	 * Returns the model to be used in rendering this object.
 	 * @return The model.
 	 */
-	std::shared_ptr<const ModelRef> getModel() { return model; }
+	std::shared_ptr<const ModelRef> getModel() const { return model; }
 
 	/**
 	 * Changes the component's model to the specified one.
@@ -95,6 +96,12 @@ public:
 	 * Only to be called from RenderComponentManager.
 	 */
 	void setManager(RenderComponentManager* renderManager) { manager = renderManager; }
+
+	/**
+	 * Gets the object state, for retrieving uniform values.
+	 * @return A pointer to the user-set object state.
+	 */
+	std::shared_ptr<const ObjectState> getParentState() const { return lockParent()->getState(); }
 
 private:
 	//Which model to use for this object.

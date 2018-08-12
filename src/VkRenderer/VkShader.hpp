@@ -20,18 +20,23 @@
 
 #include <vulkan/vulkan.h>
 
+#include "ShaderInfo.hpp"
+
 class VkShader {
 public:
 	//The pipeline representing the shader, used by the rendering engine.
 	const VkPipeline pipeline;
+	//Push constants used in the shader.
+	const PushConstantSet pushConstants;
 
 	/**
 	 * Constructor.
 	 * @param device The logical device this shader is owned by.
 	 * @param pipeline The pipeline object created by the shader loader.
 	 * @param pipelineLayout The pipeline layout object.
+	 * @param pushConstants The push constants used in this shader.
 	 */
-	VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout);
+	VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants);
 
 	/**
 	 * Destroys the pipeline and pipeline layout.

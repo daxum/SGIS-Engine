@@ -25,8 +25,16 @@
 #include "Component.hpp"
 #include "ObjectPhysicsInterface.hpp"
 
-//This will probably be expanded later.
-struct ObjectState {};
+struct ObjectState {
+	/**
+	 * Called whenever a shader uses a uniform provider type of OBJECT_STATE.
+	 * Gets a pointer to the value to be passed into the shader.
+	 * @param name The name of the value to retrieve.
+	 * @return A pointer to the requested value, nullptr if the value doesn't
+	 *     exist.
+	 */
+	virtual void* getRenderValue(const std::string& name) const = 0;
+};
 
 //An object in a world. Stores rendering, physics, etc.
 class Object : public std::enable_shared_from_this<Object> {
@@ -64,6 +72,7 @@ public:
 	 * @return The object's physics interface.
 	 */
 	ObjectPhysicsInterface* getPhysics();
+	const ObjectPhysicsInterface* getPhysics() const;
 
 	/**
 	 * Returns whether the object has a set physics interface.
@@ -89,6 +98,7 @@ public:
 	 * Returns the previously set state pointer, or null if none was set.
 	 */
 	std::shared_ptr<ObjectState> getState() { return state; }
+	std::shared_ptr<const ObjectState> getState() const { return state; }
 
 private:
 	//Used by objects with no set physics interface. Completely stateless.

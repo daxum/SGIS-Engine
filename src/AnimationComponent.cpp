@@ -31,10 +31,10 @@ void AnimationComponent::onParentSet() {
 	lockParent()->setPhysics(this);
 }
 
-glm::vec3 AnimationComponent::getTranslation() {
+glm::vec3 AnimationComponent::getTranslation() const {
 	return animation.getLocation((float)time).first + posOffset;
 }
 
-glm::quat AnimationComponent::getRotation() {
+glm::quat AnimationComponent::getRotation() const {
 	return animation.getLocation((float)time).second;
 }

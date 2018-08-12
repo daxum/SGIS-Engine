@@ -51,7 +51,7 @@ void PhysicsComponent::update() {
 	body->applyTorque(torque);
 }
 
-glm::vec3 PhysicsComponent::getTranslation() {
+glm::vec3 PhysicsComponent::getTranslation() const {
 	btTransform transform;
 	physics->getMotionState()->getWorldTransform(transform);
 	btVector3 trans = transform.getOrigin();
@@ -60,7 +60,7 @@ glm::vec3 PhysicsComponent::getTranslation() {
 }
 
 
-glm::quat PhysicsComponent::getRotation() {
+glm::quat PhysicsComponent::getRotation() const {
 	btTransform trans;
 	physics->getMotionState()->getWorldTransform(trans);
 

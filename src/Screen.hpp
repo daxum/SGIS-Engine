@@ -32,8 +32,17 @@ class ComponentManager;
 class RenderComponentManager;
 class Camera;
 
-//Might be expanded later.
-struct ScreenState {};
+//State for a screen.
+struct ScreenState {
+	/**
+	 * Called whenever a shader uses a uniform provider type of SCREEN_STATE.
+	 * Gets a pointer to the value to be passed into the shader.
+	 * @param name The name of the value to retrieve.
+	 * @return A pointer to the requested value, nullptr if the value doesn't
+	 *     exist.
+	 */
+	virtual void* getRenderValue(const std::string& name) const = 0;
+};
 
 class Screen {
 public:

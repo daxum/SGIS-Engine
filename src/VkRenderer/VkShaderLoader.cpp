@@ -142,9 +142,21 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	dynamicCreateInfo.dynamicStateCount = 2;
 	dynamicCreateInfo.pDynamicStates = dynamicStates;
 
+	std::vector<VkDescriptorSetLayout> layouts;
+
+	for (const std::string& set : info.uniformSets) {
+		layouts.push_back(descriptorLayouts.at(set));
+	}
+
+	std::vector<VkPushConstantRange> pushRanges = convertToRanges(info.pushConstants);
+
 	//TODO: Move into shader object
 	VkPipelineLayoutCreateInfo layoutCreateInfo = {};
 	layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	layoutCreateInfo.setLayoutCount = layouts.size();
+	layoutCreateInfo.pSetLayouts = layouts.data();
+	layoutCreateInfo.pushConstantRangeCount = pushRanges.size();
+	layoutCreateInfo.pPushConstantRanges = pushRanges.data();
 
 	VkPipelineLayout pipelineLayout;
 
@@ -175,7 +187,7 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	}
 
 	//Add to shader map
-	shaderMap.insert(std::make_pair(name, std::make_shared<VkShader>(device, graphicsPipeline, pipelineLayout)));
+	shaderMap.insert({name, std::make_shared<VkShader>(device, graphicsPipeline, pipelineLayout, info.pushConstants)});
 
 	vkDestroyShaderModule(device, vertShader, nullptr);
 	vkDestroyShaderModule(device, fragShader, nullptr);
@@ -184,15 +196,11 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 }
 
 void VkShaderLoader::addUniformSet(const UniformSet& set, const std::string& name) {
-	if (set.pushConstantSet) {
-		pushConstantLayouts.insert({name, set.uniforms});
-		return;
-	}
-
 	std::bitset<2> uboUseStages;
 	uint32_t nextBinding = 0;
 	bool hasUbo = false;
 
+	//Set stages the uniform buffer is used in
 	for (const UniformDescription& descr : set.uniforms) {
 		if (!isSampler(descr.type)) {
 			uboUseStages |= descr.shaderStages;
@@ -201,8 +209,10 @@ void VkShaderLoader::addUniformSet(const UniformSet& set, const std::string& nam
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
+	//Create descriptor set layout
 	for (const UniformDescription& descr : set.uniforms) {
 		if (!isSampler(descr.type)) {
+			//Only add the uniform buffer once, at the location of the first buffered variable
 			if (hasUbo) {
 				continue;
 			}
@@ -298,4 +308,35 @@ std::vector<char> VkShaderLoader::loadFromDisk(const std::string& filename) {
 	}
 
 	return fileData;
+}
+
+std::vector<VkPushConstantRange> VkShaderLoader::convertToRanges(const PushConstantSet& pushSet) {
+	std::vector<VkPushConstantRange> ranges;
+
+	if (pushSet.pushConstants.empty()) {
+		return ranges;
+	}
+
+	std::bitset<2> currentShaderStages = pushSet.pushConstants.front().shaderStages;
+
+	VkPushConstantRange currentRange = {};
+	currentRange.stageFlags = currentShaderStages.to_ulong();
+
+	for (const UniformDescription& uniform : pushSet.pushConstants) {
+		if (uniform.shaderStages != currentShaderStages) {
+			ranges.push_back(currentRange);
+
+			currentShaderStages = uniform.shaderStages;
+
+			currentRange.stageFlags = currentShaderStages.to_ulong();
+			currentRange.offset += currentRange.size;
+			currentRange.size = 0;
+		}
+
+		currentRange.size += uniformSize(uniform.type);
+	}
+
+	ranges.push_back(currentRange);
+
+	return ranges;
 }

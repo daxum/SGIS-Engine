@@ -209,7 +209,7 @@ void VkRenderingEngine::setViewport(int width, int height) {
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
 	//TODO: fix all this
-	/*VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
+	VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
 
 	VkRenderPassBeginInfo passBeginInfo = {};
 	passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -235,7 +235,7 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	//Hmmm...
-	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, std::static_pointer_cast<VkShader>(shaderMap.at("basic")->getRenderInterface())->pipeline);
+	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shaderMap.at("basic")->pipeline);
 
 	//HMMMMMM....
 	const VkDeviceSize zero = 0;
@@ -247,5 +247,5 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 
 	vkCmdDrawIndexed(commandBuffers.at(currentFrame), 3, 1, 0, 0, 0);
 
-	vkCmdEndRenderPass(commandBuffers.at(currentFrame));*/
+	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 }

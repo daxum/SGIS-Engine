@@ -18,8 +18,9 @@
 
 #include "VkShader.hpp"
 
-VkShader::VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout) :
+VkShader::VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants) :
 	pipeline(pipeline),
+	pushConstants(pushConstants),
 	device(device),
 	pipelineLayout(pipelineLayout) {
 

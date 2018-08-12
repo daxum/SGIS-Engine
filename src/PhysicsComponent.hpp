@@ -71,12 +71,12 @@ public:
 	/**
 	 * Used by rendering.
 	 */
-	glm::vec3 getTranslation() override;
+	glm::vec3 getTranslation() const override;
 
 	/**
 	 * Also used by rendering.
 	 */
-	glm::quat getRotation() override;
+	glm::quat getRotation() const override;
 
 	/**
 	 * Returns a unit vector representing the direction the object is facing.

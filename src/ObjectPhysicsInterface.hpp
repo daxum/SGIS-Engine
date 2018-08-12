@@ -31,10 +31,10 @@ public:
 	/**
 	 * Returns the translation of the object in the world.
 	 */
-	virtual glm::vec3 getTranslation() { return glm::vec3(0.0, 0.0, 0.0); }
+	virtual glm::vec3 getTranslation() const { return glm::vec3(0.0, 0.0, 0.0); }
 
 	/**
 	 * Returns the rotation of the object.
 	 */
-	virtual glm::quat getRotation() { return glm::quat(0.0, glm::vec3(0.0, 0.0, 0.0)); }
+	virtual glm::quat getRotation() const { return glm::quat(0.0, glm::vec3(0.0, 0.0, 0.0)); }
 };

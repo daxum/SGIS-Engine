@@ -57,8 +57,6 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap;
 	//All possible descriptor set layouts. This might be moved elsewhere.
 	std::unordered_map<std::string, VkDescriptorSetLayout> descriptorLayouts;
-	//All possible push constant layouts. This too might be moved elsewhere.
-	std::unordered_map<std::string, std::vector<UniformDescription>> pushConstantLayouts;
 	//Object handling all vulkan objects.
 	VkObjectHandler& vkObjects;
 
@@ -82,6 +80,14 @@ private:
 	 * @return The binary data the file contained.
 	 */
 	std::vector<char> loadFromDisk(const std::string& filename);
+
+	/**
+	 * Converts a set of push constant uniform descriptions to a set of push
+	 * constant ranges, based on the shader stages and variable sizes.
+	 * @param pushSet A set of push constant uniforms.
+	 * @return A vector of ranges for the provided push constants.
+	 */
+	static std::vector<VkPushConstantRange> convertToRanges(const PushConstantSet& pushSet);
 
 	/**
 	 * Converts the type to a VkFormat.
