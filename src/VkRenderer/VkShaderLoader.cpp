@@ -92,7 +92,7 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	const VertexBuffer& buffer = memoryManager->getBuffer(info.buffer);
 
 	//Create pipeline creator
-	VkPipelineCreateObject pipelineCreator(vkObjects, {vertCreateInfo, fragCreateInfo}, info, buffer);
+	VkPipelineCreateObject pipelineCreator(vkObjects, {vertCreateInfo, fragCreateInfo}, info.pass, buffer);
 
 	//Create pipeline layout
 	std::vector<VkDescriptorSetLayout> layouts;

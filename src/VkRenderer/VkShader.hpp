@@ -57,6 +57,12 @@ public:
 	const std::vector<uint32_t>& getPushConstantOffsets() const { return pushOffsets; }
 
 	/**
+	 * Gets the render pass for the shader, which is determined by its pipeline.
+	 * @return The render pass the shader is in.
+	 */
+	RenderPass getRenderPass() const { return pipelineCreator.getRenderPass(); }
+
+	/**
 	 * Recreates the shader's pipeline and frees the old pipeline.
 	 */
 	void reload() {

@@ -30,10 +30,10 @@ public:
 	 * Creates a pipeline creator.
 	 * @param objectHandler The vulkan object handler.
 	 * @param moduleInfos An array of the shader modules used in the pipeline.
-	 * @param shaderInfo The shader info structure.
+	 * @param renderPass The render pass the pipeline is in - this is for transparency, not VkRenderPass.
 	 * @param buffer The vertex buffer to pull vertex data from, used to get the input format.
 	 */
-	VkPipelineCreateObject(VkObjectHandler& objectHandler, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, const ShaderInfo& shaderInfo, const VertexBuffer& buffer);
+	VkPipelineCreateObject(VkObjectHandler& objectHandler, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer);
 
 	/**
 	 * Copy constructor.
@@ -47,11 +47,17 @@ public:
 	 */
 	VkPipeline createPipeline(VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout) const;
 
+	/**
+	 * Gets the render pass for the pipeline.
+	 * @return The render pass.
+	 */
+	RenderPass getRenderPass() const { return renderPass; }
+
 private:
 	//Vulkan object handler.
 	VkObjectHandler& objectHandler;
-	//Shader info object.
-	ShaderInfo shaderInfo;
+	//The render pass for the pipeline, determines blend state.
+	RenderPass renderPass;
 	//Vertex buffer object.
 	const VertexBuffer& buffer;
 

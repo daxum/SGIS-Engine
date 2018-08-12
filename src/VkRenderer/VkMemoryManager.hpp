@@ -91,6 +91,13 @@ public:
 	 */
 	void executeTransfers();
 
+	/**
+	 * Gets the rendering data for the mesh with the given name.
+	 * @param mesh The name of the mesh to get data for.
+	 * @return The rendering data for the mesh.
+	 */
+	const VkMeshRenderData& getMeshRenderData(const std::string& mesh) const { return meshMap.at(mesh); }
+
 protected:
 	/**
 	 * Creates a buffer and allocation with the given parameters.

@@ -211,7 +211,7 @@ void VkRenderingEngine::setViewport(int width, int height) {
 }
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	//TODO: fix all this
+	//TODO: this still needs fixing
 	VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
 
 	VkRenderPassBeginInfo passBeginInfo = {};
@@ -225,15 +225,58 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	//Hmmm...
-	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shaderMap.at("basic")->getPipeline());
-
-	//HMMMMMM....
-	const VkDeviceSize zero = 0;
-	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer("triangle").getRenderData())->vertexBuffer, &zero);
-	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer("triangle").getRenderData())->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-	vkCmdDrawIndexed(commandBuffers.at(currentFrame), 3, 1, 0, 0, 0);
+	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects);
+	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects);
+	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects);
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
+}
+
+void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects) {
+	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
+
+	std::string currentBuffer = "";
+	std::string currentShader = "";
+
+	for (const auto& shaderObjectMap : sortedObjects) {
+		const std::string& buffer = shaderObjectMap.first;
+
+		for (const auto& modelMap : shaderObjectMap.second) {
+			const std::string& shaderName = modelMap.first;
+			const std::shared_ptr<VkShader> shader = shaderMap.at(shaderName);
+
+			//Skip these objects if their shader isn't in the current render pass
+			if (shader->getRenderPass() != pass) {
+				continue;
+			}
+
+			for (const auto& objectSet : modelMap.second) {
+				for (const std::shared_ptr<RenderComponent>& comp : objectSet.second) {
+					if (objects.count(comp.get())) {
+						//Set shader / buffer if needed
+						if (currentShader != shaderName) {
+							vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipeline());
+							currentShader = shaderName;
+						}
+
+						if (currentBuffer != buffer) {
+							const VkDeviceSize zero = 0;
+							std::shared_ptr<VkBufferData> bufferData = std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer(buffer).getRenderData());
+
+							vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &bufferData->vertexBuffer, &zero);
+							vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), bufferData->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+							currentBuffer = buffer;
+						}
+
+						//TODO: per-object push constants go here
+
+						const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh);
+
+						vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshRenderData.indexCount, 1, meshRenderData.indexStart, 0, 0);
+					}
+				}
+			}
+		}
+	}
 }

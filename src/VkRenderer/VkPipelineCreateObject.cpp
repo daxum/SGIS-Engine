@@ -18,9 +18,9 @@
 
 #include "VkPipelineCreateObject.hpp"
 
-VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, const ShaderInfo& shaderInfo, const VertexBuffer& buffer) :
+VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer) :
 	objectHandler(objectHandler),
-	shaderInfo(shaderInfo),
+	renderPass(renderPass),
 	buffer(buffer),
 	moduleInfos(moduleInfos),
 	bindingDescription(),
@@ -36,7 +36,7 @@ VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, c
 
 VkPipelineCreateObject::VkPipelineCreateObject(const VkPipelineCreateObject& other) :
 	objectHandler(other.objectHandler),
-	shaderInfo(other.shaderInfo),
+	renderPass(other.renderPass),
 	buffer(other.buffer),
 	moduleInfos(other.moduleInfos),
 	bindingDescription(),
@@ -132,7 +132,7 @@ void VkPipelineCreateObject::fillPersistentStructs() {
 	//No depth / stencil yet.
 
 	blendAttach.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	blendAttach.blendEnable = (shaderInfo.pass == RenderPass::TRANSLUCENT) ? VK_TRUE : VK_FALSE;
+	blendAttach.blendEnable = (renderPass == RenderPass::TRANSLUCENT) ? VK_TRUE : VK_FALSE;
 	blendAttach.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	blendAttach.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	blendAttach.colorBlendOp = VK_BLEND_OP_ADD;

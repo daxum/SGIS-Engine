@@ -121,4 +121,11 @@ private:
 	//The current frame being rendered, always between 0 and MAX_ACTIVE_FRAMES.
 	size_t currentFrame;
 
+	/**
+	 * Renders a single transparency pass.
+	 * @param pass The current rendering pass.
+	 * @param visibleObjects A set of objects visible on the screen.
+	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
+	 */
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects);
 };
