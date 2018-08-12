@@ -25,14 +25,8 @@
 #include "ExtraMath.hpp"
 
 namespace {
-	//TODO: These things should go in the engine config
-
 	const std::vector<std::string> requiredExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
-	};
-
-	const std::vector<std::string> enableLayers = {
-		"VK_LAYER_LUNARG_standard_validation"
 	};
 };
 
@@ -141,43 +135,45 @@ void VkObjectHandler::createInstance() {
 
 	extensionNames.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
-	//Validation layers (TODO: allow turning off later, specify which ones from game)
+	//Validation layers
+	std::vector<const char*> layerCStr;
 
-	uint32_t layerCount = 0;
-	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+	if (!config.renderer.validationLayers.empty()) {
+		uint32_t layerCount = 0;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-	logger.debug("Found " + std::to_string(layerCount) + " validation layers:");
+		logger.debug("Found " + std::to_string(layerCount) + " validation layers:");
 
-	std::vector<VkLayerProperties> layers(layerCount);
-	enabledLayerNames.reserve(layerCount);
+		std::vector<VkLayerProperties> layers(layerCount);
+		enabledLayerNames.reserve(layerCount);
 
-	vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
+		vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
 
-	for (const VkLayerProperties& layer : layers) {
-		bool enabled = false;
+		for (const VkLayerProperties& layer : layers) {
+			bool enabled = false;
 
-		for (const std::string& name : enableLayers) {
-			if (name == layer.layerName) {
-				enabledLayerNames.push_back(layer.layerName);
-				enabled = true;
-				break;
+			for (const std::string& name : config.renderer.validationLayers) {
+				if (name == layer.layerName) {
+					enabledLayerNames.push_back(layer.layerName);
+					enabled = true;
+					break;
+				}
 			}
+
+			logger.debug(std::string("\t") + layer.layerName + " " + std::to_string(layer.specVersion) + " - " + std::to_string(layer.implementationVersion) + ":");
+			logger.debug(std::string("\t\tEnabled: ") + (enabled ? "Yes" : "No"));
+			logger.debug(std::string("\t\t") + layer.description);
 		}
 
-		logger.debug(std::string("\t") + layer.layerName + " " + std::to_string(layer.specVersion) + " - " + std::to_string(layer.implementationVersion) + ":");
-		logger.debug(std::string("\t\tEnabled: ") + (enabled ? "Yes" : "No"));
-		logger.debug(std::string("\t\t") + layer.description);
-	}
+		if (enabledLayerNames.size() != config.renderer.validationLayers.size()) {
+			logger.warn("Not all validation layers loaded!");
+		}
 
-	if (enabledLayerNames.size() != enableLayers.size()) {
-		logger.warn("Not all validation layers loaded!");
-	}
+		layerCStr.reserve(enabledLayerNames.size());
 
-	std::vector<const char*> layerCStr;
-	layerCStr.reserve(enabledLayerNames.size());
-
-	for (const std::string& s : enabledLayerNames) {
-		layerCStr.push_back(s.c_str());
+		for (const std::string& s : enabledLayerNames) {
+			layerCStr.push_back(s.c_str());
+		}
 	}
 
 	//Create instance

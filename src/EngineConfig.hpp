@@ -54,6 +54,8 @@ struct RenderConfig {
 	int windowHeight;
 	//The title of the window.
 	std::string windowTitle;
+	//Validation layers to enable, if supported by the renderer (ie. vulkan).
+	std::vector<std::string> validationLayers;
 };
 
 struct EngineConfig {
