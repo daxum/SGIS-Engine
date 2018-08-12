@@ -455,8 +455,6 @@ void VkObjectHandler::createSwapchain() {
 
 	swapchainImageFormat = format.format;
 	swapchainExtent = extent;
-
-	logger.debug("Created swapchain with " + std::to_string(imageCount) + " images");
 }
 
 void VkObjectHandler::createImageViews() {
