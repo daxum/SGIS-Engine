@@ -78,7 +78,7 @@ public:
 	 * Returns whether the object has a set physics interface.
 	 * @return true if the object has a physics interface, false otherwise.
 	 */
-	bool hasPhysics();
+	bool hasPhysics() const { return physics != nullptr; }
 
 	/**
 	 * Sets the physics interface for the object. This should never really need to be
@@ -86,7 +86,7 @@ public:
 	 * The set interface will not be deleted by the object.
 	 * @param phys The new physics interface for the object.
 	 */
-	void setPhysics(ObjectPhysicsInterface* phys);
+	void setPhysics(ObjectPhysicsInterface* phys) { physics = phys; }
 
 	/**
 	 * Sets the state for this object.

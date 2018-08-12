@@ -33,6 +33,7 @@ void Object::addComponent(std::shared_ptr<Component> component) {
 	components.insert({component->name, component});
 }
 
+//TODO: combine this with below somehow
 ObjectPhysicsInterface* Object::getPhysics() {
 	if (!hasPhysics()) {
 		return &defaultInterface;
@@ -41,10 +42,10 @@ ObjectPhysicsInterface* Object::getPhysics() {
 	return physics;
 }
 
-bool Object::hasPhysics() {
-	return physics != nullptr;
-}
+const ObjectPhysicsInterface* Object::getPhysics() const {
+	if (!hasPhysics()) {
+		return &defaultInterface;
+	}
 
-void Object::setPhysics(ObjectPhysicsInterface* phys) {
-	physics = phys;
+	return physics;
 }
