@@ -21,30 +21,61 @@
 #include <vulkan/vulkan.h>
 
 #include "ShaderInfo.hpp"
+#include "VkPipelineCreateObject.hpp"
 
 class VkShader {
 public:
-	//The pipeline representing the shader, used by the rendering engine.
-	const VkPipeline pipeline;
 	//Push constants used in the shader.
 	const PushConstantSet pushConstants;
 
 	/**
 	 * Constructor.
 	 * @param device The logical device this shader is owned by.
-	 * @param pipeline The pipeline object created by the shader loader.
+	 * @param pipelineCache The pipeline cache to use when creating pipelines.
 	 * @param pipelineLayout The pipeline layout object.
 	 * @param pushConstants The push constants used in this shader.
+	 * @param pipelineCreator The pipeline object used to recreate this shader.
 	 */
-	VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants);
+	VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator);
 
 	/**
 	 * Destroys the pipeline and pipeline layout.
 	 */
 	~VkShader();
 
+	/**
+	 * Gets the shader's pipeline.
+	 * @return The shader's pipeline.
+	 */
+	VkPipeline getPipeline() const { return pipeline; }
+
+	/**
+	 * Gets the offsets for the push constants used in the shader.
+	 * @return A vector of push constant offsets, in the same order
+	 *     as the vector in pushConstants.
+	 */
+	const std::vector<uint32_t>& getPushConstantOffsets() const { return pushOffsets; }
+
+	/**
+	 * Recreates the shader's pipeline and frees the old pipeline.
+	 */
+	void reload() {
+		vkDestroyPipeline(device, pipeline, nullptr);
+		pipeline = pipelineCreator.createPipeline(pipelineCache, pipelineLayout);
+	}
+
 private:
 	//Used for deleting.
 	VkDevice device;
 	VkPipelineLayout pipelineLayout;
+
+	//Pipeline cache object.
+	VkPipelineCache pipelineCache;
+	//The pipeline representing the shader, used by the rendering engine.
+	VkPipeline pipeline;
+	//Object used to create this shader's pipeline, used to reload the shader.
+	VkPipelineCreateObject pipelineCreator;
+
+	//Offsets for the different push constants.
+	std::vector<uint32_t> pushOffsets;
 };

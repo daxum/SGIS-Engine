@@ -136,6 +136,7 @@ void VkRenderingEngine::beginFrame() {
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		vkDeviceWaitIdle(objectHandler.getDevice());
 		objectHandler.recreateSwapchain();
+		std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 		//Eventually this'll work
 		beginFrame();
 		return;
@@ -193,6 +194,7 @@ void VkRenderingEngine::present() {
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		vkDeviceWaitIdle(objectHandler.getDevice());
 		objectHandler.recreateSwapchain();
+		std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 	}
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("Failed to present!");
@@ -205,6 +207,7 @@ void VkRenderingEngine::setViewport(int width, int height) {
 	//Width / height unused, retrieved from window interface in below function.
 	vkDeviceWaitIdle(objectHandler.getDevice());
 	objectHandler.recreateSwapchain();
+	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 }
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
@@ -220,30 +223,15 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	passBeginInfo.clearValueCount = 1;
 	passBeginInfo.pClearValues = &clearColor;
 
-	VkViewport viewport = {};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = (float) objectHandler.getSwapchainExtent().width;
-	viewport.height = (float) objectHandler.getSwapchainExtent().height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	VkRect2D scissor = {};
-	scissor.offset = {0, 0};
-	scissor.extent = objectHandler.getSwapchainExtent();
-
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	//Hmmm...
-	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shaderMap.at("basic")->pipeline);
+	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shaderMap.at("basic")->getPipeline());
 
 	//HMMMMMM....
 	const VkDeviceSize zero = 0;
 	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer("triangle").getRenderData())->vertexBuffer, &zero);
 	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer("triangle").getRenderData())->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
-	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 
 	vkCmdDrawIndexed(commandBuffers.at(currentFrame), 3, 1, 0, 0, 0);
 

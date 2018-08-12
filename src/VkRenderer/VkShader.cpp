@@ -18,12 +18,21 @@
 
 #include "VkShader.hpp"
 
-VkShader::VkShader(VkDevice device, VkPipeline pipeline, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants) :
-	pipeline(pipeline),
+VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator) :
 	pushConstants(pushConstants),
 	device(device),
-	pipelineLayout(pipelineLayout) {
+	pipelineLayout(pipelineLayout),
+	pipelineCache(pipelineCache),
+	pipeline(pipelineCreator.createPipeline(pipelineCache, pipelineLayout)),
+	pipelineCreator(pipelineCreator) {
 
+	pushOffsets.reserve(pushConstants.pushConstants.size());
+	uint32_t offset = 0;
+
+	for (const UniformDescription& uniform : pushConstants.pushConstants) {
+		pushOffsets.push_back(offset);
+		offset += uniformSize(uniform.type);
+	}
 }
 
 VkShader::~VkShader() {

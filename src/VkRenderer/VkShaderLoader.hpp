@@ -52,20 +52,28 @@ public:
 	 */
 	void addUniformSet(const UniformSet& set, const std::string& name) override;
 
+	/**
+	 * Reloads all shader objects.
+	 */
+	void reloadShaders() {
+		for (auto& shaderPair : shaderMap) {
+			shaderPair.second->reload();
+		}
+	}
+
 private:
 	//Map loaded shaders are added to.
 	std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap;
+	//Loaded shader modules, needed for when window is resized and pipelines
+	//need to be recreated.
+	std::unordered_map<std::string, VkShaderModule> loadedModules;
 	//All possible descriptor set layouts. This might be moved elsewhere.
 	std::unordered_map<std::string, VkDescriptorSetLayout> descriptorLayouts;
 	//Object handling all vulkan objects.
 	VkObjectHandler& vkObjects;
-
-	/**
-	 * Creates attribute descriptions for the passed in vertex format.
-	 * @param bufferFormat The format of the buffers that will be used with this shader.
-	 * @return A vector of attribute description structures.
-	 */
-	std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescription(const VertexBuffer& buffer) const;
+	//Pipeline cache. Maybe save this to disk later, but that might interfere
+	//with development...
+	VkPipelineCache pipelineCache;
 
 	/**
 	 * Loads shader bytecode from disk and creates a shader module for it.
@@ -88,21 +96,6 @@ private:
 	 * @return A vector of ranges for the provided push constants.
 	 */
 	static std::vector<VkPushConstantRange> convertToRanges(const PushConstantSet& pushSet);
-
-	/**
-	 * Converts the type to a VkFormat.
-	 * @param type The type to convert.
-	 * @return The corresponding format.
-	 */
-	static constexpr VkFormat formatFromVertexType(const VertexElementType type) {
-		switch (type) {
-			case VertexElementType::FLOAT: return VK_FORMAT_R32_SFLOAT;
-			case VertexElementType::VEC2: return VK_FORMAT_R32G32_SFLOAT;
-			case VertexElementType::VEC3: return VK_FORMAT_R32G32B32_SFLOAT;
-			case VertexElementType::VEC4: return VK_FORMAT_R32G32B32A32_SFLOAT;
-			default: return VK_FORMAT_UNDEFINED;
-		}
-	}
 
 	/**
 	 * Converts the uniform buffer type to a VkDescriptor type.

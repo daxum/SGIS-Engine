@@ -24,7 +24,8 @@
 VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap) :
 	ShaderLoader(logger, memoryManager),
 	shaderMap(shaderMap),
-	vkObjects(vkObjects) {
+	vkObjects(vkObjects),
+	pipelineCache(VK_NULL_HANDLE) {
 
 }
 
@@ -32,16 +33,49 @@ VkShaderLoader::~VkShaderLoader() {
 	for (const auto& layout : descriptorLayouts) {
 		vkDestroyDescriptorSetLayout(vkObjects.getDevice(), layout.second, nullptr);
 	}
+
+	for (const auto& module : loadedModules) {
+		vkDestroyShaderModule(vkObjects.getDevice(), module.second, nullptr);
+	}
+
+	if (pipelineCache != VK_NULL_HANDLE) {
+		vkDestroyPipelineCache(vkObjects.getDevice(), pipelineCache, nullptr);
+	}
 }
 
 void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	logger.debug("Loading shader \"" + name + "\"");
 
-	VkDevice device = vkObjects.getDevice();
-	const VkExtent2D& swapchainExtent = vkObjects.getSwapchainExtent();
+	//Create pipeline cache if this is the first shader loaded
+	if (pipelineCache == VK_NULL_HANDLE) {
+		VkPipelineCacheCreateInfo cacheCreateInfo = {};
+		cacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+		//TODO: load from disk?
 
-	const VkShaderModule vertShader = createShaderModule(info.vertex);
-	const VkShaderModule fragShader = createShaderModule(info.fragment);
+		if (vkCreatePipelineCache(vkObjects.getDevice(), &cacheCreateInfo, nullptr, &pipelineCache) != VK_SUCCESS) {
+			throw std::runtime_error("Failed to create pipeline cache!");
+		}
+	}
+
+	//Create shader modules, or used cached ones if they were already loaded.
+	VkShaderModule vertShader;
+	VkShaderModule fragShader;
+
+	if (loadedModules.count(info.vertex)) {
+		vertShader = loadedModules.at(info.vertex);
+	}
+	else {
+		vertShader = createShaderModule(info.vertex);
+		loadedModules.insert({info.vertex, vertShader});
+	}
+
+	if (loadedModules.count(info.fragment)) {
+		fragShader = loadedModules.at(info.fragment);
+	}
+	else {
+		fragShader = createShaderModule(info.fragment);
+		loadedModules.insert({info.fragment, fragShader});
+	}
 
 	VkPipelineShaderStageCreateInfo vertCreateInfo = {};
 	vertCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -55,93 +89,12 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	fragCreateInfo.module = fragShader;
 	fragCreateInfo.pName = "main";
 
-	VkPipelineShaderStageCreateInfo infos[] = { vertCreateInfo, fragCreateInfo };
-
 	const VertexBuffer& buffer = memoryManager->getBuffer(info.buffer);
 
-	VkVertexInputBindingDescription bindingDescription = {};
-	bindingDescription.binding = 0;
-	bindingDescription.stride = buffer.getVertexSize();
-	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	//Create pipeline creator
+	VkPipelineCreateObject pipelineCreator(vkObjects, {vertCreateInfo, fragCreateInfo}, info, buffer);
 
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions = getVertexAttributeDescription(buffer);
-
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
-	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-	VkPipelineInputAssemblyStateCreateInfo assemblyCreateInfo = {};
-	assemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	assemblyCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	assemblyCreateInfo.primitiveRestartEnable = VK_FALSE;
-
-	VkViewport viewport = {};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = (float) swapchainExtent.width;
-	viewport.height = (float) swapchainExtent.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	VkRect2D scissor = {};
-	scissor.offset = {0, 0};
-	scissor.extent = swapchainExtent;
-
-	VkPipelineViewportStateCreateInfo viewStateCreateInfo = {};
-	viewStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewStateCreateInfo.viewportCount = 1;
-	viewStateCreateInfo.pViewports = &viewport;
-	viewStateCreateInfo.scissorCount = 1;
-	viewStateCreateInfo.pScissors = &scissor;
-
-	VkPipelineRasterizationStateCreateInfo rasterizeCreateInfo = {};
-	rasterizeCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizeCreateInfo.depthClampEnable = VK_FALSE;
-	rasterizeCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-	rasterizeCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizeCreateInfo.lineWidth = 1.0f;
-	//TODO: these two don't look right.
-	rasterizeCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizeCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
-	rasterizeCreateInfo.depthBiasEnable = VK_FALSE;
-
-	//Enable later?
-	VkPipelineMultisampleStateCreateInfo sampleCreateInfo = {};
-	sampleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	sampleCreateInfo.sampleShadingEnable = VK_FALSE;
-	sampleCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-	//No depth / stencil yet.
-
-	VkPipelineColorBlendAttachmentState blendAttach = {};
-	blendAttach.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	blendAttach.blendEnable = (info.pass == RenderPass::TRANSLUCENT) ? VK_TRUE : VK_FALSE;
-	blendAttach.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	blendAttach.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	blendAttach.colorBlendOp = VK_BLEND_OP_ADD;
-	blendAttach.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	blendAttach.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	blendAttach.alphaBlendOp = VK_BLEND_OP_ADD;
-
-	VkPipelineColorBlendStateCreateInfo blendStateCreateInfo = {};
-	blendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	blendStateCreateInfo.logicOpEnable = VK_FALSE;
-	blendStateCreateInfo.attachmentCount = 1;
-	blendStateCreateInfo.pAttachments = &blendAttach;
-
-	VkDynamicState dynamicStates[] = {
-		VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_SCISSOR
-	};
-
-	VkPipelineDynamicStateCreateInfo dynamicCreateInfo = {};
-	dynamicCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicCreateInfo.dynamicStateCount = 2;
-	dynamicCreateInfo.pDynamicStates = dynamicStates;
-
+	//Create pipeline layout
 	std::vector<VkDescriptorSetLayout> layouts;
 
 	for (const std::string& set : info.uniformSets) {
@@ -160,37 +113,12 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 
 	VkPipelineLayout pipelineLayout;
 
-	if (vkCreatePipelineLayout(device, &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(vkObjects.getDevice(), &layoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create pipeline layout for shader \"" + name + "\"");
 	}
 
-	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
-	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineCreateInfo.stageCount = 2;
-	pipelineCreateInfo.pStages = infos;
-	pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
-	pipelineCreateInfo.pInputAssemblyState = &assemblyCreateInfo;
-	pipelineCreateInfo.pViewportState = &viewStateCreateInfo;
-	pipelineCreateInfo.pRasterizationState = &rasterizeCreateInfo;
-	pipelineCreateInfo.pMultisampleState = &sampleCreateInfo;
-	pipelineCreateInfo.pDepthStencilState = nullptr; //TODO
-	pipelineCreateInfo.pColorBlendState = &blendStateCreateInfo;
-	pipelineCreateInfo.pDynamicState = &dynamicCreateInfo;
-	pipelineCreateInfo.layout = pipelineLayout;
-	pipelineCreateInfo.renderPass = vkObjects.getRenderPass();
-	pipelineCreateInfo.subpass = 0;
-
-	VkPipeline graphicsPipeline;
-
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create graphics pipeline for shader \"" + name + "\"!");
-	}
-
-	//Add to shader map
-	shaderMap.insert({name, std::make_shared<VkShader>(device, graphicsPipeline, pipelineLayout, info.pushConstants)});
-
-	vkDestroyShaderModule(device, vertShader, nullptr);
-	vkDestroyShaderModule(device, fragShader, nullptr);
+	//Create shader and add to shader map
+	shaderMap.insert({name, std::make_shared<VkShader>(vkObjects.getDevice(), pipelineCache, pipelineLayout, info.pushConstants, pipelineCreator)});
 
 	logger.debug("Loaded shader \"" + name + "\"");
 }
@@ -251,27 +179,6 @@ void VkShaderLoader::addUniformSet(const UniformSet& set, const std::string& nam
 	}
 
 	descriptorLayouts.insert({name, setLayout});
-}
-
-std::vector<VkVertexInputAttributeDescription> VkShaderLoader::getVertexAttributeDescription(const VertexBuffer& buffer) const {
-	std::vector<VkVertexInputAttributeDescription> descriptions;
-	const std::vector<VertexElement>& bufferFormat = buffer.getVertexFormat();
-
-	descriptions.reserve(bufferFormat.size());
-	uint32_t location = 0;
-
-	for (const VertexElement& element : bufferFormat) {
-		VkVertexInputAttributeDescription descr = {};
-		descr.binding = 0;
-		descr.location = location;
-		descr.format = formatFromVertexType(element.type);
-		descr.offset = buffer.getElementOffset(element.name);
-
-		descriptions.push_back(descr);
-		location++;
-	}
-
-	return descriptions;
 }
 
 VkShaderModule VkShaderLoader::createShaderModule(const std::string& filename) {
