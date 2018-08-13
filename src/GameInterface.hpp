@@ -22,6 +22,7 @@
 
 #include "TextureLoader.hpp"
 #include "ModelLoader.hpp"
+#include "RenderInitializer.hpp"
 #include "DisplayEngine.hpp"
 
 //The engine uses the game interface for all communications
@@ -32,6 +33,15 @@ public:
 	 * Only present so implementers can delete their stuff
 	 */
 	virtual ~GameInterface() {}
+
+	/**
+	 * Called by the engine to add basic renderer constructs,
+	 * like vertex buffers and uniform sets. This function can
+	 * be called asynchronously to the functions below, though
+	 * it will always be called before shader and model loading.
+	 * @param initializer The render initializer to use.
+	 */
+	virtual void createRenderObjects(std::shared_ptr<RenderInitializer> initializer) = 0;
 
 	/**
 	 * Called by the engine to load the game's textures.
@@ -52,8 +62,8 @@ public:
 	virtual void loadModels(ModelLoader& loader) = 0;
 
 	/**
-	 * Called to load the game's shaders.
-	 * Also adds vertex buffers.
+	 * Called to load the game's shaders. This can be called asynchronously
+	 * with texture and model loading.
 	 * @param loader The shader loader used to load the shaders.
 	 */
 	virtual void loadShaders(std::shared_ptr<ShaderLoader> loader) = 0;
@@ -61,7 +71,8 @@ public:
 	/**
 	 * Loads different screens for the game, such as guis, huds, worlds,
 	 * menus, etc. This should also push the first screen to be displayed onto
-	 * the display's screen stack.
+	 * the display's screen stack. This will always be called after model loading
+	 * has completed.
 	 * @param display The display engine to add the screens to.
 	 */
 	virtual void loadScreens(DisplayEngine& display) = 0;

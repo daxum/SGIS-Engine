@@ -27,6 +27,7 @@
 #include "MemoryAllocator.hpp"
 #include "EngineConfig.hpp"
 #include "Logger.hpp"
+#include "ShaderInfo.hpp"
 
 //All the information needed to create a vertex buffer.
 struct VertexBufferInfo {
@@ -156,7 +157,18 @@ protected:
 	 */
 	virtual void invalidateMesh(const std::string& mesh) = 0;
 
+	/**
+	 * Adds a uniform set that can be used by models or the rendering engine.
+	 * This is intended to be called by subclasses so they can have a renderer -
+	 * specific add call to store other data at the same time.
+	 * @param set The uniform set to add.
+	 * @param name The name to store the set under.
+	 */
+	void addUniformSet(const UniformSet& set, const std::string name) { uniformSets.insert({name, set}); }
+
 private:
 	//Stores all created vertex buffers.
 	std::unordered_map<std::string, BufferData> buffers;
+	//Stores all created uniform sets.
+	std::unordered_map<std::string, UniformSet> uniformSets;
 };

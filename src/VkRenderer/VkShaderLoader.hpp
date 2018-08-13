@@ -45,14 +45,6 @@ public:
 	void loadShader(std::string name, const ShaderInfo& info) override;
 
 	/**
-	 * Creates a descriptor set layout to be used in shaders, and is also
-	 * used to allocate descriptor sets for models.
-	 * @param set The set description.
-	 * @param name The name to store the set under.
-	 */
-	void addUniformSet(const UniformSet& set, const std::string& name) override;
-
-	/**
 	 * Reloads all shader objects.
 	 */
 	void reloadShaders() {
@@ -67,13 +59,13 @@ private:
 	//Loaded shader modules, needed for when window is resized and pipelines
 	//need to be recreated.
 	std::unordered_map<std::string, VkShaderModule> loadedModules;
-	//All possible descriptor set layouts. This might be moved elsewhere.
-	std::unordered_map<std::string, VkDescriptorSetLayout> descriptorLayouts;
 	//Object handling all vulkan objects.
 	VkObjectHandler& vkObjects;
 	//Pipeline cache. Maybe save this to disk later, but that might interfere
 	//with development...
 	VkPipelineCache pipelineCache;
+	//Memory manager, used to fetch descriptor set layouts.
+	VkMemoryManager* memoryManager;
 
 	/**
 	 * Loads shader bytecode from disk and creates a shader module for it.
@@ -96,20 +88,5 @@ private:
 	 * @return A vector of ranges for the provided push constants.
 	 */
 	static std::vector<VkPushConstantRange> convertToRanges(const PushConstantSet& pushSet);
-
-	/**
-	 * Converts the uniform set type to a VkDescriptor type.
-	 * @param type The type of the uniform set.
-	 * @return The corresponding descriptor type.
-	 */
-	static constexpr VkDescriptorType descriptorTypeFromSet(const UniformSetType type) {
-		switch (type) {
-			case UniformSetType::MODEL_STATIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			case UniformSetType::MODEL_DYNAMIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			case UniformSetType::PER_FRAME: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			case UniformSetType::PER_OBJECT: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			default: throw std::runtime_error("Invalid uniform set type!?");
-		}
-	}
 };
 

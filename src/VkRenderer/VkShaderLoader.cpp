@@ -22,18 +22,15 @@
 #include "VkShader.hpp"
 
 VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap) :
-	ShaderLoader(logger, memoryManager),
+	ShaderLoader(logger),
 	shaderMap(shaderMap),
 	vkObjects(vkObjects),
-	pipelineCache(VK_NULL_HANDLE) {
+	pipelineCache(VK_NULL_HANDLE),
+	memoryManager(memoryManager) {
 
 }
 
 VkShaderLoader::~VkShaderLoader() {
-	for (const auto& layout : descriptorLayouts) {
-		vkDestroyDescriptorSetLayout(vkObjects.getDevice(), layout.second, nullptr);
-	}
-
 	for (const auto& module : loadedModules) {
 		vkDestroyShaderModule(vkObjects.getDevice(), module.second, nullptr);
 	}
@@ -98,7 +95,7 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	std::vector<VkDescriptorSetLayout> layouts;
 
 	for (const std::string& set : info.uniformSets) {
-		layouts.push_back(descriptorLayouts.at(set));
+		layouts.push_back(memoryManager->getSetLayout(set));
 	}
 
 	std::vector<VkPushConstantRange> pushRanges = convertToRanges(info.pushConstants);
@@ -121,64 +118,6 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	shaderMap.insert({name, std::make_shared<VkShader>(vkObjects.getDevice(), pipelineCache, pipelineLayout, info.pushConstants, pipelineCreator)});
 
 	logger.debug("Loaded shader \"" + name + "\"");
-}
-
-void VkShaderLoader::addUniformSet(const UniformSet& set, const std::string& name) {
-	std::bitset<2> uboUseStages;
-	uint32_t nextBinding = 0;
-	bool hasUbo = false;
-
-	//Set stages the uniform buffer is used in
-	for (const UniformDescription& descr : set.uniforms) {
-		if (!isSampler(descr.type)) {
-			uboUseStages |= descr.shaderStages;
-		}
-	}
-
-	std::vector<VkDescriptorSetLayoutBinding> bindings;
-
-	//Create descriptor set layout
-	for (const UniformDescription& descr : set.uniforms) {
-		if (!isSampler(descr.type)) {
-			//Only add the uniform buffer once, at the location of the first buffered variable
-			if (hasUbo) {
-				continue;
-			}
-
-			VkDescriptorSetLayoutBinding binding = {};
-			binding.binding = nextBinding;
-			binding.descriptorType = descriptorTypeFromSet(set.setType);
-			binding.descriptorCount = 1;
-			binding.stageFlags = uboUseStages.to_ulong();
-
-			bindings.push_back(binding);
-			nextBinding++;
-			hasUbo = true;
-		}
-		else {
-			VkDescriptorSetLayoutBinding binding = {};
-			binding.binding = nextBinding;
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-			binding.descriptorCount = 1;
-			binding.stageFlags = descr.shaderStages.to_ulong();
-
-			bindings.push_back(binding);
-			nextBinding++;
-		}
-	}
-
-	VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
-	layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutCreateInfo.bindingCount = bindings.size();
-	layoutCreateInfo.pBindings = bindings.data();
-
-	VkDescriptorSetLayout setLayout;
-
-	if (vkCreateDescriptorSetLayout(vkObjects.getDevice(), &layoutCreateInfo, nullptr, &setLayout) != VK_SUCCESS) {
-		throw std::runtime_error("Could not create descriptor set layout");
-	}
-
-	descriptorLayouts.insert({name, setLayout});
 }
 
 VkShaderModule VkShaderLoader::createShaderModule(const std::string& filename) {

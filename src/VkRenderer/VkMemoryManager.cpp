@@ -43,7 +43,8 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	growTransfer(true),
 	pendingTransfers(),
 	meshMap(),
-	lastVertexTransferBuffer(VK_NULL_HANDLE) {
+	lastVertexTransferBuffer(VK_NULL_HANDLE),
+	descriptorLayouts() {
 
 }
 
@@ -79,6 +80,10 @@ void VkMemoryManager::deinit() {
 		TransferOperation& transferOp = pendingTransfers.front();
 		delete[] transferOp.data;
 		pendingTransfers.pop();
+	}
+
+	for (const auto& layout : descriptorLayouts) {
+		vkDestroyDescriptorSetLayout(objects.getDevice(), layout.second, nullptr);
 	}
 }
 

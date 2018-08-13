@@ -20,31 +20,36 @@
 
 #include <string>
 
-#include "Logger.hpp"
+#include "RendererMemoryManager.hpp"
 #include "ShaderInfo.hpp"
 
-class ShaderLoader {
+//Low-level renderer initialization, such as buffers and descriptor sets.
+class RenderInitializer {
 public:
 	/**
 	 * Constructor.
-	 * @param logger The logger to use.
 	 */
-	ShaderLoader(Logger& logger) :
-		logger(logger) {}
+	RenderInitializer(RendererMemoryManager* memoryManager) : memoryManager(memoryManager) {}
 
 	/**
-	 * Destructor. Here for subclasses.
+	 * Destructor.
 	 */
-	virtual ~ShaderLoader() {}
+	virtual ~RenderInitializer() {}
 
 	/**
-	 * Loads the shaders from disk and constructs a program object from them.
-	 * More arguments might need to be added for things like geometry and tesselation shaders.
-	 * @param name A name given to the loaded shader.
-	 * @param info Information about the shader to be loaded.
+	 * Creates a buffer for meshes to load to and shaders to read from.
+	 * @param name The name of the buffer.
+	 * @param info The information for the buffer (format, size, etc).
 	 */
-	virtual void loadShader(std::string name, const ShaderInfo& info) = 0;
+	void createBuffer(const std::string& name, const VertexBufferInfo& info) { memoryManager->addBuffer(name, info); }
 
-protected:
-	Logger& logger;
+	/**
+	 * Adds a set of uniforms that can be used in shaders and models.
+	 * @param set The set to add.
+	 * @param name The name of the set.
+	 */
+	virtual void addUniformSet(const UniformSet& set, const std::string& name) = 0;
+
+private:
+	RendererMemoryManager* memoryManager;
 };

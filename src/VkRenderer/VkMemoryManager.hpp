@@ -98,6 +98,24 @@ public:
 	 */
 	const VkMeshRenderData& getMeshRenderData(const std::string& mesh) const { return meshMap.at(mesh); }
 
+	/**
+	 * Gets the layout of the provided descriptor set, used in shader loading.
+	 * @param name The name of the descriptor set layout to fetch.
+	 * @return The layout with the given name.
+	 */
+	VkDescriptorSetLayout getSetLayout(const std::string& name) const { return descriptorLayouts.at(name); }
+
+	/**
+	 * Adds a descriptor set to the rendering engine, as well as a layout that can be used in shaders.
+	 * @param name The name of the set to add.
+	 * @param uniformSet The uniform set.
+	 * @param setLayout The layout of the uniform set.
+	 */
+	void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, VkDescriptorSetLayout setLayout) {
+		addUniformSet(uniformSet, name);
+		descriptorLayouts.insert({name, setLayout});
+	}
+
 protected:
 	/**
 	 * Creates a buffer and allocation with the given parameters.
@@ -152,6 +170,8 @@ private:
 	std::unordered_map<std::string, VkMeshRenderData> meshMap;
 	//Last used command buffer for vertex transfers.
 	VkCommandBuffer lastVertexTransferBuffer;
+	//All possible descriptor set layouts.
+	std::unordered_map<std::string, VkDescriptorSetLayout> descriptorLayouts;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.

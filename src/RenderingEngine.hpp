@@ -34,6 +34,7 @@
 #include "Screen.hpp"
 #include "WindowSystemInterface.hpp"
 #include "Camera.hpp"
+#include "RenderInitializer.hpp"
 
 //A generic rendering engine. Provides the base interfaces, like resource loading
 //and rendering, but leaves the implementation to api-specific subclasses, like
@@ -50,12 +51,13 @@ public:
 	 * the rendering api.
 	 * @param tl The texture loader this engine should use.
 	 * @param sl The shader loader this engine should use.
+	 * @param ri The render initializer this engine should use.
 	 * @param rendererLog The logger config for the rendering engine.
 	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if initialization failed.
 	 */
-	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-		texLoader(tl), shaderLoader(sl), logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
+	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<RenderInitializer> ri, const LogConfig& rendererLog, const LogConfig& loaderLog) :
+		texLoader(tl), shaderLoader(sl), renderInit(ri), logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
 		loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile) {}
 
 	/**
@@ -103,6 +105,13 @@ public:
 	std::shared_ptr<ShaderLoader> getShaderLoader() { return shaderLoader; }
 
 	/**
+	 * Gets the renderer initializer for this rendering engine, which is used
+	 * to add vertex buffers and descriptor sets before everything else is loaded.
+	 * @return The render initializer for this rendering engine.
+	 */
+	std::shared_ptr<RenderInitializer> getRenderInitializer() { return renderInit; }
+
+	/**
 	 * Called at the very start of a frame. Does any work needed to set
 	 * up the engine for the frame.
 	 */
@@ -141,6 +150,8 @@ protected:
 	std::shared_ptr<TextureLoader> texLoader;
 	//The shader loader.
 	std::shared_ptr<ShaderLoader> shaderLoader;
+	//Renderer initializer.
+	std::shared_ptr<RenderInitializer> renderInit;
 	//The general rendering logger
 	Logger logger;
 	//The loader logger
