@@ -147,7 +147,7 @@ void VkShaderLoader::addUniformSet(const UniformSet& set, const std::string& nam
 
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = nextBinding;
-			binding.descriptorType = descriptorTypeFromBuffer(set.bufferType);
+			binding.descriptorType = descriptorTypeFromSet(set.setType);
 			binding.descriptorCount = 1;
 			binding.stageFlags = uboUseStages.to_ulong();
 

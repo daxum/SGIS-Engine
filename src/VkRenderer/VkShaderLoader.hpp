@@ -98,20 +98,17 @@ private:
 	static std::vector<VkPushConstantRange> convertToRanges(const PushConstantSet& pushSet);
 
 	/**
-	 * Converts the uniform buffer type to a VkDescriptor type.
-	 * NO_BUFFER currently just resolves to VK_DESCRIPTOR_TYPE_SAMPLER,
-	 * this may need to be changed later.
-	 * @param type The type of the uniform buffer.
+	 * Converts the uniform set type to a VkDescriptor type.
+	 * @param type The type of the uniform set.
 	 * @return The corresponding descriptor type.
 	 */
-	static constexpr VkDescriptorType descriptorTypeFromBuffer(const UniformBufferType type) {
+	static constexpr VkDescriptorType descriptorTypeFromSet(const UniformSetType type) {
 		switch (type) {
-			case UniformBufferType::NO_BUFFER: return VK_DESCRIPTOR_TYPE_SAMPLER;
-			case UniformBufferType::STATIC_MODEL: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			case UniformBufferType::DYNAMIC_MODEL: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			case UniformBufferType::PER_FRAME: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			case UniformBufferType::PER_OBJECT: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			default: return VK_DESCRIPTOR_TYPE_SAMPLER;
+			case UniformSetType::MODEL_STATIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			case UniformSetType::MODEL_DYNAMIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			case UniformSetType::PER_FRAME: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			case UniformSetType::PER_OBJECT: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			default: throw std::runtime_error("Invalid uniform set type!?");
 		}
 	}
 };

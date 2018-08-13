@@ -108,18 +108,17 @@ struct UniformDescription {
 	std::bitset<2> shaderStages;
 };
 
-//Uniform buffers to pull set values from.
-enum class UniformBufferType {
-	//No uniform buffer used, for sets of samplers.
-	NO_BUFFER,
-	//Static model buffer, for all models loaded at startup.
-	STATIC_MODEL,
-	//Dynamic model buffer, for dynamic models (like text).
-	DYNAMIC_MODEL,
-	//Per frame buffer, for screen and camera state.
+//Types of uniform set, restricts where values can be pulled from.
+enum class UniformSetType {
+	//Model uniforms, can only use UniformProviderType::MATERIAL.
+	//The dynamic / static determines the type of uniform buffer
+	//the data is stored in, as well as the management of the
+	//descriptor sets.
+	MODEL_STATIC,
+	MODEL_DYNAMIC,
+	//Per-frame uniforms, allows use of CAMERA_* and SCREEN_* provider types.
 	PER_FRAME,
-	//Per object buffer. Avoid this one if possible, prefer
-	//push constants instead.
+	//Per-object uniforms, allows only OBJECT_* uniform providers.
 	PER_OBJECT
 };
 
@@ -129,8 +128,8 @@ enum class UniformBufferType {
 //uniform buffer's binding, and each sampler will
 //be assigned to the next binding, in order.
 struct UniformSet {
-	//Which buffer to pull non-sampler uniform values from.
-	UniformBufferType bufferType;
+	//The type of uniform set, restricts which provider types are allowed.
+	UniformSetType setType;
 	//The uniforms in the set.
 	std::vector<UniformDescription> uniforms;
 };
