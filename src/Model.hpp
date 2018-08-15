@@ -20,11 +20,12 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
 #include <memory>
 
 #include "AxisAlignedBB.hpp"
 #include "Vertex.hpp"
+#include "ShaderInfo.hpp"
+#include "Std140Aligner.hpp"
 
 class ModelManager;
 
@@ -167,21 +168,22 @@ public:
 	 * Creates a new model.
 	 * @param mesh The name of the model's mesh.
 	 * @param shader The model's shader.
+	 * @param uniformSet The name of the uniform set used in the model.
+	 * @param uniforms The uniform set for the model, used to determine uniform buffer layout.
 	 * @param viewCull Whether to use view culling on this model.
 	 */
-	Model(const std::string& mesh, const std::string& shader, bool viewCull = true) :
-		mesh(mesh),
-		shader(shader),
-		uniformMap(),
-		viewCull(viewCull),
-		references(0) {}
+	Model(const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull = true);
 
 	//The name of this model's mesh.
 	std::string mesh;
 	//The shader the model uses.
 	std::string shader;
-	//A map of uniforms for the model.
-	std::unordered_map<std::string, std::shared_ptr<void>> uniformMap;
+	//Name of the uniform set the model uses.
+	std::string uniformSet;
+	//The textures the model uses, in binding order.
+	std::vector<std::string> textures;
+	//Uniform data for the model, aligned to std140 rules.
+	Std140Aligner alignedUniformData;
 	//Whether to use view culling on the model.
 	bool viewCull;
 

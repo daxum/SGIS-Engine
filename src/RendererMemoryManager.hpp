@@ -84,6 +84,13 @@ public:
 	VertexBuffer& getBuffer(const std::string& name) { return buffers.at(name).buffer; }
 
 	/**
+	 * Returns the uniform set with the given name, used during model loading.
+	 * @param set The name of the set to get.
+	 * @return The set with the given name.
+	 */
+	const UniformSet& getUniformSet(const std::string& set) { return uniformSets.at(set); }
+
+	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
 	 * @param name The name to store the mesh under.
 	 * @param buffer The buffer to add the mesh to.

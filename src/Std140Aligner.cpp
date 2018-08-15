@@ -19,7 +19,8 @@
 #include "Std140Aligner.hpp"
 
 Std140Aligner::Std140Aligner(const std::vector<UniformDescription>& uniforms) :
-	uniformData(nullptr) {
+	uniformData(nullptr),
+	dataSize(0) {
 
 	uint32_t currentOffset = 0;
 
@@ -37,6 +38,15 @@ Std140Aligner::Std140Aligner(const std::vector<UniformDescription>& uniforms) :
 	}
 
 	uniformData = new unsigned char[currentOffset];
+	dataSize = currentOffset;
+}
+
+Std140Aligner::Std140Aligner(const Std140Aligner& other) :
+	uniformMap(other.uniformMap),
+	uniformData(new unsigned char[other.dataSize]),
+	dataSize(other.dataSize) {
+
+	memcpy(uniformData, other.uniformData, dataSize);
 }
 
 void Std140Aligner::setFloat(const std::string& name, const float value) {

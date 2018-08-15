@@ -49,9 +49,10 @@ public:
 	 * @param text The text to generate a model for.
 	 * @param shader The shader to use to render the text.
 	 * @param buffer The buffer to upload the text model to.
+	 * @param uniformSet The set of uniforms for the model to use.
 	 * @return a reference to a model for the given text.
 	 */
-	std::shared_ptr<ModelRef> createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer);
+	std::shared_ptr<ModelRef> createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet);
 
 private:
 	//The model manager.

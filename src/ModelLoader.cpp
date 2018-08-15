@@ -24,7 +24,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const LightInfo& lighting, bool viewCull) {
+void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull) {
 	std::shared_ptr<ModelData> data = loadFromDisk(filename, buffer);
 
 	AxisAlignedBB box = calculateBox(data);
@@ -36,9 +36,8 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	//TODO: load meshes separately to share between models.
 	modelManager.addMesh(name, Mesh(buffer, data->vertices, data->indices, box, radius));
 
-	Model model(name, shader, viewCull);
-	model.uniformMap.insert({"light", std::make_shared<LightInfo>(lighting)});
-	model.uniformMap.insert({"texture", std::make_shared<std::string>(texture)});
+	Model model(name, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
+	model.textures.push_back(texture);
 
 	modelManager.addModel(name, model);
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
@@ -59,7 +58,7 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 		throw std::runtime_error(error);
 	}
 
-	VertexBuffer& buffer = modelManager.getVertexBuffer(vertexBuffer);
+	VertexBuffer& buffer = modelManager.getMemoryManager()->getBuffer(vertexBuffer);
 	std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
 	for (const tinyobj::shape_t& shape : shapes) {

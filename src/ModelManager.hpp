@@ -103,11 +103,11 @@ public:
 	void setMemoryManager(RendererMemoryManager* manager) { memoryManager = manager; }
 
 	/**
-	 * Fetches a vertex buffer from the memory manager, to allow model loaders to get
-	 * vertex formats.
-	 * @param name The buffer to get.
+	 * Gets the memory manager. Used by the model loader to get vertex buffers and
+	 * descriptor sets.
+	 * @return The memory manager.
 	 */
-	VertexBuffer& getVertexBuffer(const std::string& name) { return memoryManager->getBuffer(name); }
+	RendererMemoryManager* getMemoryManager() { return memoryManager; }
 
 private:
 	//The logger

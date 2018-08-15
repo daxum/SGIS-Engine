@@ -48,6 +48,13 @@ public:
 	Std140Aligner(const std::vector<UniformDescription>& uniforms);
 
 	/**
+	 * Turns out models need to be copied, and not having this function
+	 * causes error messages longer than the terminal buffer.
+	 * @param other The aligner to copy.
+	 */
+	Std140Aligner(const Std140Aligner& other);
+
+	/**
 	 * Just a destructor.
 	 */
 	~Std140Aligner() {
@@ -60,7 +67,6 @@ public:
 	 * Implement these later if needed, this is to prevent
 	 * uniformData from being shallow copied.
 	 */
-	Std140Aligner(const Std140Aligner&) = delete;
 	Std140Aligner(Std140Aligner&&) = delete;
 	Std140Aligner& operator=(const Std140Aligner&) = delete;
 	Std140Aligner& operator=(Std140Aligner&&) = delete;
@@ -80,16 +86,18 @@ public:
 	void setMat4(const std::string& name, const glm::mat4& value);
 
 	/**
-	 * Returns the aligned uniform data.
-	 * @return The uniform data.
+	 * Returns the aligned uniform data along with its size.
+	 * @return A pair of the uniform data and its size.
 	 */
-	const unsigned char* getData() { return uniformData; }
+	const std::pair<const unsigned char*, size_t> getData() { return {uniformData, dataSize}; }
 
 private:
 	//Map of uniforms, for fast retrieval.
 	std::unordered_map<std::string, UniformData> uniformMap;
 	//Raw aligned data for the uniforms.
 	unsigned char* uniformData;
+	//Size of uniformData.
+	size_t dataSize;
 
 	/**
 	 * Checks whether the type of the uniform with the given name matches

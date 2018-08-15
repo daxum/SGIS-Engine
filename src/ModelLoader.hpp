@@ -63,15 +63,17 @@ public:
 	 * Loads a model from disk and makes it ready for use in drawing.
 	 * This is a temporary interface until the model loader gets rewritten
 	 * to be more flexible. For now, it only supports .obj models.
+	 * TODO: Too many parameters. Move to struct?
 	 * @param name The name to store the loaded model under.
 	 * @param filename The filename for the model to load.
 	 * @param texture The texture to use for the model.
 	 * @param shader The shader to use for the model.
 	 * @param buffer The buffer the model's mesh goes in.
+	 * @param uniformSet The uniform set the model uses.
 	 * @param lighting The lighting information for the model.
 	 * @param viewCull Whether to cull the object when it can't be seen by the camera.
 	 */
-	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const LightInfo& lighting, bool viewCull = true);
+	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull = true);
 
 protected:
 	//The logger.
