@@ -183,7 +183,7 @@ public:
 	//The textures the model uses, in binding order.
 	std::vector<std::string> textures;
 	//Uniform data for the model, aligned to std140 rules.
-	Std140Aligner alignedUniformData;
+	Std140Aligner uniforms;
 	//Whether to use view culling on the model.
 	bool viewCull;
 

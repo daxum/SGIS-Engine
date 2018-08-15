@@ -91,6 +91,14 @@ public:
 	 */
 	const std::pair<const unsigned char*, size_t> getData() { return {uniformData, dataSize}; }
 
+	/**
+	 * Checks whether a uniform is present with the given name and type.
+	 * @param name The name of the uniform.
+	 * @param type The expected type of the uniform.
+	 * @return Whether the uniform with the given name exists and has the specified type.
+	 */
+	bool hasUniform(const std::string& name, const UniformType type) const { return uniformMap.count(name) && uniformMap.at(name).type == type; }
+
 private:
 	//Map of uniforms, for fast retrieval.
 	std::unordered_map<std::string, UniformData> uniformMap;

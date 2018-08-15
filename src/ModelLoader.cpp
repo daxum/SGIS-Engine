@@ -39,6 +39,22 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	Model model(name, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
 	model.textures.push_back(texture);
 
+	if (model.uniforms.hasUniform("ka", UniformType::VEC3)) {
+		model.uniforms.setVec3("ka", lighting.ka);
+	}
+
+	if (model.uniforms.hasUniform("kd", UniformType::VEC3)) {
+		model.uniforms.setVec3("kd", lighting.kd);
+	}
+
+	if (model.uniforms.hasUniform("ks", UniformType::VEC3)) {
+		model.uniforms.setVec3("ks", lighting.ks);
+	}
+
+	if (model.uniforms.hasUniform("s", UniformType::FLOAT)) {
+		model.uniforms.setFloat("s", lighting.s);
+	}
+
 	modelManager.addModel(name, model);
 	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
 }

@@ -82,7 +82,7 @@ Model::Model(const std::string& mesh, const std::string& shader, const std::stri
 	shader(shader),
 	uniformSet(uniformSet),
 	textures(),
-	alignedUniformData(stripNonBufferedModel(uniforms)),
+	uniforms(stripNonBufferedModel(uniforms)),
 	viewCull(viewCull),
 	references(0) {
 
