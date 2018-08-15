@@ -30,6 +30,7 @@ set(ENGINE_FILES
 	RendererMemoryManager.cpp
 	ModelManager.cpp
 	RenderingEngine.cpp
+	Std140Aligner.cpp
 )
 
 if (USE_OPENGL)
