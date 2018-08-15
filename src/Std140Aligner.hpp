@@ -117,7 +117,8 @@ private:
 			case UniformType::VEC2: return 2 * sizeof(float);
 			case UniformType::VEC3: return 3 * sizeof(float);
 			case UniformType::VEC4: return 4 * sizeof(float);
-			case UniformType::MAT3: return 3 * roundToVal(alignedSize(UniformType::VEC3), alignedSize(UniformType::VEC4));
+			//Calculated by: roundToVal(alignedSize(UniformType::VEC3), alignedSize(UniformType::VEC4))
+			case UniformType::MAT3: return 3 * alignedSize(UniformType::VEC4);
 			case UniformType::MAT4: return 4 * alignedSize(UniformType::VEC4);
 			default: throw std::runtime_error("Invalid uniform type provided to alignedSize!");
 		}
@@ -138,8 +139,9 @@ private:
 			case UniformType::VEC2: return 2 * sizeof(float);
 			case UniformType::VEC3: return 4 * sizeof(float);
 			case UniformType::VEC4: return 4 * sizeof(float);
-			case UniformType::MAT3: return roundToVal(baseAlignment(UniformType::VEC3), baseAlignment(UniformType::VEC4));
-			case UniformType::MAT4: return roundToVal(baseAlignment(UniformType::VEC4), baseAlignment(UniformType::VEC4));
+			//Calculated by: roundToVal(baseAlignment(UniformType::VEC3), baseAlignment(UniformType::VEC4))
+			case UniformType::MAT3: return baseAlignment(UniformType::VEC4);
+			case UniformType::MAT4: return baseAlignment(UniformType::VEC4);
 			default: throw std::runtime_error("Invalid uniform type provided to baseAlignment!");
 		}
 	}
