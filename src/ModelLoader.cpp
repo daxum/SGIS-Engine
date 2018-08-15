@@ -104,7 +104,7 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 	return data;
 }
 
-AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) {
+AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
 	if (data->vertices.size() == 0) {
 		logger.warn("Zero vertex mesh loaded?!");
 		return AxisAlignedBB(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
@@ -128,7 +128,7 @@ AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) {
 	return AxisAlignedBB(min, max);
 }
 
-float ModelLoader::calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) {
+float ModelLoader::calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) const {
 	if (data->vertices.size() == 0) {
 		logger.warn("Zero vertex mesh loaded?!");
 		return 0.0f;

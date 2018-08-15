@@ -70,37 +70,37 @@ public:
 	 * If that level's bit is not set, nothing will be written.
 	 * @param out The message to write.
 	 */
-	void debug(const std::string& out) {
+	void debug(const std::string& out) const {
 		if (logMask & DEBUG) {
 			*output << "D::" + out + "\n";
 		}
 	}
 
-	void info(const std::string& out) {
+	void info(const std::string& out) const {
 		if (logMask & INFO) {
 			*output << "I::" + out + "\n";
 		}
 	}
 
-	void warn(const std::string& out) {
+	void warn(const std::string& out) const {
 		if (logMask & WARN) {
 			*output << "W::" + out + "\n";
 		}
 	}
 
-	void error(const std::string& out) {
+	void error(const std::string& out) const {
 		if (logMask & ERROR) {
 			*output << "E::" + out + "\n";
 		}
 	}
 
-	void fatal(const std::string& out) {
+	void fatal(const std::string& out) const {
 		if (logMask & FATAL) {
 			*output << "F::" + out + "\n";
 		}
 	}
 
-	void spam(const std::string& out) {
+	void spam(const std::string& out) const {
 		if (logMask & SPAM) {
 			*output << "S::" + out + "\n";
 		}

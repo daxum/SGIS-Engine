@@ -95,7 +95,7 @@ protected:
 	 * @param data The model data to calculate a box for.
 	 * @return a box for the mesh.
 	 */
-	AxisAlignedBB calculateBox(std::shared_ptr<ModelData> data);
+	AxisAlignedBB calculateBox(std::shared_ptr<ModelData> data) const;
 
 	/**
 	 * Calculates the maximum radius of the model.
@@ -103,5 +103,5 @@ protected:
 	 * @param center The center of the model.
 	 * @return The distance of the farthest vertex from the center.
 	 */
-	float calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center);
+	float calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) const;
 };
