@@ -45,9 +45,8 @@ public:
 	 * @param uniformSet The uniform set for the text model.
 	 * @param scale The scale of the text. Might need to be rather small for
 	 *     large font sizes.
-	 * @param color The color of the text.
 	 */
-	TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, const std::string& uniformSet, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0), glm::vec3 color = glm::vec3(0.0, 0.0, 0.0));
+	TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, const std::string& uniformSet, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Called from Component, sets the rendering component if one is not
@@ -95,5 +94,4 @@ private:
 
 	//Only used in onParentSet.
 	glm::vec3 initScale;
-	glm::vec3 initColor;
 };

@@ -31,18 +31,16 @@ public:
 	/**
 	 * Creates a RenderComponent.
 	 * @param model The name of the model to use to render this object.
-	 * @param color The color to render the object as.
 	 * @param renderScale The scale of the object.
 	 */
-	RenderComponent(std::string model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
+	RenderComponent(std::string model, glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Creates a RenderComponent. Same as above, but takes the actual model.
 	 * @param model The model to use to render this object.
-	 * @param color The color to render the object as.
 	 * @param renderScale The scale of the object.
 	 */
-	RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 color = glm::vec3(1.0, 1.0, 1.0), glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
+	RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Returns the translation of this object.
@@ -63,22 +61,10 @@ public:
 	glm::vec3 getScale() const { return scale; }
 
 	/**
-	 * Returns the color of this object.
-	 * @return The color of this object.
-	 */
-	glm::vec3 getColor() const { return color; }
-
-	/**
 	 * Sets the renderComponent's scale.
 	 * @param newScale The new scale.
 	 */
 	void setScale(glm::vec3 newScale) { scale = newScale; }
-
-	/**
-	 * Sets the renderComponent's color.
-	 * @param newColor The new color.
-	 */
-	void setColor(glm::vec3 newColor) { color = newColor; }
 
 	/**
 	 * Returns the model to be used in rendering this object.
@@ -106,8 +92,6 @@ public:
 private:
 	//Which model to use for this object.
 	std::shared_ptr<ModelRef> model;
-	//The color of the object
-	glm::vec3 color;
 	//The scale of the object's model.
 	glm::vec3 scale;
 	//The manager for this component, null if none.

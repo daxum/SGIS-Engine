@@ -31,13 +31,12 @@ std::u32string TextComponent::convToU32(const std::string& s) {
 	return out;
 }
 
-TextComponent::TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, const std::string& uniformSet, glm::vec3 scale, glm::vec3 color) :
+TextComponent::TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, const std::string& uniformSet, glm::vec3 scale) :
 	Component(TEXT_COMPONENT_NAME),
 	currentFont(font),
 	currentText(text),
 	textModel(Engine::instance->getFontManager().createTextModel(font, text, shader, buffer, uniformSet)),
-	initScale(scale),
-	initColor(color) {
+	initScale(scale) {
 
 }
 
@@ -45,12 +44,11 @@ void TextComponent::onParentSet() {
 	std::shared_ptr<RenderComponent> render = lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
 
 	if (!render) {
-		lockParent()->addComponent(std::make_shared<RenderComponent>(textModel, initColor, initScale));
+		lockParent()->addComponent(std::make_shared<RenderComponent>(textModel, initScale));
 	}
 	else {
 		render->setModel(textModel);
 		render->setScale(initScale);
-		render->setColor(initColor);
 	}
 }
 

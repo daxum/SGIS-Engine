@@ -20,19 +20,17 @@
 #include "Engine.hpp"
 #include "RenderComponentManager.hpp"
 
-RenderComponent::RenderComponent(std::string model, glm::vec3 color, glm::vec3 renderScale) :
+RenderComponent::RenderComponent(std::string model, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
 	model(Engine::instance->getModel(model)),
-	color(color),
 	scale(renderScale),
 	manager(nullptr) {
 
 }
 
-RenderComponent::RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 color, glm::vec3 renderScale) :
+RenderComponent::RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
 	model(model),
-	color(color),
 	scale(renderScale),
 	manager(nullptr) {
 
