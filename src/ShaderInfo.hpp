@@ -155,8 +155,8 @@ struct ShaderInfo {
 	std::string buffer;
 	//Names of all the uniform sets used in the shader. Order is very important
 	//here, as it affects which uniforms need to be rebound when the shader changes.
-	//In general, from the values in UniformBufferType, prefer PER_FRAME, then
-	//*_MODEL, then PER_OBJECT.
+	//In general, from the values in UniformSetType, prefer PER_FRAME, then
+	//MODEL_*, then PER_OBJECT.
 	std::vector<std::string> uniformSets;
 	//All push constant values used in the shader.
 	PushConstantSet pushConstants;
