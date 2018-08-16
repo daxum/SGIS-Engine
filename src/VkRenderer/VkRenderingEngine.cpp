@@ -62,7 +62,7 @@ VkRenderingEngine::~VkRenderingEngine() {
 
 	glfwTerminate();
 
-	logger.info("Destroyed Vulkan rendering engine.");
+	ENGINE_LOG_INFO(logger, "Destroyed Vulkan rendering engine.");
 }
 
 void VkRenderingEngine::init() {
@@ -80,7 +80,7 @@ void VkRenderingEngine::init() {
 		throw std::runtime_error("Failed to create window and context");
 	}
 
-	logger.info("Created window");
+	ENGINE_LOG_INFO(logger, "Created window");
 
 	//Register callbacks
 

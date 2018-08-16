@@ -43,10 +43,10 @@ void VkObjectHandler::init(GLFWwindow* window) {
 
 	size_t numFailed = loadInstanceExtensionFunctions(instance);
 	if (numFailed > 0) {
-		logger.warn("Failed to load " + std::to_string(numFailed) + " vulkan extension functions");
+		ENGINE_LOG_WARN(logger, "Failed to load " + std::to_string(numFailed) + " vulkan extension functions");
 	}
 	else {
-		logger.info("Loaded all vulkan extension functions");
+		ENGINE_LOG_INFO(logger, "Loaded all vulkan extension functions");
 	}
 
 	setDebugCallback();
@@ -111,26 +111,26 @@ void VkObjectHandler::createInstance() {
 	uint32_t extensionCount = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-	logger.debug("Found " + std::to_string(extensionCount) + " vulkan instance extensions:");
+	ENGINE_LOG_DEBUG(logger, "Found " + std::to_string(extensionCount) + " vulkan instance extensions:");
 
 	std::vector<VkExtensionProperties> extensions(extensionCount);
 	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
 	for (const VkExtensionProperties& extension : extensions) {
-		logger.debug(std::string("\t") + extension.extensionName + " " + std::to_string(extension.specVersion));
+		ENGINE_LOG_DEBUG(logger, std::string("\t") + extension.extensionName + " " + std::to_string(extension.specVersion));
 	}
 
 	uint32_t glfwExtensionCount = 0;
 	const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-	logger.debug("Required glfw extensions:");
+	ENGINE_LOG_DEBUG(logger, "Required glfw extensions:");
 
 	std::vector<const char*> extensionNames;
 
 	for (uint32_t i = 0; i < glfwExtensionCount; i++) {
 		extensionNames.push_back(glfwExtensions[i]);
 
-		logger.debug(std::string("\t") + glfwExtensions[i]);
+		ENGINE_LOG_DEBUG(logger, std::string("\t") + glfwExtensions[i]);
 	}
 
 	extensionNames.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -142,7 +142,7 @@ void VkObjectHandler::createInstance() {
 		uint32_t layerCount = 0;
 		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-		logger.debug("Found " + std::to_string(layerCount) + " validation layers:");
+		ENGINE_LOG_DEBUG(logger, "Found " + std::to_string(layerCount) + " validation layers:");
 
 		std::vector<VkLayerProperties> layers(layerCount);
 		enabledLayerNames.reserve(layerCount);
@@ -160,13 +160,13 @@ void VkObjectHandler::createInstance() {
 				}
 			}
 
-			logger.debug(std::string("\t") + layer.layerName + " " + std::to_string(layer.specVersion) + " - " + std::to_string(layer.implementationVersion) + ":");
-			logger.debug(std::string("\t\tEnabled: ") + (enabled ? "Yes" : "No"));
-			logger.debug(std::string("\t\t") + layer.description);
+			ENGINE_LOG_DEBUG(logger, std::string("\t") + layer.layerName + " " + std::to_string(layer.specVersion) + " - " + std::to_string(layer.implementationVersion) + ":");
+			ENGINE_LOG_DEBUG(logger, std::string("\t\tEnabled: ") + (enabled ? "Yes" : "No"));
+			ENGINE_LOG_DEBUG(logger, std::string("\t\t") + layer.description);
 		}
 
 		if (enabledLayerNames.size() != config.renderer.validationLayers.size()) {
-			logger.warn("Not all validation layers loaded!");
+			ENGINE_LOG_WARN(logger, "Not all validation layers loaded!");
 		}
 
 		layerCStr.reserve(enabledLayerNames.size());
@@ -190,7 +190,7 @@ void VkObjectHandler::createInstance() {
 		throw std::runtime_error("Failed to create vulkan instance!");
 	}
 
-	logger.debug("Created vulkan instance");
+	ENGINE_LOG_DEBUG(logger, "Created vulkan instance");
 }
 
 void VkObjectHandler::setDebugCallback() {
@@ -201,7 +201,7 @@ void VkObjectHandler::setDebugCallback() {
 	callbackCreateInfo.pUserData = this;
 
 	if (vkCreateDebugReportCallbackEXT(instance, &callbackCreateInfo, nullptr, &callback) != VK_SUCCESS) {
-		logger.warn("Couldn't create debug report callback");
+		ENGINE_LOG_WARN(logger, "Couldn't create debug report callback");
 	}
 }
 
@@ -210,7 +210,7 @@ void VkObjectHandler::setPhysicalDevice() {
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
 	if (deviceCount == 0) {
-		logger.error("No devices supporting vulkan, and yet vulkan is installed?");
+		ENGINE_LOG_ERROR(logger, "No devices supporting vulkan, and yet vulkan is installed?");
 		throw std::runtime_error("No vulkan supporting devices found");
 	}
 
@@ -617,10 +617,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlags
 	VkObjectHandler* objHandler = (VkObjectHandler*) usrData;
 
 	if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
-		objHandler->logger.error(message);
+		ENGINE_LOG_ERROR(objHandler->logger, message);
 	}
 	else if (flags & (VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)) {
-		objHandler->logger.warn(message);
+		ENGINE_LOG_WARN(objHandler->logger, message);
 	}
 
 	return VK_FALSE;

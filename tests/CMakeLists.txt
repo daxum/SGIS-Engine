@@ -32,3 +32,19 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	target_compile_options(vertexTest PRIVATE "-Wall")
 endif()
 
+#Logger optimization test, in an attempt to avoid macros.
+#I blame to_string and string::operator+.
+
+add_executable(loggerOverheadTest
+	loggerOverheadTest.cpp
+	../src/ExtraMath.cpp
+)
+
+set_target_properties(loggerOverheadTest PROPERTIES
+	CXX_STANDARD 14
+	CXX_STANDARD_REQUIRED ON
+)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	target_compile_options(loggerOverheadTest PRIVATE "-Wall")
+endif()

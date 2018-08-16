@@ -28,10 +28,10 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	std::shared_ptr<ModelData> data = loadFromDisk(filename, buffer);
 
 	AxisAlignedBB box = calculateBox(data);
-	logger.debug("Calculated box " + box.toString() + " for model " + name);
+	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for model " + name);
 
 	float radius = calculateMaxRadius(data, box.getCenter());
-	logger.debug("Radius of model is " + std::to_string(radius));
+	ENGINE_LOG_DEBUG(logger, "Radius of model is " + std::to_string(radius));
 
 	//TODO: load meshes separately to share between models.
 	modelManager.addMesh(name, Mesh(buffer, data->vertices, data->indices, box, radius));
@@ -56,13 +56,13 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	}
 
 	modelManager.addModel(name, model);
-	logger.debug("Loaded model \"" + filename + "\" as \"" + name + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 
 std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const std::string& vertexBuffer) {
 	std::shared_ptr<ModelData> data = std::make_shared<ModelData>();
 
-	logger.debug("Loading model \"" + filename + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loading model \"" + filename + "\".");
 
 	tinyobj::attrib_t attributes;
 	std::vector<tinyobj::shape_t> shapes;
@@ -70,7 +70,7 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 	std::string error;
 
 	if (!tinyobj::LoadObj(&attributes, &shapes, &materials, &error, filename.c_str())) {
-		logger.fatal("Failed to load model \"" + filename + "\"!");
+		ENGINE_LOG_FATAL(logger, "Failed to load model \"" + filename + "\"!");
 		throw std::runtime_error(error);
 	}
 
@@ -112,17 +112,18 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 		}
 	}
 
-	logger.debug("File \"" + filename + "\" loaded from disk. Stats:" +
-				 "\n\tVertices:          " + std::to_string(data->vertices.size()) +
-				 "\n\tIndices:           " + std::to_string(data->indices.size()) +
-				 "\n\tTotal loaded size: " + std::to_string(data->vertices.size() * (data->vertices.empty() ? 0 : data->vertices.at(0).getSize()) + data->indices.size() * sizeof(uint32_t)) + " bytes");
+	ENGINE_LOG_DEBUG(logger,
+		"File \"" + filename + "\" loaded from disk. Stats:" +
+		"\n\tVertices:          " + std::to_string(data->vertices.size()) +
+		"\n\tIndices:           " + std::to_string(data->indices.size()) +
+		"\n\tTotal loaded size: " + std::to_string(data->vertices.size() * (data->vertices.empty() ? 0 : data->vertices.at(0).getSize()) + data->indices.size() * sizeof(uint32_t)) + " bytes");
 
 	return data;
 }
 
 AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
 	if (data->vertices.size() == 0) {
-		logger.warn("Zero vertex mesh loaded?!");
+		ENGINE_LOG_WARN(logger, "Zero vertex mesh loaded?!");
 		return AxisAlignedBB(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
 	}
 
@@ -146,7 +147,7 @@ AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
 
 float ModelLoader::calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) const {
 	if (data->vertices.size() == 0) {
-		logger.warn("Zero vertex mesh loaded?!");
+		ENGINE_LOG_WARN(logger, "Zero vertex mesh loaded?!");
 		return 0.0f;
 	}
 

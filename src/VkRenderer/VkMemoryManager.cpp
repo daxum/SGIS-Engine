@@ -104,7 +104,7 @@ void VkMemoryManager::executeTransfers() {
 
 	//Resize transfer buffer if needed
 	if (growTransfer) {
-		logger.debug("Resizing transfer buffer to " + std::to_string(transferSize) + " bytes");
+		ENGINE_LOG_DEBUG(logger, "Resizing transfer buffer to " + std::to_string(transferSize) + " bytes");
 
 		VkBufferCreateInfo transferCreateInfo = {};
 		transferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

@@ -21,6 +21,7 @@
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <vector>
 
 //List of available rendering engines.
 enum class Renderer {

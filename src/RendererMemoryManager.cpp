@@ -31,7 +31,7 @@ void RendererMemoryManager::addBuffer(const std::string& name, const VertexBuffe
 		MemoryAllocator(info.size)
 	}});
 
-	logger.info("Created buffer \"" + name + "\"");
+	ENGINE_LOG_INFO(logger, "Created buffer \"" + name + "\"");
 }
 
 void RendererMemoryManager::addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, std::vector<uint32_t> indices) {
@@ -54,7 +54,7 @@ void RendererMemoryManager::addMesh(const std::string& name, const std::string& 
 
 	uploadMeshData(bufferData.buffer, name, vertexAlloc->start, vertexAlloc->size, vertexData, indexAlloc->start, indexAlloc->size, indices.data());
 
-	logger.debug("Uploaded mesh \"" + name + "\" to rendering engine");
+	ENGINE_LOG_DEBUG(logger, "Uploaded mesh \"" + name + "\" to rendering engine");
 }
 
 bool RendererMemoryManager::markUsed(const std::string& mesh, const std::string& buffer) {
@@ -72,7 +72,7 @@ bool RendererMemoryManager::markUsed(const std::string& mesh, const std::string&
 	//then the other needs to be changed to match, because addMesh always loads both.
 	//TODO: Change later?
 	if (vertexAlloc->evicted || indexAlloc->evicted) {
-		logger.debug("Mesh \"" + mesh + "\" from buffer \"" + buffer + "\" requested, but was evicted");
+		ENGINE_LOG_DEBUG(logger, "Mesh \"" + mesh + "\" from buffer \"" + buffer + "\" requested, but was evicted");
 
 		invalidateMesh(mesh);
 
@@ -84,7 +84,7 @@ bool RendererMemoryManager::markUsed(const std::string& mesh, const std::string&
 
 	//Neither evicted, so reuse old data
 	if (!vertexAlloc->inUse || !indexAlloc->inUse) {
-		logger.debug("Reactivated mesh \"" + mesh + "\" in buffer \"" + buffer + "\"");
+		ENGINE_LOG_DEBUG(logger, "Reactivated mesh \"" + mesh + "\" in buffer \"" + buffer + "\"");
 
 		vertexAlloc->inUse = true;
 		indexAlloc->inUse = true;
@@ -107,7 +107,7 @@ void RendererMemoryManager::freeMesh(const std::string& mesh, const std::string&
 	vertexAlloc->inUse = false;
 	indexAlloc->inUse = false;
 
-	logger.debug("Marked mesh \"" + mesh + "\" in buffer \"" + buffer + "\" as unused");
+	ENGINE_LOG_DEBUG(logger, "Marked mesh \"" + mesh + "\" in buffer \"" + buffer + "\" as unused");
 
 	//If the mesh data is never needed again, just get rid of it.
 	//Stream isn't really a stream buffer in the technical sense right now. It's just a
@@ -118,6 +118,6 @@ void RendererMemoryManager::freeMesh(const std::string& mesh, const std::string&
 		bufferData.vertexAllocations.erase(mesh);
 		bufferData.indexAllocations.erase(mesh);
 
-		logger.debug("Deleted transitory mesh \"" + mesh + "\"");
+		ENGINE_LOG_DEBUG(logger, "Deleted transitory mesh \"" + mesh + "\"");
 	}
 }

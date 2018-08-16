@@ -75,7 +75,7 @@ namespace {
 TextureData TextureLoader::loadFromDisk(std::string filename) {
 	TextureData texData = {};
 
-	logger.debug("Loading \"" + filename + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loading \"" + filename + "\".");
 
 	//Channels is currently unused, but will be set with the amount of channels the image originally had
 	//if it's ever needed.
@@ -84,7 +84,7 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 	unsigned char* imageData = stbi_load(filename.c_str(), &texData.width, &texData.height, &channels, 4);
 
 	if (imageData == nullptr) {
-		logger.error("Couldn't load texture \"" + filename + "\" - file doesn't exist.");
+		ENGINE_LOG_ERROR(logger, "Couldn't load texture \"" + filename + "\" - file doesn't exist.");
 		texData.loadSuccess = false;
 		texData.width = 2;
 		texData.height = 2;
@@ -98,11 +98,12 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 	//If width and height are not equal, or they are not powers of two, the texture is malformed.
 	//Report a warning if this occurs.
 	if ((texData.width & (texData.width - 1)) || texData.width != texData.height) {
-		logger.warn("Malformed texture \"" + filename + "\" has dimensions " + std::to_string(texData.width) + " x " +
-					std::to_string(texData.height) + ". Dimensions must be equal powers of two.");
+		ENGINE_LOG_WARN(logger,
+			"Malformed texture \"" + filename + "\" has dimensions " + std::to_string(texData.width) + " x " +
+			std::to_string(texData.height) + ". Dimensions must be equal powers of two.");
 	}
 
-	logger.debug("Loaded " + std::to_string(texData.width) + " x " + std::to_string(texData.height) + " texture \"" + filename + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loaded " + std::to_string(texData.width) + " x " + std::to_string(texData.height) + " texture \"" + filename + "\".");
 
 	return texData;
 }
@@ -164,7 +165,7 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 	//Try to fit glyphs in smallest texture possible
 	unsigned int texSize = 2;
 
-	logger.debug("Trying texture of size " + std::to_string(texSize));
+	ENGINE_LOG_DEBUG(logger, "Trying texture of size " + std::to_string(texSize));
 
 	while (!tryPositionGlyphs(glyphs, texSize)) {
 		texSize = texSize << 1u;
@@ -174,10 +175,10 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 			throw std::runtime_error("Couldn't fit font \"" + name + "\" on any texture.");
 		}
 
-		logger.debug("Trying texture of size " + std::to_string(texSize));
+		ENGINE_LOG_DEBUG(logger, "Trying texture of size " + std::to_string(texSize));
 	}
 
-	logger.debug("Using " + std::to_string(texSize) + " x " + std::to_string(texSize) + " texture for font \"" + name + "\"");
+	ENGINE_LOG_DEBUG(logger, "Using " + std::to_string(texSize) + " x " + std::to_string(texSize) + " texture for font \"" + name + "\"");
 
 	//Create texture
 	TextureData fontTexture;
@@ -196,9 +197,9 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 		const int height = data.glyph->size.y;
 
 		if (pos.x + width > (int)texSize || pos.y + height > (int)texSize) {
-			logger.fatal("Memory corruption imminent!");
-			logger.fatal("pos: (" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ")");
-			logger.fatal("size: (" + std::to_string(width) + ", " + std::to_string(height) + ")");
+			ENGINE_LOG_FATAL(logger, "Memory corruption imminent!");
+			ENGINE_LOG_FATAL(logger, "pos: (" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ")");
+			ENGINE_LOG_FATAL(logger, "size: (" + std::to_string(width) + ", " + std::to_string(height) + ")");
 			throw std::runtime_error("Font loading failed!");
 		}
 

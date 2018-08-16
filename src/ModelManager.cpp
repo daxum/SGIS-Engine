@@ -19,7 +19,7 @@
 #include "ModelManager.hpp"
 
 std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
-	logger.spam("Retrieving reference for model \"" + modelName + "\"");
+	ENGINE_LOG_SPAM(logger, "Retrieving reference for model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
 	Mesh& mesh = meshMap.at(model.mesh);
@@ -31,7 +31,7 @@ std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
 
 	//Upload mesh if needed
 	if (!memoryManager->markUsed(model.mesh, mesh.getBuffer())) {
-		logger.debug("Mesh data for \"" + model.mesh + "\" not present on renderer, uploading now...");
+		ENGINE_LOG_DEBUG(logger, "Mesh data for \"" + model.mesh + "\" not present on renderer, uploading now...");
 
 		auto meshData = mesh.getMeshData();
 
@@ -42,7 +42,7 @@ std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
 }
 
 void ModelManager::removeReference(const std::string& modelName) {
-	logger.spam("Removing reference to model \"" + modelName + "\"");
+	ENGINE_LOG_SPAM(logger, "Removing reference to model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
 	const std::string meshName = model.mesh;
@@ -54,10 +54,10 @@ void ModelManager::removeReference(const std::string& modelName) {
 	bool persistent = usage == BufferUsage::DEDICATED_LAZY;
 
 	model.references--;
-	logger.spam("Remaining references: " + std::to_string(model.references));
+	ENGINE_LOG_SPAM(logger, "Remaining references: " + std::to_string(model.references));
 
 	if (model.references == 0 && !persistent) {
-		logger.debug("Removing transitory model \"" + modelName + "\"");
+		ENGINE_LOG_DEBUG(logger, "Removing transitory model \"" + modelName + "\"");
 		modelMap.erase(modelName);
 	}
 
@@ -67,15 +67,15 @@ void ModelManager::removeReference(const std::string& modelName) {
 	//take up unnecessary space in the vertex buffers when they're not in use (they will remain
 	//present in the buffers, however, unless memory runs out)
 	mesh.removeUser();
-	logger.spam("Remaining mesh users: " + std::to_string(mesh.getUsers()));
+	ENGINE_LOG_SPAM(logger, "Remaining mesh users: " + std::to_string(mesh.getUsers()));
 
 	if (mesh.getUsers() == 0) {
-		logger.debug("Removing unused mesh \"" + meshName + "\" from vertex buffers...");
+		ENGINE_LOG_DEBUG(logger, "Removing unused mesh \"" + meshName + "\" from vertex buffers...");
 		memoryManager->freeMesh(meshName, mesh.getBuffer());
 
 		//If mesh is not persistent, completely remove it
 		if (!persistent) {
-			logger.debug("Deleting transitory mesh \"" + meshName + "\"");
+			ENGINE_LOG_DEBUG(logger, "Deleting transitory mesh \"" + meshName + "\"");
 			meshMap.erase(meshName);
 		}
 	}

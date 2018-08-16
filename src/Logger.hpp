@@ -26,6 +26,29 @@
 
 #include "EngineConfig.hpp"
 
+//Used to completely disable all engine logging.
+//This seems necessary because the string parameters
+//need to be concatenated even when logging is disabled,
+//and the if statements aren't enough for the compiler to
+//optimize out the statements.
+//First parameter is the logger object, second is the message.
+//TODO: Global enable / disable for each level?
+#ifdef NO_ENGINE_LOG
+#	define ENGINE_LOG_SPAM(x, y)
+#	define ENGINE_LOG_DEBUG(x, y)
+#	define ENGINE_LOG_INFO(x, y)
+#	define ENGINE_LOG_WARN(x, y)
+#	define ENGINE_LOG_ERROR(x, y)
+#	define ENGINE_LOG_FATAL(x, y)
+#else
+#	define ENGINE_LOG_SPAM(x, y) x.spam(y)
+#	define ENGINE_LOG_DEBUG(x, y) x.debug(y)
+#	define ENGINE_LOG_INFO(x, y) x.info(y)
+#	define ENGINE_LOG_WARN(x, y) x.warn(y)
+#	define ENGINE_LOG_ERROR(x, y) x.error(y)
+#	define ENGINE_LOG_FATAL(x, y) x.fatal(y)
+#endif
+
 enum LogLevel {
 	DEBUG = 1,
 	INFO = 2,

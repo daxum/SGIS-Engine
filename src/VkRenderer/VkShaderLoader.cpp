@@ -41,7 +41,7 @@ VkShaderLoader::~VkShaderLoader() {
 }
 
 void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
-	logger.debug("Loading shader \"" + name + "\"");
+	ENGINE_LOG_DEBUG(logger, "Loading shader \"" + name + "\"");
 
 	//Create pipeline cache if this is the first shader loaded
 	if (pipelineCache == VK_NULL_HANDLE) {
@@ -117,7 +117,7 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	//Create shader and add to shader map
 	shaderMap.insert({name, std::make_shared<VkShader>(vkObjects.getDevice(), pipelineCache, pipelineLayout, info.pushConstants, pipelineCreator)});
 
-	logger.debug("Loaded shader \"" + name + "\"");
+	ENGINE_LOG_DEBUG(logger, "Loaded shader \"" + name + "\"");
 }
 
 VkShaderModule VkShaderLoader::createShaderModule(const std::string& filename) {

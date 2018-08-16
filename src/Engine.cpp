@@ -49,24 +49,24 @@ Engine::Engine(const EngineConfig& config) :
 	switch(config.renderer.renderType) {
 		case Renderer::OPEN_GL:
 #ifdef USE_OPENGL
-			logger.info("Using OpenGL renderer.");
+			ENGINE_LOG_INFO(logger, "Using OpenGL renderer.");
 			renderer.reset(new GlRenderingEngine(display, config.rendererLog, config.loaderLog));
 			break;
 #else
-			logger.fatal("Attempt to use openGL rendering engine when opengl isn't enabled!");
+			ENGINE_LOG_FATAL(logger, "Attempt to use openGL rendering engine when opengl isn't enabled!");
 			throw std::runtime_error("OpenGL rendering engine isn't enabled!");
 #endif
 		case Renderer::VULKAN:
 #ifdef USE_VULKAN
-			logger.info("Using Vulkan renderer.");
+			ENGINE_LOG_INFO(logger, "Using Vulkan renderer.");
 			renderer.reset(new VkRenderingEngine(display, config.rendererLog, config.loaderLog));
 			break;
 #else
-			logger.fatal("Attempt to use vulkan rendering engine when vulkan isn't enabled!");
+			ENGINE_LOG_FATAL(logger, "Attempt to use vulkan rendering engine when vulkan isn't enabled!");
 			throw std::runtime_error("Vulkan rendering engine isn't enabled!");
 #endif
 		default:
-			logger.fatal("Unknown renderer requested!");
+			ENGINE_LOG_FATAL(logger, "Unknown renderer requested!");
 			throw std::runtime_error("Incomplete switch in Engine::Engine()");
 	}
 
@@ -79,40 +79,40 @@ Engine::~Engine() {
 }
 
 void Engine::run(GameInterface& game) {
-	logger.info("Initializing engine...");
+	ENGINE_LOG_INFO(logger, "Initializing engine...");
 
 	//Initialize renderer
-	logger.info("Initializing renderer...");
+	ENGINE_LOG_INFO(logger, "Initializing renderer...");
 
 	renderer->init();
 
-	logger.info("Initializing renderer objects...");
+	ENGINE_LOG_INFO(logger, "Initializing renderer objects...");
 
 	game.createRenderObjects(renderer->getRenderInitializer());
-	logger.info("Renderer initialization complete.");
+	ENGINE_LOG_INFO(logger, "Renderer initialization complete.");
 
 	//Pre-loading of a splash screen might go here
 
 	//Load resources
-	logger.info("Beginning resource loading...");
+	ENGINE_LOG_INFO(logger, "Beginning resource loading...");
 
 	game.loadShaders(renderer->getShaderLoader());
-	logger.info("Finshed loading shaders.");
+	ENGINE_LOG_INFO(logger, "Finshed loading shaders.");
 
 	game.loadTextures(renderer->getTextureLoader());
-	logger.info("Finished loading textures.");
+	ENGINE_LOG_INFO(logger, "Finished loading textures.");
 
 	game.loadModels(modelLoader);
-	logger.info("Finished loading models.");
+	ENGINE_LOG_INFO(logger, "Finished loading models.");
 
 	game.loadScreens(display);
-	logger.info("Finished loading screens.");
+	ENGINE_LOG_INFO(logger, "Finished loading screens.");
 
 	renderer->finishLoad();
-	logger.info("Load complete.");
+	ENGINE_LOG_INFO(logger, "Load complete.");
 
 	//Enter game loop
-	logger.info("Starting game...");
+	ENGINE_LOG_INFO(logger, "Starting game...");
 
 	double currentTime = ExMath::getTimeMillis();
 	double lag = 0.0;
@@ -148,7 +148,7 @@ void Engine::run(GameInterface& game) {
 		//Running very slow - slow == bad!
 		//TODO: This doesn't seem to work quite right. Needs testing later.
 		if (loops >= 10) {
-			logger.warn("Runnning " + std::to_string(lag) + "ms behind.");
+			ENGINE_LOG_WARN(logger, "Runnning " + std::to_string(lag) + "ms behind.");
 			lag = 0.0;
 		}
 
@@ -163,9 +163,10 @@ void Engine::run(GameInterface& game) {
 		if (frameEnd - lastReportTime > config.frameReportFrequency) {
 			double averageFrames = totalFrameTime / numFrames;
 
-			logger.debug(std::to_string(numFrames) + " frames completed in " +
-						 std::to_string(totalFrameTime) + "ms. Average frame time: " + std::to_string(averageFrames) + "ms - " +
-						 std::to_string(numFrames / (totalFrameTime / 1000)) + " fps");
+			ENGINE_LOG_DEBUG(logger,
+				std::to_string(numFrames) + " frames completed in " +
+				std::to_string(totalFrameTime) + "ms. Average frame time: " + std::to_string(averageFrames) + "ms - " +
+				std::to_string(numFrames / (totalFrameTime / 1000)) + " fps");
 
 			totalFrameTime = 0.0;
 			numFrames = 0;
@@ -174,7 +175,7 @@ void Engine::run(GameInterface& game) {
 	}
 
 	//Clean up resources, exit game
-	logger.info("Exit called, shutting down.");
+	ENGINE_LOG_INFO(logger, "Exit called, shutting down.");
 
 	//Prevent segmentation faults.
 	display.clear();
