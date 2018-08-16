@@ -23,11 +23,11 @@
 #include "LinearMath/btThreads.h"
 
 #ifdef USE_OPENGL
-	#include "GlRenderer/GlRenderingEngine.hpp"
+#	include "GlRenderer/GlRenderingEngine.hpp"
 #endif
 
 #ifdef USE_VULKAN
-	#include "VkRenderer/VkRenderingEngine.hpp"
+#	include "VkRenderer/VkRenderingEngine.hpp"
 #endif
 
 Engine* Engine::instance = nullptr;
