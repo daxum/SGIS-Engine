@@ -72,7 +72,7 @@ public:
 	 * Returns whether a model with the provided name has already been uploaded.
 	 * @return true if the model exists, false otherwise.
 	 */
-	bool hasModel(const std::string name) const { return modelMap.count(name); }
+	bool hasModel(const std::string& name) const { return modelMap.count(name); }
 
 	/**
 	 * Adds a model to the manager. The mesh the model references will have its
