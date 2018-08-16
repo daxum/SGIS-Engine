@@ -53,7 +53,7 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 		else {
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = nextBinding;
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			binding.descriptorCount = 1;
 			binding.stageFlags = descr.shaderStages.to_ulong();
 
