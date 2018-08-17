@@ -119,6 +119,7 @@ enum class UniformSetType {
 	//Per-frame uniforms, allows use of CAMERA_* and SCREEN_* provider types.
 	PER_FRAME,
 	//Per-object uniforms, allows only OBJECT_* uniform providers.
+	//Samplers are not allowed in PER_OBJECT uniform sets.
 	PER_OBJECT
 };
 

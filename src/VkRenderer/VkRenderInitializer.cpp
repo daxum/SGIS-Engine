@@ -51,6 +51,10 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 			hasUbo = true;
 		}
 		else {
+			if (set.setType == UniformSetType::PER_OBJECT) {
+				throw std::runtime_error("Samplers not allowed in per-object uniform sets!");
+			}
+
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = nextBinding;
 			binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
