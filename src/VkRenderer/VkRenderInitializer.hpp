@@ -55,7 +55,7 @@ private:
 		switch (type) {
 			case UniformSetType::MODEL_STATIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			case UniformSetType::MODEL_DYNAMIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			case UniformSetType::PER_FRAME: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			case UniformSetType::PER_SCREEN: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			case UniformSetType::PER_OBJECT: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			default: throw std::runtime_error("Invalid uniform set type!?");
 		}

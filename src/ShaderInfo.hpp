@@ -116,8 +116,8 @@ enum class UniformSetType {
 	//descriptor sets.
 	MODEL_STATIC,
 	MODEL_DYNAMIC,
-	//Per-frame uniforms, allows use of CAMERA_* and SCREEN_* provider types.
-	PER_FRAME,
+	//Per-screen uniforms, allows use of CAMERA_* and SCREEN_* provider types.
+	PER_SCREEN,
 	//Per-object uniforms, allows only OBJECT_* uniform providers.
 	//Samplers are not allowed in PER_OBJECT uniform sets.
 	PER_OBJECT
@@ -156,7 +156,7 @@ struct ShaderInfo {
 	std::string buffer;
 	//Names of all the uniform sets used in the shader. Order is very important
 	//here, as it affects which uniforms need to be rebound when the shader changes.
-	//In general, from the values in UniformSetType, prefer PER_FRAME, then
+	//In general, from the values in UniformSetType, prefer PER_SCREEN, then
 	//MODEL_*, then PER_OBJECT.
 	std::vector<std::string> uniformSets;
 	//All push constant values used in the shader.
