@@ -101,6 +101,10 @@ struct UniformDescription {
 	//Type of the uniform.
 	UniformType type;
 	//The name of the uniform, primarily used to retrieve values.
+	//This has special meaning for samplers - for static models,
+	//it should be texture_*, where '*' is the index into the model's
+	//texture array. For dynamic models, it is the name of the texture
+	//to use, which will be static for all models using the descriptor set.
 	std::string name;
 	//Where the uniform's value comes from.
 	UniformProviderType provider;
@@ -117,6 +121,7 @@ enum class UniformSetType {
 	MODEL_STATIC,
 	MODEL_DYNAMIC,
 	//Per-screen uniforms, allows use of CAMERA_* and SCREEN_* provider types.
+	//Samplers are not allowed for PER_SCREEN uniform sets.
 	PER_SCREEN,
 	//Per-object uniforms, allows only OBJECT_* uniform providers.
 	//Samplers are not allowed in PER_OBJECT uniform sets.
