@@ -38,6 +38,9 @@ std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
 		memoryManager->addMesh(model.mesh, mesh.getBuffer(), std::get<0>(meshData), std::get<1>(meshData), std::get<2>(meshData));
 	}
 
+	//Upload model uniform data - the memory manager will skip redundant uploads
+	memoryManager->addModel(modelName, model);
+
 	return ref;
 }
 
@@ -49,16 +52,26 @@ void ModelManager::removeReference(const std::string& modelName) {
 
 	Mesh& mesh = meshMap.at(meshName);
 
-	//Get vertex buffer to determine model / mesh persistence
-	BufferUsage usage = memoryManager->getBuffer(mesh.getBuffer()).getUsage();
-	bool persistent = usage == BufferUsage::DEDICATED_LAZY;
+	//Get vertex buffer to determine mesh persistence, same with models and uniform sets
+	const UniformSetType setType = memoryManager->getUniformSet(model.uniformSet).setType;
+	const BufferUsage usage = memoryManager->getBuffer(mesh.getBuffer()).getUsage();
+
+	const bool meshPersistent = usage == BufferUsage::DEDICATED_LAZY;
+	const bool modelPersistent = setType == UniformSetType::MODEL_STATIC;
 
 	model.references--;
 	ENGINE_LOG_SPAM(logger, "Remaining references: " + std::to_string(model.references));
 
-	if (model.references == 0 && !persistent) {
-		ENGINE_LOG_DEBUG(logger, "Removing transitory model \"" + modelName + "\"");
-		modelMap.erase(modelName);
+	//Allow reallocation of model uniform data, but don't actually remove it from the
+	//buffers unless needed
+	if (model.references == 0) {
+		ENGINE_LOG_DEBUG(logger, "Removing unused model \"" + modelName + "\"");
+		memoryManager->freeModel(modelName, model);
+
+		if (!modelPersistent) {
+			ENGINE_LOG_DEBUG(logger, "Deleting transitory model \"" + modelName + "\"");
+			modelMap.erase(modelName);
+		}
 	}
 
 	//Model might not exist past this point! Don't use it!
@@ -74,7 +87,7 @@ void ModelManager::removeReference(const std::string& modelName) {
 		memoryManager->freeMesh(meshName, mesh.getBuffer());
 
 		//If mesh is not persistent, completely remove it
-		if (!persistent) {
+		if (!meshPersistent) {
 			ENGINE_LOG_DEBUG(logger, "Deleting transitory mesh \"" + meshName + "\"");
 			meshMap.erase(meshName);
 		}
