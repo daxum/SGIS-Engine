@@ -96,7 +96,7 @@ public:
 	 * Returns the aligned uniform data along with its size.
 	 * @return A pair of the uniform data and its size.
 	 */
-	const std::pair<const unsigned char*, size_t> getData() { return {uniformData, dataSize}; }
+	const std::pair<const unsigned char*, size_t> getData() const { return {uniformData, dataSize}; }
 
 	/**
 	 * Checks whether a uniform is present with the given name and type.

@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "RendererMemoryManager.hpp"
+#include "ExtraMath.hpp"
 
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
 	logger(logConfig.type, logConfig.mask, logConfig.outputFile) {}
@@ -26,14 +27,16 @@ void RendererMemoryManager::UniformBufferInit() {
 	size_t dynamicModelSize = 0;
 	size_t screenObjectSize = 0;
 
-	for (const UniformSet& set : uniformSets) {
+	for (const auto& setPair : uniformSets) {
+		const UniformSet& set = setPair.second;
+
 		//Align individual values to std140 rules
 		size_t partiallyAlignedSize = Std140Aligner::getAlignedSize(set);
 		//Align aligned size to min uniform buffer alignment (at most 256)
 		size_t alignedSize = ExMath::roundToVal(partiallyAlignedSize, getMinUniformBufferAlignment());
 		alignedSize *= set.maxUsers;
 
-		switch (set.type) {
+		switch (set.setType) {
 			case UniformSetType::MODEL_STATIC: staticModelSize += alignedSize; break;
 			case UniformSetType::MODEL_DYNAMIC: dynamicModelSize += alignedSize; break;
 			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize; break;
@@ -175,7 +178,7 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 	size_t dataSize = model.uniforms.getData().second;
 	const unsigned char* modelData = model.uniforms.getData().first;
 
-	switch (set.type) {
+	switch (set.setType) {
 		case UniformSetType::MODEL_STATIC : staticModel = true; break;
 		case UniformSetType::MODEL_DYNAMIC: staticModel = false; break;
 		default: throw std::runtime_error("Model descriptor set isn't a model type!");
@@ -189,7 +192,7 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 
 	std::shared_ptr<AllocInfo> allocation = staticModel ? staticModelUniformAlloc->getMemory(allocSize) : dynamicModelUniformAlloc->getMemory(allocSize);
 
-	uploadModelData(staticModel ? UniformBufferType::STATIC_MODEL : UniformBufferType::DYNAMIC_MODEL, allocation.start, dataSize, modelData);
+	uploadModelData(staticModel ? UniformBufferType::STATIC_MODEL : UniformBufferType::DYNAMIC_MODEL, allocation->start, dataSize, modelData);
 
 	//Allocate descriptor set for static models. If the model already has a descriptor set, this call will be ignored.
 
@@ -207,7 +210,7 @@ void RendererMemoryManager::freeModel(const std::string& name, const Model& mode
 	const UniformSet& set = getUniformSet(model.uniformSet);
 	bool staticModel = false;
 
-	switch (set.type) {
+	switch (set.setType) {
 		case UniformSetType::MODEL_STATIC : staticModel = true; break;
 		case UniformSetType::MODEL_DYNAMIC: staticModel = false; break;
 		default: throw std::runtime_error("Model descriptor set isn't a model type!");

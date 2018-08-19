@@ -28,6 +28,7 @@
 #include "EngineConfig.hpp"
 #include "Logger.hpp"
 #include "ShaderInfo.hpp"
+#include "Model.hpp"
 
 //All the information needed to create a vertex buffer.
 struct VertexBufferInfo {
@@ -117,7 +118,7 @@ public:
 	 * @param model The model to get the data for.
 	 * @return The offset and range of the buffer the model's data is stored in.
 	 */
-	const ModelUniformData& getModelUniformData(const std::string& model) { return modelUniformData.at(model); }
+	const ModelUniformData& getModelUniformData(const std::string& model) { return modelDataMap.at(model); }
 
 	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.

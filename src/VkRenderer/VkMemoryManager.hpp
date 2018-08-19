@@ -129,6 +129,21 @@ protected:
 	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) override;
 
 	/**
+	 * Creates a uniform buffer with the given size.
+	 * @param buffer The type of uniform buffer being created. This is used for
+	 *     UniformBufferType::PER_SCREEN_OBJECT, which has one buffer for every active
+	 *     frame.
+	 * @param size The size of the buffer.
+	 */
+	void createUniformBuffer(UniformBufferType buffer, size_t size) override { /** TODO **/ }
+
+	/**
+	 * Gets the minimum alignment for offsets into a uniform buffer.
+	 * @return The minimum alignment.
+	 */
+	size_t getMinUniformBufferAlignment() override { /** TODO **/ return 4; /* "It works on my machine" */ }
+
+	/**
 	 * Queues the index and vertex data to be transferred before the next frame is drawn.
 	 * @param buffer The vertex buffer to upload to.
 	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
@@ -146,6 +161,25 @@ protected:
 	 * @param mesh The mesh being removed.
 	 */
 	void invalidateMesh(const std::string& mesh) override { meshMap.erase(mesh); }
+
+	/**
+	 * Allocates a descriptor set for the model. The model is guaranteed to be static,
+	 * as dynamic models use descriptors that are determined during initialization and
+	 * that use dynamic offsets. This can be called more than once for the same model -
+	 * subsequent calls are ignored.
+	 * @param name The name of the model.
+	 * @param model The model to allocate a descriptor set for.
+	 */
+	void addModelDescriptors(const std::string& name, const Model& model) override { /** TODO **/ }
+
+	/**
+	 * Uploads model uniform data to a uniform buffer.
+	 * @param buffer The uniform buffer to upload to.
+	 * @param offset The offset of the data into the buffer.
+	 * @param size The size of the data.
+	 * @param data The data to upload.
+	 */
+	void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) override { /** TODO **/ }
 
 private:
 	//Object handler for vulkan objects.
