@@ -23,6 +23,7 @@
 #include "Engine.hpp"
 #include "VkExtensionFunctionLoader.hpp"
 #include "ExtraMath.hpp"
+#include "VkPDPD.hpp"
 
 namespace {
 	const std::vector<std::string> requiredExtensions = {
@@ -241,10 +242,15 @@ void VkObjectHandler::setPhysicalDevice() {
 		physicalDevice = devices.at(0);
 	}
 
+	//Set queue families and physical device properties
 	QueueFamilyIndices queueIndices = findQueueFamilies(physicalDevice);
 	graphicsQueueIndex = queueIndices.graphicsFamily;
 	presentQueueIndex = queueIndices.presentFamily;
 	transferQueueIndex = queueIndices.transferFamily;
+
+	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+	logPhysicalDeviceProperties();
 }
 
 void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices) {
@@ -608,6 +614,16 @@ void VkObjectHandler::destroySwapchain() {
 	}
 
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
+}
+
+void VkObjectHandler::logPhysicalDeviceProperties() {
+	ENGINE_LOG_INFO(logger, std::string("Physical device properties:"));
+	ENGINE_LOG_INFO(logger, std::string("\tApi version: ") + std::to_string(physicalDeviceProperties.apiVersion));
+	ENGINE_LOG_INFO(logger, std::string("\tDriver version: ") + std::to_string(physicalDeviceProperties.driverVersion));
+	ENGINE_LOG_INFO(logger, std::string("\tVendor: ") + getPciVendorName(physicalDeviceProperties.vendorID));
+	ENGINE_LOG_INFO(logger, std::string("\tDevice: ") + physicalDeviceProperties.deviceName);
+	ENGINE_LOG_DEBUG(logger, std::string("\tDevice type: ") + getDeviceTypeName(physicalDeviceProperties.deviceType));
+	ENGINE_LOG_DEBUG(logger, std::string("\tDevice id: ") + std::to_string(physicalDeviceProperties.deviceID));
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {

@@ -75,6 +75,7 @@ public:
 	 * Device related getters.
 	 */
 	VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
+	const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() { return physicalDeviceProperties; }
 	VkDevice getDevice() { return device; }
 	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
 	VkRenderPass getRenderPass() { return renderPass; }
@@ -105,6 +106,7 @@ private:
 	//Vulkan Objects.
 	VkInstance instance;
 	VkPhysicalDevice physicalDevice;
+	VkPhysicalDeviceProperties physicalDeviceProperties;
 	VkDevice device;
 	VkDebugReportCallbackEXT callback;
 	VkQueue graphicsQueue;
@@ -217,6 +219,12 @@ private:
 	 * Detroys the old swapchain for recreation.
 	 */
 	void destroySwapchain();
+
+	/**
+	 * Basically dumps the relevant information from the physicalDeviceProperties
+	 * object to the log.
+	 */
+	void logPhysicalDeviceProperties();
 
 	/**
 	 * Vulkan debug callback.

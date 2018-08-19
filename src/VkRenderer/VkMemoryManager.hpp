@@ -141,7 +141,7 @@ protected:
 	 * Gets the minimum alignment for offsets into a uniform buffer.
 	 * @return The minimum alignment.
 	 */
-	size_t getMinUniformBufferAlignment() override { /** TODO **/ return 4; /* "It works on my machine" */ }
+	size_t getMinUniformBufferAlignment() override { return objects.getPhysicalDeviceProperties().limits.minUniformBufferOffsetAlignment; }
 
 	/**
 	 * Queues the index and vertex data to be transferred before the next frame is drawn.
