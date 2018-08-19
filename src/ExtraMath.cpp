@@ -85,3 +85,11 @@ std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(glm::vec2 screenPos, glm::
 
 	return {nearPos, farPos};
 }
+
+uint32_t ExMath::roundToVal(const uint32_t initVal, const uint32_t roundVal) {
+		if ((initVal % roundVal) == 0) {
+			return initVal;
+		}
+
+		return (initVal / roundVal + 1) * roundVal;
+	}

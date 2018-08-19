@@ -21,6 +21,35 @@
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
 	logger(logConfig.type, logConfig.mask, logConfig.outputFile) {}
 
+void RendererMemoryManager::UniformBufferInit() {
+	size_t staticModelSize = 0;
+	size_t dynamicModelSize = 0;
+	size_t screenObjectSize = 0;
+
+	for (const UniformSet& set : uniformSets) {
+		//Align individual values to std140 rules
+		size_t partiallyAlignedSize = Std140Aligner::getAlignedSize(set);
+		//Align aligned size to min uniform buffer alignment (at most 256)
+		size_t alignedSize = ExMath::roundToVal(partiallyAlignedSize, getMinUniformBufferAlignment());
+		alignedSize *= set.maxUsers;
+
+		switch (set.type) {
+			case UniformSetType::MODEL_STATIC: staticModelSize += alignedSize; break;
+			case UniformSetType::MODEL_DYNAMIC: dynamicModelSize += alignedSize; break;
+			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize; break;
+			case UniformSetType::PER_OBJECT: screenObjectSize += alignedSize; break;
+			default: throw std::runtime_error("Missing uniform buffer type!");
+		}
+	}
+
+	createUniformBuffer(UniformBufferType::STATIC_MODEL, staticModelSize);
+	createUniformBuffer(UniformBufferType::DYNAMIC_MODEL, dynamicModelSize);
+	createUniformBuffer(UniformBufferType::PER_SCREEN_OBJECT, screenObjectSize);
+
+	staticModelUniformAlloc = std::make_shared<MemoryAllocator>(staticModelSize);
+	dynamicModelUniformAlloc = std::make_shared<MemoryAllocator>(dynamicModelSize);
+}
+
 void RendererMemoryManager::addBuffer(const std::string& name, const VertexBufferInfo& info) {
 	std::shared_ptr<RenderBufferData> renderData = createBuffer(info.format, info.usage, info.size);
 	VertexBuffer buffer(info.format, info.size, info.usage, renderData);
@@ -119,5 +148,76 @@ void RendererMemoryManager::freeMesh(const std::string& mesh, const std::string&
 		bufferData.indexAllocations.erase(mesh);
 
 		ENGINE_LOG_DEBUG(logger, "Deleted transitory mesh \"" + mesh + "\"");
+	}
+}
+
+void RendererMemoryManager::addModel(const std::string& name, const Model& model) {
+	//If data is present, don't reupload
+	if (modelDataMap.count(name)) {
+		ModelUniformData& uniformData = modelDataMap.at(name);
+
+		//If data was evicted, remove old allocation so the insert works below
+		if (uniformData.allocation->evicted) {
+			modelDataMap.erase(name);
+		}
+		//Data not evicted, so just reactivate it. Descriptor sets are always persistent, so those
+		//don't need checking.
+		else {
+			uniformData.allocation->inUse = true;
+			return;
+		}
+	}
+
+	//Determine set type, model type, and retrieve data
+
+	const UniformSet& set = getUniformSet(model.uniformSet);
+	bool staticModel = false;
+	size_t dataSize = model.uniforms.getData().second;
+	const unsigned char* modelData = model.uniforms.getData().first;
+
+	switch (set.type) {
+		case UniformSetType::MODEL_STATIC : staticModel = true; break;
+		case UniformSetType::MODEL_DYNAMIC: staticModel = false; break;
+		default: throw std::runtime_error("Model descriptor set isn't a model type!");
+	}
+
+	//Align the model data to the minimum alignment before allocating. If every allocation
+	//does this, all allocated memory will end up implicitly aligned.
+	size_t allocSize = ExMath::roundToVal(dataSize, getMinUniformBufferAlignment());
+
+	//Make allocation and upload uniform data
+
+	std::shared_ptr<AllocInfo> allocation = staticModel ? staticModelUniformAlloc->getMemory(allocSize) : dynamicModelUniformAlloc->getMemory(allocSize);
+
+	uploadModelData(staticModel ? UniformBufferType::STATIC_MODEL : UniformBufferType::DYNAMIC_MODEL, allocation.start, dataSize, modelData);
+
+	//Allocate descriptor set for static models. If the model already has a descriptor set, this call will be ignored.
+
+	if (staticModel) {
+		addModelDescriptors(name, model);
+	}
+
+	//Lastly, add to data map
+
+	//Use dataSize instead of allocation->size to avoid the padding, as the alignment only applies to offset
+	modelDataMap.insert({name, ModelUniformData{allocation, allocation->start, dataSize}});
+}
+
+void RendererMemoryManager::freeModel(const std::string& name, const Model& model) {
+	const UniformSet& set = getUniformSet(model.uniformSet);
+	bool staticModel = false;
+
+	switch (set.type) {
+		case UniformSetType::MODEL_STATIC : staticModel = true; break;
+		case UniformSetType::MODEL_DYNAMIC: staticModel = false; break;
+		default: throw std::runtime_error("Model descriptor set isn't a model type!");
+	}
+
+	//Mark static models as not in use, and just remove dynamic models completely
+	if (staticModel) {
+		modelDataMap.at(name).allocation->inUse = false;
+	}
+	else {
+		modelDataMap.erase(name);
 	}
 }

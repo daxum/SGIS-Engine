@@ -53,6 +53,22 @@ struct BufferData {
 	std::unordered_map<std::string, std::shared_ptr<AllocInfo>> indexAllocations;
 };
 
+//The three different uniform buffers. Model buffers
+//act similarly to vertex buffers, and PER_SCREEN_OBJECT
+//behaves like a rotating stream buffer in device memory.
+enum class UniformBufferType {
+	STATIC_MODEL,
+	DYNAMIC_MODEL,
+	PER_SCREEN_OBJECT
+};
+
+//Used to bind uniform buffer data for models and manage uniform buffer allocations.
+struct ModelUniformData {
+	std::shared_ptr<AllocInfo> allocation;
+	uint64_t offset;
+	uint64_t range;
+};
+
 //An interface to the rendering engine's memory manager.
 class RendererMemoryManager {
 public:
@@ -66,6 +82,12 @@ public:
 	 * Destructor.
 	 */
 	virtual ~RendererMemoryManager() {}
+
+	/**
+	 * Called by the engine after descriptor sets are loaded to initialize the uniform
+	 * buffers and their corresponding memory managers.
+	 */
+	void UniformBufferInit();
 
 	/**
 	 * Adds a vertex buffer to the memory manager. Currently also creates an index buffer as well.
@@ -89,6 +111,13 @@ public:
 	 * @return The set with the given name.
 	 */
 	const UniformSet& getUniformSet(const std::string& set) { return uniformSets.at(set); }
+
+	/**
+	 * Returns the offset and size into the uniform buffer the model's data is stored at.
+	 * @param model The model to get the data for.
+	 * @return The offset and range of the buffer the model's data is stored in.
+	 */
+	const ModelUniformData& getModelUniformData(const std::string& model) { return modelUniformData.at(model); }
 
 	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
@@ -120,9 +149,29 @@ public:
 	 */
 	void freeMesh(const std::string& mesh, const std::string& buffer);
 
+	/**
+	 * Adds a model's uniform data to the uniform buffers, and allocates a descriptor
+	 * set (or similar) for it if it is a static model. If the model is already present,
+	 * this doesn't do anything.
+	 * @param name The name of the model to add.
+	 * @param model The model to add.
+	 */
+	void addModel(const std::string& name, const Model& model);
+
+	/**
+	 * Frees the model if present. Static models have their uniform data marked as unused,
+	 * and dynamic models are removed completely. This will not, however, free static model
+	 * descriptors. Those will persist until the program terminates.
+	 * @param name The name of the model.
+	 * @param model The model to free.
+	 */
+	void freeModel(const std::string& name, const Model& model);
+
 protected:
 	//Logger, logs things.
 	Logger logger;
+	//Stores all created uniform sets. This is filled out by subclasses.
+	std::unordered_map<std::string, UniformSet> uniformSets;
 
 	/**
 	 * Function available for subclasses if they need buffers deleted before their destructor completes.
@@ -141,6 +190,30 @@ protected:
 	 * @throw std::runtime_error if out of memory.
 	 */
 	virtual std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) = 0;
+
+	/**
+	 * Creates a uniform buffer with the given size, which has been calculated by
+	 * the maxUsers variable of all added uniform sets.
+	 * @param buffer The type of uniform buffer being created. This is used for
+	 *     UniformBufferType::PER_SCREEN_OBJECT, which can have one buffer for every active
+	 *     frame.
+	 * @param size The size of the buffer.
+	 */
+	virtual void createUniformBuffer(UniformBufferType buffer, size_t size) = 0;
+
+	/**
+	 * Gets the minimum alignment for offsets into a uniform buffer.
+	 * Some values for reference:
+	 * The lowest value is Intel integrated on linux, which seems to mostly use 1,
+	 * while windows almost always uses 32.
+	 * RADV appears to always use 4, which is different from the AMD windows
+	 * drivers, which use 16.
+	 * Nvidia uses the maximum value of 256 for some reason.
+	 * Mobile (android) seems to almost always use 64, but a few use 32.
+	 * Nobody really uses 128.
+	 * @return The minimum alignment.
+	 */
+	virtual size_t getMinUniformBufferAlignment() = 0;
 
 	/**
 	 * Uploads the vertex and index data into the given buffer. The implementor of this
@@ -165,17 +238,30 @@ protected:
 	virtual void invalidateMesh(const std::string& mesh) = 0;
 
 	/**
-	 * Adds a uniform set that can be used by models or the rendering engine.
-	 * This is intended to be called by subclasses so they can have a renderer -
-	 * specific add call to store other data at the same time.
-	 * @param set The uniform set to add.
-	 * @param name The name to store the set under.
+	 * Allocates a descriptor set for the model. The model is guaranteed to be static,
+	 * as dynamic models use descriptors that are determined during initialization and
+	 * that use dynamic offsets. This can be called more than once for the same model -
+	 * subsequent calls should be ignored.
+	 * @param name The name of the model.
+	 * @param model The model to allocate a descriptor set for.
 	 */
-	void addUniformSet(const UniformSet& set, const std::string name) { uniformSets.insert({name, set}); }
+	virtual void addModelDescriptors(const std::string& name, const Model& model) = 0;
+
+	/**
+	 * Uploads model uniform data to a uniform buffer.
+	 * @param buffer The uniform buffer to upload to.
+	 * @param offset The offset of the data into the buffer.
+	 * @param size The size of the data.
+	 * @param data The data to upload.
+	 */
+	virtual void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) = 0;
 
 private:
 	//Stores all created vertex buffers.
 	std::unordered_map<std::string, BufferData> buffers;
-	//Stores all created uniform sets.
-	std::unordered_map<std::string, UniformSet> uniformSets;
+	//Allocators for model uniform buffers.
+	std::shared_ptr<MemoryAllocator> staticModelUniformAlloc;
+	std::shared_ptr<MemoryAllocator> dynamicModelUniformAlloc;
+	//All rendering data for models.
+	std::unordered_map<std::string, ModelUniformData> modelDataMap;
 };

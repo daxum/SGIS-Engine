@@ -135,4 +135,13 @@ namespace ExMath {
 	 * @return The point projected onto the near plane (first) and the far plane (second).
 	 */
 	std::pair<glm::vec3, glm::vec3> screenToWorld(glm::vec2 screenPos, glm::mat4 projection, glm::mat4 view, float screenWidth, float screenHeight, float nearPlane, float farPlane);
+
+	/**
+	 * Rounds initVal to the next highest multiple of roundVal.
+	 * @param initVal The number to round.
+	 * @param roundVal The number to round initVal to a multiple of.
+	 * @return The value of initVal rounded to the next highest multiple
+	 *     of roundVal.
+	 */
+	uint32_t roundToVal(const uint32_t initVal, const uint32_t roundVal);
 }

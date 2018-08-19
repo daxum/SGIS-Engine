@@ -41,6 +41,13 @@ struct UniformData {
 class Std140Aligner {
 public:
 	/**
+	 * Finds the aligned size of the given uniform set, similarly to what happens in the constructor.
+	 * @param set The uniform set to find the size of.
+	 * @return The aligned size of the uniform set.
+	 */
+	static size_t getAlignedSize(const UniformSet& set);
+
+	/**
 	 * Constructs the aligned memory region.
 	 * @param uniforms The uniforms that will be stored. Samplers and
 	 *     similar aren't allowed, for obvious reasons.
@@ -160,20 +167,5 @@ private:
 			case UniformType::MAT4: return baseAlignment(UniformType::VEC4);
 			default: throw std::runtime_error("Invalid uniform type provided to baseAlignment!");
 		}
-	}
-
-	/**
-	 * Rounds initVal to the next highest multiple of roundVal.
-	 * @param initVal The number to round.
-	 * @param roundVal The number to round initVal to a multiple of.
-	 * @return The value of initVal rounded to the next highest multiple
-	 *     of roundVal.
-	 */
-	static constexpr uint32_t roundToVal(const uint32_t initVal, const uint32_t roundVal) {
-		if ((initVal % roundVal) == 0) {
-			return initVal;
-		}
-
-		return (initVal / roundVal + 1) * roundVal;
 	}
 };

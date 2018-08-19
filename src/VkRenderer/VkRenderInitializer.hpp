@@ -48,12 +48,14 @@ private:
 
 	/**
 	 * Converts the uniform set type to a VkDescriptor type.
+	 * This function doesn't have much point anymore, as everything
+	 * uses dynamic uniform buffers...
 	 * @param type The type of the uniform set.
 	 * @return The corresponding descriptor type.
 	 */
 	static constexpr VkDescriptorType descriptorTypeFromSet(const UniformSetType type) {
 		switch (type) {
-			case UniformSetType::MODEL_STATIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			case UniformSetType::MODEL_STATIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			case UniformSetType::MODEL_DYNAMIC: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			case UniformSetType::PER_SCREEN: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			case UniformSetType::PER_OBJECT: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;

@@ -112,7 +112,7 @@ public:
 	 * @param setLayout The layout of the uniform set.
 	 */
 	void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, VkDescriptorSetLayout setLayout) {
-		addUniformSet(uniformSet, name);
+		uniformSets.insert({name, uniformSet});
 		descriptorLayouts.insert({name, setLayout});
 	}
 

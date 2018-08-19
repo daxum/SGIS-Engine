@@ -17,6 +17,23 @@
  ******************************************************************************/
 
 #include "Std140Aligner.hpp"
+#include "ExtraMath.hpp"
+
+size_t Std140Aligner::getAlignedSize(const UniformSet& set) {
+	size_t currentSize = 0;
+
+	for (const UniformDescription& uniform : set.uniforms) {
+		if (isSampler(uniform.type)) {
+			continue;
+		}
+
+		//Increase size to account for padding
+		currentSize = ExMath::roundToVal(currentSize, baseAlignment(uniform.type));
+		currentSize += alignedSize(uniform.type);
+	}
+
+	return currentSize;
+}
 
 Std140Aligner::Std140Aligner(const std::vector<UniformDescription>& uniforms) :
 	uniformData(nullptr),
@@ -28,7 +45,7 @@ Std140Aligner::Std140Aligner(const std::vector<UniformDescription>& uniforms) :
 		UniformData data = {};
 		data.type = uniform.type;
 		//Round the uniform's offset to the next multiple of its base alignment
-		data.offset = roundToVal(currentOffset, baseAlignment(uniform.type));
+		data.offset = ExMath::roundToVal(currentOffset, baseAlignment(uniform.type));
 		//Array and matrix types have a larger size due to padding
 		data.size = alignedSize(uniform.type);
 

@@ -136,6 +136,10 @@ enum class UniformSetType {
 struct UniformSet {
 	//The type of uniform set, restricts which provider types are allowed.
 	UniformSetType setType;
+	//The maximum allowed users of this uniform set. Determines uniform
+	//buffer sizes and, for MODEL_STATIC set types, the number of available
+	//descriptor sets.
+	size_t maxUsers;
 	//The uniforms in the set.
 	std::vector<UniformDescription> uniforms;
 };

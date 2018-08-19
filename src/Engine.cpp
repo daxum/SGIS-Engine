@@ -89,6 +89,7 @@ void Engine::run(GameInterface& game) {
 	ENGINE_LOG_INFO(logger, "Initializing renderer objects...");
 
 	game.createRenderObjects(renderer->getRenderInitializer());
+	renderer->getMemoryManager()->UniformBufferInit();
 	ENGINE_LOG_INFO(logger, "Renderer initialization complete.");
 
 	//Pre-loading of a splash screen might go here
