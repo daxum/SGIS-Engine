@@ -32,7 +32,7 @@
  */
 constexpr const char* getPciVendorName(uint32_t id) {
 	switch (id) {
-		case 0x00001022: return "Advanced Micro Devices";
+		case 0x00001002: return "Advanced Micro Devices";
 		case 0x000013B5: return "ARM Ltd.";
 		//Membership table didn't specify if this was hex or decimal, so going with hex.
 		case 0x00008086: return "Intel Corporation";
