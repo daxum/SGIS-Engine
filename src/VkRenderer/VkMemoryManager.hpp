@@ -180,7 +180,7 @@ protected:
 	 * @param size The size of the data.
 	 * @param data The data to upload.
 	 */
-	void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) override { /** TODO **/ }
+	void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) override;
 
 private:
 	//Object handler for vulkan objects.

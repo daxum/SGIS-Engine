@@ -326,6 +326,19 @@ void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 	meshMap.insert({mesh, VkMeshRenderData{indexOffset, (uint32_t) (indexSize / sizeof(uint32_t))}});
 }
 
+void VkMemoryManager::uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) {
+	VkBuffer uploadBuffer = VK_NULL_HANDLE;
+
+	switch (buffer) {
+		case UniformBufferType::STATIC_MODEL: uploadBuffer = uniformBuffers.at(0); break;
+		case UniformBufferType::DYNAMIC_MODEL: uploadBuffer = uniformBuffers.at(1); break;
+		default: throw std::runtime_error("Invalid uniform buffer for transfer upload!");
+	}
+
+	//Probably need uniform-specific transfer for better concurrency later
+	queueTransfer(uploadBuffer, offset, size, data);
+}
+
 void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data) {
 	//Grow transfer buffer if not big enough (actual reallocation happens in executeTransfers)
 	if (transferSize < size) {
