@@ -618,8 +618,15 @@ void VkObjectHandler::destroySwapchain() {
 
 void VkObjectHandler::logPhysicalDeviceProperties() {
 	ENGINE_LOG_INFO(logger, std::string("Physical device properties:"));
-	ENGINE_LOG_INFO(logger, std::string("\tApi version: ") + std::to_string(physicalDeviceProperties.apiVersion));
+	ENGINE_LOG_INFO(logger, std::string("\tApi version: ") +
+											  std::to_string(VK_VERSION_MAJOR(physicalDeviceProperties.apiVersion)) +
+										"." + std::to_string(VK_VERSION_MINOR(physicalDeviceProperties.apiVersion)) +
+										"." + std::to_string(VK_VERSION_PATCH(physicalDeviceProperties.apiVersion)));
 	ENGINE_LOG_INFO(logger, std::string("\tDriver version: ") + std::to_string(physicalDeviceProperties.driverVersion));
+	ENGINE_LOG_INFO(logger, std::string("\tPossibly nonsense driver version: ") +
+											  std::to_string(VK_VERSION_MAJOR(physicalDeviceProperties.driverVersion)) +
+										"." + std::to_string(VK_VERSION_MINOR(physicalDeviceProperties.driverVersion)) +
+										"." + std::to_string(VK_VERSION_PATCH(physicalDeviceProperties.driverVersion)));
 	ENGINE_LOG_INFO(logger, std::string("\tVendor: ") + getPciVendorName(physicalDeviceProperties.vendorID));
 	ENGINE_LOG_INFO(logger, std::string("\tDevice: ") + physicalDeviceProperties.deviceName);
 	ENGINE_LOG_DEBUG(logger, std::string("\tDevice type: ") + getDeviceTypeName(physicalDeviceProperties.deviceType));
