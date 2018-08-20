@@ -44,7 +44,6 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	growTransfer(true),
 	pendingTransfers(),
 	meshMap(),
-	lastVertexTransferBuffer(VK_NULL_HANDLE),
 	descriptorLayouts() {
 
 }
@@ -64,6 +63,17 @@ void VkMemoryManager::init() {
 
 	if (vkCreateFence(objects.getDevice(), &fenceInfo, nullptr, &transferFence) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create transfer fence!");
+	}
+
+	//Create command buffer
+	VkCommandBufferAllocateInfo cmdBufferInfo = {};
+	cmdBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cmdBufferInfo.commandPool = objects.getTransferCommandPool();
+	cmdBufferInfo.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers(objects.getDevice(), &cmdBufferInfo, &transferCommands) != VK_SUCCESS) {
+		throw std::runtime_error("Well that's not good... (Out of memory)");
 	}
 }
 
@@ -103,11 +113,6 @@ void VkMemoryManager::executeTransfers() {
 	//Wait for any previous transfers to complete
 	vkWaitForFences(objects.getDevice(), 1, &transferFence, VK_TRUE, 0);
 	vkResetFences(objects.getDevice(), 1, &transferFence);
-
-	//Slaughter old buffer
-	if (lastVertexTransferBuffer != VK_NULL_HANDLE) {
-		vkFreeCommandBuffers(objects.getDevice(), objects.getTransferCommandPool(), 1, &lastVertexTransferBuffer);
-	}
 
 	//Resize transfer buffer if needed
 	if (growTransfer) {
@@ -168,17 +173,6 @@ void VkMemoryManager::executeTransfers() {
 	vmaUnmapMemory(allocator, transferAllocation);
 
 	//Execute transfer
-	VkCommandBuffer transferCommands;
-
-	VkCommandBufferAllocateInfo cmdBufferInfo = {};
-	cmdBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cmdBufferInfo.commandPool = objects.getTransferCommandPool();
-	cmdBufferInfo.commandBufferCount = 1;
-
-	if (vkAllocateCommandBuffers(objects.getDevice(), &cmdBufferInfo, &transferCommands) != VK_SUCCESS) {
-		throw std::runtime_error("Well that's not good... (Out of memory)");
-	}
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -215,8 +209,6 @@ void VkMemoryManager::executeTransfers() {
 	if (vkQueueSubmit(objects.getTransferQueue(), 1, &submitInfo, transferFence) != VK_SUCCESS) {
 		throw std::runtime_error("Er.. driver? Hello? Are you still there...? (transfer queue submission failed)");
 	}
-
-	lastVertexTransferBuffer = transferCommands;
 
 	//Reset offset for next frame
 	transferOffset = 0;

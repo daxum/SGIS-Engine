@@ -591,6 +591,7 @@ void VkObjectHandler::createCommandPools() {
 	if (hasUniqueTransfer()) {
 		VkCommandPoolCreateInfo transferPoolCreateInfo = {};
 		transferPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		transferPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		transferPoolCreateInfo.queueFamilyIndex = transferQueueIndex;
 
 		if (vkCreateCommandPool(device, &transferPoolCreateInfo, nullptr, &transferCommandPool) != VK_SUCCESS) {

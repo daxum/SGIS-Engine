@@ -191,6 +191,8 @@ private:
 	VkBuffer transferBuffer;
 	//Allocation for transfer buffer.
 	VmaAllocation transferAllocation;
+	//Transfer command buffer.
+	VkCommandBuffer transferCommands;
 	//Uniform buffers and allocations.
 	//0 - static model, 1 - dynamic model, 2 - screen / object.
 	std::array<VkBuffer, 3> uniformBuffers;
@@ -207,8 +209,6 @@ private:
 	std::queue<TransferOperation> pendingTransfers;
 	//Map of uploaded mesh data.
 	std::unordered_map<std::string, VkMeshRenderData> meshMap;
-	//Last used command buffer for vertex transfers.
-	VkCommandBuffer lastVertexTransferBuffer;
 	//All possible descriptor set layouts.
 	std::unordered_map<std::string, VkDescriptorSetLayout> descriptorLayouts;
 
