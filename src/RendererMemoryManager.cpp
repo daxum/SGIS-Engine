@@ -45,9 +45,7 @@ void RendererMemoryManager::UniformBufferInit() {
 		}
 	}
 
-	createUniformBuffer(UniformBufferType::STATIC_MODEL, staticModelSize);
-	createUniformBuffer(UniformBufferType::DYNAMIC_MODEL, dynamicModelSize);
-	createUniformBuffer(UniformBufferType::PER_SCREEN_OBJECT, screenObjectSize);
+	createUniformBuffers(staticModelSize, dynamicModelSize, screenObjectSize);
 
 	staticModelUniformAlloc = std::make_shared<MemoryAllocator>(staticModelSize);
 	dynamicModelUniformAlloc = std::make_shared<MemoryAllocator>(dynamicModelSize);

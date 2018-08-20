@@ -193,14 +193,13 @@ protected:
 	virtual std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) = 0;
 
 	/**
-	 * Creates a uniform buffer with the given size, which has been calculated by
+	 * Creates the three uniform buffers with the given sizes, which have been calculated by
 	 * the maxUsers variable of all added uniform sets.
-	 * @param buffer The type of uniform buffer being created. This is used for
-	 *     UniformBufferType::PER_SCREEN_OBJECT, which can have one buffer for every active
-	 *     frame.
-	 * @param size The size of the buffer.
+	 * @param modelStaticSize The size of the STATIC_MODEL uniform buffer.
+	 * @param modelDynamicSize The size of the DYNAMIC_MODEL uniform buffer.
+	 * @param screenObjectSize The size of the PER_SCREEN_OBJECT uniform buffer.
 	 */
-	virtual void createUniformBuffer(UniformBufferType buffer, size_t size) = 0;
+	virtual void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) = 0;
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.

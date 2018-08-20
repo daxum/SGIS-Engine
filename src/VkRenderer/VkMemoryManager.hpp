@@ -135,7 +135,7 @@ protected:
 	 *     frame.
 	 * @param size The size of the buffer.
 	 */
-	void createUniformBuffer(UniformBufferType buffer, size_t size) override { /** TODO **/ }
+	void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) override { /** TODO **/ }
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.
