@@ -30,6 +30,7 @@
 #endif
 
 #include "VkMemoryManager.hpp"
+#include "VkRenderingEngine.hpp"
 
 VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& objects) :
 	RendererMemoryManager(logConfig),
@@ -71,6 +72,12 @@ void VkMemoryManager::deinit() {
 
 	if (transferBuffer != VK_NULL_HANDLE) {
 		vmaDestroyBuffer(allocator, transferBuffer, transferAllocation);
+	}
+
+	for (size_t i = 0; i < uniformBuffers.size(); i++) {
+		if (uniformBuffers.at(i) != VK_NULL_HANDLE) {
+			vmaDestroyBuffer(allocator, uniformBuffers.at(i), uniformBufferAllocations.at(i));
+		}
 	}
 
 	vkDestroyFence(objects.getDevice(), transferFence, nullptr);
@@ -268,6 +275,50 @@ std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vecto
 	}
 
 	return std::make_shared<VkBufferData>(allocator, vertexBuffer, indexBuffer, vertexAllocation, indexAllocation);
+}
+
+void VkMemoryManager::createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) {
+	VkBufferCreateInfo staticModelCreateInfo = {};
+	staticModelCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	staticModelCreateInfo.size = modelStaticSize;
+	staticModelCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	staticModelCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	uint32_t bufferUsers[] = { objects.getGraphicsQueueIndex(), objects.getTransferQueueIndex() };
+
+	if (objects.hasUniqueTransfer()) {
+		staticModelCreateInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+		staticModelCreateInfo.queueFamilyIndexCount = 2;
+		staticModelCreateInfo.pQueueFamilyIndices = bufferUsers;
+	}
+
+	VkBufferCreateInfo dynamicModelCreateInfo = {};
+	dynamicModelCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	dynamicModelCreateInfo.size = modelDynamicSize;
+	dynamicModelCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	dynamicModelCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (objects.hasUniqueTransfer()) {
+		dynamicModelCreateInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+		dynamicModelCreateInfo.queueFamilyIndexCount = 2;
+		dynamicModelCreateInfo.pQueueFamilyIndices = bufferUsers;
+	}
+
+	VkBufferCreateInfo screenObjectCreateInfo = {};
+	screenObjectCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	screenObjectCreateInfo.size = screenObjectSize * VkRenderingEngine::MAX_ACTIVE_FRAMES;
+	screenObjectCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	screenObjectCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VmaAllocationCreateInfo modelAllocCreateInfo = {};
+	modelAllocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	VmaAllocationCreateInfo screenObjectAllocCreateInfo = {};
+	screenObjectCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+	vmaCreateBuffer(allocator, &staticModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(0), &uniformBufferAllocations.at(0), nullptr);
+	vmaCreateBuffer(allocator, &dynamicModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(1), &uniformBufferAllocations.at(1), nullptr);
+	vmaCreateBuffer(allocator, &screenObjectCreateInfo, &screenObjectAllocCreateInfo, &uniformBuffers.at(2), &uniformBufferAllocations.at(2), nullptr);
 }
 
 void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) {

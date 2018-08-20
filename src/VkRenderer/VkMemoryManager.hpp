@@ -21,6 +21,7 @@
 #include <queue>
 #include <vector>
 #include <unordered_map>
+#include <array>
 
 #include <vulkan/vulkan.h>
 
@@ -135,7 +136,7 @@ protected:
 	 *     frame.
 	 * @param size The size of the buffer.
 	 */
-	void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) override { /** TODO **/ }
+	void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) override;
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.
@@ -190,6 +191,10 @@ private:
 	VkBuffer transferBuffer;
 	//Allocation for transfer buffer.
 	VmaAllocation transferAllocation;
+	//Uniform buffers and allocations.
+	//0 - static model, 1 - dynamic model, 2 - screen / object.
+	std::array<VkBuffer, 3> uniformBuffers;
+	std::array<VmaAllocation, 3> uniformBufferAllocations;
 	//Fence to prevent overwriting in-transit memory.
 	VkFence transferFence;
 	//Current offset into transfer buffer, reset to 0 after each transfer operation.
