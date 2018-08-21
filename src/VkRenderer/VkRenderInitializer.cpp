@@ -48,7 +48,7 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 			binding.stageFlags = uboUseStages.to_ulong();
 
 			bindings.push_back(binding);
-			layoutInfo.bindings.push_back({DescriptorType::UNIFORM_BUFFER_DYNAMIC, "buffer"});
+			layoutInfo.bindings.push_back({VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, "buffer"});
 			nextBinding++;
 			hasUbo = true;
 		}
@@ -64,7 +64,7 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 			binding.stageFlags = descr.shaderStages.to_ulong();
 
 			bindings.push_back(binding);
-			layoutInfo.bindings.push_back({DescriptorType::COMBINED_IMAGE_SAMPLER, descr.name});
+			layoutInfo.bindings.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descr.name});
 			nextBinding++;
 		}
 	}

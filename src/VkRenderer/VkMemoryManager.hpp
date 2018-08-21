@@ -22,6 +22,7 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
+#include <functional>
 
 #include <vulkan/vulkan.h>
 
@@ -68,15 +69,10 @@ struct TransferOperation {
 	size_t srcOffset;
 };
 
-enum class DescriptorType {
-	UNIFORM_BUFFER_DYNAMIC,
-	COMBINED_IMAGE_SAMPLER
-};
-
 struct DescriptorLayoutInfo {
 	//Bindings for the descriptor set with this layout. First element
 	//is the type, second is the name, which is used for textures.
-	std::vector<std::pair<DescriptorType, std::string>> bindings;
+	std::vector<std::pair<VkDescriptorType, std::string>> bindings;
 	//Layout object. Don't forget to delete!
 	VkDescriptorSetLayout layout;
 };
@@ -235,8 +231,8 @@ private:
 	//Dynamic model, object, and screen descriptor pool. All descriptor sets are allocated once at
 	//pool creation time and then never updated (Unless something happens with textures, of course).
 	VkDescriptorPool dynamicPool;
-	//Contains all descriptor sets allocated for static models. These are never freed until program termination.
-	std::unordered_map<std::string, VkDescriptorSet> staticModelSets;
+	//Contains all allocated descriptor sets. These are never freed until program termination.
+	std::unordered_map<std::string, VkDescriptorSet> descriptorSets;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.
@@ -246,6 +242,23 @@ private:
 	 * @param data The data to transfer.
 	 */
 	void queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data);
+
+	/**
+	 * Creates a descriptor pool that has enough descriptors to hold the sets that setInPool
+	 * returns true for.
+	 * @param pool The descriptor pool to create.
+	 * @param setInPool A function that determines in a given uniform set belongs in the pool
+	 *     to be created.
+	 */
+	void createDescriptorPool(VkDescriptorPool* pool, std::function<bool(UniformSetType)> setInPool);
+
+	/**
+	 * Writes the descriptors to the descriptor set.
+	 * @param set The set to write to.
+	 * @param layoutInfo The descriptor layout info for the set.
+	 * @param uniformSet The uniform set that corresponds to the layout info.
+	 */
+	void fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet);
 
 	/**
 	 * Takes a uniform set type and turns it into an index. This function
