@@ -44,7 +44,10 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	growTransfer(true),
 	pendingTransfers(),
 	meshMap(),
-	descriptorLayouts() {
+	descriptorLayouts(),
+	staticModelPool(VK_NULL_HANDLE),
+	dynamicPool(VK_NULL_HANDLE),
+	staticModelSets() {
 
 }
 
@@ -99,9 +102,16 @@ void VkMemoryManager::deinit() {
 		pendingTransfers.pop();
 	}
 
-	for (const auto& layout : descriptorLayouts) {
-		vkDestroyDescriptorSetLayout(objects.getDevice(), layout.second, nullptr);
+	for (const auto& layoutInfoPair : descriptorLayouts) {
+		vkDestroyDescriptorSetLayout(objects.getDevice(), layoutInfoPair.second.layout, nullptr);
 	}
+
+	vkDestroyDescriptorPool(objects.getDevice(), staticModelPool, nullptr);
+	vkDestroyDescriptorPool(objects.getDevice(), dynamicPool, nullptr);
+}
+
+void VkMemoryManager::initializeDescriptors() {
+	/** TODO: This one's going to be really annoying **/
 }
 
 void VkMemoryManager::executeTransfers() {
@@ -324,6 +334,65 @@ void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 
 	//Add to mesh map
 	meshMap.insert({mesh, VkMeshRenderData{indexOffset, (uint32_t) (indexSize / sizeof(uint32_t))}});
+}
+
+void VkMemoryManager::addModelDescriptors(const std::string& name, const Model& model) {
+	//Allocate the set
+
+	const DescriptorLayoutInfo& layoutInfo = descriptorLayouts.at(model.uniformSet);
+	const UniformSet& uniformSet = uniformSets.at(model.uniformSet);
+
+	VkDescriptorSetAllocateInfo setAllocInfo = {};
+	setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	setAllocInfo.descriptorPool = staticModelPool;
+	setAllocInfo.descriptorSetCount = 1;
+	setAllocInfo.pSetLayouts = &layoutInfo.layout;
+
+	VkDescriptorSet set = VK_NULL_HANDLE;
+
+	if (!vkAllocateDescriptorSets(objects.getDevice(), &setAllocInfo, &set) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to allocate static model descriptor set!");
+	}
+
+	staticModelSets.insert({name, set});
+
+	//Write the descriptors into the set
+
+	std::vector<VkWriteDescriptorSet> writeOps(layoutInfo.bindings.size(), VkWriteDescriptorSet{});
+	std::vector<VkDescriptorBufferInfo> bufferInfos;
+
+	for (size_t i = 0; i < layoutInfo.bindings.size(); i++) {
+		const DescriptorType type = layoutInfo.bindings.at(i).first;
+		//Uncomment when textures added
+		//const std::string& name = layoutInfo.bindings.at(i).second;
+
+		switch (type) {
+			case DescriptorType::UNIFORM_BUFFER_DYNAMIC: {
+				VkDescriptorBufferInfo bufferInfo = {};
+				bufferInfo.buffer = uniformBuffers.at(bufferIndexFromSetType(uniformSet.setType));
+				bufferInfo.offset = 0;
+				bufferInfo.range = Std140Aligner::getAlignedSize(uniformSet);
+
+				bufferInfos.push_back(bufferInfo);
+
+				VkWriteDescriptorSet& writeSet = writeOps.at(i);
+				writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				writeSet.dstSet = set;
+				writeSet.dstBinding = i;
+				writeSet.dstArrayElement = 0;
+				writeSet.descriptorCount = 1;
+				writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+				writeSet.pBufferInfo = &bufferInfos.back();
+
+			}; break;
+			case DescriptorType::COMBINED_IMAGE_SAMPLER: {
+				//TODO
+				throw std::runtime_error("Textures not yet implemented!");
+			}; break;
+		}
+	}
+
+	vkUpdateDescriptorSets(objects.getDevice(), writeOps.size(), writeOps.data(), 0, nullptr);
 }
 
 void VkMemoryManager::uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) {

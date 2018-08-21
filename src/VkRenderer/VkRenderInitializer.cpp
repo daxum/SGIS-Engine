@@ -31,6 +31,7 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 	}
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
+	DescriptorLayoutInfo layoutInfo = {};
 
 	//Create descriptor set layout
 	for (const UniformDescription& descr : set.uniforms) {
@@ -42,11 +43,12 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = nextBinding;
-			binding.descriptorType = descriptorTypeFromSet(set.setType);
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			binding.descriptorCount = 1;
 			binding.stageFlags = uboUseStages.to_ulong();
 
 			bindings.push_back(binding);
+			layoutInfo.bindings.push_back({DescriptorType::UNIFORM_BUFFER_DYNAMIC, "buffer"});
 			nextBinding++;
 			hasUbo = true;
 		}
@@ -62,6 +64,7 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 			binding.stageFlags = descr.shaderStages.to_ulong();
 
 			bindings.push_back(binding);
+			layoutInfo.bindings.push_back({DescriptorType::COMBINED_IMAGE_SAMPLER, descr.name});
 			nextBinding++;
 		}
 	}
@@ -71,11 +74,9 @@ void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string
 	layoutCreateInfo.bindingCount = bindings.size();
 	layoutCreateInfo.pBindings = bindings.data();
 
-	VkDescriptorSetLayout setLayout;
-
-	if (vkCreateDescriptorSetLayout(vkObjects.getDevice(), &layoutCreateInfo, nullptr, &setLayout) != VK_SUCCESS) {
+	if (vkCreateDescriptorSetLayout(vkObjects.getDevice(), &layoutCreateInfo, nullptr, &layoutInfo.layout) != VK_SUCCESS) {
 		throw std::runtime_error("Could not create descriptor set layout");
 	}
 
-	vkMemManager->addDescriptorSet(name, set, setLayout);
+	vkMemManager->addDescriptorSet(name, set, layoutInfo);
 }

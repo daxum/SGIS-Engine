@@ -91,6 +91,13 @@ public:
 	void UniformBufferInit();
 
 	/**
+	 * Initializes descriptor sets or similar, if the rendering engine supports that kind of thing.
+	 * This is mainly used to allocate descriptor pools in the vulkan renderer.
+	 * Textures should be loaded before this is called!
+	 */
+	virtual void initializeDescriptors() = 0;
+
+	/**
 	 * Adds a vertex buffer to the memory manager. Currently also creates an index buffer as well.
 	 * @param name The name of the buffer.
 	 * @param info Initialization info for the buffer.

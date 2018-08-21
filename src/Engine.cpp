@@ -103,6 +103,9 @@ void Engine::run(GameInterface& game) {
 	game.loadTextures(renderer->getTextureLoader());
 	ENGINE_LOG_INFO(logger, "Finished loading textures.");
 
+	renderer->getMemoryManager()->initializeDescriptors();
+	ENGINE_LOG_DEBUG(logger, "Initialized renderer descriptor sets.");
+
 	game.loadModels(modelLoader);
 	ENGINE_LOG_INFO(logger, "Finished loading models.");
 

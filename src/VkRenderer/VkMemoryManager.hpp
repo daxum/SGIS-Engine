@@ -68,6 +68,19 @@ struct TransferOperation {
 	size_t srcOffset;
 };
 
+enum class DescriptorType {
+	UNIFORM_BUFFER_DYNAMIC,
+	COMBINED_IMAGE_SAMPLER
+};
+
+struct DescriptorLayoutInfo {
+	//Bindings for the descriptor set with this layout. First element
+	//is the type, second is the name, which is used for textures.
+	std::vector<std::pair<DescriptorType, std::string>> bindings;
+	//Layout object. Don't forget to delete!
+	VkDescriptorSetLayout layout;
+};
+
 class VkMemoryManager : public RendererMemoryManager {
 public:
 	/**
@@ -88,6 +101,12 @@ public:
 	void deinit();
 
 	/**
+	 * Creates descriptor pools and allocates descriptor sets for dynamic models,
+	 * objects, and screens.
+	 */
+	void initializeDescriptors() override;
+
+	/**
 	 * Sends all pending transfer operations to their destinations.
 	 */
 	void executeTransfers();
@@ -104,7 +123,7 @@ public:
 	 * @param name The name of the descriptor set layout to fetch.
 	 * @return The layout with the given name.
 	 */
-	VkDescriptorSetLayout getSetLayout(const std::string& name) const { return descriptorLayouts.at(name); }
+	VkDescriptorSetLayout getSetLayout(const std::string& name) const { return descriptorLayouts.at(name).layout; }
 
 	/**
 	 * Adds a descriptor set to the rendering engine, as well as a layout that can be used in shaders.
@@ -112,7 +131,7 @@ public:
 	 * @param uniformSet The uniform set.
 	 * @param setLayout The layout of the uniform set.
 	 */
-	void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, VkDescriptorSetLayout setLayout) {
+	void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, const DescriptorLayoutInfo& setLayout) {
 		uniformSets.insert({name, uniformSet});
 		descriptorLayouts.insert({name, setLayout});
 	}
@@ -171,7 +190,7 @@ protected:
 	 * @param name The name of the model.
 	 * @param model The model to allocate a descriptor set for.
 	 */
-	void addModelDescriptors(const std::string& name, const Model& model) override { /** TODO **/ }
+	void addModelDescriptors(const std::string& name, const Model& model) override;
 
 	/**
 	 * Uploads model uniform data to a uniform buffer.
@@ -210,7 +229,14 @@ private:
 	//Map of uploaded mesh data.
 	std::unordered_map<std::string, VkMeshRenderData> meshMap;
 	//All possible descriptor set layouts.
-	std::unordered_map<std::string, VkDescriptorSetLayout> descriptorLayouts;
+	std::unordered_map<std::string, DescriptorLayoutInfo> descriptorLayouts;
+	//Static model descriptor pool. Once allocated, descriptor sets are never freed or updated.
+	VkDescriptorPool staticModelPool;
+	//Dynamic model, object, and screen descriptor pool. All descriptor sets are allocated once at
+	//pool creation time and then never updated (Unless something happens with textures, of course).
+	VkDescriptorPool dynamicPool;
+	//Contains all descriptor sets allocated for static models. These are never freed until program termination.
+	std::unordered_map<std::string, VkDescriptorSet> staticModelSets;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.
@@ -220,4 +246,21 @@ private:
 	 * @param data The data to transfer.
 	 */
 	void queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data);
+
+	/**
+	 * Takes a uniform set type and turns it into an index. This function
+	 * gives an odd feeling of deja vu...
+	 * @param type The uniform buffer type.
+	 * @return The index for the buffer.
+	 */
+	static constexpr size_t bufferIndexFromSetType(const UniformSetType type) {
+		switch (type) {
+			case UniformSetType::MODEL_STATIC: return 0;
+			case UniformSetType::MODEL_DYNAMIC: return 1;
+			case UniformSetType::PER_SCREEN: return 2;
+			case UniformSetType::PER_OBJECT: return 2;
+			//Should be optimized better than an exception?
+			default: return 0xFFFFFFFFFFFFFFFF;
+		}
+	}
 };
