@@ -51,7 +51,7 @@ public:
 	 * @param modelManager The manager to load the models to.
 	 */
 	ModelLoader(const LogConfig& logConfig, ModelManager& modelManager) :
-		logger(logConfig.type, logConfig.mask, logConfig.outputFile),
+		logger(logConfig),
 		modelManager(modelManager) {}
 
 	/**

@@ -242,10 +242,13 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 
 	std::string currentBuffer = "";
 	std::string currentShader = "";
+	std::string currentModelSet = "";
 
+	//Per-buffer loop
 	for (const auto& shaderObjectMap : sortedObjects) {
 		const std::string& buffer = shaderObjectMap.first;
 
+		//Per-shader loop
 		for (const auto& modelMap : shaderObjectMap.second) {
 			const std::string& shaderName = modelMap.first;
 			const std::shared_ptr<VkShader> shader = shaderMap.at(shaderName);
@@ -255,7 +258,20 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 				continue;
 			}
 
+			//Per-model loop
 			for (const auto& objectSet : modelMap.second) {
+				const Model* model = objectSet.first;
+
+				if (currentModelSet != model->uniformSet) {
+					uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
+					VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
+
+					//TODO: Fix set number
+					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &modelSet, 1, &modelUniformOffset);
+					currentModelSet = model->uniformSet;
+				}
+
+				//Per-object loop
 				for (const std::shared_ptr<RenderComponent>& comp : objectSet.second) {
 					if (objects.count(comp.get())) {
 						//Set shader / buffer if needed

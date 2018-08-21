@@ -163,7 +163,7 @@ std::vector<VkPushConstantRange> VkShaderLoader::convertToRanges(const PushConst
 		return ranges;
 	}
 
-	std::bitset<2> currentShaderStages = pushSet.pushConstants.front().shaderStages;
+	std::bitset<32> currentShaderStages = pushSet.pushConstants.front().shaderStages;
 
 	VkPushConstantRange currentRange = {};
 	currentRange.stageFlags = currentShaderStages.to_ulong();

@@ -50,6 +50,12 @@ public:
 	VkPipeline getPipeline() const { return pipeline; }
 
 	/**
+	 * Returns the shader's pipeline layout.
+	 * @return The pipeline layout.
+	 */
+	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
+
+	/**
 	 * Gets the offsets for the push constants used in the shader.
 	 * @return A vector of push constant offsets, in the same order
 	 *     as the vector in pushConstants.

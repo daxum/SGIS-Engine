@@ -32,7 +32,7 @@ public:
 	 * @param logConfig The configuration for the manager's logger.
 	 */
 	ModelManager(const LogConfig& logConfig) :
-		logger(logConfig.type, logConfig.mask, logConfig.outputFile),
+		logger(logConfig),
 		memoryManager(nullptr),
 		meshMap(),
 		modelMap() {}

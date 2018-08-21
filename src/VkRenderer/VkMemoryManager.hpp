@@ -122,6 +122,13 @@ public:
 	VkDescriptorSetLayout getSetLayout(const std::string& name) const { return descriptorLayouts.at(name).layout; }
 
 	/**
+	 * Gets the descriptor set with the given name.
+	 * @param set The name of the descriptor set.
+	 * @return The set with the given name.
+	 */
+	VkDescriptorSet getDescriptorSet(const std::string& set) const { return descriptorSets.at(set); }
+
+	/**
 	 * Adds a descriptor set to the rendering engine, as well as a layout that can be used in shaders.
 	 * @param name The name of the set to add.
 	 * @param uniformSet The uniform set.
@@ -183,10 +190,9 @@ protected:
 	 * as dynamic models use descriptors that are determined during initialization and
 	 * that use dynamic offsets. This can be called more than once for the same model -
 	 * subsequent calls are ignored.
-	 * @param name The name of the model.
 	 * @param model The model to allocate a descriptor set for.
 	 */
-	void addModelDescriptors(const std::string& name, const Model& model) override;
+	void addModelDescriptors(const Model& model) override;
 
 	/**
 	 * Uploads model uniform data to a uniform buffer.

@@ -23,27 +23,12 @@
 #include <cstdint>
 #include <vector>
 
+#include "Logger.hpp"
+
 //List of available rendering engines.
 enum class Renderer {
 	OPEN_GL,
 	VULKAN
-};
-
-//Used to avoid passing references in the config.
-enum class LogType {
-	STDOUT,
-	FILE
-};
-
-//Specifies logging information for the different subsystems.
-struct LogConfig {
-	//The type of output for the logger.
-	LogType type;
-	//Only used for LogType FILE
-	std::string outputFile;
-	//The level mask - can be {DEBUG|INFO|WARN|ERROR|FATAL}
-	//If a bit is unset, that level will be disabled.
-	uint32_t mask;
 };
 
 struct RenderConfig {

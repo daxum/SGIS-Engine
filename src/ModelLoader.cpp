@@ -36,7 +36,7 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	//TODO: load meshes separately to share between models.
 	modelManager.addMesh(name, Mesh(buffer, data->vertices, data->indices, box, radius));
 
-	Model model(name, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
+	Model model(name, name, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
 	model.textures.push_back(texture);
 
 	if (model.uniforms.hasUniform("ka", UniformType::VEC3)) {

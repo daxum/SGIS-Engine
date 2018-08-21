@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "DisplayEngine.hpp"
+#include "RenderingEngine.hpp"
 #include "Screen.hpp"
 #include "Camera.hpp"
 #include "Engine.hpp"

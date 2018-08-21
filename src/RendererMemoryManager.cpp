@@ -20,7 +20,7 @@
 #include "ExtraMath.hpp"
 
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
-	logger(logConfig.type, logConfig.mask, logConfig.outputFile) {}
+	logger(logConfig) {}
 
 void RendererMemoryManager::UniformBufferInit() {
 	size_t staticModelSize = 0;
@@ -155,10 +155,13 @@ void RendererMemoryManager::freeMesh(const std::string& mesh, const std::string&
 void RendererMemoryManager::addModel(const std::string& name, const Model& model) {
 	//If data is present, don't reupload
 	if (modelDataMap.count(name)) {
+		ENGINE_LOG_SPAM(logger, "Model \"" + name + "\" possibly present on rendering engine");
+
 		ModelUniformData& uniformData = modelDataMap.at(name);
 
 		//If data was evicted, remove old allocation so the insert works below
 		if (uniformData.allocation->evicted) {
+			ENGINE_LOG_DEBUG(logger, "Model \"" + name + "\" evicted, reuploading");
 			modelDataMap.erase(name);
 		}
 		//Data not evicted, so just reactivate it. Descriptor sets are always persistent, so those
@@ -168,6 +171,8 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 			return;
 		}
 	}
+
+	ENGINE_LOG_DEBUG(logger, "Uploading model uniform data for \"" + name + "\" to rendering engine");
 
 	//Determine set type, model type, and retrieve data
 
@@ -195,13 +200,15 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 	//Allocate descriptor set for static models. If the model already has a descriptor set, this call will be ignored.
 
 	if (staticModel) {
-		addModelDescriptors(name, model);
+		addModelDescriptors(model);
 	}
 
 	//Lastly, add to data map
 
 	//Use dataSize instead of allocation->size to avoid the padding, as the alignment only applies to offset
 	modelDataMap.insert({name, ModelUniformData{allocation, allocation->start, dataSize}});
+
+	ENGINE_LOG_DEBUG(logger, "Uploaded model uniform data for \"" + name + "\" to rendering engine");
 }
 
 void RendererMemoryManager::freeModel(const std::string& name, const Model& model) {

@@ -21,15 +21,16 @@
 #include <memory>
 #include <functional>
 
-#include "GameInterface.hpp"
 #include "DisplayEngine.hpp"
 #include "EngineConfig.hpp"
 #include "ModelManager.hpp"
 #include "Logger.hpp"
 #include "FontManager.hpp"
 #include "WindowSystemInterface.hpp"
+#include "ModelLoader.hpp"
 
 class RenderingEngine;
+class GameInterface;
 class btITaskScheduler;
 
 class Engine {
@@ -85,7 +86,7 @@ public:
 	 * Gets the window system interface, used to get things like the window size.
 	 * @return The window interface.
 	 */
-	const WindowSystemInterface& getWindowInterface() const { return renderer->getWindowInterface(); }
+	const WindowSystemInterface& getWindowInterface() const;
 
 	/**
 	 * Gets the engine's font manager. Not threadsafe, should only be called from

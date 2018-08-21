@@ -36,8 +36,8 @@ uint32_t logEnableMask = SPAM | DEBUG | INFO | WARN | ERROR | FATAL;
 uint32_t logDisableMask = 0;
 
 int main(int argc, char** argv) {
-	Logger logger(logType, logEnableMask, file);
-	Logger nullLogger(logType, logDisableMask, file);
+	Logger logger(LogConfig{logType, file, logEnableMask});
+	Logger nullLogger(LogConfig{logType, file, logDisableMask});
 
 	double start = ExMath::getTimeMillis();
 

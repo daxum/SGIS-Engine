@@ -39,7 +39,7 @@ std::shared_ptr<ModelRef> FontManager::createTextModel(const std::string& fontNa
 	if (!modelManager.hasModel(modelName)) {
 		const Font& font = fontMap.at(fontName);
 
-		Model model(meshName, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), true);
+		Model model(modelName, meshName, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), true);
 		model.textures.push_back(font.getTexture());
 
 		modelManager.addModel(modelName, model);

@@ -57,8 +57,7 @@ public:
 	 * @throw runtime_error if initialization failed.
 	 */
 	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<RenderInitializer> ri, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-		texLoader(tl), shaderLoader(sl), renderInit(ri), logger(rendererLog.type, rendererLog.mask, rendererLog.outputFile),
-		loaderLogger(loaderLog.type, loaderLog.mask, loaderLog.outputFile) {}
+		texLoader(tl), shaderLoader(sl), renderInit(ri), logger(rendererLog), loaderLogger(loaderLog) {}
 
 	/**
 	 * Destroys any api-agnostic resources the engine might

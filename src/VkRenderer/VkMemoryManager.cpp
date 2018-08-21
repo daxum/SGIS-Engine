@@ -345,9 +345,9 @@ void VkMemoryManager::createUniformBuffers(size_t modelStaticSize, size_t modelD
 	VmaAllocationCreateInfo screenObjectAllocCreateInfo = {};
 	screenObjectCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-	if (vmaCreateBuffer(allocator, &staticModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(0), &uniformBufferAllocations.at(0), nullptr) != VK_SUCCESS ||
-		vmaCreateBuffer(allocator, &dynamicModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(1), &uniformBufferAllocations.at(1), nullptr) != VK_SUCCESS ||
-		vmaCreateBuffer(allocator, &screenObjectCreateInfo, &screenObjectAllocCreateInfo, &uniformBuffers.at(2), &uniformBufferAllocations.at(2), nullptr) != VK_SUCCESS) {
+	if (!(modelStaticSize == 0 || vmaCreateBuffer(allocator, &staticModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(0), &uniformBufferAllocations.at(0), nullptr) == VK_SUCCESS) ||
+		!(modelDynamicSize == 0 || vmaCreateBuffer(allocator, &dynamicModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(1), &uniformBufferAllocations.at(1), nullptr) == VK_SUCCESS) ||
+		!(screenObjectSize == 0 || vmaCreateBuffer(allocator, &screenObjectCreateInfo, &screenObjectAllocCreateInfo, &uniformBuffers.at(2), &uniformBufferAllocations.at(2), nullptr) == VK_SUCCESS)) {
 
 		throw std::runtime_error("Failed to create one or more uniform buffers!");
 	}
@@ -363,7 +363,11 @@ void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 	meshMap.insert({mesh, VkMeshRenderData{indexOffset, (uint32_t) (indexSize / sizeof(uint32_t))}});
 }
 
-void VkMemoryManager::addModelDescriptors(const std::string& name, const Model& model) {
+void VkMemoryManager::addModelDescriptors(const Model& model) {
+	if (descriptorSets.count(model.name)) {
+		return;
+	}
+
 	const DescriptorLayoutInfo& layoutInfo = descriptorLayouts.at(model.uniformSet);
 	const UniformSet& uniformSet = uniformSets.at(model.uniformSet);
 
@@ -375,11 +379,11 @@ void VkMemoryManager::addModelDescriptors(const std::string& name, const Model& 
 
 	VkDescriptorSet set = VK_NULL_HANDLE;
 
-	if (!vkAllocateDescriptorSets(objects.getDevice(), &setAllocInfo, &set) != VK_SUCCESS) {
+	if (vkAllocateDescriptorSets(objects.getDevice(), &setAllocInfo, &set) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to allocate static model descriptor set!");
 	}
 
-	descriptorSets.insert({name, set});
+	descriptorSets.insert({model.name, set});
 	fillDescriptorSet(set, layoutInfo, uniformSet);
 }
 
@@ -441,6 +445,11 @@ void VkMemoryManager::createDescriptorPool(VkDescriptorPool* pool, std::function
 				typeCounts.at(bindingPair.first) += setPair.second.maxUsers;
 			}
 		}
+	}
+
+	//Empty descriptor pool, don't create
+	if (setCount == 0) {
+		return;
 	}
 
 	//Convert to VkDescriptorPoolSize

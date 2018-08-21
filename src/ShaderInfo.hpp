@@ -109,7 +109,7 @@ struct UniformDescription {
 	//Where the uniform's value comes from.
 	UniformProviderType provider;
 	//The shader stages that use the uniform.
-	std::bitset<2> shaderStages;
+	std::bitset<32> shaderStages;
 };
 
 //Types of uniform set, restricts where values can be pulled from.

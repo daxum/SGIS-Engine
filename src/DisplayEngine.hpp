@@ -22,9 +22,10 @@
 #include <memory>
 #include <unordered_map>
 
-#include "RenderingEngine.hpp"
-#include "KeyList.hpp"
-#include "Screen.hpp"
+#include "InputEvent.hpp"
+
+class RenderingEngine;
+class Screen;
 
 class DisplayEngine {
 public:

@@ -22,6 +22,7 @@
 
 #include "RendererMemoryManager.hpp"
 #include "ShaderInfo.hpp"
+#include "Engine.hpp"
 
 //Low-level renderer initialization, such as buffers and descriptor sets.
 class RenderInitializer {
@@ -29,7 +30,9 @@ public:
 	/**
 	 * Constructor.
 	 */
-	RenderInitializer(RendererMemoryManager* memoryManager) : memoryManager(memoryManager) {}
+	RenderInitializer(RendererMemoryManager* memoryManager) :
+		logger(Engine::instance->getConfig().loaderLog),
+		memoryManager(memoryManager) {}
 
 	/**
 	 * Destructor.
@@ -45,11 +48,16 @@ public:
 
 	/**
 	 * Adds a set of uniforms that can be used in shaders and models.
-	 * @param set The set to add.
 	 * @param name The name of the set.
+	 * @param set The set to add.
 	 */
-	virtual void addUniformSet(const UniformSet& set, const std::string& name) = 0;
+	virtual void addUniformSet(const std::string& name, const UniformSet& set) = 0;
+
+protected:
+	//The logger.
+	Logger logger;
 
 private:
+	//Memory manager.
 	RendererMemoryManager* memoryManager;
 };

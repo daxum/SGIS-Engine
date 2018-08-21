@@ -19,6 +19,7 @@
 #include <tbb/parallel_for.h>
 
 #include "Engine.hpp"
+#include "GameInterface.hpp"
 #include "ExtraMath.hpp"
 #include "LinearMath/btThreads.h"
 
@@ -34,7 +35,7 @@ Engine* Engine::instance = nullptr;
 
 Engine::Engine(const EngineConfig& config) :
 	config(config),
-	logger(config.generalLog.type, config.generalLog.mask, config.generalLog.outputFile),
+	logger(config.generalLog),
 	display(),
 	modelManager(config.modelLog),
 	modelLoader(config.modelLog, modelManager),
@@ -183,6 +184,10 @@ void Engine::run(GameInterface& game) {
 
 	//Prevent segmentation faults.
 	display.clear();
+}
+
+const WindowSystemInterface& Engine::getWindowInterface() const {
+	return renderer->getWindowInterface();
 }
 
 void Engine::parallelFor(size_t begin, size_t end, const std::function<void(size_t)>& func, size_t grainSize) {

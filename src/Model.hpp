@@ -166,14 +166,17 @@ class Model {
 public:
 	/**
 	 * Creates a new model.
+	 * @param modelName The name of the model.
 	 * @param mesh The name of the model's mesh.
 	 * @param shader The model's shader.
 	 * @param uniformSet The name of the uniform set used in the model.
 	 * @param uniforms The uniform set for the model, used to determine uniform buffer layout.
 	 * @param viewCull Whether to use view culling on this model.
 	 */
-	Model(const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull = true);
+	Model(const std::string modelName, const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull = true);
 
+	//The name of this model.
+	std::string name;
 	//The name of this model's mesh.
 	std::string mesh;
 	//The shader the model uses.

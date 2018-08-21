@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "TextureLoader.hpp"
+#include "ShaderLoader.hpp"
 #include "ModelLoader.hpp"
 #include "RenderInitializer.hpp"
 #include "DisplayEngine.hpp"

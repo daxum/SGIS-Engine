@@ -249,10 +249,9 @@ protected:
 	 * as dynamic models use descriptors that are determined during initialization and
 	 * that use dynamic offsets. This can be called more than once for the same model -
 	 * subsequent calls should be ignored.
-	 * @param name The name of the model.
 	 * @param model The model to allocate a descriptor set for.
 	 */
-	virtual void addModelDescriptors(const std::string& name, const Model& model) = 0;
+	virtual void addModelDescriptors(const Model& model) = 0;
 
 	/**
 	 * Uploads model uniform data to a uniform buffer.

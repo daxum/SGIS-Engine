@@ -77,7 +77,8 @@ Mesh::Mesh(Mesh&& mesh) :
 
 }
 
-Model::Model(const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull)  :
+Model::Model(const std::string modelName, const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull)  :
+	name(modelName),
 	mesh(mesh),
 	shader(shader),
 	uniformSet(uniformSet),

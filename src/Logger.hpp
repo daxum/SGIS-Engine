@@ -24,8 +24,6 @@
 #include <string>
 #include <fstream>
 
-#include "EngineConfig.hpp"
-
 //Used to completely disable all engine logging.
 //This seems necessary because the string parameters
 //need to be concatenated even when logging is disabled,
@@ -58,6 +56,23 @@ enum LogLevel {
 	SPAM = 32
 };
 
+//Type of logger output.
+enum class LogType {
+	STDOUT,
+	FILE
+};
+
+//Specifies logging information.
+struct LogConfig {
+	//The type of output for the logger.
+	LogType type;
+	//Only used for LogType FILE
+	std::string outputFile;
+	//The level mask - can be {DEBUG|INFO|WARN|ERROR|FATAL}
+	//If a bit is unset, that level will be disabled.
+	uint32_t mask;
+};
+
 //A simple thread-safe logger.
 class Logger {
 public:
@@ -68,13 +83,13 @@ public:
 	 *     for a level is set, the logger will write messages for that level.
 	 * @param filename The filename to write to. Only used for LogType FILE.
 	 */
-	Logger(const LogType type, uint32_t mask, const std::string& filename = "") :
+	Logger(const LogConfig& config) :
 		freeOut(true),
-		logMask(mask) {
+		logMask(config.mask) {
 
-		switch (type) {
+		switch (config.type) {
 			case LogType::STDOUT: output = &std::cout; freeOut = false; break;
-			case LogType::FILE: output = new std::ofstream(filename); break;
+			case LogType::FILE: output = new std::ofstream(config.outputFile); break;
 			default: throw std::runtime_error("Incomplete switch in Logger!");
 		}
 	}

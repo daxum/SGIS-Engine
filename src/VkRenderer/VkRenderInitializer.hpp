@@ -35,10 +35,10 @@ public:
 	 * Adds a set of uniforms that can be used in shaders and models.
 	 * This creates a descriptor set layout and adds it to the memory
 	 * manager along with the set itself.
-	 * @param set The set to add.
 	 * @param name The name of the set.
+	 * @param set The set to add.
 	 */
-	void addUniformSet(const UniformSet& set, const std::string& name) override;
+	void addUniformSet(const std::string& name, const UniformSet& set) override;
 
 private:
 	//Object handler.

@@ -18,17 +18,21 @@
 
 #include "VkRenderInitializer.hpp"
 
-void VkRenderInitializer::addUniformSet(const UniformSet& set, const std::string& name) {
-	std::bitset<2> uboUseStages;
+void VkRenderInitializer::addUniformSet(const std::string& name, const UniformSet& set) {
+	std::bitset<32> uboUseStages;
 	uint32_t nextBinding = 0;
 	bool hasUbo = false;
 
 	//Set stages the uniform buffer is used in
 	for (const UniformDescription& descr : set.uniforms) {
 		if (!isSampler(descr.type)) {
+			ENGINE_LOG_DEBUG(logger, std::string("Shader stages for uniform \"") + descr.name + "\" in set \"" + name + "\": " + std::to_string(descr.shaderStages.to_ulong()));
+
 			uboUseStages |= descr.shaderStages;
 		}
 	}
+
+	ENGINE_LOG_DEBUG(logger, std::string("Uniform buffer stages for \"") + name + "\": " + std::to_string(uboUseStages.to_ulong()));
 
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 	DescriptorLayoutInfo layoutInfo = {};
