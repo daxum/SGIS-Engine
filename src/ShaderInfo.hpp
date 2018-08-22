@@ -149,6 +149,7 @@ struct UniformSet {
 //best used with things that change frequently.
 struct PushConstantSet {
 	//Careful with order here - try to group same shader stages together.
+	//All push constant providers must be one of UniformProviderType::OBJECT_*.
 	std::vector<UniformDescription> pushConstants;
 };
 

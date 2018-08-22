@@ -19,6 +19,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Component.hpp"
 #include "Model.hpp"
@@ -59,6 +61,12 @@ public:
 	 * @return The scale of this object.
 	 */
 	glm::vec3 getScale() const { return scale; }
+
+	/**
+	 * Calculates and returns the object's transform.
+	 * @return The tranform to apply to this object.
+	 */
+	glm::mat4 getTransform() const { return glm::scale(glm::translate(glm::mat4(1.0), getTranslation()) * glm::mat4_cast(getRotation()), getScale()); }
 
 	/**
 	 * Sets the renderComponent's scale.

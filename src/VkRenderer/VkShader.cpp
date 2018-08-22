@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "VkShader.hpp"
+#include "ExtraMath.hpp"
 
 VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator) :
 	pushConstants(pushConstants),
@@ -24,15 +25,23 @@ VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLay
 	pipelineLayout(pipelineLayout),
 	pipelineCache(pipelineCache),
 	pipeline(pipelineCreator.createPipeline(pipelineCache, pipelineLayout)),
-	pipelineCreator(pipelineCreator) {
+	pipelineCreator(pipelineCreator),
+	pushSize(0) {
 
 	pushOffsets.reserve(pushConstants.pushConstants.size());
 	uint32_t offset = 0;
 
 	for (const UniformDescription& uniform : pushConstants.pushConstants) {
+		ExMath::roundToVal(offset, getPushConstantAligment(uniform.type));
+
 		pushOffsets.push_back(offset);
-		offset += uniformSize(uniform.type);
+		//mat3 has size of mat4 due to vec3's alignment
+		offset += uniform.type == UniformType::MAT3 ? uniformSize(UniformType::MAT4) : uniformSize(uniform.type);
+
+		pushUsageStages |= uniform.shaderStages;
 	}
+
+	pushSize = offset;
 }
 
 VkShader::~VkShader() {

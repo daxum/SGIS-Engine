@@ -56,11 +56,24 @@ public:
 	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
 
 	/**
+	 * Returns the shader stages that use the push constants.
+	 * Might want to split this up by range later?
+	 * @return The shader stage usage flags.
+	 */
+	std::bitset<32> getPushStages() const { return pushUsageStages; }
+
+	/**
 	 * Gets the offsets for the push constants used in the shader.
 	 * @return A vector of push constant offsets, in the same order
 	 *     as the vector in pushConstants.
 	 */
 	const std::vector<uint32_t>& getPushConstantOffsets() const { return pushOffsets; }
+
+	/**
+	 * Returns the total size of all the push constants used in the shader.
+	 * @return The size of all push constant values.
+	 */
+	uint32_t getPushConstantSize() const { return pushSize; }
 
 	/**
 	 * Gets the render pass for the shader, which is determined by its pipeline.
@@ -90,4 +103,27 @@ private:
 
 	//Offsets for the different push constants.
 	std::vector<uint32_t> pushOffsets;
+	//Shader stages that use the push constants.
+	std::bitset<32> pushUsageStages;
+	//Size of push constant values.
+	uint32_t pushSize;
+
+	/**
+	 * Returns the base alignment of the uniform type for
+	 * std430 rules, suitable for push constants.
+	 * @param type The type of the uniform.
+	 * @return The base alignment of the uniform type.
+	 */
+	static constexpr size_t getPushConstantAligment(const UniformType type) {
+		switch (type) {
+			case UniformType::FLOAT: return sizeof(float);
+			case UniformType::VEC2: return 2 * sizeof(float);
+			case UniformType::VEC3: return 4 * sizeof(float);
+			case UniformType::VEC4: return 4 * sizeof(float);
+			//Don't round to vec4 for std430.
+			case UniformType::MAT3: return getPushConstantAligment(UniformType::VEC3);
+			case UniformType::MAT4: return getPushConstantAligment(UniformType::VEC4);
+			default: throw std::runtime_error("Invalid uniform type in push constant alignment!");
+		}
+	}
 };

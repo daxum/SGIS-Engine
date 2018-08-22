@@ -126,6 +126,15 @@ private:
 	 * @param pass The current rendering pass.
 	 * @param visibleObjects A set of objects visible on the screen.
 	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
+	 * @param camera The camera for the current screen.
 	 */
-	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects);
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera);
+
+	/**
+	 * Sets the push constant values for the provided object.
+	 * @param shader The shader the object uses, contains push constant offsets and usage flags.
+	 * @param comp The object to set push constants for.
+	 * @param camera The current camera, for view transforms.
+	 */
+	void setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const std::shared_ptr<const Camera>& camera);
 };

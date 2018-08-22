@@ -230,14 +230,14 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects);
-	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects);
-	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects);
+	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera);
+	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera);
+	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera);
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 }
 
-void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects) {
+void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera) {
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
 
 	std::string currentBuffer = "";
@@ -290,7 +290,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							currentBuffer = buffer;
 						}
 
-						//TODO: per-object push constants go here
+						setPushConstants(shader, comp.get(), camera);
 
 						const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh);
 
@@ -300,4 +300,36 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 			}
 		}
 	}
+}
+
+void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const std::shared_ptr<const Camera>& camera) {
+	//Need to make this bigger if the minimum size ever changes. Maybe make it 256 (biggest value seen for maxPushConstantsSize) and restrict it dynamically?
+	unsigned char pushConstantMem[128];
+	const std::vector<uint32_t>& offsets = shader->getPushConstantOffsets();
+
+	for (size_t i = 0; i < shader->pushConstants.pushConstants.size(); i++) {
+		const UniformDescription& uniform = shader->pushConstants.pushConstants.at(i);
+
+		glm::mat4 tempMat;
+		const void* pushVal = nullptr;
+
+		switch (uniform.provider) {
+			case UniformProviderType::OBJECT_STATE: pushVal = comp->getParentState()->getRenderValue(uniform.name); break;
+			case UniformProviderType::OBJECT_TRANSFORM: tempMat = comp->getTransform(); pushVal = &tempMat; break;
+			case UniformProviderType::OBJECT_MODEL_VIEW: tempMat = camera->getView() * comp->getTransform(); pushVal = &tempMat; break;
+			default: throw std::runtime_error("Invalid push constant provider!");
+		}
+
+		//mat3 needs to be handled specially because of the alignment of vec3
+		if (uniform.type != UniformType::MAT3) {
+			memcpy(&pushConstantMem[offsets.at(i)], pushVal, uniformSize(uniform.type));
+		}
+		else {
+			memcpy(&pushConstantMem[offsets.at(i)], pushVal, uniformSize(UniformType::VEC3));
+			memcpy(&pushConstantMem[offsets.at(i) + uniformSize(UniformType::VEC4)], ((unsigned char*)pushVal) + 3 * sizeof(float), uniformSize(UniformType::VEC3));
+			memcpy(&pushConstantMem[offsets.at(i) + 2 * uniformSize(UniformType::VEC4)], ((unsigned char*)pushVal) + 6 * sizeof(float), uniformSize(UniformType::VEC3));
+		}
+	}
+
+	vkCmdPushConstants(commandBuffers.at(currentFrame), shader->getPipelineLayout(), shader->getPushStages().to_ulong(), 0, shader->getPushConstantSize(), pushConstantMem);
 }
