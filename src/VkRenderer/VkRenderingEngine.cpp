@@ -305,31 +305,34 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const std::shared_ptr<const Camera>& camera) {
 	//Need to make this bigger if the minimum size ever changes. Maybe make it 256 (biggest value seen for maxPushConstantsSize) and restrict it dynamically?
 	unsigned char pushConstantMem[128];
-	const std::vector<uint32_t>& offsets = shader->getPushConstantOffsets();
+	const std::vector<PushRange>& pushRanges = shader->getPushConstantRanges();
 
-	for (size_t i = 0; i < shader->pushConstants.pushConstants.size(); i++) {
-		const UniformDescription& uniform = shader->pushConstants.pushConstants.at(i);
+	for (const PushRange& range : pushRanges) {
+		for (size_t i = 0; i < range.pushOffsets.size(); i++) {
+			const UniformDescription& uniform = range.pushData.at(i);
+			const uint32_t offset = range.pushOffsets.at(i);
 
-		glm::mat4 tempMat;
-		const void* pushVal = nullptr;
+			glm::mat4 tempMat;
+			const void* pushVal = nullptr;
 
-		switch (uniform.provider) {
-			case UniformProviderType::OBJECT_STATE: pushVal = comp->getParentState()->getRenderValue(uniform.name); break;
-			case UniformProviderType::OBJECT_TRANSFORM: tempMat = comp->getTransform(); pushVal = &tempMat; break;
-			case UniformProviderType::OBJECT_MODEL_VIEW: tempMat = camera->getView() * comp->getTransform(); pushVal = &tempMat; break;
-			default: throw std::runtime_error("Invalid push constant provider!");
+			switch (uniform.provider) {
+				case UniformProviderType::OBJECT_STATE: pushVal = comp->getParentState()->getRenderValue(uniform.name); break;
+				case UniformProviderType::OBJECT_TRANSFORM: tempMat = comp->getTransform(); pushVal = &tempMat; break;
+				case UniformProviderType::OBJECT_MODEL_VIEW: tempMat = camera->getView() * comp->getTransform(); pushVal = &tempMat; break;
+				default: throw std::runtime_error("Invalid push constant provider!");
+			}
+
+			//mat3 needs to be handled specially because of the alignment of vec3
+			if (uniform.type != UniformType::MAT3) {
+				memcpy(&pushConstantMem[offset], pushVal, uniformSize(uniform.type));
+			}
+			else {
+				memcpy(&pushConstantMem[offset], pushVal, uniformSize(UniformType::VEC3));
+				memcpy(&pushConstantMem[offset + uniformSize(UniformType::VEC4)], ((unsigned char*)pushVal) + 3 * sizeof(float), uniformSize(UniformType::VEC3));
+				memcpy(&pushConstantMem[offset + 2 * uniformSize(UniformType::VEC4)], ((unsigned char*)pushVal) + 6 * sizeof(float), uniformSize(UniformType::VEC3));
+			}
 		}
 
-		//mat3 needs to be handled specially because of the alignment of vec3
-		if (uniform.type != UniformType::MAT3) {
-			memcpy(&pushConstantMem[offsets.at(i)], pushVal, uniformSize(uniform.type));
-		}
-		else {
-			memcpy(&pushConstantMem[offsets.at(i)], pushVal, uniformSize(UniformType::VEC3));
-			memcpy(&pushConstantMem[offsets.at(i) + uniformSize(UniformType::VEC4)], ((unsigned char*)pushVal) + 3 * sizeof(float), uniformSize(UniformType::VEC3));
-			memcpy(&pushConstantMem[offsets.at(i) + 2 * uniformSize(UniformType::VEC4)], ((unsigned char*)pushVal) + 6 * sizeof(float), uniformSize(UniformType::VEC3));
-		}
+		vkCmdPushConstants(commandBuffers.at(currentFrame), shader->getPipelineLayout(), range.shaderStages.to_ulong(), range.start, range.size, &pushConstantMem[range.start]);
 	}
-
-	vkCmdPushConstants(commandBuffers.at(currentFrame), shader->getPipelineLayout(), shader->getPushStages().to_ulong(), 0, shader->getPushConstantSize(), pushConstantMem);
 }

@@ -23,11 +23,21 @@
 #include "ShaderInfo.hpp"
 #include "VkPipelineCreateObject.hpp"
 
+struct PushRange {
+	//The start of this range in push constant memory.
+	uint32_t start;
+	//The size of this range.
+	uint32_t size;
+	//The shader stages this range is used in.
+	std::bitset<32> shaderStages;
+	//Individual push constant offsets.
+	std::vector<uint32_t> pushOffsets;
+	//A vector of uniforms corresponding to the offsets.
+	std::vector<UniformDescription> pushData;
+};
+
 class VkShader {
 public:
-	//Push constants used in the shader.
-	const PushConstantSet pushConstants;
-
 	/**
 	 * Constructor.
 	 * @param device The logical device this shader is owned by.
@@ -56,24 +66,11 @@ public:
 	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
 
 	/**
-	 * Returns the shader stages that use the push constants.
-	 * Might want to split this up by range later?
-	 * @return The shader stage usage flags.
+	 * Gets the ranges of push constants used in the shader. This includes memory
+	 * layouts and shader stage usage.
+	 * @return A vector of push constant ranges.
 	 */
-	std::bitset<32> getPushStages() const { return pushUsageStages; }
-
-	/**
-	 * Gets the offsets for the push constants used in the shader.
-	 * @return A vector of push constant offsets, in the same order
-	 *     as the vector in pushConstants.
-	 */
-	const std::vector<uint32_t>& getPushConstantOffsets() const { return pushOffsets; }
-
-	/**
-	 * Returns the total size of all the push constants used in the shader.
-	 * @return The size of all push constant values.
-	 */
-	uint32_t getPushConstantSize() const { return pushSize; }
+	const std::vector<PushRange>& getPushConstantRanges() const { return pushConstantRanges; }
 
 	/**
 	 * Gets the render pass for the shader, which is determined by its pipeline.
@@ -101,12 +98,8 @@ private:
 	//Object used to create this shader's pipeline, used to reload the shader.
 	VkPipelineCreateObject pipelineCreator;
 
-	//Offsets for the different push constants.
-	std::vector<uint32_t> pushOffsets;
-	//Shader stages that use the push constants.
-	std::bitset<32> pushUsageStages;
-	//Size of push constant values.
-	uint32_t pushSize;
+	//Stores relevent information about push constant ranges.
+	std::vector<PushRange> pushConstantRanges;
 
 	/**
 	 * Returns the base alignment of the uniform type for

@@ -20,28 +20,46 @@
 #include "ExtraMath.hpp"
 
 VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator) :
-	pushConstants(pushConstants),
 	device(device),
 	pipelineLayout(pipelineLayout),
 	pipelineCache(pipelineCache),
 	pipeline(pipelineCreator.createPipeline(pipelineCache, pipelineLayout)),
-	pipelineCreator(pipelineCreator),
-	pushSize(0) {
+	pipelineCreator(pipelineCreator) {
 
-	pushOffsets.reserve(pushConstants.pushConstants.size());
 	uint32_t offset = 0;
+	PushRange currentRange = {};
 
-	for (const UniformDescription& uniform : pushConstants.pushConstants) {
-		ExMath::roundToVal(offset, getPushConstantAligment(uniform.type));
-
-		pushOffsets.push_back(offset);
-		//mat3 has size of mat4 due to vec3's alignment
-		offset += uniform.type == UniformType::MAT3 ? uniformSize(UniformType::MAT4) : uniformSize(uniform.type);
-
-		pushUsageStages |= uniform.shaderStages;
+	if (!pushConstants.pushConstants.empty()) {
+		currentRange.shaderStages = pushConstants.pushConstants.front().shaderStages;
 	}
 
-	pushSize = offset;
+	for (const UniformDescription& uniform : pushConstants.pushConstants) {
+		//Shader stages differ, so start a new range
+		if (uniform.shaderStages != currentRange.shaderStages) {
+			//Set the size - this should not take into account the alignment of the next element
+			currentRange.size = offset - currentRange.start;
+
+			pushConstantRanges.push_back(currentRange);
+
+			//Reset range structure for the next range.
+			currentRange.start += currentRange.size;
+			currentRange.shaderStages = uniform.shaderStages;
+			currentRange.pushOffsets.clear();
+			currentRange.pushData.clear();
+		}
+
+		ExMath::roundToVal(offset, getPushConstantAligment(uniform.type));
+
+		currentRange.pushOffsets.push_back(offset);
+		currentRange.pushData.push_back(uniform);
+
+		//mat3 has size of mat4 due to vec3's alignment
+		offset += uniform.type == UniformType::MAT3 ? uniformSize(UniformType::MAT4) : uniformSize(uniform.type);
+	}
+
+	//Add last push range
+	currentRange.size = offset - currentRange.start;
+	pushConstantRanges.push_back(currentRange);
 }
 
 VkShader::~VkShader() {
