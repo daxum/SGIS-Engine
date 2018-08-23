@@ -45,8 +45,10 @@ public:
 	 * @param pipelineLayout The pipeline layout object.
 	 * @param pushConstants The push constants used in this shader.
 	 * @param pipelineCreator The pipeline object used to recreate this shader.
+	 * @param screenSet The screen-level descriptor set, or an empty string if there isn't one.
+	 * @param objectSet The object-level descriptor set, or an empty string if there isn't one.
 	 */
-	VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator);
+	VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator, const std::string& screenSet, const std::string& objectSet);
 
 	/**
 	 * Destroys the pipeline and pipeline layout.
@@ -71,6 +73,18 @@ public:
 	 * @return A vector of push constant ranges.
 	 */
 	const std::vector<PushRange>& getPushConstantRanges() const { return pushConstantRanges; }
+
+	/**
+	 * Gets the descriptor set used for per-screen values, or an empty string if there isn't one.
+	 * @return The descriptor set used for per-screen values.
+	 */
+	const std::string& getPerScreenDescriptor() const { return screenSet; }
+
+	/**
+	 * Gets the per-object descriptor set, or an empty string if there isn't one.
+	 * @return The per-object descriptor set.
+	 */
+	const std::string& getPerObjectDescriptor() const { return objectSet; }
 
 	/**
 	 * Gets the render pass for the shader, which is determined by its pipeline.
@@ -100,6 +114,10 @@ private:
 
 	//Stores relevent information about push constant ranges.
 	std::vector<PushRange> pushConstantRanges;
+
+	//Screen and object descriptor sets, empty string if not present.
+	std::string screenSet;
+	std::string objectSet;
 
 	/**
 	 * Returns the base alignment of the uniform type for

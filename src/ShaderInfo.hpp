@@ -164,10 +164,8 @@ struct ShaderInfo {
 	//restrict the shader to use only this buffer, other buffers with
 	//the same format will also work.
 	std::string buffer;
-	//Names of all the uniform sets used in the shader. Order is very important
-	//here, as it affects which uniforms need to be rebound when the shader changes.
-	//In general, from the values in UniformSetType, prefer PER_SCREEN, then
-	//MODEL_*, then PER_OBJECT.
+	//Names of all the uniform sets used in the shader. Each shader can only
+	//have one of each type of uniform set.
 	std::vector<std::string> uniformSets;
 	//All push constant values used in the shader.
 	PushConstantSet pushConstants;

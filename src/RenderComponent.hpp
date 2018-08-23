@@ -66,7 +66,13 @@ public:
 	 * Calculates and returns the object's transform.
 	 * @return The tranform to apply to this object.
 	 */
-	glm::mat4 getTransform() const { return glm::scale(glm::translate(glm::mat4(1.0), getTranslation()) * glm::mat4_cast(getRotation()), getScale()); }
+	glm::mat4 getTransform() const {
+		glm::mat4 rotation = glm::mat4_cast(getRotation());
+		glm::mat4 translation = glm::translate(glm::mat4(1.0), getTranslation());
+		glm::mat4 scale = glm::scale(glm::mat4(1.0), getScale());
+
+		return translation * rotation * scale;
+	}
 
 	/**
 	 * Sets the renderComponent's scale.

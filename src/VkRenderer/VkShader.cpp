@@ -19,12 +19,14 @@
 #include "VkShader.hpp"
 #include "ExtraMath.hpp"
 
-VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator) :
+VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout, const PushConstantSet& pushConstants, const VkPipelineCreateObject& pipelineCreator, const std::string& screenSet, const std::string& objectSet) :
 	device(device),
 	pipelineLayout(pipelineLayout),
 	pipelineCache(pipelineCache),
 	pipeline(pipelineCreator.createPipeline(pipelineCache, pipelineLayout)),
-	pipelineCreator(pipelineCreator) {
+	pipelineCreator(pipelineCreator),
+	screenSet(screenSet),
+	objectSet(objectSet) {
 
 	uint32_t offset = 0;
 	PushRange currentRange = {};

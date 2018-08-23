@@ -41,7 +41,7 @@ struct ScreenState {
 	 * @return A pointer to the requested value, nullptr if the value doesn't
 	 *     exist.
 	 */
-	virtual void* getRenderValue(const std::string& name) const = 0;
+	virtual const void* getRenderValue(const std::string& name) const = 0;
 };
 
 class Screen {

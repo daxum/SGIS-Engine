@@ -206,6 +206,7 @@ void VkRenderingEngine::present() {
 	}
 
 	currentFrame = (currentFrame + 1) % MAX_ACTIVE_FRAMES;
+	memoryManager.resetPerFrameOffset();
 }
 
 void VkRenderingEngine::setViewport(int width, int height) {
@@ -230,19 +231,21 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera);
-	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera);
-	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera);
+	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera, state);
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 }
 
-void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera) {
+void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera, std::shared_ptr<const ScreenState> screenState) {
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
+	//Also, each loop should probably be its own function, this is getting ridiculous.
 
 	std::string currentBuffer = "";
 	std::string currentShader = "";
-	std::string currentModelSet = "";
+	std::string currentScreenSet = "";
+	bool hasScreenSet = false;
 
 	//Per-buffer loop
 	for (const auto& shaderObjectMap : sortedObjects) {
@@ -258,18 +261,33 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 				continue;
 			}
 
+			//Set per-screen uniforms if needed
+			if (currentScreenSet != shader->getPerScreenDescriptor()) {
+				hasScreenSet = false;
+				currentScreenSet = shader->getPerScreenDescriptor();
+
+				//Set screen uniforms
+				if (currentScreenSet != "") {
+					Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(currentScreenSet);
+					setPerScreenUniforms(memoryManager.getUniformSet(currentScreenSet), screenAligner, screenState.get(), camera.get());
+
+					uint32_t screenOffset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
+					VkDescriptorSet screenSet = memoryManager.getDescriptorSet(currentScreenSet);
+
+					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
+					hasScreenSet = true;
+				}
+			}
+
 			//Per-model loop
 			for (const auto& objectSet : modelMap.second) {
 				const Model* model = objectSet.first;
 
-				if (currentModelSet != model->uniformSet) {
-					uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
-					VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
+				uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
+				uint32_t modelSetOffset = hasScreenSet ? 1 : 0;
+				VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
 
-					//TODO: Fix set number
-					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &modelSet, 1, &modelUniformOffset);
-					currentModelSet = model->uniformSet;
-				}
+				vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 1, &modelUniformOffset);
 
 				//Per-object loop
 				for (const std::shared_ptr<RenderComponent>& comp : objectSet.second) {
@@ -288,6 +306,20 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), bufferData->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 							currentBuffer = buffer;
+						}
+
+						//Set object uniforms
+						if (shader->getPerObjectDescriptor() != "") {
+							const std::string& objectDescriptor = shader->getPerObjectDescriptor();
+
+							Std140Aligner& objectAligner = memoryManager.getDescriptorAligner(objectDescriptor);
+							setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp.get(), camera.get());
+
+							uint32_t objectOffset = memoryManager.writePerFrameUniforms(objectAligner, currentFrame);
+							uint32_t objectSetOffset = hasScreenSet ? 2 : 1;
+							VkDescriptorSet objectSet = memoryManager.getDescriptorSet(objectDescriptor);
+
+							vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), objectSetOffset, 1, &objectSet, 1, &objectOffset);
 						}
 
 						setPushConstants(shader, comp.get(), camera);
@@ -334,5 +366,36 @@ void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& 
 		}
 
 		vkCmdPushConstants(commandBuffers.at(currentFrame), shader->getPipelineLayout(), range.shaderStages.to_ulong(), range.start, range.size, &pushConstantMem[range.start]);
+	}
+}
+
+void VkRenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligner& aligner, const ScreenState* state, const Camera* camera) {
+	for (const UniformDescription& uniform : set.uniforms) {
+		const void* value = nullptr;
+
+		switch (uniform.provider) {
+			case UniformProviderType::CAMERA_PROJECTION: value = &camera->getProjection(); break;
+			case UniformProviderType::CAMERA_VIEW: value = &camera->getView(); break;
+			case UniformProviderType::SCREEN_STATE: value = state->getRenderValue(uniform.name); break;
+			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
+		}
+
+		setUniformValue(uniform.type, uniform.name, value, aligner);
+	}
+}
+
+void VkRenderingEngine::setPerObjectUniforms(const UniformSet& set, Std140Aligner& aligner, const RenderComponent* comp, const Camera* camera) {
+	for (const UniformDescription& uniform : set.uniforms) {
+		glm::mat4 tempMat;
+		const void* value = nullptr;
+
+		switch (uniform.provider) {
+			case UniformProviderType::OBJECT_MODEL_VIEW: tempMat = camera->getView() * comp->getTransform(); value = &tempMat; break;
+			case UniformProviderType::OBJECT_TRANSFORM: tempMat = comp->getTransform(); value = &tempMat; break;
+			case UniformProviderType::OBJECT_STATE: value = comp->getParentState()->getRenderValue(uniform.name); break;
+			default: throw std::runtime_error("Invalid provider type for object uniform set!");
+		}
+
+		setUniformValue(uniform.type, uniform.name, value, aligner);
 	}
 }

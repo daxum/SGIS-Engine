@@ -39,7 +39,8 @@ void RendererMemoryManager::UniformBufferInit() {
 		switch (set.setType) {
 			case UniformSetType::MODEL_STATIC: staticModelSize += alignedSize; break;
 			case UniformSetType::MODEL_DYNAMIC: dynamicModelSize += alignedSize; break;
-			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize; break;
+			//Multiply by three because can get uploaded once for each pass, fix later.
+			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize * 3; break;
 			case UniformSetType::PER_OBJECT: screenObjectSize += alignedSize; break;
 			default: throw std::runtime_error("Missing uniform buffer type!");
 		}

@@ -114,8 +114,21 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 		throw std::runtime_error("Failed to create pipeline layout for shader \"" + name + "\"");
 	}
 
+	//Determine screen and object descriptor sets
+	std::string screenSet = "";
+	std::string objectSet = "";
+
+	for (const std::string& set : info.uniformSets) {
+		if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_SCREEN) {
+			screenSet = set;
+		}
+		else if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_OBJECT) {
+			objectSet = set;
+		}
+	}
+
 	//Create shader and add to shader map
-	shaderMap.insert({name, std::make_shared<VkShader>(vkObjects.getDevice(), pipelineCache, pipelineLayout, info.pushConstants, pipelineCreator)});
+	shaderMap.insert({name, std::make_shared<VkShader>(vkObjects.getDevice(), pipelineCache, pipelineLayout, info.pushConstants, pipelineCreator, screenSet, objectSet)});
 
 	ENGINE_LOG_DEBUG(logger, "Loaded shader \"" + name + "\"");
 }

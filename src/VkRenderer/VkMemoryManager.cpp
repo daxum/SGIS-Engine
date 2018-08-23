@@ -38,6 +38,8 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	allocator(VK_NULL_HANDLE),
 	transferBuffer(VK_NULL_HANDLE),
 	transferAllocation(VK_NULL_HANDLE),
+	uniformBuffers({VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE}),
+	uniformBufferAllocations({VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE}),
 	transferFence(VK_NULL_HANDLE),
 	transferOffset(0),
 	transferSize(0),
@@ -47,7 +49,10 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	descriptorLayouts(),
 	staticModelPool(VK_NULL_HANDLE),
 	dynamicPool(VK_NULL_HANDLE),
-	descriptorSets() {
+	descriptorSets(),
+	descriptorAligners(),
+	currentUniformOffset(0),
+	screenObjectBufferSize(0) {
 
 }
 
@@ -131,7 +136,8 @@ void VkMemoryManager::initializeDescriptors() {
 
 			VkDescriptorSet set = VK_NULL_HANDLE;
 
-			if (!vkAllocateDescriptorSets(objects.getDevice(), &setAllocInfo, &set) != VK_SUCCESS) {
+			if (vkAllocateDescriptorSets(objects.getDevice(), &setAllocInfo, &set) != VK_SUCCESS) {
+				ENGINE_LOG_FATAL(logger, "Failed to allocate dynamic descriptor set!");
 				throw std::runtime_error("Failed to allocate dynamic descriptor set!");
 			}
 
@@ -251,6 +257,28 @@ void VkMemoryManager::executeTransfers() {
 	transferOffset = 0;
 }
 
+uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame) {
+	unsigned char* bufferData = nullptr;
+
+	if (vmaMapMemory(allocator, uniformBufferAllocations.at(2), (void**)&bufferData) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to map memory?!?!");
+	}
+
+	const unsigned char* writeData = uniformProvider.getData().first;
+	const size_t writeSize = uniformProvider.getData().second;
+
+	const size_t writeOffset = screenObjectBufferSize * currentFrame + currentUniformOffset;
+
+	memcpy(&bufferData[writeOffset], writeData, writeSize);
+	currentUniformOffset += writeSize;
+
+	//TODO: flush if not coherent
+
+	vmaUnmapMemory(allocator, uniformBufferAllocations.at(2));
+
+	return writeOffset;
+}
+
 std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {
 	VkBufferUsageFlags transferFlags = 0;
 	VmaMemoryUsage memoryUsage;
@@ -339,11 +367,13 @@ void VkMemoryManager::createUniformBuffers(size_t modelStaticSize, size_t modelD
 	screenObjectCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	screenObjectCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+	screenObjectBufferSize = screenObjectSize;
+
 	VmaAllocationCreateInfo modelAllocCreateInfo = {};
 	modelAllocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
 	VmaAllocationCreateInfo screenObjectAllocCreateInfo = {};
-	screenObjectCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+	screenObjectAllocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 	if (!(modelStaticSize == 0 || vmaCreateBuffer(allocator, &staticModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(0), &uniformBufferAllocations.at(0), nullptr) == VK_SUCCESS) ||
 		!(modelDynamicSize == 0 || vmaCreateBuffer(allocator, &dynamicModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(1), &uniformBufferAllocations.at(1), nullptr) == VK_SUCCESS) ||
@@ -351,6 +381,8 @@ void VkMemoryManager::createUniformBuffers(size_t modelStaticSize, size_t modelD
 
 		throw std::runtime_error("Failed to create one or more uniform buffers!");
 	}
+
+	ENGINE_LOG_DEBUG(logger, "Created uniform buffers");
 }
 
 void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) {

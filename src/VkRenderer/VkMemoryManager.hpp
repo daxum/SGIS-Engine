@@ -137,7 +137,32 @@ public:
 	void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, const DescriptorLayoutInfo& setLayout) {
 		uniformSets.insert({name, uniformSet});
 		descriptorLayouts.insert({name, setLayout});
+
+		if (uniformSet.setType == UniformSetType::PER_SCREEN || uniformSet.setType == UniformSetType::PER_OBJECT) {
+			descriptorAligners.insert({name, Std140Aligner(uniformSet.uniforms)});
+		}
 	}
+
+	/**
+	 * Gets the aligner for the given descriptor set.
+	 * @param name The name of the descriptor set.
+	 * @return The aligner for the set.
+	 */
+	Std140Aligner& getDescriptorAligner(const std::string& name) { return descriptorAligners.at(name); }
+
+	/**
+	 * Writes the provided uniform values into the uniform buffer for the current frame and returns the offset
+	 * they were written at.
+	 * @param uniformProvider The provider of the uniforms.
+	 * @param currentFrame The current frame index.
+	 * @return The offset the uniform values were written at.
+	 */
+	uint32_t writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame);
+
+	/**
+	 * Called after each frame completes.
+	 */
+	void resetPerFrameOffset() { currentUniformOffset = 0; }
 
 protected:
 	/**
@@ -239,6 +264,13 @@ private:
 	VkDescriptorPool dynamicPool;
 	//Contains all allocated descriptor sets. These are never freed until program termination.
 	std::unordered_map<std::string, VkDescriptorSet> descriptorSets;
+	//Stores one aligner for each per-screen or per-object descriptor set, to avoid dynamic allocation
+	//inside the rendering loop.
+	std::unordered_map<std::string, Std140Aligner> descriptorAligners;
+	//Current offset into the object/screen uniform buffer, gets reset each frame.
+	uint32_t currentUniformOffset;
+	//Allowed usage size of the screen object buffer for each frame.
+	size_t screenObjectBufferSize;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.

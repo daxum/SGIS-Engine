@@ -127,8 +127,9 @@ private:
 	 * @param visibleObjects A set of objects visible on the screen.
 	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
 	 * @param camera The camera for the current screen.
+	 * @param screenState The state of the current screen.
 	 */
-	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera);
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera, std::shared_ptr<const ScreenState> screenState);
 
 	/**
 	 * Sets the push constant values for the provided object.
@@ -137,4 +138,41 @@ private:
 	 * @param camera The current camera, for view transforms.
 	 */
 	void setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const std::shared_ptr<const Camera>& camera);
+
+	/**
+	 * Sets the per-screen uniforms for set in the provided aligner using the values obtained from state and camera.
+	 * @param set The uniform set containing values to set.
+	 * @param aligner The object the values are set in.
+	 * @param state The screen state object to obtain SCREEN_STATE values from.
+	 * @param camera The camera object to obtain CAMERA_* values from.
+	 */
+	void setPerScreenUniforms(const UniformSet& set, Std140Aligner& aligner, const ScreenState* state, const Camera* camera);
+
+	/**
+	 * Sets the per-object uniforms for the given object.
+	 * @param set The set for the given object.
+	 * @param aligner The aligner to write the uniforms to.
+	 * @param comp The render component for the object.
+	 * @param camera The current camera.
+	 */
+	void setPerObjectUniforms(const UniformSet& set, Std140Aligner& aligner, const RenderComponent* comp, const Camera* camera);
+
+	/**
+	 * Sets the value in aligner to the provided value.
+	 * @param type The type of the uniform to set.
+	 * @param uniformName The name of the uniform to set.
+	 * @param value The value to set the uniform to.
+	 * @param aligner The aligner to set the value in.
+	 */
+	static constexpr void setUniformValue(const UniformType type, const std::string& uniformName, const void* value, Std140Aligner& aligner) {
+		switch (type) {
+			case UniformType::FLOAT: aligner.setFloat(uniformName, *(const float*)value); break;
+			case UniformType::VEC2: aligner.setVec2(uniformName, *(const glm::vec2*)value); break;
+			case UniformType::VEC3: aligner.setVec3(uniformName, *(const glm::vec3*)value); break;
+			case UniformType::VEC4: aligner.setVec4(uniformName, *(const glm::vec4*)value); break;
+			case UniformType::MAT3: aligner.setMat3(uniformName, *(const glm::mat3*)value); break;
+			case UniformType::MAT4: aligner.setMat4(uniformName, *(const glm::mat4*)value); break;
+			default: throw std::runtime_error("Invalid buffered uniform type for uniform \"" + uniformName + "\"!");
+		}
+	}
 };
