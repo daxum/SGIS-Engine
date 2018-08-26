@@ -62,20 +62,7 @@ enum class UniformType {
 };
 
 constexpr bool isSampler(const UniformType type) {
-	switch (type) {
-		case UniformType::FLOAT:
-		case UniformType::VEC2:
-		case UniformType::VEC3:
-		case UniformType::VEC4:
-		case UniformType::MAT3:
-		case UniformType::MAT4:
-			return false;
-		case UniformType::SAMPLER_2D:
-		case UniformType::SAMPLER_CUBE:
-			return true;
-		default:
-			throw std::runtime_error("Missing uniform type!");
-	}
+	return type == UniformType::SAMPLER_2D || type == UniformType::SAMPLER_CUBE;
 }
 
 constexpr uint32_t uniformSize(const UniformType type) {
