@@ -73,6 +73,19 @@ private:
 	//Memory manager to upload textures to.
 	VkMemoryManager& memoryManager;
 
+	/**
+	 * Creates a sampler and stores it in the memory manager under the given name.
+	 * @param imageName The name of the image that uses this sampler.
+	 * @param minFilter The filter used when downscaling.
+	 * @param magFilter The filter used when upscaling.
+	 */
+	void addTextureSampler(const std::string& imageName, Filter minFilter, Filter magFilter);
+
+	/**
+	 * Converts a filter to a VkFilter.
+	 * @param filter The filter.
+	 * @return The VkFilter version of the filter.
+	 */
 	static constexpr VkFilter filterToVk(const Filter filter) {
 		switch (filter) {
 			case Filter::NEAREST: return VK_FILTER_NEAREST;

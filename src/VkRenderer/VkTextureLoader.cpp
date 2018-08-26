@@ -58,9 +58,18 @@ void VkTextureLoader::loadTexture(const std::string& name, const std::string& fi
 	}
 
 	memoryManager.allocateImage(name, createInfo, data.data.get(), data.width * data.height * 4);
+	addTextureSampler(name, minFilter, magFilter);
+}
 
-	//Create sampler
+void VkTextureLoader::loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
+	/** TODO **/
+}
 
+void VkTextureLoader::addFontTexture(const std::string textureName, const TextureData& data) {
+	/** TODO **/
+}
+
+void VkTextureLoader::addTextureSampler(const std::string& imageName, Filter minFilter, Filter magFilter) {
 	VkSamplerCreateInfo samplerInfo = {};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerInfo.magFilter = filterToVk(magFilter);
@@ -82,16 +91,8 @@ void VkTextureLoader::loadTexture(const std::string& name, const std::string& fi
 	VkSampler sampler = VK_NULL_HANDLE;
 
 	if (vkCreateSampler(vkObjects.getDevice(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create sampler for texture \"" + name + "\"");
+		throw std::runtime_error("Failed to create sampler for texture \"" + imageName + "\"");
 	}
 
-	memoryManager.addSamplerForTexture(name, sampler);
-}
-
-void VkTextureLoader::loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
-	/** TODO **/
-}
-
-void VkTextureLoader::addFontTexture(const std::string textureName, const TextureData& data) {
-	/** TODO **/
+	memoryManager.addSamplerForTexture(imageName, sampler);
 }
