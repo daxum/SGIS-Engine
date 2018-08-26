@@ -79,8 +79,8 @@ void VkTextureLoader::addTextureSampler(const std::string& imageName, Filter min
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.mipLodBias = 0.0f;
-	samplerInfo.anisotropyEnable = VK_FALSE; //TODO
-	samplerInfo.maxAnisotropy = 16;
+	samplerInfo.anisotropyEnable = vkObjects.getPhysicalDeviceFeatures().samplerAnisotropy;
+	samplerInfo.maxAnisotropy = std::min(16.0f, vkObjects.getPhysicalDeviceProperties().limits.maxSamplerAnisotropy);
 	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.minLod = 0.0f;

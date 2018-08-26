@@ -76,6 +76,7 @@ public:
 	 */
 	VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
 	const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() { return physicalDeviceProperties; }
+	const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() { return physicalDeviceFeatures; }
 	VkDevice getDevice() { return device; }
 	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
 	VkRenderPass getRenderPass() { return renderPass; }
@@ -107,6 +108,7 @@ private:
 	VkInstance instance;
 	VkPhysicalDevice physicalDevice;
 	VkPhysicalDeviceProperties physicalDeviceProperties;
+	VkPhysicalDeviceFeatures physicalDeviceFeatures;
 	VkDevice device;
 	VkDebugReportCallbackEXT callback;
 	VkQueue graphicsQueue;
@@ -225,6 +227,11 @@ private:
 	 * object to the log.
 	 */
 	void logPhysicalDeviceProperties();
+
+	/**
+	 * Prints out the availability of relevent device features.
+	 */
+	void logPhysicalDeviceFeatures();
 
 	/**
 	 * Vulkan debug callback.

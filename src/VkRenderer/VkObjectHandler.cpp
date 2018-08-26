@@ -249,8 +249,10 @@ void VkObjectHandler::setPhysicalDevice() {
 	transferQueueIndex = queueIndices.transferFamily;
 
 	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+	vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
 
 	logPhysicalDeviceProperties();
+	logPhysicalDeviceFeatures();
 }
 
 void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices) {
@@ -354,6 +356,7 @@ void VkObjectHandler::createLogicalDevice() {
 	}
 
 	VkPhysicalDeviceFeatures usedDeviceFeatures = {};
+	usedDeviceFeatures.samplerAnisotropy = physicalDeviceFeatures.samplerAnisotropy;
 
 	std::vector<const char*> deviceExtensions;
 	deviceExtensions.reserve(requiredExtensions.size());
@@ -631,6 +634,12 @@ void VkObjectHandler::logPhysicalDeviceProperties() {
 	ENGINE_LOG_INFO(logger, std::string("\tDevice: ") + physicalDeviceProperties.deviceName);
 	ENGINE_LOG_DEBUG(logger, std::string("\tDevice type: ") + getDeviceTypeName(physicalDeviceProperties.deviceType));
 	ENGINE_LOG_DEBUG(logger, std::string("\tDevice id: ") + std::to_string(physicalDeviceProperties.deviceID));
+}
+
+void VkObjectHandler::logPhysicalDeviceFeatures() {
+	ENGINE_LOG_INFO(logger, "Feature availability:");
+	ENGINE_LOG_INFO(logger, "\tAnisotropic filtering: " + std::string(physicalDeviceFeatures.samplerAnisotropy ? "Yes" : "No"));
+	ENGINE_LOG_INFO(logger, "\tMax Anisotropy: " + std::to_string(physicalDeviceProperties.limits.maxSamplerAnisotropy));
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkObjectHandler::debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* mesg, void* usrData) {
