@@ -163,7 +163,7 @@ void VkMemoryManager::initializeDescriptors() {
 
 void VkMemoryManager::executeTransfers() {
 	//Nothing to transfer
-	if (pendingTransfers.empty()) {
+	if (pendingTransfers.empty() && pendingImageTransfers.empty()) {
 		return;
 	}
 
