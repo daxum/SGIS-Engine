@@ -63,20 +63,20 @@ public:
 	 * Returns whether the graphics and present queues are separate.
 	 * @return true if graphics and present queues are different, false if same.
 	 */
-	bool hasUniquePresent() { return presentQueueIndex != graphicsQueueIndex; }
+	bool hasUniquePresent() const { return presentQueueIndex != graphicsQueueIndex; }
 
 	/**
 	 * Returns whether the graphics and transfer queues are separate.
 	 * @return true if graphics and transfer queues are different, false if same.
 	 */
-	bool hasUniqueTransfer() { return transferQueueIndex != graphicsQueueIndex; }
+	bool hasUniqueTransfer() const { return transferQueueIndex != graphicsQueueIndex; }
 
 	/**
 	 * Device related getters.
 	 */
 	VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
-	const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() { return physicalDeviceProperties; }
-	const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() { return physicalDeviceFeatures; }
+	const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() const { return physicalDeviceProperties; }
+	const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const { return physicalDeviceFeatures; }
 	VkDevice getDevice() { return device; }
 	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
 	VkRenderPass getRenderPass() { return renderPass; }
@@ -91,9 +91,9 @@ public:
 	VkQueue getGraphicsQueue() { return graphicsQueue; }
 	VkQueue getPresentQueue() { return presentQueue; }
 	VkQueue getTransferQueue() { return transferQueue; }
-	uint32_t getGraphicsQueueIndex() { return graphicsQueueIndex; }
-	uint32_t getPresentQueueIndex() { return presentQueueIndex; }
-	uint32_t getTransferQueueIndex() { return transferQueueIndex; }
+	uint32_t getGraphicsQueueIndex() const { return graphicsQueueIndex; }
+	uint32_t getPresentQueueIndex() const { return presentQueueIndex; }
+	uint32_t getTransferQueueIndex() const { return transferQueueIndex; }
 
 	/**
 	 * Recreates the swap chain. This almost definitely doesn't belong here.
