@@ -80,8 +80,13 @@ TextureData TextureLoader::loadFromDisk(std::string filename) {
 	//Channels is currently unused, but will be set with the amount of channels the image originally had
 	//if it's ever needed.
 	int channels = 0;
+	int width = 0;
+	int height = 0;
 	texData.channels = 4;
-	unsigned char* imageData = stbi_load(filename.c_str(), &texData.width, &texData.height, &channels, 4);
+	unsigned char* imageData = stbi_load(filename.c_str(), &width, &height, &channels, 4);
+
+	texData.width = (uint32_t) width;
+	texData.height = (uint32_t) height;
 
 	if (imageData == nullptr) {
 		ENGINE_LOG_ERROR(logger, "Couldn't load texture \"" + filename + "\" - file doesn't exist.");

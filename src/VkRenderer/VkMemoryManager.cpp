@@ -52,7 +52,9 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	descriptorSets(),
 	descriptorAligners(),
 	currentUniformOffset(0),
-	screenObjectBufferSize(0) {
+	screenObjectBufferSize(0),
+	samplerMap(),
+	imageMap() {
 
 }
 
@@ -98,6 +100,8 @@ void VkMemoryManager::deinit() {
 		}
 	}
 
+	imageMap.clear();
+
 	vkDestroyFence(objects.getDevice(), transferFence, nullptr);
 	vmaDestroyAllocator(allocator);
 
@@ -105,6 +109,16 @@ void VkMemoryManager::deinit() {
 		TransferOperation& transferOp = pendingTransfers.front();
 		delete[] transferOp.data;
 		pendingTransfers.pop();
+	}
+
+	while (!pendingImageTransfers.empty()) {
+		ImageTransferOperation& transferOp = pendingImageTransfers.front();
+		delete[] transferOp.data;
+		pendingImageTransfers.pop();
+	}
+
+	for (const auto& samplerPair : samplerMap) {
+		vkDestroySampler(objects.getDevice(), samplerPair.second, nullptr);
 	}
 
 	for (const auto& layoutInfoPair : descriptorLayouts) {
@@ -192,7 +206,9 @@ void VkMemoryManager::executeTransfers() {
 
 	//Sorts transfers by destination buffer
 	std::unordered_map<VkBuffer, std::vector<VkBufferCopy>> copyData;
+	std::vector<std::pair<VkImage, VkBufferImageCopy>> imageCopyData;
 
+	//Buffer transfers
 	while (!pendingTransfers.empty()) {
 		TransferOperation& transferOp = pendingTransfers.front();
 		memcpy(bufferData + transferOp.srcOffset, transferOp.data, transferOp.size);
@@ -213,6 +229,28 @@ void VkMemoryManager::executeTransfers() {
 		pendingTransfers.pop();
 	}
 
+	//Image transfers
+	while (!pendingImageTransfers.empty()) {
+		ImageTransferOperation& imageTransferOp = pendingImageTransfers.front();
+		memcpy(bufferData + imageTransferOp.offset, imageTransferOp.data, imageTransferOp.size);
+
+		VkBufferImageCopy copyRegion = {};
+		copyRegion.bufferOffset = imageTransferOp.offset;
+		copyRegion.bufferRowLength = 0;
+		copyRegion.bufferImageHeight = 0;
+		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.imageSubresource.mipLevel = 0;
+		copyRegion.imageSubresource.baseArrayLayer = 0;
+		copyRegion.imageSubresource.layerCount = 1;
+		copyRegion.imageOffset = {0, 0, 0};
+		copyRegion.imageExtent = {imageTransferOp.width, imageTransferOp.height, 1};
+
+		imageCopyData.push_back({imageTransferOp.image, copyRegion});
+
+		delete[] imageTransferOp.data;
+		pendingImageTransfers.pop();
+	}
+
 	vmaUnmapMemory(allocator, transferAllocation);
 
 	//Execute transfer
@@ -225,14 +263,6 @@ void VkMemoryManager::executeTransfers() {
 		throw std::runtime_error("We appear to be suffering temporary amnesia... (Memory ran out)");
 	}
 
-	//TODO: semaphore for previous frame to prevent overwriting buffers while in use,
-	//separate one for uniforms when it gets to that.
-	//index / vertex - VK_ACCESS_INDEX_READ_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT
-	//Uniforms need to be delayed longer, past fragment shading.
-	//Segment by buffer if figure out how, seems overly complex.
-	//If no transfers, insert dummy wait on graphics queue to reset semaphore for that frame, ie. wait to clear then immediately signal again after input assembly (not here though).
-	//Unless there's a better way?
-
 	for (const auto& element : copyData) {
 		const std::vector<VkBufferCopy>& copyVec = element.second;
 		const VkBuffer& dstBuffer = element.first;
@@ -240,9 +270,49 @@ void VkMemoryManager::executeTransfers() {
 		vkCmdCopyBuffer(transferCommands, transferBuffer, dstBuffer, copyVec.size(), copyVec.data());
 	}
 
+	for (const auto& copyPair : imageCopyData) {
+		VkImage image = copyPair.first;
+
+		VkImageMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+
+		vkCmdPipelineBarrier(transferCommands, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdCopyBufferToImage(transferCommands, transferBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyPair.second);
+
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = 0;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcQueueFamilyIndex = objects.getTransferQueueIndex();
+		barrier.dstQueueFamilyIndex = objects.getGraphicsQueueIndex();
+
+		//TODO: remove once synchronization done
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		vkCmdPipelineBarrier(transferCommands, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	}
+
 	if (vkEndCommandBuffer(transferCommands) != VK_SUCCESS) {
 		throw std::runtime_error("But why? (No more memory)");
 	}
+
+	//TODO: semaphore signal operations for buffers and textures, need function to add waits to graphics command buffer,
+	//wait to free objects until after a frame has completed (solves the reallocate while in use problem, per-frame release queue?)
+	//Also need to figure out how to change buffers to use VK_SHARING_MODE_EXCLUSIVE - release might be a bit difficult
+	//Also need the aquire operations in the graphics queue, can't forget that
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -279,7 +349,7 @@ uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProv
 	return writeOffset;
 }
 
-std::shared_ptr<VkImageData> VkMemoryManager::allocateImage(const VkImageCreateInfo& imageInfo) {
+void VkMemoryManager::allocateImage(const std::string& imageName, const VkImageCreateInfo& imageInfo, const unsigned char* imageData, size_t dataSize) {
 	VkImage image = VK_NULL_HANDLE;
 	VmaAllocation allocation = VK_NULL_HANDLE;
 
@@ -290,7 +360,9 @@ std::shared_ptr<VkImageData> VkMemoryManager::allocateImage(const VkImageCreateI
 		throw std::runtime_error("Failed to create an image!");
 	}
 
-	return std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation);
+	queueImageTransfer(image, dataSize, imageData, imageInfo.extent.width, imageInfo.extent.height);
+
+	imageMap.insert({imageName, std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation)});
 }
 
 std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {
@@ -447,14 +519,11 @@ void VkMemoryManager::uploadModelData(const UniformBufferType buffer, const size
 }
 
 void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data) {
-	//Grow transfer buffer if not big enough (actual reallocation happens in executeTransfers)
-	if (transferSize < size) {
-		transferSize = size * 2;
-		growTransfer = true;
-	}
+	ENGINE_LOG_DEBUG(logger, "Queueing buffer transfer - Transfer size: " + std::to_string(transferSize) + ", Current offset: " + std::to_string(transferOffset) + ", Data size: " + std::to_string(size));
 
-	if (transferOffset + size < transferSize) {
-		transferSize += size * 2;
+	//Grow transfer buffer if not big enough (actual reallocation happens in executeTransfers)
+	if (transferOffset + size > transferSize) {
+		transferSize += size;
 		growTransfer = true;
 	}
 
@@ -469,6 +538,29 @@ void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size,
 
 	memcpy(transferOp.data, data, size);
 	pendingTransfers.push(transferOp);
+
+	transferOffset += size;
+}
+
+void VkMemoryManager::queueImageTransfer(VkImage image, size_t size, const unsigned char* data, uint32_t imageWidth, uint32_t imageHeight) {
+	ENGINE_LOG_DEBUG(logger, "Queueing image transfer - Transfer size: " + std::to_string(transferSize) + ", Current offset: " + std::to_string(transferOffset) + ", Image size: " + std::to_string(size));
+
+	if (transferOffset + size > transferSize) {
+		transferSize += size;
+		growTransfer = true;
+	}
+
+	ImageTransferOperation transferOp = {
+		image,
+		new unsigned char[size],
+		size,
+		transferOffset,
+		imageWidth,
+		imageHeight
+	};
+
+	memcpy(transferOp.data, data, size);
+	pendingImageTransfers.push(transferOp);
 
 	transferOffset += size;
 }
@@ -519,13 +611,13 @@ void VkMemoryManager::createDescriptorPool(VkDescriptorPool* pool, std::function
 }
 
 void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet) {
-	std::vector<VkWriteDescriptorSet> writeOps(layoutInfo.bindings.size(), VkWriteDescriptorSet{});
+	std::vector<VkWriteDescriptorSet> writeOps(layoutInfo.bindings.size(), VkWriteDescriptorSet{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET});
 	std::vector<VkDescriptorBufferInfo> bufferInfos;
+	std::vector<VkDescriptorImageInfo> imageInfos;
 
 	for (size_t i = 0; i < layoutInfo.bindings.size(); i++) {
 		const VkDescriptorType type = layoutInfo.bindings.at(i).first;
-		//Uncomment when textures added
-		//const std::string& name = layoutInfo.bindings.at(i).second;
+		const std::string& name = layoutInfo.bindings.at(i).second;
 
 		switch (type) {
 			case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
@@ -537,20 +629,30 @@ void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const DescriptorLay
 				bufferInfos.push_back(bufferInfo);
 
 				VkWriteDescriptorSet& writeSet = writeOps.at(i);
-				writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				writeSet.dstSet = set;
 				writeSet.dstBinding = i;
 				writeSet.dstArrayElement = 0;
 				writeSet.descriptorCount = 1;
 				writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 				writeSet.pBufferInfo = &bufferInfos.back();
-
 			}; break;
 			case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
-				//TODO
-				throw std::runtime_error("Textures not yet implemented!");
+				VkDescriptorImageInfo imageInfo = {};
+				imageInfo.sampler = samplerMap.at(name);
+				imageInfo.imageView = imageMap.at(name)->getImageView();
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				imageInfos.push_back(imageInfo);
+
+				VkWriteDescriptorSet& writeSet = writeOps.at(i);
+				writeSet.dstSet = set;
+				writeSet.dstBinding = i;
+				writeSet.dstArrayElement = 0;
+				writeSet.descriptorCount = 1;
+				writeSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				writeSet.pImageInfo = &imageInfos.back();
 			}; break;
-			default: throw std::runtime_error("Unsupported descriptor type when adding static model!");
+			default: throw std::runtime_error("Unsupported descriptor type when filling descriptor set!");
 		}
 	}
 

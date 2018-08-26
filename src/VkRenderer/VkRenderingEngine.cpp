@@ -21,9 +21,10 @@
 #include "VkShaderLoader.hpp"
 #include "VkShader.hpp"
 #include "VkRenderInitializer.hpp"
+#include "VkTextureLoader.hpp"
 
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-	RenderingEngine(/** TODO **/ std::shared_ptr<TextureLoader>(),
+	RenderingEngine(std::make_shared<VkTextureLoader>(objectHandler, loaderLogger, memoryManager),
 					std::make_shared<VkShaderLoader>(objectHandler, &memoryManager, loaderLogger, shaderMap),
 					std::make_shared<VkRenderInitializer>(objectHandler, &memoryManager),
 					rendererLog,

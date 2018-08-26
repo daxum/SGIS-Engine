@@ -79,6 +79,10 @@ struct ImageTransferOperation {
 	size_t size;
 	//The offset to place the image data into the transfer buffer.
 	size_t offset;
+	//The width of the image.
+	uint32_t width;
+	//The height of the image.
+	uint32_t height;
 };
 
 struct DescriptorLayoutInfo {
@@ -178,11 +182,20 @@ public:
 
 	/**
 	 * Allocates memory for an image, and creates a VkImage using that memory.
-	 * This should maybe also handle the uploading of the image data?
+	 * Also queues the image data for uploading.
+	 * @param imageName The name of the image to add.
 	 * @param imageInfo The creation struct for the image.
-	 * @return The created image.
+	 * @param imageData The image data.
+	 * @param dataSize The size of the image data.
 	 */
-	std::shared_ptr<VkImageData> allocateImage(const VkImageCreateInfo& imageInfo);
+	void allocateImage(const std::string& imageName, const VkImageCreateInfo& imageInfo, const unsigned char* imageData, size_t dataSize);
+
+	/**
+	 * Adds a sampler for the given texture, allowing it to be used in shaders.
+	 * @param texture The texture the sampler is for.
+	 * @param sampler The sampler to add.
+	 */
+	void addSamplerForTexture(const std::string& texture, VkSampler sampler) { samplerMap.insert({texture, sampler}); }
 
 protected:
 	/**
@@ -273,6 +286,8 @@ private:
 	bool growTransfer;
 	//All queued transfer operations.
 	std::queue<TransferOperation> pendingTransfers;
+	//All queued image transfer operations.
+	std::queue<ImageTransferOperation> pendingImageTransfers;
 	//Map of uploaded mesh data.
 	std::unordered_map<std::string, VkMeshRenderData> meshMap;
 	//All possible descriptor set layouts.
@@ -291,6 +306,10 @@ private:
 	uint32_t currentUniformOffset;
 	//Allowed usage size of the screen object buffer for each frame.
 	size_t screenObjectBufferSize;
+	//Map of all added samplers.
+	std::unordered_map<std::string, VkSampler> samplerMap;
+	//Map to insert loaded images into.
+	std::unordered_map<std::string, std::shared_ptr<VkImageData>> imageMap;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.
@@ -300,6 +319,16 @@ private:
 	 * @param data The data to transfer.
 	 */
 	void queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data);
+
+	/**
+	 * Adds an image transfer operation to the pending image transfer queue.
+	 * @param image The image to transfer the data to.
+	 * @param size The size of the image data.
+	 * @param data The image data to transfer.
+	 * @param imageWidth The width of the image.
+	 * @param imageHeight the height of the image.
+	 */
+	void queueImageTransfer(VkImage image, size_t size, const unsigned char* data, uint32_t imageWidth, uint32_t imageHeight);
 
 	/**
 	 * Creates a descriptor pool that has enough descriptors to hold the sets that setInPool

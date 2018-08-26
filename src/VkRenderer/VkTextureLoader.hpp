@@ -19,20 +19,66 @@
 #pragma once
 
 #include "TextureLoader.hpp"
+#include "VkMemoryManager.hpp"
 
-class VkTextureLoader : TextureLoader {
+class VkTextureLoader : public TextureLoader {
 public:
 	/**
 	 * Creates the texture loader.
+	 * @param vkObjects The object handler to get the device from.
 	 * @param logger The logger to log the logs to.
+	 * @param memoryManager The memory manager to allocate textures from.
 	 */
-	VkTextureLoader(Logger& logger) : TextureLoader(logger) {}
+	VkTextureLoader(VkObjectHandler& vkObjects, Logger& logger, VkMemoryManager& memoryManager);
 
 	/**
 	 * Destroys stuff.
 	 */
 	~VkTextureLoader() {}
 
-private:
+	/**
+	 * Loads a texture and uploads it to the memory manager.
+	 * @param name The name the texture is stored under, used by other components
+	 *     to refer to the texture.
+	 * @param filename The full filename of the texture to be loaded.
+	 * @param minFilter The type of filtering used on the texture when downscaling.
+	 * @param magFilter The type of filtering used on the texture when upscaling.
+	 * @param mipmap Whether to generate mipmaps for the texture.
+	 * @throw runtime_error if the texture could not be created.
+	 */
+	void loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap) override;
 
+	/**
+	 * Loads a cubemap texture from the textures specified by filenames.
+	 * @param name The name to store the texture under.
+	 * @param filenames An array of six filenames in the order {+x, -x, +y, -y, +z, -z}.
+	 *     All textures must be the same size.
+	 * @param minFilter The filter to use when downscaling.
+	 * @param magFilter The filter to use the upscaling.
+	 * @param mipmap Whether to generate mipmaps.
+	 */
+	void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) override;
+
+protected:
+	/**
+	 * Adds a font texture in the same way as loadTexture.
+	 * @param textureName The name to store the texture under.
+	 * @param data The texture data to store.
+	 */
+	void addFontTexture(const std::string textureName, const TextureData& data) override;
+
+private:
+	//Object handler, for the device.
+	VkObjectHandler& vkObjects;
+	//Memory manager to upload textures to.
+	VkMemoryManager& memoryManager;
+
+	static constexpr VkFilter filterToVk(const Filter filter) {
+		switch (filter) {
+			case Filter::NEAREST: return VK_FILTER_NEAREST;
+			case Filter::LINEAR: return VK_FILTER_LINEAR;
+			case Filter::CUBIC: return VK_FILTER_CUBIC_IMG;
+			default: throw std::runtime_error("Missing sampler filter!");
+		}
+	}
 };

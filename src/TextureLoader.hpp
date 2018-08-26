@@ -30,9 +30,9 @@ struct TextureData {
 	//The loaded texture data
 	std::shared_ptr<unsigned char> data;
 	//The width of the loaded texture
-	int width;
+	uint32_t width;
 	//The height of the loaded texture
-	int height;
+	uint32_t height;
 	//The number of channels in the loaded texture
 	int channels;
 	//Whether the texture was loaded successfully - if false,
@@ -43,7 +43,9 @@ struct TextureData {
 //Texture filtering options
 enum class Filter {
 	NEAREST,
-	LINEAR
+	LINEAR,
+	//This might not be supported by OpenGL
+	CUBIC
 };
 
 //A generic texture loader, to go with RenderingEngine.
