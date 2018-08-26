@@ -57,6 +57,7 @@ if (USE_VULKAN)
 		VkRenderer/VkMemoryManager.cpp
 		VkRenderer/VkPipelineCreateObject.cpp
 		VkRenderer/VkRenderInitializer.cpp
+		VkRenderer/VkImageData.cpp
 	)
 
 	add_definitions(-DUSE_VULKAN)

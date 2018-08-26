@@ -29,6 +29,7 @@
 #include "RendererMemoryManager.hpp"
 #include "VkObjectHandler.hpp"
 #include "vk_mem_alloc.h"
+#include "VkImageData.hpp"
 
 struct VkBufferData : public RenderBufferData {
 	VmaAllocator allocator;
@@ -67,6 +68,17 @@ struct TransferOperation {
 	size_t dstOffset;
 	//Offset into the transfer buffer to place the data.
 	size_t srcOffset;
+};
+
+struct ImageTransferOperation {
+	//The image to transfer to.
+	VkImage image;
+	//The image data.
+	unsigned char* data;
+	//The size of the data.
+	size_t size;
+	//The offset to place the image data into the transfer buffer.
+	size_t offset;
 };
 
 struct DescriptorLayoutInfo {
@@ -163,6 +175,14 @@ public:
 	 * Called after each frame completes.
 	 */
 	void resetPerFrameOffset() { currentUniformOffset = 0; }
+
+	/**
+	 * Allocates memory for an image, and creates a VkImage using that memory.
+	 * This should maybe also handle the uploading of the image data?
+	 * @param imageInfo The creation struct for the image.
+	 * @return The created image.
+	 */
+	std::shared_ptr<VkImageData> allocateImage(const VkImageCreateInfo& imageInfo);
 
 protected:
 	/**

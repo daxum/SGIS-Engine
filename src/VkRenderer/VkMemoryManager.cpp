@@ -279,6 +279,20 @@ uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProv
 	return writeOffset;
 }
 
+std::shared_ptr<VkImageData> VkMemoryManager::allocateImage(const VkImageCreateInfo& imageInfo) {
+	VkImage image = VK_NULL_HANDLE;
+	VmaAllocation allocation = VK_NULL_HANDLE;
+
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	if (vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create an image!");
+	}
+
+	return std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation);
+}
+
 std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {
 	VkBufferUsageFlags transferFlags = 0;
 	VmaMemoryUsage memoryUsage;
@@ -315,8 +329,8 @@ std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vecto
 	VmaAllocationCreateInfo allocCreateInfo = {};
 	allocCreateInfo.usage = memoryUsage;
 
-	VkBuffer vertexBuffer;
-	VmaAllocation vertexAllocation;
+	VkBuffer vertexBuffer = VK_NULL_HANDLE;
+	VmaAllocation vertexAllocation = VK_NULL_HANDLE;
 
 	if (vmaCreateBuffer(allocator, &bufferCreateInfo, &allocCreateInfo, &vertexBuffer, &vertexAllocation, nullptr) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create vertex buffer!");
@@ -324,8 +338,8 @@ std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vecto
 
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | transferFlags;
 
-	VkBuffer indexBuffer;
-	VmaAllocation indexAllocation;
+	VkBuffer indexBuffer = VK_NULL_HANDLE;
+	VmaAllocation indexAllocation = VK_NULL_HANDLE;
 
 	if (vmaCreateBuffer(allocator, &bufferCreateInfo, &allocCreateInfo, &indexBuffer, &indexAllocation, nullptr) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to create index buffer!");
