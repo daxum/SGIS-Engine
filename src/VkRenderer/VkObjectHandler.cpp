@@ -632,7 +632,7 @@ void VkObjectHandler::logPhysicalDeviceProperties() {
 										std::to_string(VK_VERSION_PATCH(physicalDeviceProperties.driverVersion)));
 	ENGINE_LOG_INFO(logger, std::string("\tVendor: ") + getPciVendorName(physicalDeviceProperties.vendorID));
 	ENGINE_LOG_INFO(logger, std::string("\tDevice: ") + physicalDeviceProperties.deviceName);
-	ENGINE_LOG_DEBUG(logger, std::string("\tDevice type: ") + getDeviceTypeName(physicalDeviceProperties.deviceType));
+	ENGINE_LOG_INFO(logger, std::string("\tDevice type: ") + getDeviceTypeName(physicalDeviceProperties.deviceType));
 	ENGINE_LOG_DEBUG(logger, std::string("\tDevice id: ") + std::to_string(physicalDeviceProperties.deviceID));
 }
 
