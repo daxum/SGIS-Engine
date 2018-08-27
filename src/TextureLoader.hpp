@@ -110,7 +110,7 @@ protected:
 	 * @param filename The filename of the texture to load.
 	 * @return A filled out TextureData structure created from the provided file name.
 	 */
-	TextureData loadFromDisk(std::string filename);
+	TextureData loadFromDisk(const std::string& filename);
 
 	/**
 	 * Adds a font texture in the same way as loadTexture.
@@ -118,7 +118,7 @@ protected:
 	 * @param data The texture data to store. Be careful with the
 	 *     number of channels.
 	 */
-	virtual void addFontTexture(const std::string textureName, const TextureData& data) = 0;
+	virtual void addFontTexture(const std::string& textureName, const TextureData& data) = 0;
 
 private:
 	/**

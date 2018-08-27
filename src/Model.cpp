@@ -82,11 +82,18 @@ Model::Model(const std::string modelName, const std::string& mesh, const std::st
 	mesh(mesh),
 	shader(shader),
 	uniformSet(uniformSet),
+	hasBufferedUniforms(false),
 	textures(),
 	uniforms(stripNonBufferedModel(uniforms)),
 	viewCull(viewCull),
 	references(0) {
 
+	for (const UniformDescription& descr : uniforms.uniforms) {
+		if (!isSampler(descr.type)) {
+			hasBufferedUniforms = true;
+			break;
+		}
+	}
 }
 
 ModelRef::ModelRef(ModelManager* manager, const std::string& modelName, Model& model, Mesh& mesh) :

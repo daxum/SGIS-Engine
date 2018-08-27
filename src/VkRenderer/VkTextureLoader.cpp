@@ -65,8 +65,32 @@ void VkTextureLoader::loadCubeMap(const std::string& name, const std::vector<std
 	/** TODO **/
 }
 
-void VkTextureLoader::addFontTexture(const std::string textureName, const TextureData& data) {
-	/** TODO **/
+void VkTextureLoader::addFontTexture(const std::string& textureName, const TextureData& data) {
+	VkImageCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	createInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+	createInfo.imageType = VK_IMAGE_TYPE_2D;
+	createInfo.format = VK_FORMAT_R8_UNORM;
+	createInfo.extent = {data.width, data.height, 1};
+	createInfo.mipLevels = 1;
+	createInfo.arrayLayers = 1;
+	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	//TODO: remove once synchronization finished
+	uint32_t queues[] = {vkObjects.getGraphicsQueueIndex(), vkObjects.getTransferQueueIndex()};
+
+	if (vkObjects.hasUniqueTransfer()) {
+		createInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+		createInfo.queueFamilyIndexCount = 2;
+		createInfo.pQueueFamilyIndices = queues;
+	}
+
+	memoryManager.allocateImage(textureName, createInfo, data.data.get(), data.width * data.height);
+	addTextureSampler(textureName, Filter::LINEAR, Filter::LINEAR);
 }
 
 void VkTextureLoader::addTextureSampler(const std::string& imageName, Filter minFilter, Filter magFilter) {

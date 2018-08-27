@@ -88,12 +88,18 @@ AxisAlignedBB TextComponent::getTextBox() {
 	AxisAlignedBB textBox = textModel->getMesh().getBox();
 
 	textBox.translate(-textBox.getCenter());
+
 	textBox.scale(lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->getScale());
 
 	return textBox;
 }
 
 void TextComponent::fitToBox(const glm::vec2& box, bool preserveAspect) {
+	if (!lockParent() || !lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)) {
+		//TODO: Need a warning here
+		return;
+	}
+
 	const AxisAlignedBB& textBox = getTextBox();
 
 	float xScale = box.x / textBox.xLength();

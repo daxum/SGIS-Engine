@@ -253,6 +253,18 @@ protected:
 	void addModelDescriptors(const Model& model) override;
 
 	/**
+	 * Similar to above, but just adds a reference to one of the dynamic descriptors.
+	 * @param model The model to add a descriptor for.
+	 */
+	void addDynamicDescriptors(const Model& model) override { descriptorSets.insert({model.name, descriptorSets.at(model.uniformSet)}); }
+
+	/**
+	 * Removes the descriptor reference created by addDynamicDescriptors.
+	 * @param model The model to remove descriptors for.
+	 */
+	void removeDynamicDescriptors(const Model& model) override { descriptorSets.erase(model.name); }
+
+	/**
 	 * Uploads model uniform data to a uniform buffer.
 	 * @param buffer The uniform buffer to upload to.
 	 * @param offset The offset of the data into the buffer.

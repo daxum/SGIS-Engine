@@ -183,6 +183,8 @@ public:
 	std::string shader;
 	//Name of the uniform set the model uses.
 	std::string uniformSet;
+	//Whether the model has uniforms that belong in a uniform buffer.
+	bool hasBufferedUniforms;
 	//The textures the model uses, in binding order.
 	std::vector<std::string> textures;
 	//Uniform data for the model, aligned to std140 rules.

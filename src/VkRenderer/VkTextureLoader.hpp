@@ -65,7 +65,7 @@ protected:
 	 * @param textureName The name to store the texture under.
 	 * @param data The texture data to store.
 	 */
-	void addFontTexture(const std::string textureName, const TextureData& data) override;
+	void addFontTexture(const std::string& textureName, const TextureData& data) override;
 
 private:
 	//Object handler, for the device.

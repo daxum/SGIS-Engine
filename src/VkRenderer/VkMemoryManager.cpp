@@ -362,7 +362,7 @@ void VkMemoryManager::allocateImage(const std::string& imageName, const VkImageC
 
 	queueImageTransfer(image, dataSize, imageData, imageInfo.extent.width, imageInfo.extent.height);
 
-	imageMap.insert({imageName, std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation)});
+	imageMap.insert({imageName, std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation, imageInfo.format)});
 }
 
 std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {

@@ -254,6 +254,18 @@ protected:
 	virtual void addModelDescriptors(const Model& model) = 0;
 
 	/**
+	 * Similar to above, but just adds a reference to one of the dynamic descriptors.
+	 * @param model The model to add a descriptor for.
+	 */
+	virtual void addDynamicDescriptors(const Model& model) = 0;
+
+	/**
+	 * Removes the descriptor reference created by addDynamicDescriptors.
+	 * @param model The model to remove descriptors for.
+	 */
+	virtual void removeDynamicDescriptors(const Model& model) = 0;
+
+	/**
 	 * Uploads model uniform data to a uniform buffer.
 	 * @param buffer The uniform buffer to upload to.
 	 * @param offset The offset of the data into the buffer.

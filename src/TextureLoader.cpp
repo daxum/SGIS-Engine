@@ -72,7 +72,7 @@ namespace {
 	}
 }
 
-TextureData TextureLoader::loadFromDisk(std::string filename) {
+TextureData TextureLoader::loadFromDisk(const std::string& filename) {
 	TextureData texData = {};
 
 	ENGINE_LOG_DEBUG(logger, "Loading \"" + filename + "\".");

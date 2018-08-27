@@ -284,11 +284,17 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 			for (const auto& objectSet : modelMap.second) {
 				const Model* model = objectSet.first;
 
-				uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
 				uint32_t modelSetOffset = hasScreenSet ? 1 : 0;
 				VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
 
-				vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 1, &modelUniformOffset);
+				if (model->hasBufferedUniforms) {
+					uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
+
+					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 1, &modelUniformOffset);
+				}
+				else {
+					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 0, nullptr);
+				}
 
 				//Per-object loop
 				for (const std::shared_ptr<RenderComponent>& comp : objectSet.second) {

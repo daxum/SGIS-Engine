@@ -179,8 +179,6 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 
 	const UniformSet& set = getUniformSet(model.uniformSet);
 	bool staticModel = false;
-	size_t dataSize = model.uniforms.getData().second;
-	const unsigned char* modelData = model.uniforms.getData().first;
 
 	switch (set.setType) {
 		case UniformSetType::MODEL_STATIC : staticModel = true; break;
@@ -188,26 +186,33 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 		default: throw std::runtime_error("Model descriptor set isn't a model type!");
 	}
 
-	//Align the model data to the minimum alignment before allocating. If every allocation
-	//does this, all allocated memory will end up implicitly aligned.
-	size_t allocSize = ExMath::roundToVal(dataSize, getMinUniformBufferAlignment());
+	//Don't add buffered uniforms if the model doesn't have any
+	if (model.hasBufferedUniforms) {
+		size_t dataSize = model.uniforms.getData().second;
+		const unsigned char* modelData = model.uniforms.getData().first;
 
-	//Make allocation and upload uniform data
+		//Align the model data to the minimum alignment before allocating. If every allocation
+		//does this, all allocated memory will end up implicitly aligned.
+		size_t allocSize = ExMath::roundToVal(dataSize, getMinUniformBufferAlignment());
 
-	std::shared_ptr<AllocInfo> allocation = staticModel ? staticModelUniformAlloc->getMemory(allocSize) : dynamicModelUniformAlloc->getMemory(allocSize);
+		//Make allocation and upload uniform data
 
-	uploadModelData(staticModel ? UniformBufferType::STATIC_MODEL : UniformBufferType::DYNAMIC_MODEL, allocation->start, dataSize, modelData);
+		std::shared_ptr<AllocInfo> allocation = staticModel ? staticModelUniformAlloc->getMemory(allocSize) : dynamicModelUniformAlloc->getMemory(allocSize);
+
+		uploadModelData(staticModel ? UniformBufferType::STATIC_MODEL : UniformBufferType::DYNAMIC_MODEL, allocation->start, dataSize, modelData);
+
+		//Use dataSize instead of allocation->size to avoid the padding, as the alignment only applies to offset
+		modelDataMap.insert({name, ModelUniformData{allocation, allocation->start, dataSize}});
+	}
 
 	//Allocate descriptor set for static models. If the model already has a descriptor set, this call will be ignored.
 
 	if (staticModel) {
 		addModelDescriptors(model);
 	}
-
-	//Lastly, add to data map
-
-	//Use dataSize instead of allocation->size to avoid the padding, as the alignment only applies to offset
-	modelDataMap.insert({name, ModelUniformData{allocation, allocation->start, dataSize}});
+	else {
+		addDynamicDescriptors(model);
+	}
 
 	ENGINE_LOG_DEBUG(logger, "Uploaded model uniform data for \"" + name + "\" to rendering engine");
 }
@@ -224,9 +229,15 @@ void RendererMemoryManager::freeModel(const std::string& name, const Model& mode
 
 	//Mark static models as not in use, and just remove dynamic models completely
 	if (staticModel) {
-		modelDataMap.at(name).allocation->inUse = false;
+		if (model.hasBufferedUniforms) {
+			modelDataMap.at(name).allocation->inUse = false;
+		}
 	}
 	else {
-		modelDataMap.erase(name);
+		removeDynamicDescriptors(model);
+
+		if (model.hasBufferedUniforms) {
+			modelDataMap.erase(name);
+		}
 	}
 }

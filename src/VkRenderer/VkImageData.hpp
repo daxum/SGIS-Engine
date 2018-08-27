@@ -30,8 +30,9 @@ public:
 	 * @param device The device the image was created with.
 	 * @param image The image to manage.
 	 * @param allocation The memory used to store the image.
+	 * @param format The format of the managed image.
 	 */
-	VkImageData(VmaAllocator allocator, VkDevice device, VkImage image, VmaAllocation allocation);
+	VkImageData(VmaAllocator allocator, VkDevice device, VkImage image, VmaAllocation allocation, VkFormat format);
 
 	/**
 	 * Destructor - Destroys the image and image view.
