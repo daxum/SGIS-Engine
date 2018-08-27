@@ -33,6 +33,7 @@ std::u32string TextComponent::convToU32(const std::string& s) {
 
 TextComponent::TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, const std::string& uniformSet, glm::vec3 scale) :
 	Component(TEXT_COMPONENT_NAME),
+	logger(Engine::instance->getConfig().componentLog),
 	currentFont(font),
 	currentText(text),
 	textModel(Engine::instance->getFontManager().createTextModel(font, text, shader, buffer, uniformSet)),
@@ -96,7 +97,7 @@ AxisAlignedBB TextComponent::getTextBox() {
 
 void TextComponent::fitToBox(const glm::vec2& box, bool preserveAspect) {
 	if (!lockParent() || !lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)) {
-		//TODO: Need a warning here
+		ENGINE_LOG_WARN(logger, "Attempt to call fitToBox on TextComponent before parent set!");
 		return;
 	}
 

@@ -24,6 +24,7 @@
 
 #include "Component.hpp"
 #include "Model.hpp"
+#include "Logger.hpp"
 
 class TextComponent : public Component {
 public:
@@ -88,6 +89,8 @@ public:
 	void fitToBox(const glm::vec2& box, bool preserveAspect = true);
 
 private:
+	Logger logger;
+
 	std::string currentFont;
 	std::u32string currentText;
 	std::shared_ptr<ModelRef> textModel;
