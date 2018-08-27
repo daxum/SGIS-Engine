@@ -119,9 +119,8 @@ void VkPipelineCreateObject::fillPersistentStructs() {
 	rasterizeCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	rasterizeCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizeCreateInfo.lineWidth = 1.0f;
-	//TODO: these two don't look right.
 	rasterizeCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizeCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizeCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizeCreateInfo.depthBiasEnable = VK_FALSE;
 
 	//Enable later?
