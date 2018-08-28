@@ -70,9 +70,15 @@ void VkTextureLoader::loadCubeMap(const std::string& name, const std::array<std:
 		totalDataSize += data.at(i).width * data.at(i).height * 4;
 
 		if (!data.at(i).loadSuccess) {
-			//Maybe crash here, since cube map textures must all be the same size?
-			//Alternatively, use missing texture for all faces
 			ENGINE_LOG_ERROR(logger, "Failed to load cubemap texture \"" + filenames.at(i) + "\"");
+
+			//Set all textures to the missing texture and skip loading rest
+			for (size_t j = 0; j < filenames.size(); j++) {
+				data.at(j) = data.at(i);
+			}
+
+			totalDataSize = data.at(i).width * data.at(i).height * 4 * 6;
+			break;
 		}
 	}
 
