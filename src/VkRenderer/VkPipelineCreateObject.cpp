@@ -18,8 +18,9 @@
 
 #include "VkPipelineCreateObject.hpp"
 
-VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer) :
+VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer) :
 	objectHandler(objectHandler),
+	renderObjects(renderObjects),
 	renderPass(renderPass),
 	buffer(buffer),
 	moduleInfos(moduleInfos),
@@ -28,6 +29,7 @@ VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, c
 	assemblyCreateInfo(),
 	rasterizeCreateInfo(),
 	sampleCreateInfo(),
+	depthInfo(),
 	blendAttach(),
 	blendStateCreateInfo() {
 
@@ -36,6 +38,7 @@ VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, c
 
 VkPipelineCreateObject::VkPipelineCreateObject(const VkPipelineCreateObject& other) :
 	objectHandler(other.objectHandler),
+	renderObjects(other.renderObjects),
 	renderPass(other.renderPass),
 	buffer(other.buffer),
 	moduleInfos(other.moduleInfos),
@@ -44,6 +47,7 @@ VkPipelineCreateObject::VkPipelineCreateObject(const VkPipelineCreateObject& oth
 	assemblyCreateInfo(),
 	rasterizeCreateInfo(),
 	sampleCreateInfo(),
+	depthInfo(),
 	blendAttach(),
 	blendStateCreateInfo() {
 
@@ -51,7 +55,7 @@ VkPipelineCreateObject::VkPipelineCreateObject(const VkPipelineCreateObject& oth
 }
 
 VkPipeline VkPipelineCreateObject::createPipeline(VkPipelineCache pipelineCache, VkPipelineLayout pipelineLayout) const {
-	const VkExtent2D& swapchainExtent = objectHandler.getSwapchainExtent();
+	const VkExtent2D& swapchainExtent = renderObjects.getSwapchainExtent();
 
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
@@ -81,10 +85,10 @@ VkPipeline VkPipelineCreateObject::createPipeline(VkPipelineCache pipelineCache,
 	pipelineCreateInfo.pViewportState = &viewStateCreateInfo;
 	pipelineCreateInfo.pRasterizationState = &rasterizeCreateInfo;
 	pipelineCreateInfo.pMultisampleState = &sampleCreateInfo;
-	pipelineCreateInfo.pDepthStencilState = nullptr; //TODO
+	pipelineCreateInfo.pDepthStencilState = &depthInfo;
 	pipelineCreateInfo.pColorBlendState = &blendStateCreateInfo;
 	pipelineCreateInfo.layout = pipelineLayout;
-	pipelineCreateInfo.renderPass = objectHandler.getRenderPass();
+	pipelineCreateInfo.renderPass = renderObjects.getRenderPass();
 	pipelineCreateInfo.subpass = 0;
 
 	VkPipeline graphicsPipeline;
@@ -128,7 +132,10 @@ void VkPipelineCreateObject::fillPersistentStructs() {
 	sampleCreateInfo.sampleShadingEnable = VK_FALSE;
 	sampleCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-	//No depth / stencil yet.
+	depthInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthInfo.depthTestEnable = VK_TRUE;
+	depthInfo.depthWriteEnable = VK_TRUE;
+	depthInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
 	blendAttach.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	blendAttach.blendEnable = (renderPass == RenderPass::TRANSLUCENT) ? VK_TRUE : VK_FALSE;

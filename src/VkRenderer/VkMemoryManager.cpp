@@ -54,7 +54,10 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	currentUniformOffset(0),
 	screenObjectBufferSize(0),
 	samplerMap(),
-	imageMap() {
+	imageMap(),
+	depthBuffer(VK_NULL_HANDLE),
+	depthView(VK_NULL_HANDLE),
+	depthAllocation(VK_NULL_HANDLE) {
 
 }
 
@@ -101,6 +104,9 @@ void VkMemoryManager::deinit() {
 	}
 
 	imageMap.clear();
+
+	vkDestroyImageView(objects.getDevice(), depthView, nullptr);
+	vmaDestroyImage(allocator, depthBuffer, depthAllocation);
 
 	vkDestroyFence(objects.getDevice(), transferFence, nullptr);
 	vmaDestroyAllocator(allocator);
@@ -379,6 +385,50 @@ void VkMemoryManager::allocateCubeImage(const std::string& imageName, const VkIm
 	queueImageTransfer(image, dataSize, imageData, imageInfo.extent.width, imageInfo.extent.height, imageInfo.arrayLayers);
 
 	imageMap.insert({imageName, std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation, imageInfo.format, true)});
+}
+
+VkImageView VkMemoryManager::createDepthBuffer(VkExtent2D swapExtent) {
+	vkDestroyImageView(objects.getDevice(), depthView, nullptr);
+	vmaDestroyImage(allocator, depthBuffer, depthAllocation);
+
+	VkImageCreateInfo depthCreateInfo = {};
+	depthCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	depthCreateInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+	depthCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	depthCreateInfo.format = VK_FORMAT_D32_SFLOAT;
+	depthCreateInfo.extent = {swapExtent.width, swapExtent.height, 1};
+	depthCreateInfo.mipLevels = 1;
+	depthCreateInfo.arrayLayers = 1;
+	depthCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	depthCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+	depthCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	depthCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+	//Is this needed?
+	allocInfo.preferredFlags = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+
+	if (vmaCreateImage(allocator, &depthCreateInfo, &allocInfo, &depthBuffer, &depthAllocation, nullptr) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create depth buffer!");
+	}
+
+	VkImageViewCreateInfo viewInfo = {};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = depthBuffer;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = VK_FORMAT_D32_SFLOAT;
+	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	if (vkCreateImageView(objects.getDevice(), &viewInfo, nullptr, &depthView) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create depth image view!");
+	}
+
+	return depthView;
 }
 
 std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {

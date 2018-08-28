@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "VkObjectHandler.hpp"
+#include "VkRenderObjects.hpp"
 #include "VertexBuffer.hpp"
 #include "ShaderInfo.hpp"
 
@@ -29,11 +30,12 @@ public:
 	/**
 	 * Creates a pipeline creator.
 	 * @param objectHandler The vulkan object handler.
+	 * @param renderObjects The swapchain handler, for the extent.
 	 * @param moduleInfos An array of the shader modules used in the pipeline.
 	 * @param renderPass The render pass the pipeline is in - this is for transparency, not VkRenderPass.
 	 * @param buffer The vertex buffer to pull vertex data from, used to get the input format.
 	 */
-	VkPipelineCreateObject(VkObjectHandler& objectHandler, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer);
+	VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer);
 
 	/**
 	 * Copy constructor.
@@ -56,6 +58,8 @@ public:
 private:
 	//Vulkan object handler.
 	VkObjectHandler& objectHandler;
+	//Render object handler.
+	VkRenderObjects& renderObjects;
 	//The render pass for the pipeline, determines blend state.
 	RenderPass renderPass;
 	//Vertex buffer object.
@@ -70,6 +74,7 @@ private:
 	VkPipelineInputAssemblyStateCreateInfo assemblyCreateInfo;
 	VkPipelineRasterizationStateCreateInfo rasterizeCreateInfo;
 	VkPipelineMultisampleStateCreateInfo sampleCreateInfo;
+	VkPipelineDepthStencilStateCreateInfo depthInfo;
 	VkPipelineColorBlendAttachmentState blendAttach;
 	VkPipelineColorBlendStateCreateInfo blendStateCreateInfo;
 

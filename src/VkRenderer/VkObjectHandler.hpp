@@ -35,12 +35,6 @@ struct QueueFamilyIndices {
 	std::bitset<3> foundFamilies;
 };
 
-struct SwapchainSupportDetails {
-	VkSurfaceCapabilitiesKHR capabilities;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> presentModes;
-};
-
 //Handles creation and destruction of all vulkan objects.
 class VkObjectHandler {
 public:
@@ -78,10 +72,6 @@ public:
 	const VkPhysicalDeviceProperties& getPhysicalDeviceProperties() const { return physicalDeviceProperties; }
 	const VkPhysicalDeviceFeatures& getPhysicalDeviceFeatures() const { return physicalDeviceFeatures; }
 	VkDevice getDevice() { return device; }
-	const VkExtent2D& getSwapchainExtent() const {return swapchainExtent; }
-	VkRenderPass getRenderPass() { return renderPass; }
-	VkSwapchainKHR getSwapchain() { return swapchain; }
-	VkFramebuffer getFramebuffer(size_t index) { return framebuffers.at(index); }
 	VkCommandPool getCommandPool() { return commandPool; }
 	VkCommandPool getTransferCommandPool() { return transferCommandPool; }
 
@@ -96,9 +86,10 @@ public:
 	uint32_t getTransferQueueIndex() const { return transferQueueIndex; }
 
 	/**
-	 * Recreates the swap chain. This almost definitely doesn't belong here.
+	 * Gets the surface for the swapchain.
+	 * @return The window surface.
 	 */
-	void recreateSwapchain();
+	VkSurfaceKHR getWindowSurface() { return surface; }
 
 private:
 	//The logger.
@@ -115,8 +106,6 @@ private:
 	VkQueue presentQueue;
 	VkQueue transferQueue;
 	VkSurfaceKHR surface;
-	VkSwapchainKHR swapchain;
-	VkRenderPass renderPass;
 	VkCommandPool commandPool;
 	VkCommandPool transferCommandPool;
 
@@ -124,13 +113,6 @@ private:
 	uint32_t graphicsQueueIndex;
 	uint32_t presentQueueIndex;
 	uint32_t transferQueueIndex;
-
-	//Swapchain stuff.
-	std::vector<VkImage> swapchainImages;
-	std::vector<VkImageView> imageViews;
-	std::vector<VkFramebuffer> framebuffers;
-	VkFormat swapchainImageFormat;
-	VkExtent2D swapchainExtent;
 
 	//List of enabled validation layers.
 	std::vector<std::string> enabledLayerNames;
@@ -175,52 +157,9 @@ private:
 	void createLogicalDevice();
 
 	/**
-	 * Gets swapchain support for the given device.
-	 * @param physDevice the device to query support for.
-	 */
-	SwapchainSupportDetails querySwapChainSupport(VkPhysicalDevice physDevice);
-
-	/**
-	 * Creates the swap chain object.
-	 */
-	void createSwapchain();
-
-	/**
-	 * Creates image views for each of the swap chain's images.
-	 */
-	void createImageViews();
-
-	/**
-	 * Takes the best format from the list.
-	 * @param formats A list of the available formats.
-	 * @return The best format in the list.
-	 */
-	VkSurfaceFormatKHR chooseBestFormat(const std::vector<VkSurfaceFormatKHR>& formats);
-
-	/**
-	 * Gets the swap chain resolution.
-	 */
-	VkExtent2D getSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-
-	/**
-	 * Creates the render pass. This might belong somewhere else?
-	 */
-	void createRenderPass();
-
-	/**
-	 * Creates the framebuffers.
-	 */
-	void createFramebuffers();
-
-	/**
 	 * Creates all command pools.
 	 */
 	void createCommandPools();
-
-	/**
-	 * Detroys the old swapchain for recreation.
-	 */
-	void destroySwapchain();
 
 	/**
 	 * Basically dumps the relevant information from the physicalDeviceProperties

@@ -21,10 +21,11 @@
 #include "VkShaderLoader.hpp"
 #include "VkShader.hpp"
 
-VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap) :
+VkShaderLoader::VkShaderLoader(VkObjectHandler& vkObjects, VkRenderObjects& renderObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap) :
 	ShaderLoader(logger),
 	shaderMap(shaderMap),
 	vkObjects(vkObjects),
+	renderObjects(renderObjects),
 	pipelineCache(VK_NULL_HANDLE),
 	memoryManager(memoryManager) {
 
@@ -89,7 +90,7 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	const VertexBuffer& buffer = memoryManager->getBuffer(info.buffer);
 
 	//Create pipeline creator
-	VkPipelineCreateObject pipelineCreator(vkObjects, {vertCreateInfo, fragCreateInfo}, info.pass, buffer);
+	VkPipelineCreateObject pipelineCreator(vkObjects, renderObjects, {vertCreateInfo, fragCreateInfo}, info.pass, buffer);
 
 	//Create pipeline layout
 	std::vector<VkDescriptorSetLayout> layouts;

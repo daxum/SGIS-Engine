@@ -30,7 +30,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	VkShaderLoader(VkObjectHandler& vkObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap);
+	VkShaderLoader(VkObjectHandler& vkObjects, VkRenderObjects& renderObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap);
 
 	/**
 	 * Destroys the descriptor set layouts.
@@ -61,6 +61,8 @@ private:
 	std::unordered_map<std::string, VkShaderModule> loadedModules;
 	//Object handling all vulkan objects.
 	VkObjectHandler& vkObjects;
+	//Object handling all swapchain related vulkan objects.
+	VkRenderObjects& renderObjects;
 	//Pipeline cache. Maybe save this to disk later, but that might interfere
 	//with development...
 	VkPipelineCache pipelineCache;

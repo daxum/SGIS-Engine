@@ -59,6 +59,7 @@ if (USE_VULKAN)
 		VkRenderer/VkRenderInitializer.cpp
 		VkRenderer/VkImageData.cpp
 		VkRenderer/VkTextureLoader.cpp
+		VkRenderer/VkRenderObjects.cpp
 	)
 
 	add_definitions(-DUSE_VULKAN)

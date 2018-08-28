@@ -209,6 +209,13 @@ public:
 	 */
 	void addSamplerForTexture(const std::string& texture, VkSampler sampler) { samplerMap.insert({texture, sampler}); }
 
+	/**
+	 * Creates a depth buffer. If there was already a depth buffer, it is destroyed and a new one is created.
+	 * @param swapExtent The extent of the swapchain.
+	 * @return The image view for the new depth buffer.
+	 */
+	VkImageView createDepthBuffer(VkExtent2D swapExtent);
+
 protected:
 	/**
 	 * Creates a buffer and allocation with the given parameters.
@@ -334,6 +341,12 @@ private:
 	std::unordered_map<std::string, VkSampler> samplerMap;
 	//Map to insert loaded images into.
 	std::unordered_map<std::string, std::shared_ptr<VkImageData>> imageMap;
+	//Image for the depth buffer.
+	VkImage depthBuffer;
+	//Image view for depth buffer image.
+	VkImageView depthView;
+	//Allocation for depth buffer image.
+	VmaAllocation depthAllocation;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.

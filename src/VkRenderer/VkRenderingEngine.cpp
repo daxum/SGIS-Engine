@@ -25,12 +25,13 @@
 
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<VkTextureLoader>(objectHandler, loaderLogger, memoryManager),
-					std::make_shared<VkShaderLoader>(objectHandler, &memoryManager, loaderLogger, shaderMap),
+					std::make_shared<VkShaderLoader>(objectHandler, swapObjects, &memoryManager, loaderLogger, shaderMap),
 					std::make_shared<VkRenderInitializer>(objectHandler, &memoryManager),
 					rendererLog,
 					loaderLog),
 	interface(display, this),
 	objectHandler(logger),
+	swapObjects(objectHandler),
 	memoryManager(rendererLog, objectHandler),
 	currentImageIndex(0),
 	currentFrame(0) {
@@ -53,6 +54,7 @@ VkRenderingEngine::~VkRenderingEngine() {
 	shaderMap.clear();
 	memoryManager.deinit();
 	shaderLoader.reset();
+	swapObjects.deinit();
 	objectHandler.deinit();
 
 	GLFWwindow* window = interface.getWindow();
@@ -91,6 +93,7 @@ void VkRenderingEngine::init() {
 
 	objectHandler.init(window);
 	memoryManager.init();
+	swapObjects.init(memoryManager);
 
 	//Allocate command buffers
 
@@ -137,11 +140,11 @@ void VkRenderingEngine::beginFrame() {
 
 	currentImageIndex = 0;
 
-	VkResult result = vkAcquireNextImageKHR(objectHandler.getDevice(), objectHandler.getSwapchain(), 0xFFFFFFFFFFFFFFFF, imageAvailable.at(currentFrame), VK_NULL_HANDLE, &currentImageIndex);
+	VkResult result = vkAcquireNextImageKHR(objectHandler.getDevice(), swapObjects.getSwapchain(), 0xFFFFFFFFFFFFFFFF, imageAvailable.at(currentFrame), VK_NULL_HANDLE, &currentImageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		vkDeviceWaitIdle(objectHandler.getDevice());
-		objectHandler.recreateSwapchain();
+		swapObjects.reinit(memoryManager);
 		std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 		//Eventually this'll work
 		beginFrame();
@@ -185,7 +188,7 @@ void VkRenderingEngine::present() {
 		throw std::runtime_error("Failed to submit command buffer.");
 	}
 
-	VkSwapchainKHR swapchain = objectHandler.getSwapchain();
+	VkSwapchainKHR swapchain = swapObjects.getSwapchain();
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -199,7 +202,7 @@ void VkRenderingEngine::present() {
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		vkDeviceWaitIdle(objectHandler.getDevice());
-		objectHandler.recreateSwapchain();
+		swapObjects.reinit(memoryManager);
 		std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 	}
 	else if (result != VK_SUCCESS) {
@@ -213,22 +216,27 @@ void VkRenderingEngine::present() {
 void VkRenderingEngine::setViewport(int width, int height) {
 	//Width / height unused, retrieved from window interface in below function.
 	vkDeviceWaitIdle(objectHandler.getDevice());
-	objectHandler.recreateSwapchain();
+	swapObjects.reinit(memoryManager);
 	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 }
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
 	//TODO: this still needs fixing
 	VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
+	VkClearValue clearDepth;
+	clearDepth.color = {0, 0, 0, 0};
+	clearDepth.depthStencil = {1.0f, 0};
+
+	VkClearValue clearValues[] = { clearColor, clearDepth };
 
 	VkRenderPassBeginInfo passBeginInfo = {};
 	passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	passBeginInfo.renderPass = objectHandler.getRenderPass();
-	passBeginInfo.framebuffer = objectHandler.getFramebuffer(currentImageIndex);
+	passBeginInfo.renderPass = swapObjects.getRenderPass();
+	passBeginInfo.framebuffer = swapObjects.getFramebuffer(currentImageIndex);
 	passBeginInfo.renderArea.offset = {0, 0};
-	passBeginInfo.renderArea.extent = objectHandler.getSwapchainExtent();
-	passBeginInfo.clearValueCount = 1;
-	passBeginInfo.pClearValues = &clearColor;
+	passBeginInfo.renderArea.extent = swapObjects.getSwapchainExtent();
+	passBeginInfo.clearValueCount = 2;
+	passBeginInfo.pClearValues = clearValues;
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
