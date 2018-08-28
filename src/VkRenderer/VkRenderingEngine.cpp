@@ -245,7 +245,6 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 
 	std::string currentBuffer = "";
 	std::string currentShader = "";
-	bool hasScreenSet = false;
 
 	//Per-buffer loop
 	for (const auto& shaderObjectMap : sortedObjects) {
@@ -263,7 +262,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 
 			//Screen set setting used to happen conditionally, but validation layers crash for some reason
 			//Assuming this needs rebinding every time as a result
-			hasScreenSet = false;
+			bool hasScreenSet = false;
 			const std::string& screenSetName = shader->getPerScreenDescriptor();
 
 			//Set screen uniforms
