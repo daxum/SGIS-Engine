@@ -245,7 +245,6 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 
 	std::string currentBuffer = "";
 	std::string currentShader = "";
-	std::string currentScreenSet = "";
 	bool hasScreenSet = false;
 
 	//Per-buffer loop
@@ -262,22 +261,21 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 				continue;
 			}
 
-			//Set per-screen uniforms if needed
-			if (currentScreenSet != shader->getPerScreenDescriptor()) {
-				hasScreenSet = false;
-				currentScreenSet = shader->getPerScreenDescriptor();
+			//Screen set setting used to happen conditionally, but validation layers crash for some reason
+			//Assuming this needs rebinding every time as a result
+			hasScreenSet = false;
+			const std::string& screenSetName = shader->getPerScreenDescriptor();
 
-				//Set screen uniforms
-				if (currentScreenSet != "") {
-					Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(currentScreenSet);
-					setPerScreenUniforms(memoryManager.getUniformSet(currentScreenSet), screenAligner, screenState.get(), camera.get());
+			//Set screen uniforms
+			if (screenSetName != "") {
+				Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(screenSetName);
+				setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState.get(), camera.get());
 
-					uint32_t screenOffset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
-					VkDescriptorSet screenSet = memoryManager.getDescriptorSet(currentScreenSet);
+				uint32_t screenOffset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
+				VkDescriptorSet screenSet = memoryManager.getDescriptorSet(screenSetName);
 
-					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
-					hasScreenSet = true;
-				}
+				vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
+				hasScreenSet = true;
 			}
 
 			//Per-model loop
