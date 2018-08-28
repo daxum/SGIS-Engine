@@ -134,6 +134,15 @@ void testAllocator(MemoryAllocator& alloc) {
 
 int main(int argc, char** argv) {
 	MemoryAllocator alloc1(MEM_AMOUNT);
+	MemoryAllocator alloc2(10);
+
+	//Test for infinite loop
+	try {
+		alloc2.getMemory(11);
+	}
+	catch (const std::runtime_error& e){
+		std::cout << "Got expected exception: " << e.what() << "\n";
+	}
 
 	try {
 		testAllocator(alloc1);

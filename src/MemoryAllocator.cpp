@@ -193,5 +193,9 @@ std::array<MemoryAllocator::AllocPos, 2> MemoryAllocator::findFreeRange(size_t s
 		if (range.at(0) == allocationList.end()) {
 			range.at(0) = allocationList.begin();
 		}
+
+		if (range.at(0) == startPos) {
+			throw std::runtime_error("Allocation error: Out of memory");
+		}
 	}
 }
