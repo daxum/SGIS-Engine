@@ -20,7 +20,7 @@
 
 #include "VkImageData.hpp"
 
-VkImageData::VkImageData(VmaAllocator allocator, VkDevice device, VkImage image, VmaAllocation allocation, VkFormat format)  :
+VkImageData::VkImageData(VmaAllocator allocator, VkDevice device, VkImage image, VmaAllocation allocation, VkFormat format, bool cube)  :
 	device(device),
 	allocator(allocator),
 	allocation(allocation),
@@ -30,7 +30,7 @@ VkImageData::VkImageData(VmaAllocator allocator, VkDevice device, VkImage image,
 	VkImageViewCreateInfo viewCreateInfo = {};
 	viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewCreateInfo.image = image;
-	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewCreateInfo.viewType = cube ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
 	viewCreateInfo.format = format;
 	viewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	viewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -40,7 +40,7 @@ VkImageData::VkImageData(VmaAllocator allocator, VkDevice device, VkImage image,
 	viewCreateInfo.subresourceRange.baseMipLevel = 0;
 	viewCreateInfo.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
 	viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-	viewCreateInfo.subresourceRange.layerCount = 1;
+	viewCreateInfo.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
 	if (vkCreateImageView(device, &viewCreateInfo, nullptr, &imageView) != VK_SUCCESS) {
 		throw std::runtime_error("Image view creation failed!");

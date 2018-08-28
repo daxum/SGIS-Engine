@@ -103,6 +103,13 @@ public:
 	}
 
 	/**
+	 * Returns whether the vertex element is present in the vertex buffer.
+	 * @param name The name of the element.
+	 * @return Whether the element exists in the buffer.
+	 */
+	bool hasElement(const std::string& name) const { return vertexElements.count(name); }
+
+	/**
 	 * Gets the offset (in bytes) into the vertex for the given name.
 	 * @param name The name to get the offset for.
 	 * @return The offset into the vertex for the element with the given name.

@@ -31,8 +31,9 @@ public:
 	 * @param image The image to manage.
 	 * @param allocation The memory used to store the image.
 	 * @param format The format of the managed image.
+	 * @param cube Temporary hack until different texture types get sorted. True if image is a cube map.
 	 */
-	VkImageData(VmaAllocator allocator, VkDevice device, VkImage image, VmaAllocation allocation, VkFormat format);
+	VkImageData(VmaAllocator allocator, VkDevice device, VkImage image, VmaAllocation allocation, VkFormat format, bool cube);
 
 	/**
 	 * Destructor - Destroys the image and image view.

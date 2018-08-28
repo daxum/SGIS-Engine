@@ -81,26 +81,32 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 		for (const tinyobj::index_t& index : shape.mesh.indices) {
 			Vertex vertex = buffer.getVertex();
 
-			vertex.setVec3(VERTEX_ELEMENT_POSITION, glm::vec3(
-				attributes.vertices[3 * index.vertex_index],
-				attributes.vertices[3 * index.vertex_index + 1],
-				attributes.vertices[3 * index.vertex_index + 2]
-			));
-
-			vertex.setVec3(VERTEX_ELEMENT_NORMAL, glm::vec3(
-				attributes.normals[3 * index.normal_index],
-				attributes.normals[3 * index.normal_index + 1],
-				attributes.normals[3 * index.normal_index + 2]
-			));
-
-			if (!attributes.texcoords.empty()) {
-				vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(
-					attributes.texcoords[2 * index.texcoord_index],
-					attributes.texcoords[2 * index.texcoord_index + 1]
+			if (buffer.hasElement(VERTEX_ELEMENT_POSITION)) {
+				vertex.setVec3(VERTEX_ELEMENT_POSITION, glm::vec3(
+					attributes.vertices[3 * index.vertex_index],
+					attributes.vertices[3 * index.vertex_index + 1],
+					attributes.vertices[3 * index.vertex_index + 2]
 				));
 			}
-			else {
-				vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(0.0, 0.0));
+
+			if (buffer.hasElement(VERTEX_ELEMENT_NORMAL)) {
+				vertex.setVec3(VERTEX_ELEMENT_NORMAL, glm::vec3(
+					attributes.normals[3 * index.normal_index],
+					attributes.normals[3 * index.normal_index + 1],
+					attributes.normals[3 * index.normal_index + 2]
+				));
+			}
+
+			if (buffer.hasElement(VERTEX_ELEMENT_TEXTURE)) {
+				if (!attributes.texcoords.empty()) {
+					vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(
+						attributes.texcoords[2 * index.texcoord_index],
+						attributes.texcoords[2 * index.texcoord_index + 1]
+					));
+				}
+				else {
+					vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(0.0, 0.0));
+				}
 			}
 
 			if (uniqueVertices.count(vertex) == 0) {

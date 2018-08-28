@@ -83,6 +83,8 @@ struct ImageTransferOperation {
 	uint32_t width;
 	//The height of the image.
 	uint32_t height;
+	//The number of array layers to transfer (Typically 1).
+	uint32_t arrayLayers;
 };
 
 struct DescriptorLayoutInfo {
@@ -189,6 +191,16 @@ public:
 	 * @param dataSize The size of the image data.
 	 */
 	void allocateImage(const std::string& imageName, const VkImageCreateInfo& imageInfo, const unsigned char* imageData, size_t dataSize);
+
+	/**
+	 * Allocates memory for and uploads a cubemap image. Possibly expand this later for
+	 * generic array textures?
+	 * @param imageName The name of the cubemap.
+	 * @param imageInfo The info used to create the image.
+	 * @param imageData The concatenated data for all six cubemap layers.
+	 * @param dataSize The size of the concatenated data.
+	 */
+	void allocateCubeImage(const std::string& imageName, const VkImageCreateInfo& imageInfo, const unsigned char* imageData, size_t dataSize);
 
 	/**
 	 * Adds a sampler for the given texture, allowing it to be used in shaders.
@@ -339,8 +351,9 @@ private:
 	 * @param data The image data to transfer.
 	 * @param imageWidth The width of the image.
 	 * @param imageHeight the height of the image.
+	 * @param arrayLayers The number of layers to transfer.
 	 */
-	void queueImageTransfer(VkImage image, size_t size, const unsigned char* data, uint32_t imageWidth, uint32_t imageHeight);
+	void queueImageTransfer(VkImage image, size_t size, const unsigned char* data, uint32_t imageWidth, uint32_t imageHeight, uint32_t arrayLayers);
 
 	/**
 	 * Creates a descriptor pool that has enough descriptors to hold the sets that setInPool

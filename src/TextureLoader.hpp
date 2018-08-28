@@ -21,6 +21,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <array>
 
 #include "Logger.hpp"
 #include "Font.hpp"
@@ -88,7 +89,7 @@ public:
 	 * @param magFilter The filter to use the upscaling.
 	 * @param mipmap Whether to generate mipmaps.
 	 */
-	virtual void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) = 0;
+	virtual void loadCubeMap(const std::string& name, const std::array<std::string, 6>& filenames, Filter minFilter, Filter magFilter, bool mipmap) = 0;
 
 	/**
 	 * Loads a font and generates a texture from it. Only adds the specified

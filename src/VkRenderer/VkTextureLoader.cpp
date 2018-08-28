@@ -61,8 +61,58 @@ void VkTextureLoader::loadTexture(const std::string& name, const std::string& fi
 	addTextureSampler(name, minFilter, magFilter);
 }
 
-void VkTextureLoader::loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
-	/** TODO **/
+void VkTextureLoader::loadCubeMap(const std::string& name, const std::array<std::string, 6>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
+	std::array<TextureData, 6> data = {};
+	size_t totalDataSize = 0;
+
+	for (size_t i = 0; i < filenames.size(); i++) {
+		data.at(i) = loadFromDisk(filenames.at(i));
+		totalDataSize += data.at(i).width * data.at(i).height * 4;
+
+		if (!data.at(i).loadSuccess) {
+			//Maybe crash here, since cube map textures must all be the same size?
+			//Alternatively, use missing texture for all faces
+			ENGINE_LOG_ERROR(logger, "Failed to load cubemap texture \"" + filenames.at(i) + "\"");
+		}
+	}
+
+	VkImageCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	createInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+	createInfo.imageType = VK_IMAGE_TYPE_2D;
+	createInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+	createInfo.extent = {data.at(0).width, data.at(0).height, 1};
+	createInfo.mipLevels = 1;
+	createInfo.arrayLayers = 6;
+	createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	//TODO: remove once synchronization finished
+	uint32_t queues[] = {vkObjects.getGraphicsQueueIndex(), vkObjects.getTransferQueueIndex()};
+
+	if (vkObjects.hasUniqueTransfer()) {
+		createInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+		createInfo.queueFamilyIndexCount = 2;
+		createInfo.pQueueFamilyIndices = queues;
+	}
+
+	unsigned char* concatData = new unsigned char[totalDataSize];
+	size_t copyOffset = 0;
+
+	for (size_t i = 0; i < data.size(); i++) {
+		size_t dataSize = data.at(i).width * data.at(i).height * 4;
+
+		memcpy(&concatData[copyOffset], data.at(i).data.get(), dataSize);
+		copyOffset += dataSize;
+	}
+
+	memoryManager.allocateCubeImage(name, createInfo, concatData, totalDataSize);
+	addTextureSampler(name, minFilter, magFilter);
+
+	delete[] concatData;
 }
 
 void VkTextureLoader::addFontTexture(const std::string& textureName, const TextureData& data) {

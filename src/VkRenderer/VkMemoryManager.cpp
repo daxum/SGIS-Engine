@@ -241,7 +241,7 @@ void VkMemoryManager::executeTransfers() {
 		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		copyRegion.imageSubresource.mipLevel = 0;
 		copyRegion.imageSubresource.baseArrayLayer = 0;
-		copyRegion.imageSubresource.layerCount = 1;
+		copyRegion.imageSubresource.layerCount = imageTransferOp.arrayLayers;
 		copyRegion.imageOffset = {0, 0, 0};
 		copyRegion.imageExtent = {imageTransferOp.width, imageTransferOp.height, 1};
 
@@ -286,7 +286,7 @@ void VkMemoryManager::executeTransfers() {
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
 		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
 		vkCmdPipelineBarrier(transferCommands, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 		vkCmdCopyBufferToImage(transferCommands, transferBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyPair.second);
@@ -360,9 +360,25 @@ void VkMemoryManager::allocateImage(const std::string& imageName, const VkImageC
 		throw std::runtime_error("Failed to create an image!");
 	}
 
-	queueImageTransfer(image, dataSize, imageData, imageInfo.extent.width, imageInfo.extent.height);
+	queueImageTransfer(image, dataSize, imageData, imageInfo.extent.width, imageInfo.extent.height, 1);
 
-	imageMap.insert({imageName, std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation, imageInfo.format)});
+	imageMap.insert({imageName, std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation, imageInfo.format, false)});
+}
+
+void VkMemoryManager::allocateCubeImage(const std::string& imageName, const VkImageCreateInfo& imageInfo, const unsigned char* imageData, size_t dataSize) {
+	VkImage image = VK_NULL_HANDLE;
+	VmaAllocation allocation = VK_NULL_HANDLE;
+
+	VmaAllocationCreateInfo allocInfo = {};
+	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+	if (vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create an image!");
+	}
+
+	queueImageTransfer(image, dataSize, imageData, imageInfo.extent.width, imageInfo.extent.height, imageInfo.arrayLayers);
+
+	imageMap.insert({imageName, std::make_shared<VkImageData>(allocator, objects.getDevice(), image, allocation, imageInfo.format, true)});
 }
 
 std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {
@@ -542,7 +558,7 @@ void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size,
 	transferOffset += size;
 }
 
-void VkMemoryManager::queueImageTransfer(VkImage image, size_t size, const unsigned char* data, uint32_t imageWidth, uint32_t imageHeight) {
+void VkMemoryManager::queueImageTransfer(VkImage image, size_t size, const unsigned char* data, uint32_t imageWidth, uint32_t imageHeight, uint32_t arrayLayers) {
 	ENGINE_LOG_DEBUG(logger, "Queueing image transfer - Transfer size: " + std::to_string(transferSize) + ", Current offset: " + std::to_string(transferOffset) + ", Image size: " + std::to_string(size));
 
 	if (transferOffset + size > transferSize) {
@@ -556,7 +572,8 @@ void VkMemoryManager::queueImageTransfer(VkImage image, size_t size, const unsig
 		size,
 		transferOffset,
 		imageWidth,
-		imageHeight
+		imageHeight,
+		arrayLayers
 	};
 
 	memcpy(transferOp.data, data, size);

@@ -57,7 +57,7 @@ public:
 	 * @param magFilter The filter to use the upscaling.
 	 * @param mipmap Whether to generate mipmaps.
 	 */
-	void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) override;
+	void loadCubeMap(const std::string& name, const std::array<std::string, 6>& filenames, Filter minFilter, Filter magFilter, bool mipmap) override;
 
 protected:
 	/**
