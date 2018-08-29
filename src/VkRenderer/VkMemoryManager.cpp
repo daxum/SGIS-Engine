@@ -544,7 +544,7 @@ void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 	queueTransfer(bufferData->indexBuffer, indexOffset, indexSize, (const unsigned char*) indexData);
 
 	//Add to mesh map
-	meshMap.insert({mesh, VkMeshRenderData{indexOffset, (uint32_t) (indexSize / sizeof(uint32_t))}});
+	meshMap.insert({mesh, VkMeshRenderData{(uint32_t) (indexOffset / sizeof(uint32_t)), (uint32_t) (indexSize / sizeof(uint32_t))}});
 }
 
 void VkMemoryManager::addModelDescriptors(const Model& model) {
