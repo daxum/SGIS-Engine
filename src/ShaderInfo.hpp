@@ -88,10 +88,9 @@ struct UniformDescription {
 	//Type of the uniform.
 	UniformType type;
 	//The name of the uniform, primarily used to retrieve values.
-	//This has special meaning for samplers - for static models,
-	//it should be texture_*, where '*' is the index into the model's
-	//texture array. For dynamic models, it is the name of the texture
-	//to use, which will be static for all models using the descriptor set.
+	//This has special meaning for samplers - for dynamic models,
+	//it represents the name of the texture to use, which will be
+	//static for all models using the descriptor set.
 	std::string name;
 	//Where the uniform's value comes from.
 	UniformProviderType provider;

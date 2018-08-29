@@ -382,8 +382,9 @@ private:
 	 * @param set The set to write to.
 	 * @param layoutInfo The descriptor layout info for the set.
 	 * @param uniformSet The uniform set that corresponds to the layout info.
+	 * @param textures A vector of image views for all the textures used in the set.
 	 */
-	void fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet);
+	void fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet, const std::vector<VkImageView>& textures);
 
 	/**
 	 * Takes a uniform set type and turns it into an index. This function

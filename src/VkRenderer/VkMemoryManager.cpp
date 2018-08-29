@@ -161,8 +161,17 @@ void VkMemoryManager::initializeDescriptors() {
 				throw std::runtime_error("Failed to allocate dynamic descriptor set!");
 			}
 
+			//Collect image views for the set's textures
+			std::vector<VkImageView> setImageViews;
+
+			for (const UniformDescription& uniform : uniformSetPair.second.uniforms) {
+				if (isSampler(uniform.type)) {
+					setImageViews.push_back(imageMap.at(uniform.name)->getImageView());
+				}
+			}
+
 			descriptorSets.insert({uniformSetPair.first, set});
-			fillDescriptorSet(set, layoutInfo, uniformSet);
+			fillDescriptorSet(set, layoutInfo, uniformSet, setImageViews);
 		}
 	}
 }
@@ -567,8 +576,15 @@ void VkMemoryManager::addModelDescriptors(const Model& model) {
 		throw std::runtime_error("Failed to allocate static model descriptor set!");
 	}
 
+	//Get image views for all the model's textures
+	std::vector<VkImageView> modelImageViews;
+
+	for (const std::string& texture : model.textures) {
+		modelImageViews.push_back(imageMap.at(texture)->getImageView());
+	}
+
 	descriptorSets.insert({model.name, set});
-	fillDescriptorSet(set, layoutInfo, uniformSet);
+	fillDescriptorSet(set, layoutInfo, uniformSet, modelImageViews);
 }
 
 void VkMemoryManager::uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) {
@@ -677,10 +693,12 @@ void VkMemoryManager::createDescriptorPool(VkDescriptorPool* pool, std::function
 	}
 }
 
-void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet) {
+void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet, const std::vector<VkImageView>& textures) {
 	std::vector<VkWriteDescriptorSet> writeOps(layoutInfo.bindings.size(), VkWriteDescriptorSet{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET});
 	std::vector<VkDescriptorBufferInfo> bufferInfos;
 	std::vector<VkDescriptorImageInfo> imageInfos;
+
+	size_t currentImageIndex = 0;
 
 	for (size_t i = 0; i < layoutInfo.bindings.size(); i++) {
 		const VkDescriptorType type = layoutInfo.bindings.at(i).first;
@@ -706,7 +724,7 @@ void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const DescriptorLay
 			case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
 				VkDescriptorImageInfo imageInfo = {};
 				imageInfo.sampler = samplerMap.at(name);
-				imageInfo.imageView = imageMap.at(name)->getImageView();
+				imageInfo.imageView = textures.at(currentImageIndex);
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 				imageInfos.push_back(imageInfo);
@@ -718,6 +736,8 @@ void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const DescriptorLay
 				writeSet.descriptorCount = 1;
 				writeSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				writeSet.pImageInfo = &imageInfos.back();
+
+				currentImageIndex++;
 			}; break;
 			default: throw std::runtime_error("Unsupported descriptor type when filling descriptor set!");
 		}
