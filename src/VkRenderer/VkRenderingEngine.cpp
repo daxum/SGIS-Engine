@@ -383,12 +383,12 @@ void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& 
 
 void VkRenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligner& aligner, const ScreenState* state, const Camera* camera) {
 	for (const UniformDescription& uniform : set.uniforms) {
-		glm::mat4 tempProjMat;
+		glm::mat4 tempMat;
 		const void* value = nullptr;
 
 		switch (uniform.provider) {
-			case UniformProviderType::CAMERA_PROJECTION: tempProjMat = camera->getProjection(); value = &tempProjMat; tempProjMat[1][1] *= -1; break;
-			case UniformProviderType::CAMERA_VIEW: value = &camera->getView(); break;
+			case UniformProviderType::CAMERA_PROJECTION: tempMat = camera->getProjection(); value = &tempMat; tempMat[1][1] *= -1; break;
+			case UniformProviderType::CAMERA_VIEW: tempMat = camera->getView(); value = &tempMat; break;
 			case UniformProviderType::SCREEN_STATE: value = state->getRenderValue(uniform.name); break;
 			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
 		}

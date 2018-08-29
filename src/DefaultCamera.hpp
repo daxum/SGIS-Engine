@@ -30,13 +30,13 @@ public:
 	 * Calculates a view matrix to use in rendering.
 	 * @return the view matrix.
 	 */
-	const glm::mat4& getView() const override { return view; }
+	const glm::mat4 getView() const override { return view; }
 
 	/**
 	 * Creates a projection matrix.
 	 * @return the projection matrix.
 	 */
-	const glm::mat4& getProjection() const override { return projection; }
+	const glm::mat4 getProjection() const override { return projection; }
 
 	/**
 	 * Sets the projection matrix.

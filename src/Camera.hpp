@@ -30,13 +30,13 @@ public:
 	 * Calculates a view matrix to use in rendering.
 	 * @return the view matrix.
 	 */
-	virtual const glm::mat4& getView() const = 0;
+	virtual const glm::mat4 getView() const = 0;
 
 	/**
 	 * Fetches a projection matrix.
 	 * @return the projection matrix.
 	 */
-	virtual const glm::mat4& getProjection() const = 0;
+	virtual const glm::mat4 getProjection() const = 0;
 
 	/**
 	 * Called whenever the window changes to reset the projection matrix.
