@@ -31,7 +31,7 @@ void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
-	getComponentSet(renderComp->getModel()).erase(renderComp);
+	removeComponent(renderComp, renderComp->getModel());
 	renderComponentSet.erase(renderComp.get());
 	renderComp->setManager(nullptr);
 }
@@ -39,8 +39,21 @@ void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) 
 void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::shared_ptr<const ModelRef> oldModel) {
 	std::shared_ptr<const ModelRef> model = renderComp->getModel();
 
-	getComponentSet(oldModel).erase(renderComp);
+	removeComponent(renderComp, oldModel);
 	getComponentSet(model).insert(renderComp);
+}
+
+void RenderComponentManager::removeComponent(std::shared_ptr<RenderComponent> comp, std::shared_ptr<const ModelRef> oldModel) {
+	std::unordered_set<std::shared_ptr<RenderComponent>> compSet = getComponentSet(oldModel);
+
+	compSet.erase(comp);
+
+	if (compSet.empty()) {
+		const std::string& buffer = oldModel->getMesh().getBuffer();
+		const std::string& shader = oldModel->getModel().shader;
+
+		renderComponents.at(buffer).at(shader).erase(&oldModel->getModel());
+	}
 }
 
 std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(std::shared_ptr<const ModelRef> model) {

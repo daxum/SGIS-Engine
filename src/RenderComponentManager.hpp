@@ -78,6 +78,15 @@ private:
 	void onComponentRemove(std::shared_ptr<Component> comp) override;
 
 	/**
+	 * Removes a render component from the manager, and clears its model
+	 * if it is not used by anything else.
+	 * @param comp The component to remove.
+	 * @param oldModel The old model of the render component, or just the
+	 *     model if the component is being removed completely.
+	 */
+	void removeComponent(std::shared_ptr<RenderComponent> comp, std::shared_ptr<const ModelRef> oldModel);
+
+	/**
 	 * Helper function to get the set a component belongs in.
 	 * @param model The model of the render component to fetch the set for.
 	 * @return The set the component belongs in.
