@@ -44,7 +44,7 @@ void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> re
 }
 
 void RenderComponentManager::removeComponent(std::shared_ptr<RenderComponent> comp, std::shared_ptr<const ModelRef> oldModel) {
-	std::unordered_set<std::shared_ptr<RenderComponent>> compSet = getComponentSet(oldModel);
+	std::unordered_set<std::shared_ptr<RenderComponent>>& compSet = getComponentSet(oldModel);
 
 	compSet.erase(comp);
 
