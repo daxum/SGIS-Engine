@@ -42,6 +42,12 @@ struct RenderConfig {
 	std::string windowTitle;
 	//Validation layers to enable, if supported by the renderer (ie. vulkan).
 	std::vector<std::string> validationLayers;
+	//Used to force the gpu used for rendering, instead of determining normally.
+	//This should only be used during development!
+	bool deviceOverride;
+	//The device index to force the engine to use. Device indices can be found
+	//using vulkaninfo.
+	size_t forceIndex;
 };
 
 struct EngineConfig {

@@ -190,6 +190,8 @@ void VkObjectHandler::setDebugCallback() {
 }
 
 void VkObjectHandler::setPhysicalDevice() {
+	const EngineConfig& config = Engine::instance->getConfig();
+
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -201,31 +203,37 @@ void VkObjectHandler::setPhysicalDevice() {
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-	//Remove unsuitable devices
-	removeInsufficientDevices(devices);
-
-	if (devices.empty()) {
-		throw std::runtime_error("No suitable device found!");
+	//Force the physical device to the one in the config if requested
+	if (config.renderer.deviceOverride) {
+		physicalDevice = devices.at(config.renderer.forceIndex);
 	}
+	else {
+		//Remove unsuitable devices
+		removeInsufficientDevices(devices);
 
-	ENGINE_LOG_DEBUG(logger, std::to_string(devices.size()) + " physical devices found");
-
-	//Take first dgpu found, if doesn't exist, just take first gpu.
-	bool deviceSet = false;
-
-	for (const VkPhysicalDevice& physDevice : devices) {
-		VkPhysicalDeviceProperties properties;
-		vkGetPhysicalDeviceProperties(physDevice, &properties);
-
-		if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-			deviceSet = true;
-			physicalDevice = physDevice;
-			break;
+		if (devices.empty()) {
+			throw std::runtime_error("No suitable device found!");
 		}
-	}
 
-	if (!deviceSet) {
-		physicalDevice = devices.at(0);
+		ENGINE_LOG_DEBUG(logger, std::to_string(devices.size()) + " physical devices found");
+
+		//Take first dgpu found, if doesn't exist, just take first gpu.
+		bool deviceSet = false;
+
+		for (const VkPhysicalDevice& physDevice : devices) {
+			VkPhysicalDeviceProperties properties;
+			vkGetPhysicalDeviceProperties(physDevice, &properties);
+
+			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+				deviceSet = true;
+				physicalDevice = physDevice;
+				break;
+			}
+		}
+
+		if (!deviceSet) {
+			physicalDevice = devices.at(0);
+		}
 	}
 
 	//Set queue families and physical device properties
@@ -301,8 +309,11 @@ QueueFamilyIndices VkObjectHandler::findQueueFamilies(VkPhysicalDevice physDevic
 			out.foundFamilies.set(0);
 		}
 		else if (queueFamilies.at(i).queueFlags & VK_QUEUE_TRANSFER_BIT) {
-			out.transferFamily = i;
-			out.foundFamilies.set(1);
+			//Prefer only transfer to transfer + compute
+			if (!out.foundFamilies.test(1) || (queueFamilies.at(out.transferFamily).queueFlags & VK_QUEUE_COMPUTE_BIT)) {
+				out.transferFamily = i;
+				out.foundFamilies.set(1);
+			}
 		}
 
 		if (!out.foundFamilies.test(2) || !out.foundFamilies.test(0) || out.presentFamily != out.graphicsFamily) {
