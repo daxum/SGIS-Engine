@@ -347,6 +347,10 @@ private:
 	VkImageView depthView;
 	//Allocation for depth buffer image.
 	VmaAllocation depthAllocation;
+	//Transfer buffer memory.
+	unsigned char* transferMem;
+	//Uniform stream buffer memory.
+	unsigned char* uniformMem;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.

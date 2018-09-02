@@ -57,7 +57,9 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	imageMap(),
 	depthBuffer(VK_NULL_HANDLE),
 	depthView(VK_NULL_HANDLE),
-	depthAllocation(VK_NULL_HANDLE) {
+	depthAllocation(VK_NULL_HANDLE),
+	transferMem(nullptr),
+	uniformMem(nullptr) {
 
 }
 
@@ -198,26 +200,25 @@ void VkMemoryManager::executeTransfers() {
 
 		VmaAllocationCreateInfo allocCreateInfo = {};
 		allocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
 		//Destroy old transfer buffer if needed
 		if (transferBuffer != VK_NULL_HANDLE) {
 			vmaDestroyBuffer(allocator, transferBuffer, transferAllocation);
 		}
 
+		VmaAllocationInfo allocInfo;
+
 		//Create new transfer buffer
-		if (vmaCreateBuffer(allocator, &transferCreateInfo, &allocCreateInfo, &transferBuffer, &transferAllocation, nullptr) != VK_SUCCESS) {
+		if (vmaCreateBuffer(allocator, &transferCreateInfo, &allocCreateInfo, &transferBuffer, &transferAllocation, &allocInfo) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create transfer buffer!");
 		}
 
+		transferMem = (unsigned char*) allocInfo.pMappedData;
 		growTransfer = false;
 	}
 
 	//Copy data to be transferred into transfer buffer
-	//TODO: Persistently map?
-	unsigned char* bufferData = nullptr;
-	if (vmaMapMemory(allocator, transferAllocation, (void**) &bufferData) != VK_SUCCESS) {
-		throw std::runtime_error("Wait a second. How did this happen? We're smarter than this. (Error while mapping transfer buffer)");
-	}
 
 	//Sorts transfers by destination buffer
 	std::unordered_map<VkBuffer, std::vector<VkBufferCopy>> copyData;
@@ -226,7 +227,7 @@ void VkMemoryManager::executeTransfers() {
 	//Buffer transfers
 	while (!pendingTransfers.empty()) {
 		TransferOperation& transferOp = pendingTransfers.front();
-		memcpy(bufferData + transferOp.srcOffset, transferOp.data, transferOp.size);
+		memcpy(transferMem + transferOp.srcOffset, transferOp.data, transferOp.size);
 
 		VkBufferCopy copyRegion = {};
 		copyRegion.srcOffset = transferOp.srcOffset;
@@ -247,7 +248,7 @@ void VkMemoryManager::executeTransfers() {
 	//Image transfers
 	while (!pendingImageTransfers.empty()) {
 		ImageTransferOperation& imageTransferOp = pendingImageTransfers.front();
-		memcpy(bufferData + imageTransferOp.offset, imageTransferOp.data, imageTransferOp.size);
+		memcpy(transferMem + imageTransferOp.offset, imageTransferOp.data, imageTransferOp.size);
 
 		VkBufferImageCopy copyRegion = {};
 		copyRegion.bufferOffset = imageTransferOp.offset;
@@ -265,8 +266,6 @@ void VkMemoryManager::executeTransfers() {
 		delete[] imageTransferOp.data;
 		pendingImageTransfers.pop();
 	}
-
-	vmaUnmapMemory(allocator, transferAllocation);
 
 	//Execute transfer
 
@@ -343,23 +342,15 @@ void VkMemoryManager::executeTransfers() {
 }
 
 uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame) {
-	unsigned char* bufferData = nullptr;
-
-	if (vmaMapMemory(allocator, uniformBufferAllocations.at(2), (void**)&bufferData) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to map memory?!?!");
-	}
-
 	const unsigned char* writeData = uniformProvider.getData().first;
 	const size_t writeSize = uniformProvider.getData().second;
 
 	const size_t writeOffset = screenObjectBufferSize * currentFrame + currentUniformOffset;
 
-	memcpy(&bufferData[writeOffset], writeData, writeSize);
+	memcpy(&uniformMem[writeOffset], writeData, writeSize);
 	currentUniformOffset += writeSize;
 
 	//TODO: flush if not coherent
-
-	vmaUnmapMemory(allocator, uniformBufferAllocations.at(2));
 
 	return writeOffset;
 }
@@ -535,13 +526,18 @@ void VkMemoryManager::createUniformBuffers(size_t modelStaticSize, size_t modelD
 
 	VmaAllocationCreateInfo screenObjectAllocCreateInfo = {};
 	screenObjectAllocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+	screenObjectAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+	VmaAllocationInfo screenObjectAllocInfo;
 
 	if (!(modelStaticSize == 0 || vmaCreateBuffer(allocator, &staticModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(0), &uniformBufferAllocations.at(0), nullptr) == VK_SUCCESS) ||
 		!(modelDynamicSize == 0 || vmaCreateBuffer(allocator, &dynamicModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(1), &uniformBufferAllocations.at(1), nullptr) == VK_SUCCESS) ||
-		!(screenObjectSize == 0 || vmaCreateBuffer(allocator, &screenObjectCreateInfo, &screenObjectAllocCreateInfo, &uniformBuffers.at(2), &uniformBufferAllocations.at(2), nullptr) == VK_SUCCESS)) {
+		!(screenObjectSize == 0 || vmaCreateBuffer(allocator, &screenObjectCreateInfo, &screenObjectAllocCreateInfo, &uniformBuffers.at(2), &uniformBufferAllocations.at(2), &screenObjectAllocInfo) == VK_SUCCESS)) {
 
 		throw std::runtime_error("Failed to create one or more uniform buffers!");
 	}
+
+	uniformMem = (unsigned char*) screenObjectAllocInfo.pMappedData;
 
 	ENGINE_LOG_DEBUG(logger, "Created uniform buffers");
 }

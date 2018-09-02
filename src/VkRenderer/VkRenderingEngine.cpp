@@ -293,38 +293,18 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 				continue;
 			}
 
+			bool screenSetBound = false;
+
 			//Screen set setting used to happen conditionally, but validation layers crash for some reason
 			//Assuming this needs rebinding every time as a result
 			bool hasScreenSet = false;
 			const std::string& screenSetName = shader->getPerScreenDescriptor();
 
-			//Set screen uniforms
-			if (screenSetName != "") {
-				Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(screenSetName);
-				setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState.get(), camera.get());
-
-				uint32_t screenOffset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
-				VkDescriptorSet screenSet = memoryManager.getDescriptorSet(screenSetName);
-
-				vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
-				hasScreenSet = true;
-			}
-
 			//Per-model loop
 			for (const auto& objectSet : modelMap.second) {
 				const Model* model = objectSet.first;
 
-				uint32_t modelSetOffset = hasScreenSet ? 1 : 0;
-				VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
-
-				if (model->hasBufferedUniforms) {
-					uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
-
-					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 1, &modelUniformOffset);
-				}
-				else {
-					vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 0, nullptr);
-				}
+				bool modelSetBound = false;
 
 				//Per-object loop
 				for (const std::shared_ptr<RenderComponent>& comp : objectSet.second) {
@@ -345,7 +325,39 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							currentBuffer = buffer;
 						}
 
-						//Set object uniforms
+						//Bind descriptor sets if needed
+
+						//Screen set
+						if (!screenSetBound && screenSetName != "") {
+							Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(screenSetName);
+							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState.get(), camera.get());
+
+							uint32_t screenOffset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
+							VkDescriptorSet screenSet = memoryManager.getDescriptorSet(screenSetName);
+
+							vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
+							hasScreenSet = true;
+							screenSetBound = true;
+						}
+
+						//Model set
+						if (!modelSetBound) {
+							uint32_t modelSetOffset = hasScreenSet ? 1 : 0;
+							VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
+
+							if (model->hasBufferedUniforms) {
+								uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
+
+								vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 1, &modelUniformOffset);
+							}
+							else {
+								vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 0, nullptr);
+							}
+
+							modelSetBound = true;
+						}
+
+						//Object set
 						if (shader->getPerObjectDescriptor() != "") {
 							const std::string& objectDescriptor = shader->getPerObjectDescriptor();
 
