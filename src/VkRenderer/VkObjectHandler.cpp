@@ -208,6 +208,8 @@ void VkObjectHandler::setPhysicalDevice() {
 		throw std::runtime_error("No suitable device found!");
 	}
 
+	ENGINE_LOG_DEBUG(logger, std::to_string(devices.size()) + " physical devices found");
+
 	//Take first dgpu found, if doesn't exist, just take first gpu.
 	bool deviceSet = false;
 
@@ -218,6 +220,7 @@ void VkObjectHandler::setPhysicalDevice() {
 		if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 			deviceSet = true;
 			physicalDevice = physDevice;
+			break;
 		}
 	}
 
