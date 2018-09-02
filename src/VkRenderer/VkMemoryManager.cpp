@@ -31,6 +31,7 @@
 
 #include "VkMemoryManager.hpp"
 #include "VkRenderingEngine.hpp"
+#include "ExtraMath.hpp"
 
 VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& objects) :
 	RendererMemoryManager(logConfig),
@@ -344,6 +345,9 @@ void VkMemoryManager::executeTransfers() {
 uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame) {
 	const unsigned char* writeData = uniformProvider.getData().first;
 	const size_t writeSize = uniformProvider.getData().second;
+
+	//Handle uniform alignment
+	currentUniformOffset = ExMath::roundToVal(currentUniformOffset, getMinUniformBufferAlignment());
 
 	const size_t writeOffset = screenObjectBufferSize * currentFrame + currentUniformOffset;
 
