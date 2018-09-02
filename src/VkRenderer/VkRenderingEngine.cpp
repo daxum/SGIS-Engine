@@ -23,6 +23,15 @@
 #include "VkRenderInitializer.hpp"
 #include "VkTextureLoader.hpp"
 
+namespace {
+	glm::mat4 projectionCorrection = {
+		{1.0, 0.0, 0.0, 0.0},
+		{0.0, -1.0, 0.0, 0.0},
+		{0.0, 0.0, 0.5, 0.0},
+		{0.0, 0.0, 0.5, 1.0}
+	};
+}
+
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<VkTextureLoader>(objectHandler, loaderLogger, memoryManager),
 					std::make_shared<VkShaderLoader>(objectHandler, swapObjects, &memoryManager, loaderLogger, shaderMap),
@@ -165,9 +174,30 @@ void VkRenderingEngine::beginFrame() {
 	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
 		throw std::runtime_error("Failed to start recording command buffer!");
 	}
+
+	//Render pass, move elsewhere later
+	VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
+	VkClearValue clearDepth;
+	clearDepth.color = {0, 0, 0, 0};
+	clearDepth.depthStencil = {1.0f, 0};
+
+	VkClearValue clearValues[] = { clearColor, clearDepth };
+
+	VkRenderPassBeginInfo passBeginInfo = {};
+	passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	passBeginInfo.renderPass = swapObjects.getRenderPass();
+	passBeginInfo.framebuffer = swapObjects.getFramebuffer(currentImageIndex);
+	passBeginInfo.renderArea.offset = {0, 0};
+	passBeginInfo.renderArea.extent = swapObjects.getSwapchainExtent();
+	passBeginInfo.clearValueCount = 2;
+	passBeginInfo.pClearValues = clearValues;
+
+	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void VkRenderingEngine::present() {
+	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
+
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to record command buffer.");
 	}
@@ -221,30 +251,25 @@ void VkRenderingEngine::setViewport(int width, int height) {
 }
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	//TODO: this still needs fixing
-	VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
-	VkClearValue clearDepth;
-	clearDepth.color = {0, 0, 0, 0};
-	clearDepth.depthStencil = {1.0f, 0};
-
-	VkClearValue clearValues[] = { clearColor, clearDepth };
-
-	VkRenderPassBeginInfo passBeginInfo = {};
-	passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	passBeginInfo.renderPass = swapObjects.getRenderPass();
-	passBeginInfo.framebuffer = swapObjects.getFramebuffer(currentImageIndex);
-	passBeginInfo.renderArea.offset = {0, 0};
-	passBeginInfo.renderArea.extent = swapObjects.getSwapchainExtent();
-	passBeginInfo.clearValueCount = 2;
-	passBeginInfo.pClearValues = clearValues;
-
-	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	//TODO: This happens for 8 frames or so at start. Why?
+	if (objects.empty()) {
+		return;
+	}
 
 	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
 	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera, state);
 	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera, state);
 
-	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
+	//TODO: generate render passes at engine initialization to render this unnecessary
+	VkClearAttachment depthClear = {};
+	depthClear.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	depthClear.clearValue.depthStencil = {1.0f, 0};
+
+	VkClearRect clearRect = {};
+	clearRect.rect.extent = swapObjects.getSwapchainExtent();
+	clearRect.layerCount = 1;
+
+	vkCmdClearAttachments(commandBuffers.at(currentFrame), 1, &depthClear, 1, &clearRect);
 }
 
 void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera, std::shared_ptr<const ScreenState> screenState) {
@@ -387,7 +412,7 @@ void VkRenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligne
 		const void* value = nullptr;
 
 		switch (uniform.provider) {
-			case UniformProviderType::CAMERA_PROJECTION: tempMat = camera->getProjection(); value = &tempMat; tempMat[1][1] *= -1; break;
+			case UniformProviderType::CAMERA_PROJECTION: tempMat = camera->getProjection(); value = &tempMat; tempMat = projectionCorrection * tempMat; break;
 			case UniformProviderType::CAMERA_VIEW: tempMat = camera->getView(); value = &tempMat; break;
 			case UniformProviderType::SCREEN_STATE: value = state->getRenderValue(uniform.name); break;
 			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
