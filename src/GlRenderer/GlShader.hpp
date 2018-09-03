@@ -19,51 +19,45 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
 
 #include "CombinedGl.h"
-#include "ShaderInterface.hpp"
-#include "GlTextureLoader.hpp"
 #include "ShaderInfo.hpp"
 
-//Encapsulates an OpenGL program object, to make things like setting
-//uniforms easier.
-class GlShader : public ShaderInterface {
+class GlShader {
 public:
 	//The program id for this shader.
 	const GLuint id;
 	//The render pass this shader is in.
 	const RenderPass renderPass;
+	//Name of the screen uniforms set.
+	const std::string screenSet;
+	//Name of the object uniform set.
+	const std::string objectSet;
+	//Push constants used in the shader.
+	const std::vector<UniformDescription> pushConstants;
 
 	/**
 	 * Creates a GlShader with the given id.
 	 * @param id The id of the program object for this shader.
-	 * @param textureMap A reference to the rendering engine's texture map, used
-	 *     for setting textures.
+	 * @param renderPass The render (transparency) pass the shader belongs in.
+	 * @param screenSet The per-screen uniform set, empty string if not present.
+	 * @param objectSet The per-object uniform set, empty string if not present.
+	 * @param pushConstants Push constants for this shader, these will never be buffered
+	 *     even if uniform buffers are implemented (will always use glUniform*).
 	 */
-	GlShader(GLuint id, RenderPass pass, const std::unordered_map<std::string, GlTextureData>& textureMap);
+	GlShader(GLuint id, RenderPass pass, const std::string& screenSet, const std::string& objectSet, const std::vector<UniformDescription>& pushConstants) :
+		id(id),
+		renderPass(pass),
+		screenSet(screenSet),
+		objectSet(objectSet),
+		pushConstants(pushConstants) {
+
+	}
 
 	/**
 	 * Destructor. Destroys the program object.
 	 */
-	~GlShader();
-
-	/**
-	 * Sets a uniform variable.
-	 * @param type The type of the uniform.
-	 * @param name The name of the uniform in the shader.
-	 * @param data The value to set the uniform data to.
-	 */
-	void setUniform(UniformType type, const std::string& name, const void* data) override;
-
-	/**
-	 * Sets the texture at the given index to the provided name.
-	 * @param name The name of the texture to bind.
-	 * @param index The texture unit to bind the texture to.
-	 */
-	void setTexture(const std::string& name, unsigned int index) override;
-
-private:
-	//A reference to the texture map for setting textures.
-	const std::unordered_map<std::string, GlTextureData>& textureMap;
+	~GlShader() {
+		glDeleteProgram(id);
+	}
 };

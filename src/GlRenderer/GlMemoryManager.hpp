@@ -66,6 +66,11 @@ public:
 	~GlMemoryManager();
 
 	/**
+	 * Does nothing, as OpenGL doesn't have descriptor sets.
+	 */
+	void initializeDescriptors() override {}
+
+	/**
 	 * Binds the specified buffer for drawing.
 	 * @param buffer The buffer to bind.
 	 */
@@ -94,6 +99,21 @@ protected:
 	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) override;
 
 	/**
+	 * Does nothing for now - if a newer OpenGL version is used in the future,
+	 * or if the uniform buffer extension is found, this will initialize the buffers.
+	 * @param modelStaticSize The size of the static model uniform buffer.
+	 * @param modelDynamicSize The size of the dynamic model uniform buffer.
+	 * @param screenObjectSize The size of the screen / object uniform buffer.
+	 */
+	void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) override {}
+
+	/**
+	 * Minimum uniform buffer alignment, not used until uniform buffers are.
+	 * @return 1.
+	 */
+	virtual size_t getMinUniformBufferAlignment() override { return 1; }
+
+	/**
 	 * Uploads the vertex and index data into the given buffer.
 	 * @param buffer The buffer to upload to.
 	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
@@ -111,6 +131,18 @@ protected:
 	 * @param mesh The name of the mesh to remove.
 	 */
 	void invalidateMesh(const std::string& mesh) override;
+
+	/**
+	 * Some more functions that aren't needed for opengl.
+	 */
+	void addModelDescriptors(const Model& model) override {}
+	void addDynamicDescriptors(const Model& model) override {}
+	void removeDynamicDescriptors(const Model& model) override {}
+
+	/**
+	 * This one might be used eventually.
+	 */
+	void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) override {}
 
 private:
 	//Stores the rendering data for all uploaded meshes.

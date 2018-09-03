@@ -91,6 +91,8 @@ struct UniformDescription {
 	//This has special meaning for samplers - for dynamic models,
 	//it represents the name of the texture to use, which will be
 	//static for all models using the descriptor set.
+	//Finally, for OpenGL, the name should match the name in the
+	//shader.
 	std::string name;
 	//Where the uniform's value comes from.
 	UniformProviderType provider;

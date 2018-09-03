@@ -23,8 +23,9 @@
 #include <memory>
 
 #include "ShaderLoader.hpp"
-#include "Shader.hpp"
+#include "GlShader.hpp"
 #include "GlTextureLoader.hpp"
+#include "RendererMemoryManager.hpp"
 
 class GlShaderLoader : public ShaderLoader {
 public:
@@ -33,9 +34,8 @@ public:
 	 * @param logger The logger to use.
 	 * @param memoryManager The memory manager for the rendering engine.
 	 * @param shaderMap The map to store loaded shaders in.
-	 * @param textureMap Map passed in the GlShaders, will never be accessed during loading.
 	 */
-	GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap);
+	GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap);
 
 	/**
 	 * Loads a program object using the given shader files.
@@ -46,8 +46,10 @@ public:
 	void loadShader(std::string name, const ShaderInfo& info) override;
 
 private:
-	std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap;
-	const std::unordered_map<std::string, GlTextureData>& textureMap;
+	//Map to insert loaded shaders into.
+	std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap;
+	//Memory manager, gets uniform sets.
+	RendererMemoryManager* memoryManager;
 
 	/**
 	 * Creates a program object using the shaders with the specified filenames.

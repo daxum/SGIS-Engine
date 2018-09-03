@@ -37,7 +37,6 @@ if (USE_OPENGL)
 	set(ENGINE_FILES ${ENGINE_FILES}
 		GlRenderer/GlRenderingEngine.cpp
 		GlRenderer/GlTextureLoader.cpp
-		GlRenderer/GlShader.cpp
 		GlRenderer/GlShaderLoader.cpp
 		GlRenderer/GlMemoryManager.cpp
 		GlRenderer/gl_core_4_1.c

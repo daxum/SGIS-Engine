@@ -30,11 +30,11 @@
 #include "RenderComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
-#include "GlShader.hpp"
 
 GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
-					std::make_shared<GlShaderLoader>(loaderLogger, &memoryManager, shaderMap, textureMap),
+					std::make_shared<GlShaderLoader>(loaderLogger, &memoryManager, shaderMap),
+					std::shared_ptr<RenderInitializer>(), //TODO
 					rendererLog,
 					loaderLog),
 	interface(display, this),
@@ -71,7 +71,7 @@ GlRenderingEngine::~GlRenderingEngine() {
 
 	glfwTerminate();
 
-	logger.info("Destroyed OpenGL rendering engine.");
+	ENGINE_LOG_INFO(logger, "Destroyed OpenGL rendering engine");
 }
 
 void GlRenderingEngine::init() {
@@ -95,7 +95,7 @@ void GlRenderingEngine::init() {
 
 	glfwMakeContextCurrent(window);
 
-	logger.info("Created window and context");
+	ENGINE_LOG_INFO(logger, "Created window and context");
 
 	//Load OpenGL functions
 
@@ -105,7 +105,7 @@ void GlRenderingEngine::init() {
 		throw new std::runtime_error("OpenGl function loading failed");
 	}
 
-	logger.info("Loaded all OpenGL functions.");
+	ENGINE_LOG_INFO(logger, "Loaded all OpenGL functions.");
 
 	//Set callbacks
 
@@ -127,11 +127,7 @@ void GlRenderingEngine::init() {
 	glClearColor(0.0, 0.2, 0.5, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	logger.info("OpenGL initialization complete.");
-}
-
-RendererMemoryManager* GlRenderingEngine::getMemoryManager() {
-	return &memoryManager;
+	ENGINE_LOG_INFO(logger, "OpenGL initialization complete.");
 }
 
 void GlRenderingEngine::present() {
@@ -162,10 +158,8 @@ void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<Shader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state) {
+void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state) {
 	matStack.push();
-
-	shader->setPerObjectUniforms(data, matStack, state);
 
 	const GlMeshRenderData& renderData = memoryManager.getMeshData(data->getModel()->getModel().mesh);
 
@@ -184,12 +178,11 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 		const std::string& buffer = shaderObjectMap.first;
 
 		for (const auto& modelMap : shaderObjectMap.second) {
-			const std::string& shader = modelMap.first;
-			const std::shared_ptr<Shader> shaderInter = shaderMap.at(shader);
-			const std::shared_ptr<GlShader> shaderObj = std::static_pointer_cast<GlShader>(shaderInter->getRenderInterface());
+			const std::string& shaderName = modelMap.first;
+			const std::shared_ptr<GlShader> shader = shaderMap.at(shaderName);
 
 			//Skip these objects if their shader isn't in the current render pass
-			if (shaderObj->renderPass != pass) {
+			if (shader->renderPass != pass) {
 				continue;
 			}
 
@@ -197,10 +190,10 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 				for (const std::shared_ptr<RenderComponent> comp : objectSet.second) {
 					if (visibleObjects.count(comp.get())) {
 						//Set shader / buffer / blend if needed
-						if (currentShader != shader) {
-							glUseProgram(shaderObj->id);
-							shaderInter->setGlobalUniforms(camera, state);
-							currentShader = shader;
+						if (currentShader != shaderName) {
+							glUseProgram(shader->id);
+							//TODO: set per-screen uniforms
+							currentShader = shaderName;
 						}
 
 						if (currentBuffer != buffer) {
@@ -213,7 +206,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							blendOn = true;
 						}
 
-						renderObject(matStack, shaderInter,comp, state);
+						renderObject(matStack, shader, comp, state);
 					}
 				}
 			}

@@ -22,27 +22,38 @@
 #include "GlShaderLoader.hpp"
 #include "GlShader.hpp"
 
-GlShaderLoader::GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<Shader>>& shaderMap, const std::unordered_map<std::string, GlTextureData>& textureMap) :
-	ShaderLoader(logger, memoryManager),
+GlShaderLoader::GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap) :
+	ShaderLoader(logger),
 	shaderMap(shaderMap),
-	textureMap(textureMap) {
+	memoryManager(memoryManager) {
 
 }
 
 void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	if (shaderMap.count(name) > 0) {
-		logger.warn("Tried to load duplicate shader \"" + name + "\".");
+		ENGINE_LOG_WARN(logger, "Tried to load duplicate shader \"" + name + "\".");
 		return;
 	}
 
-	logger.debug("Constructing shader from \"" + info.vertex + "\" and \"" + info.fragment + "\".");
+	ENGINE_LOG_DEBUG(logger, "Constructing shader from \"" + info.vertex + "\" and \"" + info.fragment + "\"");
 
-	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, textureMap);
-	info.shaderObject->setRenderInterface(shader);
+	//Determine screen and object descriptor sets (from VkShaderLoader, move to parent?)
+	std::string screenSet = "";
+	std::string objectSet = "";
 
-	shaderMap.insert(std::make_pair(name, info.shaderObject));
+	for (const std::string& set : info.uniformSets) {
+		if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_SCREEN) {
+			screenSet = set;
+		}
+		else if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_OBJECT) {
+			objectSet = set;
+		}
+	}
 
-	logger.debug("Shader \"" + name + "\" loaded.");
+	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, screenSet, objectSet, info.pushConstants.pushConstants);
+	shaderMap.insert({name, shader});
+
+	ENGINE_LOG_DEBUG(logger, "Shader \"" + name + "\" loaded");
 }
 
 GLuint GlShaderLoader::createProgram(std::string vertexName, std::string fragmentName) {
@@ -71,8 +82,10 @@ GLuint GlShaderLoader::createProgram(std::string vertexName, std::string fragmen
 	if (linked == 0) {
 		char infoLog[1024];
 		glGetProgramInfoLog(shaderProgram, 1024, nullptr, infoLog);
-		logger.fatal(std::string("Program linking failed\n------------ Program Link Log ------------\n") +
-					 infoLog + "\n---------------- End Log -----------------\n");
+		ENGINE_LOG_FATAL(logger, "Program linking failed!");
+		ENGINE_LOG_FATAL(logger, "------------ Program Link Log ------------");
+		ENGINE_LOG_FATAL(logger, infoLog);
+		ENGINE_LOG_FATAL(logger, "---------------- End Log -----------------");
 
 		throw std::runtime_error("Linking failed for program using \"" + vertexName + "\" and \"" + fragmentName + "\"");
 	}
@@ -99,14 +112,9 @@ GLuint GlShaderLoader::createShader(std::string filename, GLenum type) {
 
 	//Load source and compile shader
 
-	//This might look weird, but errors happen if the c string is passed directly to glShaderSource().
-	//Apparently that function takes a const GLchar* const* (const pointer to const char?), which is
-	//an abomination of a type that can't be converted to directly from the c_str() function call,
-	//due to how '&' works.
-	std::string sourceStr = loadShaderSource(filename);
-	const char* source = sourceStr.c_str();
+	const char* sourceString = loadShaderSource(filename).c_str();
 
-	glShaderSource(shader, 1, &source, nullptr);
+	glShaderSource(shader, 1, &sourceString, nullptr);
 	glCompileShader(shader);
 
 	//Check if compilation somehow failed.
@@ -118,8 +126,10 @@ GLuint GlShaderLoader::createShader(std::string filename, GLenum type) {
 		char infoLog[1024];
 		glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
 
-		logger.fatal("Failed to compile shader \"" + filename + "\"\n--------- Shader Compilation Log ---------\n" +
-					 infoLog + "\n---------------- End Log -----------------\n");
+		ENGINE_LOG_FATAL(logger, "Failed to compile shader \"" + filename + "\"!");
+		ENGINE_LOG_FATAL(logger, "--------- Shader Compilation Log ---------");
+		ENGINE_LOG_FATAL(logger, infoLog);
+		ENGINE_LOG_FATAL(logger, "---------------- End Log -----------------");
 
 		throw std::runtime_error("Failed to compile shader \"" + filename + "\"");
 	}

@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include <stdexcept>
+
 #include "GlTextureLoader.hpp"
 
 GlTextureLoader::GlTextureLoader(Logger& logger, std::unordered_map<std::string, GlTextureData>& texMap) :
@@ -28,7 +29,7 @@ GlTextureLoader::GlTextureLoader(Logger& logger, std::unordered_map<std::string,
 void GlTextureLoader::loadTexture(const std::string& name, const std::string& filename, Filter minFilter, Filter magFilter, bool mipmap ) {
 	if (textureMap.count(name) != 0) {
 		//Duplicate texture, skip it.
-		logger.warn("Attempted to load duplicate texture \"" + filename + "\".");
+		ENGINE_LOG_WARN(logger, "Attempted to load duplicate texture \"" + filename + "\"");
 		return;
 	}
 
@@ -47,7 +48,7 @@ void GlTextureLoader::loadTexture(const std::string& name, const std::string& fi
 
 	//Don't abort if image loading failed - the missing texture should be perfectly usable
 	if (!texData.loadSuccess) {
-		logger.warn("Using missing texture data for \"" + filename + "\".");
+		ENGINE_LOG_WARN(logger, "Using missing texture data for \"" + filename + "\"");
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texData.width, texData.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData.data.get());
@@ -68,11 +69,7 @@ void GlTextureLoader::loadTexture(const std::string& name, const std::string& fi
 	logger.debug("Uploaded texture \"" + name + "\".");
 }
 
-void GlTextureLoader::loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
-	if (filenames.size() != 6) {
-		throw std::runtime_error("Bad cubemap size");
-	}
-
+void GlTextureLoader::loadCubeMap(const std::string& name, const std::array<std::string, 6>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
 	if (textureMap.count(name) != 0) {
 		throw std::runtime_error("Attempted to load duplicate texture \"" + name + "\"");
 	}
@@ -103,14 +100,14 @@ void GlTextureLoader::loadCubeMap(const std::string& name, const std::vector<std
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-	logger.debug("Uploaded cubemap texture \"" + name + "\"");
+	ENGINE_LOG_DEBUG(logger, "Uploaded cubemap texture \"" + name + "\"");
 }
 
-//This and loadTexture should be merged eventually.
-void GlTextureLoader::addFontTexture(const std::string textureName, const TextureData& data) {
+//This and loadTexture should be merged eventually
+void GlTextureLoader::addFontTexture(const std::string& textureName, const TextureData& data) {
 	if (textureMap.count(textureName) != 0) {
 		//Duplicate texture, skip it.
-		logger.warn("Attempted to add duplicate texture \"" + textureName + "\".");
+		ENGINE_LOG_WARN(logger, "Attempted to add duplicate texture \"" + textureName + "\"");
 		return;
 	}
 
@@ -119,7 +116,7 @@ void GlTextureLoader::addFontTexture(const std::string textureName, const Textur
 	glGenTextures(1, &texture);
 
 	if (texture == 0) {
-		throw std::runtime_error("glGenTextures() returned 0 - could not allocate texture.");
+		throw std::runtime_error("glGenTextures() returned 0 - could not allocate texture");
 	}
 
 	//Bind and upload texture data
@@ -141,5 +138,5 @@ void GlTextureLoader::addFontTexture(const std::string textureName, const Textur
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	logger.debug("Uploaded texture \"" + textureName + "\".");
+	ENGINE_LOG_DEBUG(logger, "Uploaded texture \"" + textureName + "\"");
 }

@@ -66,7 +66,7 @@ public:
 	 * @param magFilter The filter to use the upscaling.
 	 * @param mipmap Whether to generate mipmaps.
 	 */
-	void loadCubeMap(const std::string& name, const std::vector<std::string>& filenames, Filter minFilter, Filter magFilter, bool mipmap) override;
+	void loadCubeMap(const std::string& name, const std::array<std::string, 6>& filenames, Filter minFilter, Filter magFilter, bool mipmap) override;
 
 protected:
 	/**
@@ -74,7 +74,7 @@ protected:
 	 * @param textureName The name to store the texture under.
 	 * @param data The texture data to store.
 	 */
-	void addFontTexture(const std::string textureName, const TextureData& data);
+	void addFontTexture(const std::string& textureName, const TextureData& data);
 
 private:
 	//The map where loaded textures are stored
