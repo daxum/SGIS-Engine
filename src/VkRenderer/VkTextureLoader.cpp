@@ -36,7 +36,6 @@ void VkTextureLoader::loadTexture(const std::string& name, const std::string& fi
 
 	VkImageCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	createInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 	createInfo.imageType = VK_IMAGE_TYPE_2D;
 	createInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
 	createInfo.extent = {data.width, data.height, 1};
@@ -124,7 +123,6 @@ void VkTextureLoader::loadCubeMap(const std::string& name, const std::array<std:
 void VkTextureLoader::addFontTexture(const std::string& textureName, const TextureData& data) {
 	VkImageCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	createInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 	createInfo.imageType = VK_IMAGE_TYPE_2D;
 	createInfo.format = VK_FORMAT_R8_UNORM;
 	createInfo.extent = {data.width, data.height, 1};
