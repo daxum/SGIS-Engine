@@ -32,7 +32,6 @@
 #include "GlTextureLoader.hpp"
 #include "Model.hpp"
 #include "Logger.hpp"
-#include "MatrixStack.hpp"
 #include "ModelManager.hpp"
 #include "RenderComponent.hpp"
 #include "GlfwInterface.hpp"
@@ -119,13 +118,6 @@ private:
 	GlMemoryManager memoryManager;
 
 	/**
-	 * Renders the object onto the screen.
-	 * @param shader The shader used for rendering.
-	 * @param data The object to render.
-	 */
-	void renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state);
-
-	/**
 	 * Renders all the objects in objects. Transparency stuff is set up before this function is called.
 	 * @param pass The current rendering pass.
 	 * @param visibleObjects A set of objects visible on the screen.
@@ -133,5 +125,5 @@ private:
 	 * @param camera The camera to use when rendering.
 	 * @param state The screen state, passed to shaders when setting uniforms.
 	 */
-	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
 };

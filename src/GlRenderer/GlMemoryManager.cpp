@@ -11,10 +11,9 @@ GlMemoryManager::GlMemoryManager(const LogConfig& logConfig) :
 
 }
 
-GlMemoryManager::~GlMemoryManager() {
+void GlMemoryManager::deleteObjects() {
 	glDeleteBuffers(1, &transferBuffer);
-	transferBuffer = 0;
-	transferSize = 0;
+	deleteBuffers();
 }
 
 void GlMemoryManager::bindBuffer(const std::string& buffer) {

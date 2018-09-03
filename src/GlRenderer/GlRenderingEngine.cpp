@@ -30,11 +30,12 @@
 #include "RenderComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
+#include "GlRenderInitializer.hpp"
 
 GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
 					std::make_shared<GlShaderLoader>(loaderLogger, &memoryManager, shaderMap),
-					std::shared_ptr<RenderInitializer>(), //TODO
+					std::make_shared<GlRenderInitializer>(memoryManager),
 					rendererLog,
 					loaderLog),
 	interface(display, this),
@@ -60,6 +61,14 @@ GlRenderingEngine::~GlRenderingEngine() {
 	}
 
 	glDeleteTextures(textureMap.size(), namesToDelete.data());
+
+	//Delete shaders
+
+	shaderMap.clear();
+
+	//Clear out memory manager
+
+	memoryManager.deleteObjects();
 
 	//Delete window and terminate glfw
 
@@ -140,17 +149,14 @@ void GlRenderingEngine::setViewport(int width, int height) {
 }
 
 void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	MatrixStack matStack;
-	matStack.multiply(camera->getView());
-
 	//Opaque objects
-	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, matStack, camera, state);
+	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
 
 	//Transparent objects
-	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, matStack, camera, state);
+	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera, state);
 
 	//Translucent objects
-	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, matStack, camera, state);
+	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera, state);
 
 	glBindVertexArray(0);
 
@@ -158,17 +164,7 @@ void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void GlRenderingEngine::renderObject(MatrixStack& matStack, std::shared_ptr<GlShader> shader, std::shared_ptr<RenderComponent> data, std::shared_ptr<ScreenState> state) {
-	matStack.push();
-
-	const GlMeshRenderData& renderData = memoryManager.getMeshData(data->getModel()->getModel().mesh);
-
-	glDrawElements(GL_TRIANGLES, renderData.indexCount, GL_UNSIGNED_INT, (void*) renderData.indexStart);
-
-	matStack.pop();
-}
-
-void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, MatrixStack& matStack, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
 	std::string currentBuffer = "";
 	std::string currentShader = "";
 	bool enableBlend = pass == RenderPass::TRANSLUCENT;
@@ -206,7 +202,9 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							blendOn = true;
 						}
 
-						renderObject(matStack, shader, comp, state);
+						const GlMeshRenderData& renderData = memoryManager.getMeshData(comp->getModel()->getModel().mesh);
+
+						glDrawElements(GL_TRIANGLES, renderData.indexCount, GL_UNSIGNED_INT, (void*) renderData.indexStart);
 					}
 				}
 			}

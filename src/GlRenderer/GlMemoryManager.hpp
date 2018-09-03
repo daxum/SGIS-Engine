@@ -61,9 +61,9 @@ public:
 	GlMemoryManager(const LogConfig& logConfig);
 
 	/**
-	 * Destructor. Deletes the transfer buffer.
+	 * Deletes all created opengl objects in preparation for shutting down.
 	 */
-	~GlMemoryManager();
+	void deleteObjects();
 
 	/**
 	 * Does nothing, as OpenGL doesn't have descriptor sets.
@@ -83,6 +83,13 @@ public:
 	 * @throw std::out_of_range if the mesh isn't present.
 	 */
 	const GlMeshRenderData& getMeshData(const std::string& name) { return meshData.at(name); }
+
+	/**
+	 * Adds a uniform set to the memory manager.
+	 * @param name The name of the set.
+	 * @param set The set to add.
+	 */
+	void addUniformSet(const std::string& name, const UniformSet& set) { uniformSets.insert({name, set}); }
 
 protected:
 	/**

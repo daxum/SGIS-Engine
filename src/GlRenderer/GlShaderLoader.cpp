@@ -112,7 +112,8 @@ GLuint GlShaderLoader::createShader(std::string filename, GLenum type) {
 
 	//Load source and compile shader
 
-	const char* sourceString = loadShaderSource(filename).c_str();
+	std::string source = loadShaderSource(filename);
+	const char* sourceString = source.c_str();
 
 	glShaderSource(shader, 1, &sourceString, nullptr);
 	glCompileShader(shader);
