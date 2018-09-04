@@ -204,10 +204,15 @@ void VkObjectHandler::setPhysicalDevice() {
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
 	//Force the physical device to the one in the config if requested
-	if (config.renderer.deviceOverride) {
+	if (config.renderer.deviceOverride && config.renderer.forceIndex < devices.size()) {
 		physicalDevice = devices.at(config.renderer.forceIndex);
 	}
 	else {
+		//Tried to force device, but failed due to invalid index
+		if (config.renderer.deviceOverride && config.renderer.forceIndex >= devices.size()) {
+			ENGINE_LOG_WARN(logger, "Failed to force physical device - invalid device index " + std::to_string(config.renderer.forceIndex) + " (max " + std::to_string(devices.size() - 1) + ")");
+		}
+
 		//Remove unsuitable devices
 		removeInsufficientDevices(devices);
 
