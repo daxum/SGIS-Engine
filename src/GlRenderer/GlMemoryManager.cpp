@@ -44,12 +44,12 @@ std::shared_ptr<RenderBufferData> GlMemoryManager::createBuffer(const std::vecto
 	//Buffer memory allocation
 	glBindVertexArray(data->vertexArray);
 
-	logger.debug("Creating " + std::to_string(size) + " byte vertex buffer.");
+	ENGINE_LOG_DEBUG(logger, "Creating " + std::to_string(size) + " byte vertex buffer.");
 
 	glBindBuffer(GL_ARRAY_BUFFER, data->vertexBufferId);
 	glBufferData(GL_ARRAY_BUFFER, size, nullptr, glUsage);
 
-	logger.debug("Creating " + std::to_string(size) + " byte index buffer.");
+	ENGINE_LOG_DEBUG(logger, "Creating " + std::to_string(size) + " byte index buffer.");
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data->indexBufferId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, glUsage);
@@ -63,7 +63,7 @@ std::shared_ptr<RenderBufferData> GlMemoryManager::createBuffer(const std::vecto
 
 	size_t offset = 0;
 
-	logger.debug("Buffer format:");
+	ENGINE_LOG_DEBUG(logger, "Buffer format:");
 
 	for (size_t i = 0; i < vertexFormat.size(); i++) {
 		size_t elementSize = sizeFromVertexType(vertexFormat.at(i).type);
@@ -71,7 +71,7 @@ std::shared_ptr<RenderBufferData> GlMemoryManager::createBuffer(const std::vecto
 
 		glEnableVertexAttribArray(i);
 		glVertexAttribPointer(i, elementCount, GL_FLOAT, GL_FALSE, vertexSize, (void*) offset);
-		logger.debug("    Binding " + std::to_string(i) + ": Components=" + std::to_string(elementCount) + ", Stride=" + std::to_string(vertexSize) + ", offset=" + std::to_string(offset));
+		ENGINE_LOG_DEBUG(logger, "    Binding " + std::to_string(i) + ": Components=" + std::to_string(elementCount) + ", Stride=" + std::to_string(vertexSize) + ", offset=" + std::to_string(offset));
 
 		offset += elementSize;
 	}
@@ -85,7 +85,7 @@ void GlMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 	std::shared_ptr<const GlBufferData> glBuffer = std::static_pointer_cast<const GlBufferData>(buffer.getRenderData());
 
 	if (glBuffer->useTransfer) {
-		logger.debug("Using transfer for mesh \"" + mesh + "\"");
+		ENGINE_LOG_DEBUG(logger, "Using transfer for mesh \"" + mesh + "\"");
 
 		if (transferSize == 0) {
 			glGenBuffers(1, &transferBuffer);
@@ -107,7 +107,7 @@ void GlMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 
 		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, offset, size);
 
-		logger.debug("Copied vertex data into buffer at offset " + std::to_string(offset) + " and size " + std::to_string(size));
+		ENGINE_LOG_DEBUG(logger, "Copied vertex data into buffer at offset " + std::to_string(offset) + " and size " + std::to_string(size));
 
 		//Transfer index data
 		bufferData = glMapBufferRange(GL_COPY_READ_BUFFER, 0, indexSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
@@ -118,11 +118,11 @@ void GlMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 
 		glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, indexOffset, indexSize);
 
-		logger.debug("Copied index data into buffer at offset " + std::to_string(indexOffset) + " and size " + std::to_string(indexSize));
+		ENGINE_LOG_DEBUG(logger, "Copied index data into buffer at offset " + std::to_string(indexOffset) + " and size " + std::to_string(indexSize));
 	}
 	//No transfer, eg. stream buffers (or integrated gpus, if there's a way to detect them...)
 	else {
-		logger.debug("Directly copying mesh data for mesh \"" + mesh + "\"");
+		ENGINE_LOG_DEBUG(logger, "Directly copying mesh data for mesh \"" + mesh + "\"");
 
 		//Copy vertex data
 		glBindBuffer(GL_COPY_WRITE_BUFFER, glBuffer->vertexBufferId);
@@ -145,5 +145,5 @@ void GlMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::stri
 
 void GlMemoryManager::invalidateMesh(const std::string& mesh) {
 	meshData.erase(mesh);
-	logger.debug("Removed mesh data for mesh \"" + mesh + "\"from rendering engine");
+	ENGINE_LOG_DEBUG(logger, "Removed mesh data for mesh \"" + mesh + "\"from rendering engine");
 }

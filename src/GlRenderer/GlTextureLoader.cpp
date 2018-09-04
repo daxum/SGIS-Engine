@@ -66,7 +66,7 @@ void GlTextureLoader::loadTexture(const std::string& name, const std::string& fi
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	logger.debug("Uploaded texture \"" + name + "\".");
+	ENGINE_LOG_DEBUG(logger, "Uploaded texture \"" + name + "\".");
 }
 
 void GlTextureLoader::loadCubeMap(const std::string& name, const std::array<std::string, 6>& filenames, Filter minFilter, Filter magFilter, bool mipmap) {
