@@ -9,8 +9,9 @@ These instructions (and the program in general, actually) have only been tested 
 1. First, make sure that the following are installed, or set the `USE_INSTALLED_*` and `*_DIR` cmake variables to build with the engine.
 	* [GLFW](http://www.glfw.org)
 	* [glm](https://glm.g-truc.net)
-	* [bullet](https://github.com/bulletphysics/bullet3) (Must be built with multithreading enabled)
+	* [bullet](https://github.com/bulletphysics/bullet3) (Must be built with tbb multithreading enabled)
 	* [Freetype2](https://www.freetype.org/)
+	* [TBB](https://www.threadingbuildingblocks.org/)
 
 	This engine supports both OpenGL and Vulkan. Support for either of these can be removed by disabling the USE_OPENGL or USE_VULKAN cmake variables.
 
