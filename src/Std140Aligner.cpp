@@ -66,34 +66,6 @@ Std140Aligner::Std140Aligner(const Std140Aligner& other) :
 	memcpy(uniformData, other.uniformData, dataSize);
 }
 
-void Std140Aligner::setFloat(const std::string& name, const float value) {
-	checkType(name, UniformType::FLOAT);
-
-	const UniformData& data = uniformMap.at(name);
-	memcpy(&uniformData[data.offset], &value, sizeof(float));
-}
-
-void Std140Aligner::setVec2(const std::string& name, const glm::vec2& value) {
-	checkType(name, UniformType::VEC2);
-
-	const UniformData& data = uniformMap.at(name);
-	memcpy(&uniformData[data.offset], &value, sizeof(glm::vec2));
-}
-
-void Std140Aligner::setVec3(const std::string& name, const glm::vec3& value) {
-	checkType(name, UniformType::VEC3);
-
-	const UniformData& data = uniformMap.at(name);
-	memcpy(&uniformData[data.offset], &value, sizeof(glm::vec3));
-}
-
-void Std140Aligner::setVec4(const std::string& name, const glm::vec4& value) {
-	checkType(name, UniformType::VEC4);
-
-	const UniformData& data = uniformMap.at(name);
-	mempcpy(&uniformData[data.offset], &value, sizeof(glm::vec4));
-}
-
 void Std140Aligner::setMat3(const std::string& name, const glm::mat3& value) {
 	checkType(name, UniformType::MAT3);
 
@@ -116,4 +88,34 @@ void Std140Aligner::setMat4(const std::string& name, const glm::mat4& value) {
 		memcpy(&uniformData[data.offset + arrayOffset], &value[i], sizeof(glm::vec4));
 		arrayOffset += baseAlignment(UniformType::VEC4);
 	}
+}
+
+glm::mat3 Std140Aligner::getMat3(const std::string& name) const {
+	checkType(name, UniformType::MAT3);
+
+	const UniformData& data = uniformMap.at(name);
+	uint32_t arrayOffset = 0;
+	glm::mat3 out;
+
+	for (size_t i = 0; i < 3; i++) {
+		memcpy(&out[i], &uniformData[data.offset + arrayOffset], sizeof(glm::vec3));
+		arrayOffset += baseAlignment(UniformType::VEC3);
+	}
+
+	return out;
+}
+
+glm::mat4 Std140Aligner::getMat4(const std::string& name) const {
+	checkType(name, UniformType::MAT4);
+
+	const UniformData& data = uniformMap.at(name);
+	uint32_t arrayOffset = 0;
+	glm::mat4 out;
+
+	for (size_t i = 0; i < 4; i++) {
+		memcpy(&out[i], &uniformData[data.offset + arrayOffset], sizeof(glm::vec4));
+		arrayOffset += baseAlignment(UniformType::VEC4);
+	}
+
+	return out;
 }

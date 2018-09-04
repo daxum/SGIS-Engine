@@ -85,12 +85,26 @@ public:
 	 * @param name The name of the uniform to set.
 	 * @param value The value to set the uniform to.
 	 */
-	void setFloat(const std::string& name, const float value);
-	void setVec2(const std::string& name, const glm::vec2& value);
-	void setVec3(const std::string& name, const glm::vec3& value);
-	void setVec4(const std::string& name, const glm::vec4& value);
+	void setFloat(const std::string& name, const float value) { setValue<float>(name, UniformType::FLOAT, &value); }
+	void setVec2(const std::string& name, const glm::vec2& value) { setValue<glm::vec2>(name, UniformType::VEC2, &value); }
+	void setVec3(const std::string& name, const glm::vec3& value) { setValue<glm::vec3>(name, UniformType::VEC3, &value); }
+	void setVec4(const std::string& name, const glm::vec4& value) { setValue<glm::vec4>(name, UniformType::VEC4, &value); }
 	void setMat3(const std::string& name, const glm::mat3& value);
 	void setMat4(const std::string& name, const glm::mat4& value);
+
+	/**
+	 * Getters for uniform values. These might be a bit slow for matrix types,
+	 * as the data needs to be un-aligned. Shouldn't have any noticable impact,
+	 * though.
+	 * @param name The name of the uniform to fetch the value of.
+	 * @return The value of that uniform.
+	 */
+	float getFloat(const std::string& name) const { return getValue<float>(name, UniformType::FLOAT); }
+	glm::vec2 getVec2(const std::string& name) const { return getValue<glm::vec2>(name, UniformType::VEC2); }
+	glm::vec3 getVec3(const std::string& name) const { return getValue<glm::vec3>(name, UniformType::VEC3); }
+	glm::vec4 getVec4(const std::string& name) const { return getValue<glm::vec4>(name, UniformType::VEC4); }
+	glm::mat3 getMat3(const std::string& name) const;
+	glm::mat4 getMat4(const std::string& name) const;
 
 	/**
 	 * Returns the aligned uniform data along with its size.
@@ -124,6 +138,34 @@ private:
 		if (uniformMap.at(name).type != type) {
 			throw std::runtime_error("Invalid type in Std140Aligner!");
 		}
+	}
+
+	/**
+	 * Setting helper function for non-matrix types.
+	 * @param name The name of the uniform to set.
+	 * @param type The type of the uniform. Should match the template parameter!
+	 * @param value The value to set the uniform to.
+	 */
+	template<typename T>
+	void setValue(const std::string& name, UniformType type, const void* value) {
+		checkType(name, type);
+
+		const UniformData& data = uniformMap.at(name);
+		memcpy(&uniformData[data.offset], value, sizeof(T));
+	}
+
+	/**
+	 * Getting helper function for non-matrix types.
+	 * @param name The name of the uniform to get.
+	 * @param type The type of the uniform. Should match the template parameter!
+	 * @return The value stored at the given uniform location.
+	 */
+	template<typename T>
+	T getValue(const std::string& name, UniformType type) const {
+		checkType(name, type);
+
+		const UniformData& data = uniformMap.at(name);
+		return *(T*)(&uniformData[data.offset]);
 	}
 
 	/**

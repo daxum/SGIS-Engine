@@ -125,5 +125,53 @@ private:
 	 * @param camera The camera to use when rendering.
 	 * @param state The screen state, passed to shaders when setting uniforms.
 	 */
-	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
+
+	/**
+	 * Sets the uniforms at the screen level (per-shader).
+	 * @param shader The shader to set uniforms for.
+	 * @param set The uniform set specifying what to set and where to get it.
+	 * @param state The state of the screen being rendered.
+	 * @param camera The camera for the screen being rendered.
+	 */
+	void setPerScreenUniforms(const GlShader* shader, const UniformSet& set, const ScreenState* state, const Camera* camera);
+
+	/**
+	 * Sets the uniforms at the model level.
+	 * @param shader The shader to set uniforms for.
+	 * @param set The uniform set that specifies which uniforms to bind.
+	 * @param model The model to get uniform values from.
+	 */
+	void setPerModelUniforms(const GlShader* shader, const UniformSet& set, const Model* model);
+
+	/**
+	 * Sets the uniforms at the object level. Currently also used for push constants, will probably change if
+	 * uniform buffers implemented.
+	 * @param shader The shader to set uniforms for.
+	 * @param set The vector of uniforms to use. Not the uniform set itself to accomodate push constants.
+	 * @param comp The render component of the object to set uniforms for.
+	 * @param camera The camera of the screen the object is in.
+	 */
+	void setPerObjectUniforms(const GlShader* shader, const std::vector<UniformDescription>& set, const RenderComponent* comp, const Camera* camera);
+
+	/**
+	 * Sets the uniform with the given name to the provided value.
+	 * @param shader The shader to set the uniform in.
+	 * @param type The type of the uniform to set.
+	 * @param uniformName The name of the uniform to set in the shader.
+	 * @param value The value to set the uniform to.
+	 */
+	void setUniformValue(const GlShader* shader, const UniformType type, const std::string& uniformName, const void* value) {
+		GLuint uniformLoc = glGetUniformLocation(shader->id, uniformName.c_str());
+
+		switch (type) {
+			case UniformType::FLOAT: glUniform1f(uniformLoc, *(const float*)value); break;
+			case UniformType::VEC2: glUniform2fv(uniformLoc, 1, (const float*)value); break;
+			case UniformType::VEC3: glUniform3fv(uniformLoc, 1, (const float*)value); break;
+			case UniformType::VEC4: glUniform4fv(uniformLoc, 1, (const float*)value); break;
+			case UniformType::MAT3: glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, (const float*)value); break;
+			case UniformType::MAT4: glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, (const float*)value); break;
+			default: throw std::runtime_error("Invalid uniform type for uniform \"" + uniformName + "\"!");
+		}
+	}
 };
