@@ -56,6 +56,7 @@ private:
 	//Animation time.
 	float maxTime;
 	//Lookup table from time to location along curve using index into controlPoints and percent (arc-length paramaterization).
+	//This goes <time, index, percent>.
 	std::vector<std::tuple<float, size_t, float>> posLookup;
 	//Matrix used in the spline curve.
 	glm::mat4 matrix;

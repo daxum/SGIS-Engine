@@ -93,48 +93,45 @@ SplineAnimation::SplineAnimation(const std::vector<std::pair<glm::vec3, glm::qua
 }
 
 std::pair<glm::vec3, glm::quat> SplineAnimation::getLocation(float time) const {
-	time = std::fmod(time, maxTime);
+	const std::tuple<float, size_t, float> searchTuple(std::fmod(time, maxTime), 0, 0.0f);
+	//operator< for tuples uses lexicographical comparison, so this works as long as time is the first element
+	std::vector<std::tuple<float, size_t, float>>::const_iterator i = std::lower_bound(posLookup.begin(), posLookup.end(), searchTuple);
 
-	//TODO: binary search
-	for (size_t i = 0; i < posLookup.size(); i++) {
-		if (std::get<0>(posLookup.at(i)) < time) {
-			continue;
-		}
-
-		//Get times
-		float tMin = 0.0f;
-		const float tMax = std::get<0>(posLookup.at(i));
-
-		if (i != 0) {
-			tMin = std::get<0>(posLookup.at(i - 1));
-		}
-
-		//Index + percent
-		const float combinedLoc = std::get<1>(posLookup.at(i)) + std::get<2>(posLookup.at(i));
-
-		float nextCombinedLoc = controlPoints.size() - 3;
-
-		//If not last index, set normally, else use last segment (size - 3) as the next index (max index - 1 with 1.0 percent)
-		if (i != posLookup.size() - 1) {
-			nextCombinedLoc = std::get<1>(posLookup.at(i + 1)) + std::get<2>(posLookup.at(i + 1));
-		}
-
-		float timePercent = (time - tMin) / (tMax - tMin);
-
-		float fIndex = 0;
-		float percent = std::modf(ExMath::interpolate(combinedLoc, nextCombinedLoc, timePercent), &fIndex);
-		size_t index = (size_t)fIndex;
-
-		//Fix percent for last point
-		if (index == posLookup.size()) {
-			index--;
-			percent = 1.0f;
-		}
-
-		return {getPos(index, percent), getRot(index, percent)};
+	if (i == posLookup.end()) {
+		throw std::runtime_error("SplineAnimation: Couldn't find time in lookup table");
 	}
 
-	throw std::runtime_error("SplineAnimation: Couldn't find time in lookup table");
+	//Get times
+	float tMin = 0.0f;
+	const float tMax = std::get<0>(*i);
+
+	if (i != posLookup.begin()) {
+		tMin = std::get<0>(*(i - 1));
+	}
+
+	//Index + percent
+	const float combinedLoc = std::get<1>(*i) + std::get<2>(*i);
+
+	float nextCombinedLoc = controlPoints.size() - 3;
+
+	//If not last index, set normally, else use last segment (size - 3) as the next index (max index - 1 with 1.0 percent)
+	if (i != posLookup.end() - 1) {
+		nextCombinedLoc = std::get<1>(*(i + 1)) + std::get<2>(*(i + 1));
+	}
+
+	float timePercent = (std::get<0>(searchTuple) - tMin) / (tMax - tMin);
+
+	float fIndex = 0;
+	float percent = std::modf(ExMath::interpolate(combinedLoc, nextCombinedLoc, timePercent), &fIndex);
+	size_t index = (size_t)fIndex;
+
+	//Fix percent for last point
+	if (index == posLookup.size()) {
+		index--;
+		percent = 1.0f;
+	}
+
+	return {getPos(index, percent), getRot(index, percent)};
 }
 
 glm::vec3 SplineAnimation::getPos(size_t index, float percent) const {
