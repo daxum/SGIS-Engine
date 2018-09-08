@@ -251,7 +251,6 @@ void VkRenderingEngine::setViewport(int width, int height) {
 }
 
 void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
-	//TODO: This happens for 8 frames or so at start. Why?
 	if (objects.empty()) {
 		return;
 	}
