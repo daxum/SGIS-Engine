@@ -1,0 +1,210 @@
+#!/usr/bin/env bash
+
+###############################################################################
+# SGIS-Engine - the engine for SGIS
+# Copyright (C) 2018
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###############################################################################
+
+###############################################################################################################################
+#Options:
+#
+#--setup                         Sets up cmake
+#--build                         Builds the engine and combines all static libraries (placed in the engine_release/ directory)
+#--static-bullet <bullet_dir>    Links bullet statically. Bullet_dir is an absolute path to the bullet repository
+#--static-glfw <glfw_dir>        Links glfw statically. Glfw_dir is an absolute path to the glfw repository
+#--enable-tests                  Builds the engine test programs
+#--no-gl                         Disables OpenGL support in the built engine
+#--no-vulkan                     Disables Vulkan support in the built engine
+###############################################################################################################################
+
+SETUP=0
+BUILD=0
+
+#Engine option string
+ENGINE_VARS=""
+
+#Libraries to link statically
+BULLET_STATIC=0
+GLFW_STATIC=0
+#TODO
+#TBB_STATIC=0
+#FREETYPE_STATIC=0
+
+#Repository directories, if linking statically - these should be absolute paths!
+BULLET_DIR=""
+GLFW_DIR=""
+
+#Include directories
+FREETYPE_INC_DIR="/usr/include/freetype2"
+TBB_INC_DIR="/usr/include/tbb"
+TBB_LIB_DIR="/usr/lib"
+
+cd "$(dirname "$0")"
+
+for ((i=1;i<=$#;i++)); do
+	if [ ${!i} = "--setup" ]; then
+		SETUP=1
+	elif [ ${!i} = "--build" ]; then
+		BUILD=1
+	elif [ ${!i} = "--bullet-static" ]; then
+		BULLET_STATIC=1
+		echo "Warning: bullet-static probably won't work without modifications to bullet's cmake files"
+
+		if [ ${i} -lt $# ]; then
+			let "i++"
+			BULLET_DIR="${!i}"
+		else
+			echo "Error: --bullet-static with no repository directory"
+			exit 1
+		fi
+	elif [ ${!i} = "--glfw-static" ]; then
+		GLFW_STATIC=1
+
+		if [ ${i} -lt $# ]; then
+			let "i++"
+			GLFW_DIR="${!i}"
+		else
+			echo "Error: --glfw-static with no repository directory"
+			exit 1
+		fi
+	elif [ ${!i} = "--enable-tests" ]; then
+		ENGINE_VARS="${ENGINE_VARS} -DBUILD_ENGINE_TESTS=ON"
+	elif [ ${!i} = "--no-gl" ]; then
+		ENGINE_VARS="${ENGINE_VARS} -DUSE_OPENGL=OFF"
+	elif [ ${!i} = "--no-vulkan" ]; then
+		ENGINE_VARS="${ENGINE_VARS} -DUSE_VULKAN=OFF"
+	fi
+done;
+
+if [ ${SETUP} -eq 1 ]; then
+	mkdir build > /dev/null 2>&1
+	cd build
+
+	ADD_BULLET_INSTALL="-DUSE_INSTALLED_BULLET="
+	ADD_GLFW_INSTALL="-DUSE_INSTALLED_GLFW="
+
+	if [ ${BULLET_STATIC} -eq 0 ]; then
+		ADD_BULLET_INSTALL="${ADD_BULLET_INSTALL}ON"
+	else
+		#Why?
+		ADD_BULLET_INSTALL="${ADD_BULLET_INSTALL}OFF -DBULLET_DIR=${BULLET_DIR} -DBULLET2_MULTITHREADING=ON -DBULLET2_USE_TBB_MULTITHREADING=ON"
+		ADD_BULLET_INSTALL="${ADD_BULLET_INSTALL} -DBUILD_CPU_DEMOS=OFF -DBULLET2_TBB_INCLUDE_DIR=${TBB_INC_DIR} -DBULLET2_TBB_LIB_DIR=${TBB_LIB_DIR}"
+		ADD_BULLET_INSTALL="${ADD_BULLET_INSTALL} -DBUILD_BULLET3=OFF -DBUILD_ENET=OFF -DBUILD_CLSOCKET=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_EXTRAS=OFF"
+		ADD_BULLET_INSTALL="${ADD_BULLET_INSTALL} -DINSTALL_LIBS=OFF -DBUILD_UNIT_TESTS=OFF -DINSTALL_CMAKE_FILES=OFF -DUSE_GLUT=OFF"
+	fi
+
+	if [ ${GLFW_STATIC} -eq 0 ]; then
+		ADD_GLFW_INSTALL="${ADD_GLFW_INSTALL}ON"
+	else
+		ADD_GLFW_INSTALL="${ADD_GLFW_INSTALL}OFF -DGLFW_DIR=${GLFW_DIR} -DGLFW_BUILD_DOCS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_INSTALL=OFF"
+	fi
+
+	CMAKE_VARS="${ENGINE_VARS} ${ADD_BULLET_INSTALL} ${ADD_GLFW_INSTALL} -DFREETYPE_INCLUDE_DIR=${FREETYPE_INC_DIR}"
+
+	cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_VARS} ..
+
+	if [ $? -ne 0 ]; then
+			echo "CMake setup failed, aborting"
+			exit 1
+	fi
+
+	cd ..
+fi
+
+if [ ${BUILD} -eq 1 ]; then
+	cd build
+
+	make -j$(nproc)
+
+	if [ $? -ne 0 ]; then
+		echo "Build failed, aborting"
+		exit 2
+	fi
+
+	cd ..
+	mkdir engine_release > /dev/null 2>&1
+	cd engine_release
+
+	echo "Creating archive..."
+
+	AR_LIBS="../build/src/libEngine.a"
+
+	if [ ${BULLET_STATIC} -eq 1 ]; then
+		BULLET_PREFIX="../build/bullet/src"
+
+		AR_LIBS="${AR_LIBS} ${BULLET_PREFIX}/LinearMath/libLinearMath.a ${BULLET_PREFIX}/BulletSoftBody/libBulletSoftBody.a"
+		AR_LIBS="${AR_LIBS} ${BULLET_PREFIX}/BulletInverseDynamics/libBulletInverseDynamics.a ${BULLET_PREFIX}/BulletDynamics/libBulletDynamics.a"
+		AR_LIBS="${AR_LIBS} ${BULLET_PREFIX}/BulletCollision/libBulletCollision.a"
+	fi
+
+	if [ ${GLFW_STATIC} -eq 1 ]; then
+		AR_LIBS="${AR_LIBS} ../build/glfw/src/libglfw3.a"
+	fi
+
+	if [ ${BULLET_STATIC} -eq 1 ] || [ ${GLFW_STATIC} -eq 1 ]; then
+		rm "libEngineRel.a" > /dev/null 2>&1
+
+		#Don't think -M works on mac
+		ar -cqT libEngineRel.a ${AR_LIBS} && echo -e "create libEngineRel.a\naddlib libEngineRel.a\nsave\nend" | ar -M
+	else
+		cp "../build/src/libEngine.a" "libEngineRel.a"
+	fi
+
+	mkdir "/tmp/engine_build" > /dev/null 2>&1
+
+	if [ $? -ne 0 ]; then
+		echo "Failed to create temp directory, skipping tar step. Does it already exist?"
+		exit 3
+	fi
+
+	mkdir "/tmp/engine_build/include" > /dev/null 2>&1
+	mkdir "/tmp/engine_build/lib_separate" > /dev/null 2>&1
+	mkdir "/tmp/engine_build/third_party_license/" > /dev/null 2>&1
+
+	cp -t "/tmp/engine_build/lib_separate/" ${AR_LIBS}
+	mv "libEngineRel.a" "/tmp/engine_build/"
+	cp -rt "/tmp/engine_build/include" ../src/*
+
+	if [ ${BULLET_STATIC} -eq 1 ]; then
+		cp -rt "/tmp/engine_build/include" ${BULLET_DIR}/src/*
+		rm -r `find /tmp/engine_build/include -type d -print | grep "\(Bullet3\)\|\(clew\)"` > /dev/null 2>&1
+		mkdir "/tmp/engine_build/third_party_license/bullet/" > /dev/null 2>&1
+		cp ${BULLET_DIR}/LICENSE.txt "/tmp/engine_build/third_party_license/bullet/LICENSE.txt"
+	fi
+
+	if [ ${GLFW_STATIC} -eq 1 ]; then
+		cp -rt "/tmp/engine_build/include" ${GLFW_DIR}/include/GLFW
+		mkdir "/tmp/engine_build/third_party_license/glfw/" > /dev/null 2>&1
+		cp ${GLFW_DIR}/LICENSE.md "/tmp/engine_build/third_party_license/glfw/LICENSE.md"
+	fi
+
+	cp ../LICENSE "/tmp/engine_build/LICENSE"
+
+	rm `find /tmp/engine_build/include -type f -print | grep -v ".*\.h\(pp\)\?$"`
+
+	PREV_DIR=$(pwd)
+
+	cd /tmp/
+	tar -caf "engine.tar.gz" engine_build
+	cd ${PREV_DIR}
+
+	mv "/tmp/engine.tar.gz" "engine.tar.gz"
+
+	rm -r "/tmp/engine_build/"
+fi
+
+echo "Done!"
+
