@@ -30,7 +30,7 @@ public:
 	/**
 	 * Constructor.
 	 */
-	VkShaderLoader(VkObjectHandler& vkObjects, VkRenderObjects& renderObjects, VkMemoryManager* memoryManager, Logger& logger, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap);
+	VkShaderLoader(VkObjectHandler& vkObjects, VkRenderObjects& renderObjects, VkMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<VkShader>>& shaderMap);
 
 	/**
 	 * Destroys the descriptor set layouts.

@@ -1548,7 +1548,7 @@ typedef struct ogl_StrToExtMap_s
 } ogl_StrToExtMap;
 
 static ogl_StrToExtMap ExtensionMap[1] = {
-	{'\0', NULL, NULL},
+	{"\0", NULL, NULL},
 };
 
 static int g_extensionMapSize = 0;

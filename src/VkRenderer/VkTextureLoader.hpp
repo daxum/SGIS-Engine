@@ -26,10 +26,9 @@ public:
 	/**
 	 * Creates the texture loader.
 	 * @param vkObjects The object handler to get the device from.
-	 * @param logger The logger to log the logs to.
 	 * @param memoryManager The memory manager to allocate textures from.
 	 */
-	VkTextureLoader(VkObjectHandler& vkObjects, Logger& logger, VkMemoryManager& memoryManager);
+	VkTextureLoader(VkObjectHandler& vkObjects, VkMemoryManager& memoryManager);
 
 	/**
 	 * Destroys stuff.

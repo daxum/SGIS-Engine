@@ -27,10 +27,10 @@ class ShaderLoader {
 public:
 	/**
 	 * Constructor.
-	 * @param logger The logger to use.
+	 * @param logger The logger configuration.
 	 */
-	ShaderLoader(Logger& logger) :
-		logger(logger) {}
+	ShaderLoader(const LogConfig& logConfig) :
+		logger(logConfig) {}
 
 	/**
 	 * Destructor. Here for subclasses.
@@ -46,5 +46,5 @@ public:
 	virtual void loadShader(std::string name, const ShaderInfo& info) = 0;
 
 protected:
-	Logger& logger;
+	Logger logger;
 };

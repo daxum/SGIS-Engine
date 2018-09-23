@@ -21,9 +21,10 @@
 
 #include "GlShaderLoader.hpp"
 #include "GlShader.hpp"
+#include "Engine.hpp"
 
-GlShaderLoader::GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap) :
-	ShaderLoader(logger),
+GlShaderLoader::GlShaderLoader(RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap) :
+	ShaderLoader(Engine::instance->getConfig().loaderLog),
 	shaderMap(shaderMap),
 	memoryManager(memoryManager) {
 

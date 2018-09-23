@@ -17,9 +17,10 @@
  ******************************************************************************/
 
 #include "VkTextureLoader.hpp"
+#include "Engine.hpp"
 
-VkTextureLoader::VkTextureLoader(VkObjectHandler& vkObjects, Logger& logger, VkMemoryManager& memoryManager) :
-	TextureLoader(logger),
+VkTextureLoader::VkTextureLoader(VkObjectHandler& vkObjects, VkMemoryManager& memoryManager) :
+	TextureLoader(Engine::instance->getConfig().loaderLog),
 	vkObjects(vkObjects),
 	memoryManager(memoryManager) {
 

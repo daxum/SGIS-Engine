@@ -19,9 +19,10 @@
 #include <stdexcept>
 
 #include "GlTextureLoader.hpp"
+#include "Engine.hpp"
 
-GlTextureLoader::GlTextureLoader(Logger& logger, std::unordered_map<std::string, GlTextureData>& texMap) :
-	TextureLoader(logger),
+GlTextureLoader::GlTextureLoader(std::unordered_map<std::string, GlTextureData>& texMap) :
+	TextureLoader(Engine::instance->getConfig().loaderLog),
 	textureMap(texMap) {
 
 }

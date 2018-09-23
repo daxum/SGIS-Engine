@@ -19,14 +19,25 @@
 #define VMA_IMPLEMENTATION
 
 //Unused variable due to VMA_ASSERT
+//Stupid clang doing incompatible nonsense. If I ask for gcc
+//then I want gcc!
 #ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wunused-variable"
+#	ifdef __clang__
+#		pragma clang diagnostic push
+#		pragma clang diagnostic ignored "-Wunused-variable"
+#	else
+#		pragma GCC diagnostic ignored "-Wunused-variable"
+#	endif
 #endif
 
 #include "vk_mem_alloc.h"
 
 #ifdef __GNUC__
-#pragma GCC diagnostic pop
+#	ifdef __clang__
+#		pragma clang diagnostic pop
+#	else
+#		pragma GCC diagnostic pop
+#	endif
 #endif
 
 #include "VkMemoryManager.hpp"

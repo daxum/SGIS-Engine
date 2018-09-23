@@ -40,9 +40,8 @@ public:
 	 * Initializes a vulkan rendering engine.
 	 * @param display A reference to the display engine, for input callbacks.
 	 * @param renderLog Configuration for the rendering logger.
-	 * @param loaderLog Configuration for the loader logger.
 	 */
-	VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog);
+	VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog);
 
 	/**
 	 * Destroys all the vulkan stuff.

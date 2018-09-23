@@ -22,7 +22,6 @@ VertexBuffer::VertexBuffer(const std::vector<VertexElement>& vertexFormat, size_
 	format(vertexFormat),
 	vertexElements(),
 	vertexSize(0),
-	bufferSize(size),
 	usage(usage),
 	renderData(renderData) {
 

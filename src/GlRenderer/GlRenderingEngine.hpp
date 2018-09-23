@@ -45,10 +45,9 @@ public:
 	 * @param modelManager A reference to the object that stores model data.
 	 * @param display A reference to the engine's display engine, used for callbacks.
 	 * @param rendererLog The logger config for the rendering engine.
-	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if glfw initialization failed.
 	 */
-	GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog);
+	GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog);
 
 	/**
 	 * Destroys the window and terminates glfw

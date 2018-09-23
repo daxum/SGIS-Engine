@@ -51,7 +51,7 @@ Engine::Engine(const EngineConfig& config) :
 		case Renderer::OPEN_GL:
 #ifdef USE_OPENGL
 			ENGINE_LOG_INFO(logger, "Using OpenGL renderer.");
-			renderer.reset(new GlRenderingEngine(display, config.rendererLog, config.loaderLog));
+			renderer.reset(new GlRenderingEngine(display, config.rendererLog));
 			break;
 #else
 			ENGINE_LOG_FATAL(logger, "Attempt to use openGL rendering engine when opengl isn't enabled!");
@@ -60,7 +60,7 @@ Engine::Engine(const EngineConfig& config) :
 		case Renderer::VULKAN:
 #ifdef USE_VULKAN
 			ENGINE_LOG_INFO(logger, "Using Vulkan renderer.");
-			renderer.reset(new VkRenderingEngine(display, config.rendererLog, config.loaderLog));
+			renderer.reset(new VkRenderingEngine(display, config.rendererLog));
 			break;
 #else
 			ENGINE_LOG_FATAL(logger, "Attempt to use vulkan rendering engine when vulkan isn't enabled!");

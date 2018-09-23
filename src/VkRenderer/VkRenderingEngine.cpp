@@ -32,12 +32,11 @@ namespace {
 	};
 }
 
-VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-	RenderingEngine(std::make_shared<VkTextureLoader>(objectHandler, loaderLogger, memoryManager),
-					std::make_shared<VkShaderLoader>(objectHandler, swapObjects, &memoryManager, loaderLogger, shaderMap),
+VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog) :
+	RenderingEngine(std::make_shared<VkTextureLoader>(objectHandler, memoryManager),
+					std::make_shared<VkShaderLoader>(objectHandler, swapObjects, &memoryManager, shaderMap),
 					std::make_shared<VkRenderInitializer>(objectHandler, &memoryManager),
-					rendererLog,
-					loaderLog),
+					rendererLog),
 	interface(display, this),
 	objectHandler(logger),
 	swapObjects(objectHandler),
@@ -176,9 +175,10 @@ void VkRenderingEngine::beginFrame() {
 	}
 
 	//Render pass, move elsewhere later
-	VkClearValue clearColor = {0.0f, 0.2f, 0.5f, 1.0f};
-	VkClearValue clearDepth;
-	clearDepth.color = {0, 0, 0, 0};
+	VkClearValue clearColor = {};
+	clearColor.color = {{0.0f, 0.2f, 0.5f, 1.0f}};
+
+	VkClearValue clearDepth = {};
 	clearDepth.depthStencil = {1.0f, 0};
 
 	VkClearValue clearValues[] = { clearColor, clearDepth };

@@ -26,6 +26,8 @@
 #include "ObjectPhysicsInterface.hpp"
 
 struct ObjectState {
+	virtual ~ObjectState() {}
+
 	/**
 	 * Called whenever a shader uses a uniform provider type of OBJECT_STATE.
 	 * Gets a pointer to the value to be passed into the shader.

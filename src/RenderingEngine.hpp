@@ -53,11 +53,10 @@ public:
 	 * @param sl The shader loader this engine should use.
 	 * @param ri The render initializer this engine should use.
 	 * @param rendererLog The logger config for the rendering engine.
-	 * @param loaderLog The logger config for the misc. loaders (texture, shader, model, etc).
 	 * @throw runtime_error if initialization failed.
 	 */
-	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<RenderInitializer> ri, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-		texLoader(tl), shaderLoader(sl), renderInit(ri), logger(rendererLog), loaderLogger(loaderLog) {}
+	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<RenderInitializer> ri, const LogConfig& rendererLog) :
+		texLoader(tl), shaderLoader(sl), renderInit(ri), logger(rendererLog) {}
 
 	/**
 	 * Destroys any api-agnostic resources the engine might
@@ -153,8 +152,6 @@ protected:
 	std::shared_ptr<RenderInitializer> renderInit;
 	//The general rendering logger
 	Logger logger;
-	//The loader logger
-	Logger loaderLogger;
 
 	/**
 	 * Renders the visible objects, using the sorted map.

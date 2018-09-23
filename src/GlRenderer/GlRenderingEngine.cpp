@@ -32,12 +32,11 @@
 #include "Camera.hpp"
 #include "GlRenderInitializer.hpp"
 
-GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog, const LogConfig& loaderLog) :
-	RenderingEngine(std::make_shared<GlTextureLoader>(loaderLogger, textureMap),
-					std::make_shared<GlShaderLoader>(loaderLogger, &memoryManager, shaderMap),
+GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog) :
+	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap),
+					std::make_shared<GlShaderLoader>(&memoryManager, shaderMap),
 					std::make_shared<GlRenderInitializer>(memoryManager),
-					rendererLog,
-					loaderLog),
+					rendererLog),
 	interface(display, this),
 	memoryManager(rendererLog) {
 

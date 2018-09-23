@@ -34,6 +34,8 @@ class Camera;
 
 //State for a screen.
 struct ScreenState {
+	virtual ~ScreenState() {}
+
 	/**
 	 * Called whenever a shader uses a uniform provider type of SCREEN_STATE.
 	 * Gets a pointer to the value to be passed into the shader.

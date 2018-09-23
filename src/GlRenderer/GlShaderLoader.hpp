@@ -31,11 +31,10 @@ class GlShaderLoader : public ShaderLoader {
 public:
 	/**
 	 * Constructs a GlShaderLoader that stores loaded shaders in the provided map.
-	 * @param logger The logger to use.
 	 * @param memoryManager The memory manager for the rendering engine.
 	 * @param shaderMap The map to store loaded shaders in.
 	 */
-	GlShaderLoader(Logger& logger, RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap);
+	GlShaderLoader(RendererMemoryManager* memoryManager, std::unordered_map<std::string, std::shared_ptr<GlShader>>& shaderMap);
 
 	/**
 	 * Loads a program object using the given shader files.

@@ -71,7 +71,7 @@ set_target_properties(Engine PROPERTIES
 	CXX_STANDARD_REQUIRED ON
 )
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+if ((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
 	target_compile_options(Engine PRIVATE "-Wall")
 endif()
 

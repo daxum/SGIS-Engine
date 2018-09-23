@@ -30,6 +30,8 @@ class PhysicsComponent;
 
 //Allows for user-defined collision responses.
 struct CollisionHandler {
+	virtual ~CollisionHandler() {}
+
 	//Set by physics component when added.
 	PhysicsComponent* parent;
 

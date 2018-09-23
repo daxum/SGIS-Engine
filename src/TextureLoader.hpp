@@ -56,9 +56,9 @@ class TextureLoader {
 public:
 	/**
 	 * Creates a texture loader. Just sets the logger.
-	 * @param logger The logger to send messages to.
+	 * @param config The logger configuration.
 	 */
-	TextureLoader(Logger& logger) : logger(logger) {}
+	TextureLoader(const LogConfig& logConfig) : logger(logConfig) {}
 
 	/**
 	 * Destroys a texture loader. This doesn't do much right now,
@@ -104,7 +104,7 @@ public:
 
 protected:
 	//The logger for the loader.
-	Logger& logger;
+	Logger logger;
 
 	/**
 	 * Loads the provided texture from disk, and returns a pointer to its data.

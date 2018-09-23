@@ -141,6 +141,12 @@ public:
 	 */
 	const std::vector<VertexElement>& getVertexFormat() const { return format; }
 
+	/**
+	 * Gets the size of the vertex buffer, in bytes.
+	 * @return The size of the vertex buffer.
+	 */
+	size_t getBufferSize() { return bufferSize; }
+
 private:
 	//Vertex format vector.
 	std::vector<VertexElement> format;
