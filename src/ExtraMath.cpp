@@ -29,11 +29,6 @@ namespace {
 	thread_local std::mt19937 engine(ExMath::getTimeMillis() * ExMath::getTimeMillis());
 }
 
-glm::vec3 ExMath::bilinear3D(std::tuple<glm::vec3, glm::vec3, glm::vec3, glm::vec3> corners, float xWeight, float yWeight) {
-	return (1.0f - yWeight) * ((1.0f - xWeight) * std::get<0>(corners) + xWeight * std::get<1>(corners)) +
-			yWeight * ((1.0f - xWeight) * std::get<2>(corners) + xWeight * std::get<3>(corners));
-}
-
 float ExMath::randomFloat(float min, float max) {
 	return std::uniform_real_distribution<float>(min, max)(engine);
 }
@@ -51,23 +46,15 @@ double ExMath::getTimeMillis() {
 	return time.count();
 }
 
-float ExMath::minMagnitude(float val1, float val2) {
-	if (std::min(std::abs(val1), std::abs(val2)) == std::abs(val1)) {
-		return val1;
-	}
+std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(
+	glm::vec2 screenPos,
+	const glm::mat4& projection,
+	const glm::mat4& view,
+	const float screenWidth,
+	const float screenHeight,
+	const float nearPlane,
+	const float farPlane) {
 
-	return val2;
-}
-
-float ExMath::maxMagnitude(float val1, float val2) {
-	if (minMagnitude(val1, val2) == val2) {
-		return val1;
-	}
-
-	return val2;
-}
-
-std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(glm::vec2 screenPos, glm::mat4 projection, glm::mat4 view, float screenWidth, float screenHeight, float nearPlane, float farPlane) {
 	glm::mat4 viewI = glm::inverse(view);
 	glm::mat4 projI = glm::inverse(projection);
 
@@ -85,11 +72,3 @@ std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(glm::vec2 screenPos, glm::
 
 	return {nearPos, farPos};
 }
-
-uint32_t ExMath::roundToVal(const uint32_t initVal, const uint32_t roundVal) {
-		if ((initVal % roundVal) == 0) {
-			return initVal;
-		}
-
-		return (initVal / roundVal + 1) * roundVal;
-	}

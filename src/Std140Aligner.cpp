@@ -28,7 +28,7 @@ size_t Std140Aligner::getAlignedSize(const UniformSet& set) {
 		}
 
 		//Increase size to account for padding
-		currentSize = ExMath::roundToVal(currentSize, baseAlignment(uniform.type));
+		currentSize = ExMath::roundToVal<uint32_t>(currentSize, baseAlignment(uniform.type));
 		currentSize += alignedSize(uniform.type);
 	}
 

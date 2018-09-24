@@ -19,6 +19,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <array>
 
 #include <glm/glm.hpp>
 
@@ -28,8 +29,7 @@ namespace ExMath {
 
 	/**
 	 * Clamps the first value to be between the second and third values.
-	 * The object passed to this function should implement operator<
-	 * and operator=.
+	 * The object passed to this function should implement operator<.
 	 * Note: std::clamp is defined in the c++17 standard. If this project ever
 	 * uses that, this should be removed.
 	 * @param value The value to be clamped
@@ -37,21 +37,16 @@ namespace ExMath {
 	 *     be set to it.
 	 * @param maximum The upper bound. If value is greater than this, it will
 	 *     be set to it.
+	 * @return The clamped value.
 	 * @throw logic_error if minimum is greater than maximum.
 	 */
 	template <typename T>
-	void clamp(T& value, const T& minimum, const T& maximum) {
+	constexpr const T& clamp(const T& value, const T& minimum, const T& maximum) {
 		if (maximum < minimum) {
 			throw std::logic_error("Maximum not greater than minimum!");
 		}
 
-		if (maximum < value) {
-			value = maximum;
-		}
-
-		if (value < minimum) {
-			value = minimum;
-		}
+		return (value > maximum) ? maximum : ((value < minimum) ? minimum : value);
 	}
 
 	/**
@@ -62,19 +57,23 @@ namespace ExMath {
 	 * @return The interpolated value.
 	 */
 	template<typename T>
-	T interpolate(const T& start, const T& finish, const float percent) {
+	constexpr T interpolate(const T& start, const T& finish, const float percent) {
 		return (1.0f - percent) * start + percent * finish;
 	}
 
 	/**
-	 * Bilinear interpolation between three dimensional points.
+	 * Bilinear interpolation between four points.
 	 * @param corners The four corners to interpolate between. The order is
 	 *     top left, top right, bottom left, bottom right.
 	 * @param xWeight, yWeight The x and y percents for the interpolation, in that order.
 	 * @return A point that is the result of the bilinear interpolation by the
 	 *     given percent of the four corners.
 	 */
-	glm::vec3 bilinear3D(std::tuple<glm::vec3, glm::vec3, glm::vec3, glm::vec3> corners, float xWeight, float yWeight);
+	template<typename T>
+	constexpr T bilinearInterpolate(const std::array<T, 4>& corners, const float xWeight, const float yWeight)  {
+		return (1.0f - yWeight) * ((1.0f - xWeight) * corners.at(0) + xWeight * corners.at(1)) +
+				yWeight * ((1.0f - xWeight) * corners.at(2) + xWeight * corners.at(3));
+	}
 
 	/**
 	 * Generates a random floating point number between min and max.
@@ -112,7 +111,14 @@ namespace ExMath {
 	 * @param val2 The second number.
 	 * @return The number closest to zero.
 	 */
-	float minMagnitude(float val1, float val2);
+	template<typename T>
+	constexpr const T& minMagnitude(const T& val1, const T& val2) {
+		if (std::min(std::abs(val1), std::abs(val2)) == std::abs(val1)) {
+			return val1;
+		}
+
+		return val2;
+	}
 
 	/**
 	 * Finds which of two numbers has the greater magnitude.
@@ -120,7 +126,14 @@ namespace ExMath {
 	 * @param val2 The second number.
 	 * @return The number farthest from zero.
 	 */
-	float maxMagnitude(float val1, float val2);
+	template<typename T>
+	constexpr const T& maxMagnitude(const T& val1, const T& val2) {
+		if (minMagnitude(val1, val2) == val2) {
+			return val1;
+		}
+
+		return val2;
+	}
 
 	/**
 	 * Converts screen coordinates to world coordinates.
@@ -134,7 +147,15 @@ namespace ExMath {
 	 * @param farPlane The far plane's distance from the camera.
 	 * @return The point projected onto the near plane (first) and the far plane (second).
 	 */
-	std::pair<glm::vec3, glm::vec3> screenToWorld(glm::vec2 screenPos, glm::mat4 projection, glm::mat4 view, float screenWidth, float screenHeight, float nearPlane, float farPlane);
+	std::pair<glm::vec3, glm::vec3> screenToWorld(
+		glm::vec2 screenPos,
+		const glm::mat4& projection,
+		const glm::mat4& view,
+		const float screenWidth,
+		const float screenHeight,
+		const float nearPlane,
+		const float farPlane
+	);
 
 	/**
 	 * Rounds initVal to the next highest multiple of roundVal.
@@ -143,5 +164,20 @@ namespace ExMath {
 	 * @return The value of initVal rounded to the next highest multiple
 	 *     of roundVal.
 	 */
-	uint32_t roundToVal(const uint32_t initVal, const uint32_t roundVal);
+	template<typename T>
+	constexpr T roundToVal(const T& initVal, const T& roundVal) {
+		//% doesn't work with floating point types.
+		if (std::is_floating_point<T>::value) {
+			if (std::trunc(initVal / roundVal) == initVal / roundVal) {
+				return initVal;
+			}
+		}
+		else {
+			if ((initVal % roundVal) == 0) {
+				return initVal;
+			}
+		}
+
+		return (initVal / roundVal + 1) * roundVal;
+	}
 }

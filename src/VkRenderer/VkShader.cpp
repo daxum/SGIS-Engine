@@ -50,7 +50,7 @@ VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLay
 			currentRange.pushData.clear();
 		}
 
-		ExMath::roundToVal(offset, getPushConstantAligment(uniform.type));
+		offset = ExMath::roundToVal<uint32_t>(offset, getPushConstantAligment(uniform.type));
 
 		currentRange.pushOffsets.push_back(offset);
 		currentRange.pushData.push_back(uniform);

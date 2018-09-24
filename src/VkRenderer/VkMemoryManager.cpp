@@ -358,7 +358,7 @@ uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProv
 	const size_t writeSize = uniformProvider.getData().second;
 
 	//Handle uniform alignment
-	currentUniformOffset = ExMath::roundToVal(currentUniformOffset, getMinUniformBufferAlignment());
+	currentUniformOffset = ExMath::roundToVal<uint32_t>(currentUniformOffset, getMinUniformBufferAlignment());
 
 	const size_t writeOffset = screenObjectBufferSize * currentFrame + currentUniformOffset;
 
