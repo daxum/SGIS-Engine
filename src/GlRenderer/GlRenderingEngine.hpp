@@ -104,7 +104,7 @@ protected:
 	 * @param camera The camera.
 	 * @param state User-supplied screen state.
 	 */
-	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) override;
+	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
 
 private:
 	//A map to store texture data

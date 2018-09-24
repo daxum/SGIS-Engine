@@ -250,7 +250,7 @@ void VkRenderingEngine::setViewport(int width, int height) {
 	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 }
 
-void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
 	if (objects.empty()) {
 		return;
 	}
@@ -271,7 +271,7 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	vkCmdClearAttachments(commandBuffers.at(currentFrame), 1, &depthClear, 1, &clearRect);
 }
 
-void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera, std::shared_ptr<const ScreenState> screenState) {
+void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
 	//Also, each loop should probably be its own function, this is getting ridiculous.
 
@@ -325,7 +325,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 						//Screen set
 						if (!screenSetBound && screenSetName != "") {
 							Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(screenSetName);
-							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState.get(), camera.get());
+							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState, camera);
 
 							uint32_t screenOffset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
 							VkDescriptorSet screenSet = memoryManager.getDescriptorSet(screenSetName);
@@ -356,7 +356,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							const std::string& objectDescriptor = shader->getPerObjectDescriptor();
 
 							Std140Aligner& objectAligner = memoryManager.getDescriptorAligner(objectDescriptor);
-							setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp.get(), camera.get());
+							setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp.get(), camera);
 
 							uint32_t objectOffset = memoryManager.writePerFrameUniforms(objectAligner, currentFrame);
 							uint32_t objectSetOffset = screenSetBound ? 2 : 1;
@@ -377,7 +377,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 	}
 }
 
-void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const std::shared_ptr<const Camera>& camera) {
+void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const Camera* camera) {
 	//Need to make this bigger if the minimum size ever changes. Maybe make it 256 (biggest value seen for maxPushConstantsSize) and restrict it dynamically?
 	unsigned char pushConstantMem[128];
 	const std::vector<PushRange>& pushRanges = shader->getPushConstantRanges();

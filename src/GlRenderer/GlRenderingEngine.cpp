@@ -147,15 +147,15 @@ void GlRenderingEngine::setViewport(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
 	//Opaque objects
-	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera.get(), state.get());
+	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
 
 	//Transparent objects
-	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera.get(), state.get());
+	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera, state);
 
 	//Translucent objects
-	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera.get(), state.get());
+	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera, state);
 
 	glBindVertexArray(0);
 

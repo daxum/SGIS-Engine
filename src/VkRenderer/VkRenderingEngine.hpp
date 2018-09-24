@@ -97,7 +97,7 @@ protected:
 	 * @param camera The current camera.
 	 * @param state User-provided screen state.
 	 */
-	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) override;
+	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
 
 private:
 	//Interface with the window system.
@@ -131,7 +131,7 @@ private:
 	 * @param camera The camera for the current screen.
 	 * @param screenState The state of the current screen.
 	 */
-	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, std::shared_ptr<const Camera> camera, std::shared_ptr<const ScreenState> screenState);
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
 
 	/**
 	 * Sets the push constant values for the provided object.
@@ -139,7 +139,7 @@ private:
 	 * @param comp The object to set push constants for.
 	 * @param camera The current camera, for view transforms.
 	 */
-	void setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const std::shared_ptr<const Camera>& camera);
+	void setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const Camera* camera);
 
 	/**
 	 * Sets the per-screen uniforms for set in the provided aligner using the values obtained from state and camera.

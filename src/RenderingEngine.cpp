@@ -62,7 +62,7 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 	//Render all visible objects
 
-	renderObjects(visibleComponents, renderManager->getComponentList(), camera, state);
+	renderObjects(visibleComponents, renderManager->getComponentList(), camera.get(), state.get());
 }
 
 bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, RenderComponent* object, float nearDist, float farDist) {
