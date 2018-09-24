@@ -293,10 +293,6 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 			}
 
 			bool screenSetBound = false;
-
-			//Screen set setting used to happen conditionally, but validation layers crash for some reason
-			//Assuming this needs rebinding every time as a result
-			bool hasScreenSet = false;
 			const std::string& screenSetName = shader->getPerScreenDescriptor();
 
 			//Per-model loop
@@ -335,13 +331,12 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							VkDescriptorSet screenSet = memoryManager.getDescriptorSet(screenSetName);
 
 							vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
-							hasScreenSet = true;
 							screenSetBound = true;
 						}
 
 						//Model set
 						if (!modelSetBound) {
-							uint32_t modelSetOffset = hasScreenSet ? 1 : 0;
+							uint32_t modelSetOffset = screenSetBound ? 1 : 0;
 							VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
 
 							if (model->hasBufferedUniforms) {
@@ -364,7 +359,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 							setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp.get(), camera.get());
 
 							uint32_t objectOffset = memoryManager.writePerFrameUniforms(objectAligner, currentFrame);
-							uint32_t objectSetOffset = hasScreenSet ? 2 : 1;
+							uint32_t objectSetOffset = screenSetBound ? 2 : 1;
 							VkDescriptorSet objectSet = memoryManager.getDescriptorSet(objectDescriptor);
 
 							vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), objectSetOffset, 1, &objectSet, 1, &objectOffset);
