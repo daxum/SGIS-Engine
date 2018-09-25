@@ -35,9 +35,12 @@ class btITaskScheduler;
 
 class Engine {
 public:
-	//Engine version information
+	//Engine version information:
+	//Major indicates large changes to the structure of the engine.
+	//Minor indicates breaking changes.
+	//Patch is everything else.
 	static constexpr uint32_t VERSION_MAJOR = 2;
-	static constexpr uint32_t VERSION_MINOR = 0;
+	static constexpr uint32_t VERSION_MINOR = 1;
 	static constexpr uint32_t VERSION_PATCH = 0;
 
 	//Global engine instance. Use sparingly!

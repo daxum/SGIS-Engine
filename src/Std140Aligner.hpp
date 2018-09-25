@@ -62,6 +62,12 @@ public:
 	Std140Aligner(const Std140Aligner& other);
 
 	/**
+	 * Just a move constructor.
+	 * @param other The aligner to move.
+	 */
+	Std140Aligner(Std140Aligner&& other);
+
+	/**
 	 * Just a destructor.
 	 */
 	~Std140Aligner() {
@@ -69,14 +75,6 @@ public:
 			delete[] uniformData;
 		}
 	}
-
-	/**
-	 * Implement these later if needed, this is to prevent
-	 * uniformData from being shallow copied.
-	 */
-	Std140Aligner(Std140Aligner&&) = delete;
-	Std140Aligner& operator=(const Std140Aligner&) = delete;
-	Std140Aligner& operator=(Std140Aligner&&) = delete;
 
 	/**
 	 * Setters for uniform values. These functions check the uniform's type,
@@ -119,6 +117,43 @@ public:
 	 * @return Whether the uniform with the given name exists and has the specified type.
 	 */
 	bool hasUniform(const std::string& name, const UniformType type) const { return uniformMap.count(name) && uniformMap.at(name).type == type; }
+
+	/**
+	 * Copy assignment.
+	 * @param other The object to copy.
+	 * @return This object.
+	 */
+	Std140Aligner& operator=(const Std140Aligner& other) {
+		if (this != &other) {
+			if (dataSize != other.dataSize) {
+				delete[] uniformData;
+				dataSize = 0;
+				uniformData = nullptr;
+				uniformData = new unsigned char[other.dataSize];
+				dataSize = other.dataSize;
+			}
+
+			memcpy(uniformData, other.uniformData, dataSize);
+			uniformMap = other.uniformMap;
+		}
+
+		return *this;
+	}
+
+	/**
+	 * Move assignment.
+	 * @param other The object to move.
+	 * @return This object.
+	 */
+	Std140Aligner& operator=(Std140Aligner&& other) {
+		if (this != &other) {
+			uniformMap = std::move(other.uniformMap);
+			uniformData = std::exchange(other.uniformData, nullptr);
+			dataSize = std::exchange(other.dataSize, 0);
+		}
+
+		return *this;
+	}
 
 private:
 	//Map of uniforms, for fast retrieval.

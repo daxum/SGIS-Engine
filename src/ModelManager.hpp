@@ -57,8 +57,8 @@ public:
 	 * @param name The name to store the mesh under.
 	 * @param mesh The mesh to add.
 	 */
-	void addMesh(const std::string& name, const Mesh& mesh) {
-		meshMap.insert({name, mesh});
+	void addMesh(const std::string& name, Mesh&& mesh) {
+		meshMap.emplace(name, std::move(mesh));
 		ENGINE_LOG_INFO(logger, "Added mesh \"" + name + "\"");
 	}
 
@@ -82,8 +82,8 @@ public:
 	 * @param name The name of the model.
 	 * @param model The model to add.
 	 */
-	void addModel(const std::string& name, const Model& model) {
-		modelMap.insert({name, model});
+	void addModel(const std::string& name, Model&& model) {
+		modelMap.emplace(name, std::move(model));
 		ENGINE_LOG_INFO(logger, "Added model \"" + name + "\"");
 	}
 

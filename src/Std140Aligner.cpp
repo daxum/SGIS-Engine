@@ -66,6 +66,13 @@ Std140Aligner::Std140Aligner(const Std140Aligner& other) :
 	memcpy(uniformData, other.uniformData, dataSize);
 }
 
+Std140Aligner::Std140Aligner(Std140Aligner&& other) :
+	uniformMap(std::move(other.uniformMap)),
+	uniformData(std::exchange(other.uniformData, nullptr)),
+	dataSize(std::exchange(other.dataSize, 0)) {
+
+}
+
 void Std140Aligner::setMat3(const std::string& name, const glm::mat3& value) {
 	checkType(name, UniformType::MAT3);
 

@@ -55,7 +55,7 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 		model.uniforms.setFloat("s", lighting.s);
 	}
 
-	modelManager.addModel(name, model);
+	modelManager.addModel(name, std::move(model));
 	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + filename + "\" as \"" + name + "\".");
 }
 
