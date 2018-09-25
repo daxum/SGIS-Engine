@@ -33,10 +33,8 @@ namespace ExMath {
 	 * Note: std::clamp is defined in the c++17 standard. If this project ever
 	 * uses that, this should be removed.
 	 * @param value The value to be clamped
-	 * @param minimum The lower bound. If value is less than this, it will
-	 *     be set to it.
-	 * @param maximum The upper bound. If value is greater than this, it will
-	 *     be set to it.
+	 * @param minimum The lower bound.
+	 * @param maximum The upper bound.
 	 * @return The clamped value.
 	 * @throw logic_error if minimum is greater than maximum.
 	 */

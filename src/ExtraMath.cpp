@@ -18,9 +18,6 @@
 
 #include <random>
 #include <chrono>
-#include <algorithm>
-#include <cmath>
-#include <tuple>
 
 #include "ExtraMath.hpp"
 
@@ -34,7 +31,7 @@ float ExMath::randomFloat(float min, float max) {
 }
 
 bool ExMath::randomBool() {
-	return std::uniform_int_distribution<unsigned char>(0, 1)(engine);
+	return std::bernoulli_distribution(0.5)(engine);
 }
 
 int ExMath::randomInt(int min, int max) {
