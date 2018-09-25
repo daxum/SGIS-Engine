@@ -31,7 +31,6 @@
 
 class RenderingEngine;
 class GameInterface;
-class btITaskScheduler;
 
 class Engine {
 public:

@@ -21,7 +21,6 @@
 #include "Engine.hpp"
 #include "GameInterface.hpp"
 #include "ExtraMath.hpp"
-#include "LinearMath/btThreads.h"
 
 #ifdef USE_OPENGL
 #	include "GlRenderer/GlRenderingEngine.hpp"
