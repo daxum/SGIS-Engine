@@ -117,8 +117,8 @@ if [ ${SETUP} -eq 1 ]; then
 	cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_VARS} ..
 
 	if [ $? -ne 0 ]; then
-			echo "CMake setup failed, aborting"
-			exit 1
+		echo "CMake setup failed, aborting"
+		exit 1
 	fi
 
 	cd ..
