@@ -1,39 +1,23 @@
 # SGIS-Engine
-The engine for SGIS
+The engine for SGIS - an in-progress game engine that supports both OpenGL and Vulkan.
 
 ---
 # Building
 
-These instructions (and the program in general, actually) have only been tested on Linux:
+These instructions (and the program in general, actually) have only been tested on Linux (however, the code itself should be completely portable):
 
-1. First, make sure that the following are installed, or set the `USE_INSTALLED_*` and `*_DIR` cmake variables to build with the engine.
+1. First, make sure that the following are installed:
 	* [GLFW](http://www.glfw.org)
 	* [glm](https://glm.g-truc.net)
 	* [bullet](https://github.com/bulletphysics/bullet3) (Must be built with tbb multithreading enabled)
 	* [Freetype2](https://www.freetype.org/)
 	* [TBB](https://www.threadingbuildingblocks.org/)
 
-	This engine supports both OpenGL and Vulkan. Support for either of these can be removed by disabling the USE_OPENGL or USE_VULKAN cmake variables.
+2. Assuming everything is installed correctly, you can then do `./buildEngine --setup` to setup cmake, and then `cd build` followed by `make -j$(nproc)` to build the engine.
 
-2. From the top of the repository, do:
+	There are also options to build and link glfw and bullet along with the engine, build the engine test programs, and disable OpenGL and/or Vulkan support (though doing both is rather pointless). All of these are explained at the top of the buildEngine script.
 
-	`cd src`
-
-	`cmake -DCMAKE_BUILD_TYPE=release -DFREETYPE_INCLUDE_DIR=<freetype_dir> .` where `<freetype_dir>` is the include directory for freetype2
-
-	`make`
-
-	or, to build out of tree:
-
-	`mkdir build`
-
-	`cd build`
-
-	`cmake -DCMAKE_BUILD_TYPE=release -DFREETYPE_INCLUDE_DIR=<freetype_dir> ../src`
-
-	`make`
-
-	This will create a file called libEngine.a, which can be linked with other projects.
+	Finally, there are three variables at the top of the script that point to the tbb and freetype2 include/library directories - these might need to be changed to match the path on your system.
 
 ---
 The file `stb_image.h` was obtained from [here](https://github.com/nothings/stb), and makes a mess of the language indexing on github :(.
