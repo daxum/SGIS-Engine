@@ -23,7 +23,7 @@
 void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
-	getComponentSet(renderComp->getModel()).insert(renderComp);
+	getComponentSet(renderComp->getModel()).insert(renderComp.get());
 	renderComponentSet.insert(renderComp.get());
 	renderComp->setManager(this);
 }
@@ -31,20 +31,20 @@ void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
-	removeComponent(renderComp, renderComp->getModel());
+	removeComponent(renderComp.get(), renderComp->getModel());
 	renderComponentSet.erase(renderComp.get());
 	renderComp->setManager(nullptr);
 }
 
-void RenderComponentManager::reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::shared_ptr<const ModelRef> oldModel) {
+void RenderComponentManager::reloadComponent(const RenderComponent* renderComp, std::shared_ptr<const ModelRef> oldModel) {
 	std::shared_ptr<const ModelRef> model = renderComp->getModel();
 
 	removeComponent(renderComp, oldModel);
 	getComponentSet(model).insert(renderComp);
 }
 
-void RenderComponentManager::removeComponent(std::shared_ptr<RenderComponent> comp, std::shared_ptr<const ModelRef> oldModel) {
-	std::unordered_set<std::shared_ptr<RenderComponent>>& compSet = getComponentSet(oldModel);
+void RenderComponentManager::removeComponent(const RenderComponent* comp, std::shared_ptr<const ModelRef> oldModel) {
+	std::unordered_set<const RenderComponent*>& compSet = getComponentSet(oldModel);
 
 	compSet.erase(comp);
 
@@ -56,7 +56,7 @@ void RenderComponentManager::removeComponent(std::shared_ptr<RenderComponent> co
 	}
 }
 
-std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::getComponentSet(std::shared_ptr<const ModelRef> model) {
+std::unordered_set<const RenderComponent*>& RenderComponentManager::getComponentSet(std::shared_ptr<const ModelRef> model) {
 	const std::string& buffer = model->getMesh().getBuffer();
 	const std::string& shader = model->getModel().shader;
 	const Model* modelPtr = &model->getModel();
@@ -65,7 +65,7 @@ std::unordered_set<std::shared_ptr<RenderComponent>>& RenderComponentManager::ge
 	auto& modelMap = shaderMap[shader];
 
 	if (!modelMap.count(modelPtr)) {
-		modelMap.insert({modelPtr, std::unordered_set<std::shared_ptr<RenderComponent>>()});
+		modelMap.insert({modelPtr, std::unordered_set<const RenderComponent*>()});
 	}
 
 	return modelMap.at(modelPtr);

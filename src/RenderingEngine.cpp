@@ -30,10 +30,10 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 	//View culling to check if objects are within the camera's view
 
-	const std::unordered_set<RenderComponent*>& components = renderManager->getComponentSet();
+	const std::unordered_set<const RenderComponent*>& components = renderManager->getComponentSet();
 	//Copy into vector for indexing later
-	std::vector<RenderComponent*> componentVec(components.begin(), components.end());
-	tbb::concurrent_unordered_set<RenderComponent*> visibleComponents;
+	std::vector<const RenderComponent*> componentVec(components.begin(), components.end());
+	tbb::concurrent_unordered_set<const RenderComponent*> visibleComponents;
 
 	const float width = getWindowInterface().getWindowWidth();
 	const float height = getWindowInterface().getWindowHeight();
@@ -65,7 +65,7 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 	renderObjects(visibleComponents, renderManager->getComponentList(), camera.get(), state.get());
 }
 
-bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, RenderComponent* object, float nearDist, float farDist) {
+bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, const RenderComponent* object, float nearDist, float farDist) {
 	const float near = -nearDist;
 	const float far = -farDist;
 

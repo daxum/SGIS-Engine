@@ -86,7 +86,7 @@ void VkRenderObjects::createSwapchain() {
 	swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	swapchainCreateInfo.preTransform = swapInfo.capabilities.currentTransform;
 	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+	swapchainCreateInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 	swapchainCreateInfo.clipped = VK_TRUE;
 	swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 

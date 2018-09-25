@@ -28,7 +28,7 @@
 class RenderComponentManager : public ComponentManager {
 public:
 	//Sorts the RenderComponents by buffer, then shader, then model.
-	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Model*, std::unordered_set<std::shared_ptr<RenderComponent>>>>> RenderPassList;
+	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Model*, std::unordered_set<const RenderComponent*>>>> RenderPassList;
 
 	/**
 	 * Constructor, sets name.
@@ -50,20 +50,20 @@ public:
 	 * Returns an unsorted set of all render components.
 	 * @return A set of render components.
 	 */
-	const std::unordered_set<RenderComponent*>& getComponentSet() { return renderComponentSet; }
+	const std::unordered_set<const RenderComponent*>& getComponentSet() { return renderComponentSet; }
 
 	/**
 	 * Removes and readds the component to the render component list.
 	 * @param renderComp The component to reload.
 	 * @param oldModel The model the component previously used.
 	 */
-	void reloadComponent(std::shared_ptr<RenderComponent> renderComp, std::shared_ptr<const ModelRef> oldModel);
+	void reloadComponent(const RenderComponent* renderComp, std::shared_ptr<const ModelRef> oldModel);
 
 private:
 	//Sorts all RenderComponents by their shader for less context switching.
 	RenderPassList renderComponents;
 	//A set of all RenderComponents, to avoid unneccessary casting.
-	std::unordered_set<RenderComponent*> renderComponentSet;
+	std::unordered_set<const RenderComponent*> renderComponentSet;
 
 	/**
 	 * Adds the component to one of the internal lists based on its model.
@@ -84,12 +84,12 @@ private:
 	 * @param oldModel The old model of the render component, or just the
 	 *     model if the component is being removed completely.
 	 */
-	void removeComponent(std::shared_ptr<RenderComponent> comp, std::shared_ptr<const ModelRef> oldModel);
+	void removeComponent(const RenderComponent* comp, std::shared_ptr<const ModelRef> oldModel);
 
 	/**
 	 * Helper function to get the set a component belongs in.
 	 * @param model The model of the render component to fetch the set for.
 	 * @return The set the component belongs in.
 	 */
-	std::unordered_set<std::shared_ptr<RenderComponent>>& getComponentSet(std::shared_ptr<const ModelRef> model);
+	std::unordered_set<const RenderComponent*>& getComponentSet(std::shared_ptr<const ModelRef> model);
 };

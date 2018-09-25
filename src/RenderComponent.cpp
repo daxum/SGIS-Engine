@@ -42,6 +42,6 @@ void RenderComponent::setModel(std::shared_ptr<ModelRef> newModel) {
 
 	if (manager) {
 		//Get shared pointer from parent because not stored here (shared_from_this was having problems for some reason).
-		manager->reloadComponent(lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME), oldModel);
+		manager->reloadComponent(this, oldModel);
 	}
 }

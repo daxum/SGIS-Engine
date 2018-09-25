@@ -162,7 +162,7 @@ protected:
 	 * @param camera The current camera.
 	 * @param state User-provided screen state.
 	 */
-	virtual void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) = 0;
+	virtual void renderObjects(const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) = 0;
 
 private:
 	/**
@@ -175,5 +175,5 @@ private:
 	 * @param farDist The distance for the far plane.
 	 * @return Whether the object can be seen from the camera.
 	 */
-	bool checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, RenderComponent* object, float nearDist, float farDist);
+	bool checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, const RenderComponent* object, float nearDist, float farDist);
 };

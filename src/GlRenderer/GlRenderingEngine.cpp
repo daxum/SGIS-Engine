@@ -147,7 +147,7 @@ void GlRenderingEngine::setViewport(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
+void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
 	//Opaque objects
 	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
 
@@ -163,7 +163,7 @@ void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<Render
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
+void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<const RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
 	std::string currentBuffer = "";
 	std::string currentShader = "";
 	bool enableBlend = pass == RenderPass::TRANSLUCENT;
@@ -185,8 +185,8 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 				const Model* model = objectSet.first;
 				bool modelSetBound = false;
 
-				for (const std::shared_ptr<RenderComponent> comp : objectSet.second) {
-					if (visibleObjects.count(comp.get())) {
+				for (const RenderComponent* comp : objectSet.second) {
+					if (visibleObjects.count(comp)) {
 						//Set shader / buffer / blend if needed
 						if (currentShader != shaderName) {
 							glUseProgram(shader->id);
@@ -217,12 +217,12 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concu
 
 						//Set per-object uniforms if needed
 						if (shader->objectSet != "") {
-							setPerObjectUniforms(shader.get(), memoryManager.getUniformSet(shader->objectSet).uniforms, comp.get(), camera);
+							setPerObjectUniforms(shader.get(), memoryManager.getUniformSet(shader->objectSet).uniforms, comp, camera);
 						}
 
 						//Set push constants - this is currently exactly the same as the per-object uniforms,
 						//will change if uniform buffers are implemented
-						setPerObjectUniforms(shader.get(), shader->pushConstants, comp.get(), camera);
+						setPerObjectUniforms(shader.get(), shader->pushConstants, comp, camera);
 
 						const GlMeshRenderData& renderData = memoryManager.getMeshData(comp->getModel()->getModel().mesh);
 

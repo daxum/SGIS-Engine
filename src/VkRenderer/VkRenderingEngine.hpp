@@ -97,7 +97,7 @@ protected:
 	 * @param camera The current camera.
 	 * @param state User-provided screen state.
 	 */
-	void renderObjects(const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
+	void renderObjects(const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
 
 private:
 	//Interface with the window system.
@@ -131,7 +131,7 @@ private:
 	 * @param camera The camera for the current screen.
 	 * @param screenState The state of the current screen.
 	 */
-	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
+	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
 
 	/**
 	 * Sets the push constant values for the provided object.
