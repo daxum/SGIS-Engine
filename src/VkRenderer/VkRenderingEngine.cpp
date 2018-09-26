@@ -250,7 +250,7 @@ void VkRenderingEngine::setViewport(int width, int height) {
 	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 }
 
-void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
+void VkRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
 	if (objects.empty()) {
 		return;
 	}
@@ -271,7 +271,7 @@ void VkRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<const 
 	vkCmdClearAttachments(commandBuffers.at(currentFrame), 1, &depthClear, 1, &clearRect);
 }
 
-void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
+void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
 	//Also, each loop should probably be its own function, this is getting ridiculous.
 

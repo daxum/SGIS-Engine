@@ -33,7 +33,7 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 	const std::unordered_set<const RenderComponent*>& components = renderManager->getComponentSet();
 	//Copy into vector for indexing later
 	std::vector<const RenderComponent*> componentVec(components.begin(), components.end());
-	tbb::concurrent_unordered_set<const RenderComponent*> visibleComponents;
+	ConcurrentRenderComponentSet visibleComponents;
 
 	const float width = getWindowInterface().getWindowWidth();
 	const float height = getWindowInterface().getWindowHeight();

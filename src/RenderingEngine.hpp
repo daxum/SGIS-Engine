@@ -144,6 +144,8 @@ public:
 	virtual const WindowSystemInterface& getWindowInterface() const = 0;
 
 protected:
+	typedef tbb::concurrent_unordered_set<const RenderComponent*> ConcurrentRenderComponentSet;
+
 	//The texture loader.
 	std::shared_ptr<TextureLoader> texLoader;
 	//The shader loader.
@@ -162,7 +164,7 @@ protected:
 	 * @param camera The current camera.
 	 * @param state User-provided screen state.
 	 */
-	virtual void renderObjects(const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) = 0;
+	virtual void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) = 0;
 
 private:
 	/**

@@ -147,7 +147,7 @@ void GlRenderingEngine::setViewport(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
+void GlRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
 	//Opaque objects
 	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
 
@@ -163,7 +163,7 @@ void GlRenderingEngine::renderObjects(const tbb::concurrent_unordered_set<const 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<const RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
+void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
 	std::string currentBuffer = "";
 	std::string currentShader = "";
 	bool enableBlend = pass == RenderPass::TRANSLUCENT;

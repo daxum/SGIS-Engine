@@ -104,7 +104,7 @@ protected:
 	 * @param camera The camera.
 	 * @param state User-supplied screen state.
 	 */
-	void renderObjects(const tbb::concurrent_unordered_set<const RenderComponent*>& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
+	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
 
 private:
 	//A map to store texture data
@@ -124,7 +124,7 @@ private:
 	 * @param camera The camera to use when rendering.
 	 * @param state The screen state, passed to shaders when setting uniforms.
 	 */
-	void renderTransparencyPass(RenderPass pass, const tbb::concurrent_unordered_set<const RenderComponent*>& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
+	void renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
 
 	/**
 	 * Sets the uniforms at the screen level (per-shader).
