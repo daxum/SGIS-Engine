@@ -45,6 +45,10 @@ void DisplayEngine::popScreen() {
 }
 
 void DisplayEngine::pushOverlay(std::shared_ptr<Screen> overlay) {
+	if (screenStack.empty()) {
+		screenStack.emplace_back();
+	}
+
 	screenStack.back().push_back(overlay);
 
 	renderer->getWindowInterface().captureMouse(overlay->mouseHidden());
