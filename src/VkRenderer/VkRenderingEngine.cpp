@@ -275,17 +275,16 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
 	//Also, each loop should probably be its own function, this is getting ridiculous.
 
-	std::string currentBuffer = "";
-	std::string currentShader = "";
-
 	//Per-buffer loop
 	for (const auto& shaderObjectMap : sortedObjects) {
 		const std::string& buffer = shaderObjectMap.first;
+		bool bufferBound = false;
 
 		//Per-shader loop
 		for (const auto& modelMap : shaderObjectMap.second) {
 			const std::string& shaderName = modelMap.first;
 			const std::shared_ptr<VkShader> shader = shaderMap.at(shaderName);
+			bool shaderBound = false;
 
 			//Skip these objects if their shader isn't in the current render pass
 			if (shader->getRenderPass() != pass) {
@@ -305,19 +304,19 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 				for (const RenderComponent* comp : objectSet.second) {
 					if (objects.count(comp)) {
 						//Set shader / buffer if needed
-						if (currentShader != shaderName) {
+						if (!shaderBound) {
 							vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipeline());
-							currentShader = shaderName;
+							shaderBound = true;
 						}
 
-						if (currentBuffer != buffer) {
+						if (!bufferBound) {
 							const VkDeviceSize zero = 0;
 							std::shared_ptr<VkBufferData> bufferData = std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer(buffer).getRenderData());
 
 							vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &bufferData->vertexBuffer, &zero);
 							vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), bufferData->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-							currentBuffer = buffer;
+							bufferBound = true;
 						}
 
 						//Bind descriptor sets if needed
