@@ -164,17 +164,17 @@ void GlRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& object
 }
 
 void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
-	std::string currentBuffer = "";
-	std::string currentShader = "";
 	bool enableBlend = pass == RenderPass::TRANSLUCENT;
 	bool blendOn = false;
 
 	for (const auto& shaderObjectMap : objects) {
 		const std::string& buffer = shaderObjectMap.first;
+		bool bufferBound = false;
 
 		for (const auto& modelMap : shaderObjectMap.second) {
 			const std::string& shaderName = modelMap.first;
 			const std::shared_ptr<GlShader> shader = shaderMap.at(shaderName);
+			bool shaderBound = false;
 
 			//Skip these objects if their shader isn't in the current render pass
 			if (shader->renderPass != pass) {
@@ -188,7 +188,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 				for (const RenderComponent* comp : objectSet.second) {
 					if (visibleObjects.count(comp)) {
 						//Set shader / buffer / blend if needed
-						if (currentShader != shaderName) {
+						if (!shaderBound) {
 							glUseProgram(shader->id);
 
 							//Set screen uniforms for the shader if present
@@ -196,12 +196,12 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 								setPerScreenUniforms(shader.get(), memoryManager.getUniformSet(shader->screenSet), state, camera);
 							}
 
-							currentShader = shaderName;
+							shaderBound = true;
 						}
 
-						if (currentBuffer != buffer) {
+						if (!bufferBound) {
 							memoryManager.bindBuffer(buffer);
-							currentBuffer = buffer;
+							bufferBound = true;
 						}
 
 						if (enableBlend && !blendOn) {
