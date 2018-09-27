@@ -25,6 +25,12 @@ AxisAlignedBB::AxisAlignedBB(glm::vec3 min, glm::vec3 max) :
 
 }
 
+AxisAlignedBB::AxisAlignedBB(const AxisAlignedBB& box1, const AxisAlignedBB& box2) :
+	min(std::min(box1.min.x, box2.min.x), std::min(box1.min.y, box2.min.y), std::min(box1.min.z, box2.min.z)),
+	max(std::max(box1.max.x, box2.max.x), std::max(box1.max.y, box2.max.y), std::max(box1.max.z, box2.max.z)) {
+
+}
+
 bool AxisAlignedBB::intersects(const AxisAlignedBB& other) const {
 	return min.x < other.max.x && max.x > other.min.x &&
 		   min.y < other.max.y && max.y > other.min.y &&
@@ -37,31 +43,39 @@ bool AxisAlignedBB::contains(const AxisAlignedBB& other) const {
 		   min.z <= other.min.z && max.z >= other.max.z;
 }
 
+bool AxisAlignedBB::formsBoxWith(const AxisAlignedBB& other) const {
+	//X touching
+	if (max.y == other.max.y && max.z == other.max.z &&
+		min.y == other.min.y && min.z == other.min.z &&
+		((min.x == other.max.x) ^ (max.x == other.min.x))) {
+
+		return true;
+	}
+
+	//Y touching
+	if (max.x == other.max.x && max.z == other.max.z &&
+		min.x == other.min.x && min.z == other.min.z &&
+		((min.y == other.max.y) ^ (max.y == other.min.y))) {
+
+		return true;
+	}
+
+	//Z touching
+	if (max.x == other.max.x && max.y == other.max.y &&
+		min.x == other.min.x && min.y == other.min.y &&
+		((min.z == other.max.z) ^ (max.z == other.min.z))) {
+
+		return true;
+	}
+
+	//Intersecting or disjoint
+	return false;
+}
+
 glm::vec3 AxisAlignedBB::getCenter() const {
 	return glm::vec3((min.x + max.x) / 2.0f,
 					 (min.y + max.y) / 2.0f,
 					 (min.z + max.z) / 2.0f);
-}
-
-float AxisAlignedBB::getArea() const {
-	return xLength() * yLength() * zLength();
-}
-
-float AxisAlignedBB::xLength() const {
-	return max.x - min.x;
-}
-
-float AxisAlignedBB::yLength() const {
-	return max.y - min.y;
-}
-
-float AxisAlignedBB::zLength() const {
-	return max.z - min.z;
-}
-
-void AxisAlignedBB::translate(glm::vec3 dist) {
-	min += dist;
-	max += dist;
 }
 
 void AxisAlignedBB::scale(glm::vec3 amount) {
@@ -71,10 +85,6 @@ void AxisAlignedBB::scale(glm::vec3 amount) {
 
 	min -= diff;
 	max += diff;
-}
-
-void AxisAlignedBB::scaleAll(float amount) {
-	scale(glm::vec3(amount, amount, amount));
 }
 
 std::string AxisAlignedBB::toString() const {

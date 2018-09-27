@@ -27,21 +27,22 @@ struct AxisAlignedBB {
 	glm::vec3 max;
 
 	AxisAlignedBB() : min(0.0, 0.0, 0.0), max(0.0, 0.0, 0.0) {}
-
 	AxisAlignedBB(glm::vec3 min, glm::vec3 max);
+	AxisAlignedBB(const AxisAlignedBB& box1, const AxisAlignedBB& box2);
 
 	bool intersects(const AxisAlignedBB& other) const;
 	bool contains(const AxisAlignedBB& other) const;
+	bool formsBoxWith(const AxisAlignedBB& other) const;
 
 	glm::vec3 getCenter() const;
-	float getArea() const;
-	float xLength() const;
-	float yLength() const;
-	float zLength() const;
+	float getArea() const { return xLength() * yLength() * zLength(); }
+	float xLength() const { return max.x - min.x; }
+	float yLength() const { return max.y - min.y; }
+	float zLength() const { return max.z - min.z; }
 
-	void translate(glm::vec3 dist);
+	void translate(glm::vec3 dist) { min += dist; max += dist; }
 	void scale(glm::vec3 amount);
-	void scaleAll(float amount);
+	void scaleAll(float amount) { scale({amount, amount, amount}); }
 
 	std::string toString() const;
 
