@@ -22,31 +22,204 @@
 #include <iostream>
 #include <string>
 
-struct AxisAlignedBB {
-	glm::vec3 min;
-	glm::vec3 max;
+#include "ExtraMath.hpp"
 
-	AxisAlignedBB() : min(0.0, 0.0, 0.0), max(0.0, 0.0, 0.0) {}
-	AxisAlignedBB(glm::vec3 min, glm::vec3 max);
-	AxisAlignedBB(const AxisAlignedBB& box1, const AxisAlignedBB& box2);
+template<typename T>
+struct Aabb {
+	typedef glm::vec<3, T, glm::defaultp> vec_t;
 
-	bool intersects(const AxisAlignedBB& other) const;
-	bool contains(const AxisAlignedBB& other) const;
-	bool formsBoxWith(const AxisAlignedBB& other) const;
+	vec_t min;
+	vec_t max;
 
-	glm::vec3 getCenter() const;
-	float getArea() const { return xLength() * yLength() * zLength(); }
-	float xLength() const { return max.x - min.x; }
-	float yLength() const { return max.y - min.y; }
-	float zLength() const { return max.z - min.z; }
+	/**
+	 * Constructs a default-initialized axis-aligned bounding box.
+	 */
+	Aabb() :
+		min(0, 0, 0),
+		max(0, 0, 0) {
 
-	void translate(glm::vec3 dist) { min += dist; max += dist; }
-	void scale(glm::vec3 amount);
-	void scaleAll(float amount) { scale({amount, amount, amount}); }
+	}
 
-	std::string toString() const;
+	/**
+	 * Constructs an axis-aligned bounding box using the given maximum
+	 * and minimum values. Care should be taken that maximum is actually
+	 * greater than minimum!
+	 * @param min The corner of the box closest to zero.
+	 * @param max The corner of the box farthest from zero.
+	 */
+	Aabb(vec_t min, vec_t max) :
+		min(min),
+		max(max) {
 
-	static AxisAlignedBB interpolate(const AxisAlignedBB& start, const AxisAlignedBB& finish, float percent);
+	}
+
+	/**
+	 * Constructs an axis-aligned bounding box that contains the entirety of
+	 * both box1 and box2.
+	 * TODO: any number of sub-boxes?
+	 * @param box1 The first box this one should contain.
+	 * @param box2 The second box this one should contain.
+	 */
+	Aabb(const Aabb<T>& box1, const Aabb<T>& box2) :
+		min(std::min(box1.min.x, box2.min.x), std::min(box1.min.y, box2.min.y), std::min(box1.min.z, box2.min.z)),
+		max(std::max(box1.max.x, box2.max.x), std::max(box1.max.y, box2.max.y), std::max(box1.max.z, box2.max.z)) {
+
+	}
+
+	/**
+	 * Checks whether this box intersects with the given one.
+	 * Boxes that are just touching are not considered intersecting.
+	 * @param other The box to check for intersection with.
+	 * @return Whether the two boxes intersect.
+	 */
+	bool intersects(const Aabb<T>& other) const  {
+		return min.x < other.max.x && max.x > other.min.x &&
+			   min.y < other.max.y && max.y > other.min.y &&
+			   min.z < other.max.z && max.z > other.min.z;
+	}
+
+	/**
+	 * Checks whether this box contains the given one, whether the given
+	 * box is a complete subset of this one.
+	 * @param other The box to check.
+	 * @return Whether this box completely encompasses the given one.
+	 */
+	bool contains(const Aabb<T>& other) const  {
+		return min.x <= other.min.x && max.x >= other.max.x &&
+			   min.y <= other.min.y && max.y >= other.max.y &&
+			   min.z <= other.min.z && max.z >= other.max.z;
+	}
+
+	/**
+	 * Checks whether this box forms a box with the other box - this
+	 * happens when they don't intersect, two of their dimensions are
+	 * the same, and they touch on the third dimension.
+	 * @param other The box to check.
+	 * @return whether the two boxes form a bigger box.
+	 */
+	bool formsBoxWith(const Aabb<T>& other) const  {
+		//X touching
+		if (max.y == other.max.y && max.z == other.max.z &&
+			min.y == other.min.y && min.z == other.min.z &&
+			((min.x == other.max.x) ^ (max.x == other.min.x))) {
+
+			return true;
+		}
+
+		//Y touching
+		if (max.x == other.max.x && max.z == other.max.z &&
+			min.x == other.min.x && min.z == other.min.z &&
+			((min.y == other.max.y) ^ (max.y == other.min.y))) {
+
+			return true;
+		}
+
+		//Z touching
+		if (max.x == other.max.x && max.y == other.max.y &&
+			min.x == other.min.x && min.y == other.min.y &&
+			((min.z == other.max.z) ^ (max.z == other.min.z))) {
+
+			return true;
+		}
+
+		//Intersecting or disjoint
+		return false;
+	}
+
+	/**
+	 * Calculates the center of the box.
+	 * @return The center.
+	 */
+	vec_t getCenter() const  {
+		return vec_t(
+			(min.x + max.x) / 2.0f,
+			(min.y + max.y) / 2.0f,
+			(min.z + max.z) / 2.0f
+		);
+	}
+
+	/**
+	 * Calculates the volume of the box.
+	 * @return The volume.
+	 */
+	T getVolume() const {
+		return xLength() * yLength() * zLength();
+	}
+
+	/**
+	 * The below three functions get the dimensions of the box.
+	 * @return The lengths of the sides of the box.
+	 */
+	T xLength() const { return max.x - min.x; }
+	T yLength() const { return max.y - min.y; }
+	T zLength() const { return max.z - min.z; }
+
+	/**
+	 * Translates the box dist units.
+	 * @param dist The distance to translate.
+	 */
+	void translate(const vec_t& dist) {
+		min += dist; max += dist;
+	}
+
+	/**
+	 * Scales the box by the given amount.
+	 * @param amount The amount to scale the box by.
+	 */
+	void scale(const vec_t& amount) {
+		vec_t center = getCenter();
+
+		vec_t diff = (max - center) * amount - (max - center);
+
+		min -= diff;
+		max += diff;
+	}
+
+	/**
+	 * Scales all three sides of the box at once.
+	 * @param amount The amount to scale the sides by.
+	 */
+	void scaleAll(const T& amount) { scale({amount, amount, amount}); }
+
+	/**
+	 * Converts the box to a printable string.
+	 * @return A string representation of the box.
+	 */
+	std::string toString() const {
+		return "[" + std::to_string(min.x) + ", " + std::to_string(min.y) + ", " + std::to_string(min.z) + " | " +
+					 std::to_string(max.x) + ", " + std::to_string(max.y) + ", " + std::to_string(max.z) + "]";
+	}
+
+	/**
+	 * Returns the box that is the result of interpolating between the two parameters by percent.
+	 * @param start The box to start at.
+	 * @param finish The box to end at.
+	 * @param percent The percent to interpolate between the two boxes.
+	 * @return The interpolated box.
+	 */
+	static Aabb<T> interpolate(const Aabb<T>& start, const Aabb<T>& finish, float percent) {
+		return Aabb(vec_t(ExMath::interpolate(start.min.x, finish.min.x, percent),
+						  ExMath::interpolate(start.min.y, finish.min.y, percent),
+						  ExMath::interpolate(start.min.z, finish.min.z, percent)),
+					vec_t(ExMath::interpolate(start.max.x, finish.max.x, percent),
+						  ExMath::interpolate(start.max.y, finish.max.y, percent),
+						  ExMath::interpolate(start.max.z, finish.max.z, percent)));
+	}
 };
 
-std::ostream& operator<<(std::ostream& out, const AxisAlignedBB& box);
+//For compatibility, don't use in new code.
+//Aabb<float> is two characters shorter anyway.
+typedef Aabb<float> AxisAlignedBB;
+
+/**
+ * Prints an axis-aligned bounding box, in the standard way to print such things.
+ * If you're explicitly calling this, you're probably doing something wrong.
+ * @param out The output stream to print to.
+ * @param box The box to print.
+ * @return The passed in output stream.
+ */
+template<typename T>
+std::ostream& operator<<(std::ostream& out, const Aabb<T>& box) {
+	out << box.toString();
+	return out;
+}

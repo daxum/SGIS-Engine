@@ -10,7 +10,6 @@ set(ENGINE_FILES
 	ComponentManager.cpp
 	AIComponentManager.cpp
 	PhysicsComponentManager.cpp
-	AxisAlignedBB.cpp
 	MatrixStack.cpp
 	UpdateComponentManager.cpp
 	PhysicsComponent.cpp
