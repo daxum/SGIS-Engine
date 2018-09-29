@@ -168,7 +168,7 @@ struct Aabb {
 			//If minimum value intersects
 			if (minus.min[i] > splitBox.min[i] && minus.min[i] < splitBox.max[i]) {
 				//Bisect
-				std::array<Aabb<T>, 2> split = bisect(splitBox, i, minus.min[i]);
+				std::array<Aabb<T>, 2> split = splitBox.bisect(i, minus.min[i]);
 
 				//Below minus - can't intersect
 				out.push_back(split.at(0));
@@ -179,7 +179,7 @@ struct Aabb {
 			//If maximum value intersects
 			if (minus.max[i] < splitBox.max[i] && minus.max[i] > splitBox.min[i]) {
 				//Bisect
-				std::array<Aabb<T>, 2> split = bisect(splitBox, i, minus.max[i]);
+				std::array<Aabb<T>, 2> split = splitBox.bisect(i, minus.max[i]);
 
 				//Above minus - can't intersect
 				out.push_back(split.at(1));
