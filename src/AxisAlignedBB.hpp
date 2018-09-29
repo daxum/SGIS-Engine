@@ -18,9 +18,11 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
+
+#include <glm/glm.hpp>
 
 #include "ExtraMath.hpp"
 
@@ -124,6 +126,77 @@ struct Aabb {
 
 		//Intersecting or disjoint
 		return false;
+	}
+
+	/**
+	 * Bisects a bounding box along the given axis.
+	 * @param axis The axis to bisect along. Each increasing value
+	 *     is the next dimension, so x=0, y=1, z=2, etc. This theoretically
+	 *     supports bisecting n-dimensional bounding boxes, if glm could
+	 *     handle that.
+	 * @param offset The offset along the axis to bisect. If this outside
+	 *     the min or max in the given dimension, this will create zero- or
+	 *     negative-volume bounding boxes, which probably isn't desired.
+	 * @return The two boxes formed by bisecting this one.
+	 */
+	std::array<Aabb<T>, 2> bisect(size_t axis, const T& offset) const {
+		std::array<Aabb<T>, 2> out = {*this, *this};
+
+		out.at(0).max[axis] = offset;
+		out.at(1).min[axis] = offset;
+
+		return out;
+	}
+
+	/**
+	 * Removes the given bounding box's volume from this one, forming one or
+	 * more bounding boxes, all of which are contained in this one and none
+	 * of which intersect with minus.
+	 * @param minus The box representing the area to remove.
+	 * @return A vector of bounding boxes of maximal volume which meet the
+	 *     above criteria.
+	 */
+	std::vector<Aabb<T>> subtract(const Aabb<T>& minus) const {
+		std::vector<Aabb<T>> out(1, *this);
+
+		//Bisect into 0-3 boxes along each axis, discard the box that fully intersects with minus
+		for (size_t i = 0; i < 3; i++) {
+			//Remove last added box for splitting
+			Aabb<T> splitBox = out.back();
+			out.pop_back();
+
+			//If minimum value intersects
+			if (minus.min[i] > splitBox.min[i] && minus.min[i] < splitBox.max[i]) {
+				//Bisect
+				std::array<Aabb<T>, 2> split = bisect(splitBox, i, minus.min[i]);
+
+				//Below minus - can't intersect
+				out.push_back(split.at(0));
+				//Set split box to possibly intersecting box
+				splitBox = split.at(1);
+			}
+
+			//If maximum value intersects
+			if (minus.max[i] < splitBox.max[i] && minus.max[i] > splitBox.min[i]) {
+				//Bisect
+				std::array<Aabb<T>, 2> split = bisect(splitBox, i, minus.max[i]);
+
+				//Above minus - can't intersect
+				out.push_back(split.at(1));
+				//Set box for next dimension to possibly intersecting box
+				splitBox = split.at(0);
+			}
+
+			//Add back whatever's left
+			out.push_back(splitBox);
+		}
+
+		//Last box added fully intersects minus - remove it unless boxes don't intersect at all
+		if (intersects(minus)) {
+			out.pop_back();
+		}
+
+		return out;
 	}
 
 	/**
