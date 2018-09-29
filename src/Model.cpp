@@ -35,7 +35,7 @@ namespace {
 	}
 }
 
-Mesh::Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const AxisAlignedBB& box, float radius) :
+Mesh::Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
 	vertexData(new unsigned char[vertices.at(0).getSize() * vertices.size()]),
 	vertexSize(vertices.at(0).getSize() * vertices.size()),
 	indices(indices),

@@ -40,7 +40,7 @@ public:
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
-	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const AxisAlignedBB& box, float radius);
+	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
 
 	/**
 	 * Copy constructor.
@@ -67,7 +67,7 @@ public:
 	 * Gets the mesh's bounding box.
 	 * @return the bounding box of the mesh.
 	 */
-	const AxisAlignedBB& getBox() const { return box; }
+	const Aabb<float>& getBox() const { return box; }
 
 	/**
 	 * Get's the mesh's radius.
@@ -155,7 +155,7 @@ private:
 	std::string buffer;
 
 	//Possibly useful dimensions for the mesh, calculated on construction.
-	AxisAlignedBB box;
+	Aabb<float> box;
 	float radius;
 
 	//How many models use this mesh.

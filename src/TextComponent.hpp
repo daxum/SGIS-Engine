@@ -78,7 +78,7 @@ public:
 	 * taking scale into account.
 	 * @return The centered and scaled bounding box of the text.
 	 */
-	AxisAlignedBB getTextBox();
+	Aabb<float> getTextBox();
 
 	/**
 	 * Adjusts the rendering scale so that the text fits inside the given bounding box.

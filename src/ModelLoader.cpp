@@ -27,7 +27,7 @@
 void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull) {
 	std::shared_ptr<ModelData> data = loadFromDisk(filename, buffer);
 
-	AxisAlignedBB box = calculateBox(data);
+	Aabb<float> box = calculateBox(data);
 	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for model " + name);
 
 	float radius = calculateMaxRadius(data, box.getCenter());
@@ -127,10 +127,10 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 	return data;
 }
 
-AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
+Aabb<float> ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
 	if (data->vertices.size() == 0) {
 		ENGINE_LOG_WARN(logger, "Zero vertex mesh loaded?!");
-		return AxisAlignedBB(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
+		return Aabb<float>(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
 	}
 
 	glm::vec3 max = data->vertices.at(0).getVec3(VERTEX_ELEMENT_POSITION);
@@ -148,7 +148,7 @@ AxisAlignedBB ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
 		min.z = std::min(min.z, current.z);
 	}
 
-	return AxisAlignedBB(min, max);
+	return Aabb<float>(min, max);
 }
 
 float ModelLoader::calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) const {

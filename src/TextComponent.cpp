@@ -85,8 +85,8 @@ void TextComponent::setShader(const std::string& shader) {
 	lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);
 }
 
-AxisAlignedBB TextComponent::getTextBox() {
-	AxisAlignedBB textBox = textModel->getMesh().getBox();
+Aabb<float> TextComponent::getTextBox() {
+	Aabb<float> textBox = textModel->getMesh().getBox();
 
 	textBox.translate(-textBox.getCenter());
 
@@ -101,7 +101,7 @@ void TextComponent::fitToBox(const glm::vec2& box, bool preserveAspect) {
 		return;
 	}
 
-	const AxisAlignedBB& textBox = getTextBox();
+	const Aabb<float>& textBox = getTextBox();
 
 	float xScale = box.x / textBox.xLength();
 	float yScale = box.y / textBox.yLength();

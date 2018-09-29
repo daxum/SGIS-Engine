@@ -95,7 +95,7 @@ protected:
 	 * @param data The model data to calculate a box for.
 	 * @return a box for the mesh.
 	 */
-	AxisAlignedBB calculateBox(std::shared_ptr<ModelData> data) const;
+	Aabb<float> calculateBox(std::shared_ptr<ModelData> data) const;
 
 	/**
 	 * Calculates the maximum radius of the model.

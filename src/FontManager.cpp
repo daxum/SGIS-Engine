@@ -116,7 +116,7 @@ void FontManager::createTextMesh(const std::string& fontName, const std::u32stri
 	}
 
 	float radius = glm::length(glm::vec2(farthestX, lowestY)) / 2.0f;
-	AxisAlignedBB box(glm::vec3(0.0, lowestY, -0.01), glm::vec3(farthestX, 0.0, 0.01));
+	Aabb<float> box(glm::vec3(0.0, lowestY, -0.01), glm::vec3(farthestX, 0.0, 0.01));
 
 	modelManager.addMesh(getMeshName(fontName, text, buffer), Mesh(buffer, vertices, indices, box, radius));
 }
