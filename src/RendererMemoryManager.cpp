@@ -173,8 +173,6 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 		}
 	}
 
-	ENGINE_LOG_DEBUG(logger, "Uploading model uniform data for \"" + name + "\" to rendering engine");
-
 	//Determine set type, model type, and retrieve data
 
 	const UniformSet& set = getUniformSet(model.uniformSet);
@@ -188,6 +186,8 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 
 	//Don't add buffered uniforms if the model doesn't have any
 	if (model.hasBufferedUniforms) {
+		ENGINE_LOG_DEBUG(logger, "Uploading model uniform data for \"" + name + "\" to rendering engine");
+
 		size_t dataSize = model.uniforms.getData().second;
 		const unsigned char* modelData = model.uniforms.getData().first;
 
@@ -203,6 +203,8 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 
 		//Use dataSize instead of allocation->size to avoid the padding, as the alignment only applies to offset
 		modelDataMap.insert({name, ModelUniformData{allocation, allocation->start, dataSize}});
+
+		ENGINE_LOG_DEBUG(logger, "Uploaded model uniform data for \"" + name + "\" to rendering engine");
 	}
 
 	//Allocate descriptor set for static models. If the model already has a descriptor set, this call will be ignored.
@@ -213,8 +215,6 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 	else {
 		addDynamicDescriptors(model);
 	}
-
-	ENGINE_LOG_DEBUG(logger, "Uploaded model uniform data for \"" + name + "\" to rendering engine");
 }
 
 void RendererMemoryManager::freeModel(const std::string& name, const Model& model) {
