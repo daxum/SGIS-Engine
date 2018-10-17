@@ -255,8 +255,8 @@ void VkObjectHandler::setPhysicalDevice() {
 }
 
 void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& devices) {
-	for (size_t i = devices.size(); i > 0; i--) {
-		VkPhysicalDevice physDevice = devices.at(i - 1);
+	for (size_t i = devices.size() - 1; i + 1 > 0; i--) {
+		VkPhysicalDevice physDevice = devices.at(i);
 
 		VkPhysicalDeviceProperties properties;
 		VkPhysicalDeviceFeatures features;
@@ -264,7 +264,7 @@ void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& d
 		vkGetPhysicalDeviceFeatures(physDevice, &features);
 
 		if (!findQueueFamilies(physDevice).foundFamilies.all() || !deviceHasAllExtensions(physDevice, requiredExtensions)) {
-			devices.erase(devices.begin() + (i - 1));
+			devices.erase(devices.begin() + (i));
 			continue;
 		}
 
@@ -274,7 +274,7 @@ void VkObjectHandler::removeInsufficientDevices(std::vector<VkPhysicalDevice>& d
 		vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, surface, &formatCount, nullptr);
 
 		if (formatCount == 0) {
-			devices.erase(devices.begin() + (i - 1));
+			devices.erase(devices.begin() + (i));
 		}
 	}
 }

@@ -79,9 +79,9 @@ void InputHandler::update(std::vector<std::shared_ptr<InputEvent>>& events) {
 	}
 
 	//Remove any handled events
-	for (size_t i = events.size(); i > 0; i--) {
-		if (toRemove.count(events[i - 1])) {
-			events.erase(events.begin() + i - 1);
+	for (size_t i = events.size() - 1; i + 1 > 0; i--) {
+		if (toRemove.count(events[i])) {
+			events.erase(events.begin() + i);
 		}
 	}
 }
