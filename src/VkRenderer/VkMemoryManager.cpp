@@ -408,7 +408,6 @@ VkImageView VkMemoryManager::createDepthBuffer(VkExtent2D swapExtent) {
 
 	VkImageCreateInfo depthCreateInfo = {};
 	depthCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	depthCreateInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 	depthCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 	depthCreateInfo.format = VK_FORMAT_D32_SFLOAT;
 	depthCreateInfo.extent = {swapExtent.width, swapExtent.height, 1};
