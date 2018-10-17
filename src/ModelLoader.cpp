@@ -26,18 +26,19 @@
 #include "tiny_obj_loader.h"
 
 void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull) {
-	std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, buffer);
+	if (!modelManager.hasMesh(filename)) {
+		std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, buffer);
 
-	Aabb<float> box = calculateBox(data);
-	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for model " + name);
+		Aabb<float> box = calculateBox(data);
+		ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for model " + name);
 
-	float radius = calculateMaxRadius(data, box.getCenter());
-	ENGINE_LOG_DEBUG(logger, "Radius of model is " + std::to_string(radius));
+		float radius = calculateMaxRadius(data, box.getCenter());
+		ENGINE_LOG_DEBUG(logger, "Radius of model is " + std::to_string(radius));
 
-	//TODO: load meshes separately to share between models.
-	modelManager.addMesh(name, Mesh(buffer, data->vertices, data->indices, box, radius));
+		modelManager.addMesh(filename, Mesh(buffer, data->vertices, data->indices, box, radius));
+	}
 
-	Model model(name, name, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
+	Model model(name, filename, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
 	model.textures.push_back(texture);
 
 	if (model.uniforms.hasUniform("ka", UniformType::VEC3)) {
