@@ -63,6 +63,8 @@ struct EngineConfig {
 	float physicsTimestep;
 	//Controls how often average frame times are reported, in milliseconds.
 	double frameReportFrequency;
+	//Directory to append to all resource filenames when loading (this should include the final '/').
+	std::string resourceBase;
 	//General logging for engine.
 	LogConfig generalLog;
 	//General renderer logger.

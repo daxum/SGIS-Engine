@@ -153,9 +153,10 @@ VkShaderModule VkShaderLoader::createShaderModule(const std::string& filename) {
 
 std::vector<char> VkShaderLoader::loadFromDisk(const std::string& filename) {
 	std::vector<char> fileData;
+	std::string loadFile = Engine::instance->getConfig().resourceBase + filename;
 
 	try {
-		std::ifstream inFile(filename, std::ios::ate | std::ios::binary);
+		std::ifstream inFile(loadFile, std::ios::ate | std::ios::binary);
 		inFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
 		size_t fileSize = inFile.tellg();
@@ -165,7 +166,7 @@ std::vector<char> VkShaderLoader::loadFromDisk(const std::string& filename) {
 		inFile.read(fileData.data(), fileSize);
 	}
 	catch (const std::ifstream::failure& e) {
-		throw std::runtime_error("Failed to read file \"" + filename + "\"!");
+		throw std::runtime_error("Failed to read file \"" + loadFile + "\"!");
 	}
 
 	return fileData;

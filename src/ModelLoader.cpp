@@ -21,11 +21,12 @@
 
 #include "ModelLoader.hpp"
 #include "ModelManager.hpp"
+#include "Engine.hpp"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull) {
-	std::shared_ptr<ModelData> data = loadFromDisk(filename, buffer);
+	std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, buffer);
 
 	Aabb<float> box = calculateBox(data);
 	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for model " + name);
@@ -56,7 +57,7 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	}
 
 	modelManager.addModel(name, std::move(model));
-	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + filename + "\" as \"" + name + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + Engine::instance->getConfig().resourceBase + filename + "\" as \"" + name + "\".");
 }
 
 std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const std::string& vertexBuffer) {

@@ -74,8 +74,9 @@ namespace {
 
 TextureData TextureLoader::loadFromDisk(const std::string& filename) {
 	TextureData texData = {};
+	std::string loadFile = Engine::instance->getConfig().resourceBase + filename;
 
-	ENGINE_LOG_DEBUG(logger, "Loading \"" + filename + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loading \"" + loadFile + "\".");
 
 	//Channels is currently unused, but will be set with the amount of channels the image originally had
 	//if it's ever needed.
@@ -83,13 +84,13 @@ TextureData TextureLoader::loadFromDisk(const std::string& filename) {
 	int width = 0;
 	int height = 0;
 	texData.channels = 4;
-	unsigned char* imageData = stbi_load(filename.c_str(), &width, &height, &channels, 4);
+	unsigned char* imageData = stbi_load(loadFile.c_str(), &width, &height, &channels, 4);
 
 	texData.width = (uint32_t) width;
 	texData.height = (uint32_t) height;
 
 	if (imageData == nullptr) {
-		ENGINE_LOG_ERROR(logger, "Couldn't load texture \"" + filename + "\" - file doesn't exist.");
+		ENGINE_LOG_ERROR(logger, "Couldn't load texture \"" + loadFile + "\" - file doesn't exist.");
 		texData.loadSuccess = false;
 		texData.width = 2;
 		texData.height = 2;
@@ -104,11 +105,11 @@ TextureData TextureLoader::loadFromDisk(const std::string& filename) {
 	//Report a warning if this occurs.
 	if ((texData.width & (texData.width - 1)) || texData.width != texData.height) {
 		ENGINE_LOG_WARN(logger,
-			"Malformed texture \"" + filename + "\" has dimensions " + std::to_string(texData.width) + " x " +
+			"Malformed texture \"" + loadFile + "\" has dimensions " + std::to_string(texData.width) + " x " +
 			std::to_string(texData.height) + ". Dimensions must be equal powers of two.");
 	}
 
-	ENGINE_LOG_DEBUG(logger, "Loaded " + std::to_string(texData.width) + " x " + std::to_string(texData.height) + " texture \"" + filename + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loaded " + std::to_string(texData.width) + " x " + std::to_string(texData.height) + " texture \"" + loadFile + "\".");
 
 	return texData;
 }
@@ -121,8 +122,10 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 
 	//Open all fonts.
 	for (size_t i = 0; i < filenames.size(); i++) {
-		if (FT_New_Face(library, filenames.at(i).c_str(), 0, &faces.at(i))) {
-			throw std::runtime_error("Couldn't open file \"" + filenames.at(i) + "\", or the filetype is not supported.");
+		std::string loadFile = Engine::instance->getConfig().resourceBase + filenames.at(i);
+
+		if (FT_New_Face(library, loadFile.c_str(), 0, &faces.at(i))) {
+			throw std::runtime_error("Couldn't open file \"" + loadFile + "\", or the filetype is not supported.");
 		}
 
 		FT_Set_Pixel_Sizes(faces.at(i), 0, size);
@@ -132,7 +135,7 @@ void TextureLoader::loadFont(const std::string& name, const std::vector<std::str
 	std::vector<CharData> chars;
 
 	if (FT_Load_Char(faces.at(0), U' ', FT_LOAD_RENDER)) {
-		throw std::runtime_error("Missing space in font " + filenames.at(0) + "!");
+		throw std::runtime_error("Missing space in font " + Engine::instance->getConfig().resourceBase + filenames.at(0) + "!");
 	}
 
 	Font& font = Engine::instance->getFontManager().addFont(name, faces.at(0)->glyph->advance.x >> 6, size);

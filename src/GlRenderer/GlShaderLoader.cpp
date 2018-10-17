@@ -149,13 +149,15 @@ std::string GlShaderLoader::loadShaderSource(std::string filename) {
 
 	//Read source from disk.
 
+	std::string loadFile = Engine::instance->getConfig().resourceBase + filename;
+
 	try {
-		inFile.open(filename);
+		inFile.open(loadFile);
 		sourceStream << inFile.rdbuf();
 		inFile.close();
 	}
 	catch(const std::ifstream::failure& e) {
-		throw std::runtime_error("Couldn't read shader source for " + filename);
+		throw std::runtime_error("Couldn't read shader source for " + loadFile);
 	}
 
 	return sourceStream.str();
