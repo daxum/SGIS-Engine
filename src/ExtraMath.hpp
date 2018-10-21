@@ -69,8 +69,25 @@ namespace ExMath {
 	 */
 	template<typename T>
 	constexpr T bilinearInterpolate(const std::array<T, 4>& corners, const float xWeight, const float yWeight)  {
-		return (1.0f - yWeight) * ((1.0f - xWeight) * corners.at(0) + xWeight * corners.at(1)) +
-				yWeight * ((1.0f - xWeight) * corners.at(2) + xWeight * corners.at(3));
+		return (1.0f - yWeight) * interpolate(corners.at(0), corners.at(1), xWeight) +
+				yWeight * interpolate(corners.at(2), corners.at(3), xWeight);
+	}
+
+	/**
+	 * Interpolates in three dimensions.
+	 * @param corners The eight corners of the cube to interpolate within.
+	 *     Goes from min square to max, square corners have the same
+	 *     order as in bilinear interpolation.
+	 * @param xWeight, yWeight, zWeight The percents to interpolate by.
+	 * @return The interpolated value.
+	 */
+	template<typename T>
+	constexpr T trilinearInterpolate(const std::array<T, 8>& corners, const float xWeight, const float yWeight, const float zWeight) {
+		std::array<T, 4> top = {corners.at(0), corners.at(1), corners.at(2), corners.at(3)};
+		std::array<T, 4> bottom = {corners.at(4), corners.at(5), corners.at(6), corners.at(7)};
+
+		return (1.0f - zWeight) * bilinearInterpolate(top, xWeight, yWeight) +
+				zWeight * bilinearInterpolate(bottom, xWeight, yWeight);
 	}
 
 	/**

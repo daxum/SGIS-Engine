@@ -46,12 +46,12 @@ struct Aabb {
 	 * Constructs an axis-aligned bounding box using the given maximum
 	 * and minimum values. Care should be taken that maximum is actually
 	 * greater than minimum!
-	 * @param min The corner of the box closest to zero.
-	 * @param max The corner of the box farthest from zero.
+	 * @param min The corner of the box closest to -infinity.
+	 * @param max The corner of the box farthest from -infinity.
 	 */
 	Aabb(vec_t min, vec_t max) :
-		min(min),
-		max(max) {
+		min(std::min(min.x, max.x), std::min(min.y, max.y), std::min(min.z, max.z)),
+		max(std::max(min.x, max.x), std::max(min.y, max.y), std::max(min.z, max.z)) {
 
 	}
 
@@ -65,6 +65,13 @@ struct Aabb {
 	Aabb(const Aabb<T>& box1, const Aabb<T>& box2) :
 		min(std::min(box1.min.x, box2.min.x), std::min(box1.min.y, box2.min.y), std::min(box1.min.z, box2.min.z)),
 		max(std::max(box1.max.x, box2.max.x), std::max(box1.max.y, box2.max.y), std::max(box1.max.z, box2.max.z)) {
+
+	}
+
+	template<typename D>
+	Aabb(const Aabb<D>& other) :
+		min(other.min),
+		max(other.max) {
 
 	}
 
@@ -149,6 +156,27 @@ struct Aabb {
 	}
 
 	/**
+	 * Bisects the box along all three axis, and returns the eight sub-boxes.
+	 * Note: For integer values, this can return zero volume boxes in some cases.
+	 * @return Eight boxes resulting from bisecting this one in all three axis.
+	 */
+	std::array<Aabb<T>, 8> split() const {
+		std::array<Aabb<T>, 8> out;
+		vec_t center = getCenter();
+
+		out.at(0) = Aabb<T>({min.x, min.y, min.z}, center);
+		out.at(1) = Aabb<T>({center.x, min.y, min.z}, {max.x, center.y, center.z});
+		out.at(2) = Aabb<T>({min.x, center.y, min.z}, {center.x, max.y, center.z});
+		out.at(3) = Aabb<T>({center.x, center.y, min.z}, {max.x, max.y, center.z});
+		out.at(4) = Aabb<T>({min.x, min.y, center.z}, {center.x, center.y, max.z});
+		out.at(5) = Aabb<T>({center.x, min.y, center.z}, {max.x, center.y, max.z});
+		out.at(6) = Aabb<T>({min.x, center.y, center.z}, {center.x, max.y, max.z});
+		out.at(7) = Aabb<T>(center, {max.x, max.y, max.z});
+
+		return out;
+	}
+
+	/**
 	 * Removes the given bounding box's volume from this one, forming one or
 	 * more bounding boxes, all of which are contained in this one and none
 	 * of which intersect with minus.
@@ -213,10 +241,12 @@ struct Aabb {
 
 	/**
 	 * Calculates the volume of the box.
+	 * Templated to prevent overflow for small types.
 	 * @return The volume.
 	 */
-	T getVolume() const {
-		return xLength() * yLength() * zLength();
+	template<typename D=T>
+	D getVolume() const {
+		return (D)xLength() * (D)yLength() * (D)zLength();
 	}
 
 	/**
@@ -277,6 +307,15 @@ struct Aabb {
 					vec_t(ExMath::interpolate(start.max.x, finish.max.x, percent),
 						  ExMath::interpolate(start.max.y, finish.max.y, percent),
 						  ExMath::interpolate(start.max.z, finish.max.z, percent)));
+	}
+
+	/**
+	 * Checks whether min is less than max.
+	 */
+	void validate() {
+		if (min.x > max.x || min.y > max.y || min.z > max.z) {
+			throw std::runtime_error("Invalid box " + this->toString() + "!");
+		}
 	}
 };
 
