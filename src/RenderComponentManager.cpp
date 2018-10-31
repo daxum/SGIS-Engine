@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <algorithm>
+
 #include "RenderComponentManager.hpp"
 #include "Engine.hpp"
 #include "Model.hpp"
@@ -24,7 +26,7 @@ void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	getComponentSet(renderComp->getModel()).insert(renderComp.get());
-	renderComponentSet.insert(renderComp.get());
+	renderComponentSet.push_back(renderComp.get());
 	renderComp->setManager(this);
 }
 
@@ -32,7 +34,16 @@ void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) 
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	removeComponent(renderComp.get(), renderComp->getModel());
-	renderComponentSet.erase(renderComp.get());
+	auto compLoc = std::find(renderComponentSet.begin(), renderComponentSet.end(), comp.get());
+
+	if (compLoc != renderComponentSet.end()) {
+		*compLoc = renderComponentSet.back();
+		renderComponentSet.pop_back();
+	}
+	else {
+		throw std::runtime_error("Attempt to remove non-present render component");
+	}
+
 	renderComp->setManager(nullptr);
 }
 
