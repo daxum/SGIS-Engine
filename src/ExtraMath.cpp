@@ -30,12 +30,16 @@ float ExMath::randomFloat(float min, float max) {
 	return std::uniform_real_distribution<float>(min, max)(engine);
 }
 
-bool ExMath::randomBool() {
-	return std::bernoulli_distribution(0.5)(engine);
+bool ExMath::randomBool(double weight) {
+	return std::bernoulli_distribution(weight)(engine);
 }
 
 int ExMath::randomInt(int min, int max) {
 	return std::uniform_int_distribution<int>(min, max)(engine);
+}
+
+int ExMath::randomBinomialInt(int min, int max, int average) {
+	return std::binomial_distribution<int>(max - min, (double)(average - min) / (max - min))(engine) + min;
 }
 
 double ExMath::getTimeMillis() {

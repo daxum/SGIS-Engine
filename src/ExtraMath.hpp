@@ -100,17 +100,28 @@ namespace ExMath {
 
 	/**
 	 * Generates a random boolean value.
+	 * @param weight The chance of returning true.
 	 * @return A random boolean.
 	 */
-	bool randomBool();
+	bool randomBool(double weight = 0.5);
 
 	/**
-	 * Generates a random integer value between min and max.
+	 * Generates a random integer value between min and max, inclusive.
 	 * @param min The minimum possible value.
 	 * @param max The maximum possible value.
 	 * @return A random integer between min and max.
 	 */
 	int randomInt(int min, int max);
+
+	/**
+	 * Generates a random integer value between min and max (inclusive),
+	 * using a binomial distribution with the given expected value.
+	 * @param min The minimum value.
+	 * @param max The maximum value.
+	 * @param average The mean of the underlying distribution.
+	 * @return A random integer between min and max.
+	 */
+	int randomBinomialInt(int min, int max, int average);
 
 	/**
 	 * Gets the current time, in milliseconds.
