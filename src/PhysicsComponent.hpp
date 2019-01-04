@@ -51,7 +51,6 @@ public:
 	 * Creates a PhysicsComponent.
 	 * @param physics The PhysicsObject that defines this object in the physics engine.
 	 * @param collHandler An object containing a function to call when this object collides with another one.
-	 * @param collMask A mask to prevent collision callbacks from being called.
 	 */
 	PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler = std::shared_ptr<CollisionHandler>());
 
