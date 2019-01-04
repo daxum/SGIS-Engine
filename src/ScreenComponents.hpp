@@ -46,11 +46,6 @@
 #include "RenderComponentManager.hpp"
 #include "UpdateComponentManager.hpp"
 
-//Physics Objects
-
-#include "PlanePhysicsObject.hpp"
-#include "BoxPhysicsObject.hpp"
-
 //Other stuff
 
 #include "Engine.hpp"

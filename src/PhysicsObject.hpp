@@ -22,21 +22,43 @@
 
 #include "AxisAlignedBB.hpp"
 
+//Various shapes provided by the physics engine
+enum class PhysicsShape {
+	//A plane that extends infinitely in all directions. As they are now,
+	//these work as floors and walls, but not roofs.
+	//All objects below the plane will be pushed above it.
+	PLANE,
+	//A three-dimensional square.
+	BOX
+};
+
+//TODO: expose all of btRigidBodyConstructionInfo.
+struct PhysicsInfo {
+	//The shape for the physics object.
+	PhysicsShape shape;
+	//The bounding box for the object. Some objects (such as capsules) extend beyond their bounding box.
+	//For planes, the min of the box is a point on the plane and (max - min) represents the normal vector.
+	Aabb<float> box;
+	//The starting position of the object. Note that for planes, this is an additional shift to the one for the box.
+	glm::vec3 pos;
+	//The mass of the object. 0 indicates a static object.
+	float mass;
+};
+
 //A wrapper for bullet physics objects for easier deletion.
 //Only meant to be subclassed from within the engine.
 class PhysicsObject {
 public:
 	/**
-	 * Constructs the object with the given bullet stuff.
-	 * Doesn't actually set the member variables - Subclasses have
-	 * to do that themselves.
+	 * Constructs the object for use in the physics engine.
+	 * @param createInfo The information needed to create the object.
 	 */
-	PhysicsObject() {}
+	PhysicsObject(const PhysicsInfo& createInfo);
 
 	/**
 	 * Deletes the objects.
 	 */
-	virtual ~PhysicsObject() {
+	~PhysicsObject() {
 		delete body;
 		delete shape;
 		delete state;
@@ -52,8 +74,26 @@ public:
 	 */
 	btMotionState* getMotionState() { return state; }
 
-protected:
+private:
 	btRigidBody* body;
 	btCollisionShape* shape;
 	btMotionState* state;
+
+	/**
+	 * Creates a plane collision object from the creation info.
+	 * @param createInfo The creation info for the physics object.
+	 * @return A plane shape.
+	 */
+	btStaticPlaneShape* createPlaneObject(const PhysicsInfo& createInfo);
+
+	/**
+	 * Creates a box collision object.
+	 * @param createInfo The creation info for the physics object.
+	 * @return The new box shape.
+	 */
+	btBoxShape* createBoxObject(const PhysicsInfo& createInfo) {
+		Aabb<float> box = createInfo.box;
+
+		return new btBoxShape(btVector3(box.xLength() / 2.0f, box.yLength() / 2.0f, box.zLength() / 2.0f));
+	}
 };

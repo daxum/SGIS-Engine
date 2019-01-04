@@ -14,7 +14,6 @@ set(ENGINE_FILES
 	UpdateComponentManager.cpp
 	PhysicsComponent.cpp
 	Object.cpp
-	BoxPhysicsObject.cpp
 	RenderComponentManager.cpp
 	InputHandler.cpp
 	GuiComponentManager.cpp
@@ -30,6 +29,7 @@ set(ENGINE_FILES
 	ModelManager.cpp
 	RenderingEngine.cpp
 	Std140Aligner.cpp
+	PhysicsObject.cpp
 )
 
 if (USE_OPENGL)
