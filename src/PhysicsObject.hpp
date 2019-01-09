@@ -29,7 +29,9 @@ enum class PhysicsShape {
 	//All objects below the plane will be pushed above it.
 	PLANE,
 	//A three-dimensional square.
-	BOX
+	BOX,
+	//A cylinder with half-spheres at the ends
+	CAPSULE
 };
 
 //TODO: expose all of btRigidBodyConstructionInfo.
@@ -95,5 +97,16 @@ private:
 		Aabb<float> box = createInfo.box;
 
 		return new btBoxShape(btVector3(box.xLength() / 2.0f, box.yLength() / 2.0f, box.zLength() / 2.0f));
+	}
+
+	/**
+	 * Creates a capsule. The ends are always at the top and bottom for now.
+	 * @param createInfo The physics object creation info.
+	 * @return A new capsule shape.
+	 */
+	btCapsuleShape* createCapsuleObject(const PhysicsInfo& createInfo) {
+		Aabb<float> box = createInfo.box;
+
+		return new btCapsuleShape(box.xLength() / 2.0f, box.yLength() / 2.0f);
 	}
 };
