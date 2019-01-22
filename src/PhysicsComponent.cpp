@@ -23,6 +23,7 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::
 	Component(PHYSICS_COMPONENT_NAME),
 	physics(physics),
 	collider(collHandler),
+	currentMode(PhysicsControlMode::DYNAMIC),
 	linearBrakes(true),
 	angularBrakes(false),
 	velocity(0.0, 0.0, 0.0),
@@ -35,6 +36,40 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::
 	if (collider) {
 		collider->parent = this;
 	}
+
+	//Close enough...
+	if (physics->getBody()->getInvMass() == 0.0f) {
+		currentMode = PhysicsControlMode::STATIC;
+	}
+}
+
+void PhysicsComponent::setControlMode(PhysicsControlMode mode) {
+	currentMode = mode;
+
+	switch (mode) {
+		case PhysicsControlMode::DYNAMIC: {
+			if (physics->getInitialMass() == 0.0f) {
+				throw std::runtime_error("Attempt to set zero-mass object to dynamic!");
+			}
+
+			btRigidBody* body = physics->getBody();
+			body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+			body->setActivationState(ACTIVE_TAG);
+			body->setMassProps(physics->getInitialMass(), body->getLocalInertia());
+		}; break;
+		case PhysicsControlMode::KINEMATIC: {
+			btRigidBody* body = physics->getBody();
+			body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+			body->setActivationState(DISABLE_DEACTIVATION);
+			body->setMassProps(0.0f, body->getLocalInertia());
+		}; break;
+		case PhysicsControlMode::STATIC: {
+			btRigidBody* body = physics->getBody();
+			body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+			body->setMassProps(0.0f, body->getLocalInertia());
+		}; break;
+		default: throw std::runtime_error("Somehow static, dynamic, and kinematic weren't enough!");
+	}
 }
 
 void PhysicsComponent::onParentSet() {
@@ -42,13 +77,25 @@ void PhysicsComponent::onParentSet() {
 }
 
 void PhysicsComponent::update() {
-	btRigidBody* body = physics->getBody();
+	switch (currentMode) {
+		case PhysicsControlMode::DYNAMIC: {
+			btRigidBody* body = physics->getBody();
 
-	btVector3 force = getAdjustedForce(velocity, body->getLinearVelocity(), acceleration, body->getLinearDamping(), linearBrakes);
-	btVector3 torque = getAdjustedForce(angularVelocity, body->getAngularVelocity(), rotAccel, body->getAngularDamping(), angularBrakes);
+			btVector3 force = getAdjustedForce(velocity, body->getLinearVelocity(), acceleration, body->getLinearDamping(), linearBrakes);
+			btVector3 torque = getAdjustedForce(angularVelocity, body->getAngularVelocity(), rotAccel, body->getAngularDamping(), angularBrakes);
 
-	body->applyCentralForce(force);
-	body->applyTorque(torque);
+			body->applyCentralForce(force);
+			body->applyTorque(torque);
+		}; break;
+		case PhysicsControlMode::KINEMATIC: {
+			glm::vec3 pos = lockParent()->getPhysics()->getTranslation();
+			glm::quat rot = lockParent()->getPhysics()->getRotation();
+
+			physics->getMotionState()->setWorldTransform(btTransform(btQuaternion(rot.x, rot.y, rot.z, rot.w), btVector3(pos.x, pos.y, pos.z)));
+		}; break;
+		case PhysicsControlMode::STATIC: break; //Noop
+		default: throw std::runtime_error("Missing physics control mode");
+	}
 }
 
 glm::vec3 PhysicsComponent::getTranslation() const {

@@ -21,7 +21,8 @@
 PhysicsObject::PhysicsObject(const PhysicsInfo& createInfo) :
 	body(nullptr),
 	shape(nullptr),
-	state(nullptr) {
+	state(nullptr),
+	startingMass(createInfo.mass) {
 
 	switch (createInfo.shape) {
 		case PhysicsShape::PLANE: shape = createPlaneObject(createInfo); break;

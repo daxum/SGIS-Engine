@@ -28,6 +28,18 @@
 
 class PhysicsComponent;
 
+//Determines how the physics body is controlled. Defaults to dynamic if
+//mass is non-zero, static otherwise. 0 mass objects cannot currently
+//be made dynamic.
+enum class PhysicsControlMode {
+	//Static body, doesn't move.
+	STATIC,
+	//Kinematic body, reads transform from the object physics provider.
+	KINEMATIC,
+	//Dynamic body, almost completely controlled by the physics engine.
+	DYNAMIC
+};
+
 //Allows for user-defined collision responses.
 struct CollisionHandler {
 	virtual ~CollisionHandler() {}
@@ -53,6 +65,14 @@ public:
 	 * @param collHandler An object containing a function to call when this object collides with another one.
 	 */
 	PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler = std::shared_ptr<CollisionHandler>());
+
+	/**
+	 * Changes the way the object is animated, between static, dynamic,
+	 * and kinematic. Note that if switching between dynamic or static
+	 * and kinematic, the object physics provider also needs to be changed.
+	 * @param mode The new mode for the object.
+	 */
+	void setControlMode(PhysicsControlMode mode);
 
 	/**
 	 * Called from Component when the parent object is set.
@@ -144,6 +164,7 @@ private:
 	std::shared_ptr<PhysicsObject> physics;
 	std::shared_ptr<CollisionHandler> collider;
 
+	PhysicsControlMode currentMode;
 	bool linearBrakes;
 	bool angularBrakes;
 	btVector3 velocity;

@@ -43,7 +43,7 @@ struct PhysicsInfo {
 	Aabb<float> box;
 	//The starting position of the object. Note that for planes, this is an additional shift to the one for the box.
 	glm::vec3 pos;
-	//The mass of the object. 0 indicates a static object.
+	//The mass of the object. 0 indicates a (permanently) static object.
 	float mass;
 };
 
@@ -76,10 +76,20 @@ public:
 	 */
 	btMotionState* getMotionState() { return state; }
 
+	/**
+	 * Gets the mass the object started with.
+	 * @return A random floating point number which may or may not
+	 * reflect the value originally passed in, largely dependent on the
+	 * season and current phase of the moon.
+	 */
+	 float getInitialMass() const { return startingMass; }
+
 private:
 	btRigidBody* body;
 	btCollisionShape* shape;
 	btMotionState* state;
+	//Stored for switching between kinematic/dynamic/static.
+	float startingMass;
 
 	/**
 	 * Creates a plane collision object from the creation info.
