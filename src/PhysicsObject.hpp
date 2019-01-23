@@ -58,12 +58,24 @@ public:
 	PhysicsObject(const PhysicsInfo& createInfo);
 
 	/**
+	 * Creates a static concave triangle bvh from the given mesh, offset
+	 * by the given position.
+	 * @param modelName The name of the model to generate the object from.
+	 * @param pos The offset for the object.
+	 */
+	PhysicsObject(const std::string& modelName, const glm::vec3& pos = glm::vec3(0.0, 0.0, 0.0));
+
+	/**
 	 * Deletes the objects.
 	 */
 	~PhysicsObject() {
 		delete body;
 		delete shape;
 		delete state;
+
+		if (mesh != nullptr) {
+			delete mesh;
+		}
 	}
 
 	/**
@@ -88,6 +100,8 @@ private:
 	btRigidBody* body;
 	btCollisionShape* shape;
 	btMotionState* state;
+	//Only used for static mesh objects.
+	btTriangleMesh* mesh;
 	//Stored for switching between kinematic/dynamic/static.
 	float startingMass;
 

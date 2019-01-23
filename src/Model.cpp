@@ -35,11 +35,12 @@ namespace {
 	}
 }
 
-Mesh::Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
+Mesh::Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
 	vertexData(new unsigned char[vertices.at(0).getSize() * vertices.size()]),
 	vertexSize(vertices.at(0).getSize() * vertices.size()),
 	indices(indices),
 	buffer(buffer),
+	format(format),
 	box(box),
 	radius(radius),
 	users(0) {
@@ -59,6 +60,7 @@ Mesh::Mesh(const Mesh& mesh) :
 	vertexSize(mesh.vertexSize),
 	indices(mesh.indices),
 	buffer(mesh.buffer),
+	format(mesh.format),
 	box(mesh.box),
 	radius(mesh.radius),
 	users(mesh.users) {
@@ -71,6 +73,7 @@ Mesh::Mesh(Mesh&& mesh) :
 	vertexSize(std::exchange(mesh.vertexSize, 0)),
 	indices(std::move(mesh.indices)),
 	buffer(std::move(mesh.buffer)),
+	format(std::move(mesh.format)),
 	box(std::move(mesh.box)),
 	radius(std::exchange(mesh.radius, 0.0f)),
 	users(std::exchange(mesh.users, 0)) {

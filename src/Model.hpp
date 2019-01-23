@@ -26,6 +26,7 @@
 #include "Vertex.hpp"
 #include "ShaderInfo.hpp"
 #include "Std140Aligner.hpp"
+#include "VertexBuffer.hpp"
 
 class ModelManager;
 
@@ -34,13 +35,14 @@ public:
 	/**
 	 * Creates a mesh with the given vertices and indices.
 	 * @param buffer The buffer to place the mesh in for rendering.
+	 * @param format The format for the mesh's vertex data.
 	 * @param vertices The vertices for the mesh. Their internal data is copied into the mesh.
 	 * @param indices The index data for the mesh.
 	 * TODO: calculate two below in constructor.
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
-	Mesh(const std::string& buffer, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
+	Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
 
 	/**
 	 * Copy constructor.
@@ -62,6 +64,12 @@ public:
 	 * @return the vertex buffer this mesh belongs to.
 	 */
 	const std::string& getBuffer() const { return buffer; }
+
+	/**
+	 * Gets the format that the mesh's vertex data is in.
+	 * @return The mesh's vertex format.
+	 */
+	const std::vector<VertexElement>& getFormat() const { return format; }
 
 	/**
 	 * Gets the mesh's bounding box.
@@ -98,7 +106,7 @@ public:
 	/**
 	 * Retrieves all the mesh data, for uploading into a vertex / index buffer.
 	 */
-	const std::tuple<unsigned char*, size_t, const std::vector<uint32_t>&> getMeshData() {
+	const std::tuple<const unsigned char*, size_t, const std::vector<uint32_t>&> getMeshData() const {
 		return {vertexData, vertexSize, indices};
 	}
 
@@ -118,6 +126,7 @@ public:
 			memcpy(vertexData, mesh.vertexData, vertexSize);
 			indices = mesh.indices;
 			buffer = mesh.buffer;
+			format = mesh.format;
 			box = mesh.box;
 			radius = mesh.radius;
 			users = mesh.users;
@@ -135,6 +144,7 @@ public:
 			vertexSize = std::exchange(mesh.vertexSize, 0);
 			indices = std::move(mesh.indices);
 			buffer = std::move(mesh.buffer);
+			format = std::move(mesh.format);
 			box = std::move(mesh.box);
 			radius = std::exchange(mesh.radius, 0.0f);
 			users = std::exchange(mesh.users, 0);
@@ -153,6 +163,9 @@ private:
 
 	//The buffer this mesh belongs in.
 	std::string buffer;
+
+	//The format the mesh's vertex data is in, taken from the vertex buffer.
+	std::vector<VertexElement> format;
 
 	//Possibly useful dimensions for the mesh, calculated on construction.
 	Aabb<float> box;
