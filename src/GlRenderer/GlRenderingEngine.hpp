@@ -101,10 +101,9 @@ protected:
 	 * Renders the passed in objects.
 	 * @param objects The objects to render.
 	 * @param sortedObjects A sorted map of maps of maps of sets of all the possible objects to render.
-	 * @param camera The camera.
-	 * @param state User-supplied screen state.
+	 * @param screen The screen to render.
 	 */
-	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
+	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
 
 private:
 	//A map to store texture data

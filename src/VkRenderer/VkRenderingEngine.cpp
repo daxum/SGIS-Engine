@@ -250,10 +250,13 @@ void VkRenderingEngine::setViewport(int width, int height) {
 	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 }
 
-void VkRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
+void VkRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
 	if (objects.empty()) {
 		return;
 	}
+
+	const Camera* camera = screen->getCamera().get();
+	const ScreenState* state = screen->getState().get();
 
 	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
 	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera, state);

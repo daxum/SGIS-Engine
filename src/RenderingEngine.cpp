@@ -22,7 +22,9 @@
 #include "Engine.hpp"
 #include "ExtraMath.hpp"
 
-void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManager, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state) {
+void RenderingEngine::render(const Screen* screen) {
+	std::shared_ptr<const RenderComponentManager> renderManager = screen->getRenderData();
+
 	//Don't render without render component
 	if (!renderManager) {
 		return;
@@ -35,6 +37,8 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 	const float width = getWindowInterface().getWindowWidth();
 	const float height = getWindowInterface().getWindowHeight();
+
+	std::shared_ptr<const Camera> camera = screen->getCamera();
 
 	glm::mat4 projection = camera->getProjection();
 	glm::mat4 view = camera->getView();
@@ -60,7 +64,7 @@ void RenderingEngine::render(std::shared_ptr<RenderComponentManager> renderManag
 
 	//Render all visible objects
 
-	renderObjects(visibleComponents, renderManager->getComponentList(), camera.get(), state.get());
+	renderObjects(visibleComponents, renderManager->getComponentList(), screen);
 }
 
 bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, const RenderComponent* object, float nearDist, float farDist) {

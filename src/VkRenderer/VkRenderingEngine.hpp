@@ -94,10 +94,9 @@ protected:
 	 * Renders the visible objects, using the sorted map.
 	 * @param objects A set of objects that have been determined to be visible.
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
-	 * @param camera The current camera.
-	 * @param state User-provided screen state.
+	 * @param screen The screen to render.
 	 */
-	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) override;
+	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
 
 private:
 	//Interface with the window system.

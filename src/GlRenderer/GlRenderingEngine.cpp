@@ -147,7 +147,10 @@ void GlRenderingEngine::setViewport(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void GlRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) {
+void GlRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
+	const Camera* camera = screen->getCamera().get();
+	const ScreenState* state = screen->getState().get();
+
 	//Opaque objects
 	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
 

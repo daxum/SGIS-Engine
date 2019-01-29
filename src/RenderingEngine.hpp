@@ -118,11 +118,9 @@ public:
 	/**
 	 * Renders the passed in object. This function performs view culling if needed and
 	 * passed all visible renderComponents to the underlying graphics rendering api
-	 * @param data The stuff to render.
-	 * @param camera The camera to use.
-	 * @param state User-set screen state, passed to shader when setting uniforms.
+	 * @param screen The screen to render.
 	 */
-	void render(std::shared_ptr<RenderComponentManager> renderManager, std::shared_ptr<Camera> camera, std::shared_ptr<ScreenState> state);
+	void render(const Screen* screen);
 
 	/**
 	 * Called when drawing is done and the results can be displayed on the screen.
@@ -161,10 +159,9 @@ protected:
 	 * so different screens don't effect each other's rendering.
 	 * @param objects A set of objects that have been determined to be visible.
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
-	 * @param camera The current camera.
-	 * @param state User-provided screen state.
+	 * @param screen The screen being rendered.
 	 */
-	virtual void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* state) = 0;
+	virtual void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) = 0;
 
 private:
 	/**

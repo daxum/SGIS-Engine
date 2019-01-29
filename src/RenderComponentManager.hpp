@@ -50,7 +50,7 @@ public:
 	 * Returns an unsorted set of all render components.
 	 * @return A set of render components.
 	 */
-	const std::vector<const RenderComponent*>& getComponentSet() { return renderComponentSet; }
+	const std::vector<const RenderComponent*>& getComponentSet() const { return renderComponentSet; }
 
 	/**
 	 * Removes and readds the component to the render component list.

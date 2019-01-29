@@ -63,6 +63,7 @@ public:
 	 * @return Rendering data that can be used by RenderingEngine to produce a picture.
 	 */
 	std::shared_ptr<RenderComponentManager> getRenderData() { return renderManager; }
+	std::shared_ptr<const RenderComponentManager> getRenderData() const { return renderManager; }
 
 	/**
 	 * Adds the given manager to the list of managers for this screen. Some things to note:
@@ -93,6 +94,7 @@ public:
 	 * Returns the camera associated with this screen.
 	 */
 	std::shared_ptr<Camera> getCamera() { return camera; }
+	std::shared_ptr<const Camera> getCamera() const { return camera; }
 
 	/**
 	 * Sets the camera for this screen.
@@ -111,6 +113,7 @@ public:
 	 * @return The state for the screen.
 	 */
 	std::shared_ptr<ScreenState> getState() { return state; }
+	std::shared_ptr<const ScreenState> getState() const { return state; }
 
 	/**
 	 * Pauses / unpauses the screen.
