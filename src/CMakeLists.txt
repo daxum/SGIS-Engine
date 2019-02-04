@@ -38,6 +38,7 @@ if (USE_OPENGL)
 		GlRenderer/GlTextureLoader.cpp
 		GlRenderer/GlShaderLoader.cpp
 		GlRenderer/GlMemoryManager.cpp
+		GlRenderer/PhysDebRenderingEngine.cpp
 		GlRenderer/gl_core_4_1.c
 	)
 

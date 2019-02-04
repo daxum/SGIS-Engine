@@ -28,7 +28,8 @@
 //List of available rendering engines.
 enum class Renderer {
 	OPEN_GL,
-	VULKAN
+	VULKAN,
+	OPEN_GL_PHYSICS_DEBUG
 };
 
 struct RenderConfig {

@@ -42,7 +42,6 @@ public:
 	/**
 	 * Constructs a GlRenderingEngine and initializes small parts of
 	 * glfw - it just calls the init function and sets the error callback.
-	 * @param modelManager A reference to the object that stores model data.
 	 * @param display A reference to the engine's display engine, used for callbacks.
 	 * @param rendererLog The logger config for the rendering engine.
 	 * @throw runtime_error if glfw initialization failed.
@@ -52,14 +51,14 @@ public:
 	/**
 	 * Destroys the window and terminates glfw
 	 */
-	~GlRenderingEngine();
+	virtual ~GlRenderingEngine();
 
 	/**
 	 * Initializes OpenGL. A window is created, functions are loaded,
 	 * callbacks are registered, and state defaults are set.
 	 * @throw runtime_error if initialization failed.
 	 */
-	void init() override;
+	virtual void init() override;
 
 	/**
 	 * Gets the memory manager for this rendering engine, used for uploading

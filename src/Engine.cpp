@@ -24,6 +24,7 @@
 
 #ifdef USE_OPENGL
 #	include "GlRenderer/GlRenderingEngine.hpp"
+#	include "GlRenderer/PhysDebRenderingEngine.hpp"
 #endif
 
 #ifdef USE_VULKAN
@@ -53,8 +54,8 @@ Engine::Engine(const EngineConfig& config) :
 			renderer.reset(new GlRenderingEngine(display, config.rendererLog));
 			break;
 #else
-			ENGINE_LOG_FATAL(logger, "Attempt to use openGL rendering engine when opengl isn't enabled!");
-			throw std::runtime_error("OpenGL rendering engine isn't enabled!");
+			ENGINE_LOG_FATAL(logger, "Attempt to use OpenGL rendering engine when OpenGL isn't enabled!");
+			throw std::runtime_error("OpenGL rendering engines aren't enabled!");
 #endif
 		case Renderer::VULKAN:
 #ifdef USE_VULKAN
@@ -64,6 +65,15 @@ Engine::Engine(const EngineConfig& config) :
 #else
 			ENGINE_LOG_FATAL(logger, "Attempt to use vulkan rendering engine when vulkan isn't enabled!");
 			throw std::runtime_error("Vulkan rendering engine isn't enabled!");
+#endif
+		case Renderer::OPEN_GL_PHYSICS_DEBUG:
+#ifdef USE_OPENGL
+			ENGINE_LOG_INFO(logger, "Using OpenGL renderer, with physics debugging enabled.");
+			renderer.reset(new PhysDebRenderingEngine(display, config.rendererLog));
+			break;
+#else
+			ENGINE_LOG_FATAL(logger, "Attempt to use OpenGL-based rendering engine when OpenGL isn't enabled!");
+			throw std::runtime_error("OpenGL rendering engines aren't enabled!");
 #endif
 		default:
 			ENGINE_LOG_FATAL(logger, "Unknown renderer requested!");

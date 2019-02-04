@@ -143,7 +143,8 @@ public:
 	 * or null otherwise.
 	 * @param name The name of the component manager.
 	 */
-	std::shared_ptr<ComponentManager> getManager(std::string name);
+	std::shared_ptr<ComponentManager> getManager(const std::string& name);
+	std::shared_ptr<const ComponentManager> getManager(const std::string& name) const;
 
 protected:
 	//The display engine that manages this screen.

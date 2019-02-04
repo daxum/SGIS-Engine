@@ -50,12 +50,19 @@ public:
 	 */
 	PhysicsComponent* raytraceSingle(glm::vec3 start, glm::vec3 end);
 
+	/**
+	 * Returns the physics world, for use in things like debug drawing.
+	 * @return The physics world.
+	 */
+	btCollisionWorld* getWorld() const { return world; }
+
 private:
 	/**
 	 * Only called from bullet.
 	 */
 	static void physicsTickCallback(btDynamicsWorld* world, btScalar timeStep);
 
+	//Misc. bullet junk.
 	btDiscreteDynamicsWorldMt* world;
 	btDefaultCollisionConfiguration* conf;
 	btCollisionDispatcherMt* dispatcher;
