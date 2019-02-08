@@ -88,8 +88,10 @@ void PhysicsComponent::update() {
 			body->applyTorque(torque);
 		}; break;
 		case PhysicsControlMode::KINEMATIC: {
-			glm::vec3 pos = lockParent()->getPhysics()->getTranslation();
-			glm::quat rot = lockParent()->getPhysics()->getRotation();
+			ObjectPhysicsInterface* provider = lockParent()->getPhysics();
+
+			glm::vec3 pos = provider->getTranslation();
+			glm::quat rot = provider->getRotation();
 
 			physics->getMotionState()->setWorldTransform(btTransform(btQuaternion(rot.x, rot.y, rot.z, rot.w), btVector3(pos.x, pos.y, pos.z)));
 		}; break;

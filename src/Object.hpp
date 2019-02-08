@@ -53,6 +53,7 @@ public:
 	 */
 	template <typename T>
 	std::shared_ptr<T> getComponent(std::string name) {
+		static_assert(std::is_base_of<Component, T>::value, "Object::getComponent called with non-component type");
 		if (components.count(name)) {
 			return std::static_pointer_cast<T>(components.at(name));
 		}
@@ -83,11 +84,15 @@ public:
 	bool hasPhysics() const { return physics != nullptr; }
 
 	/**
-	 * Sets the physics for the object to be the selected component. This doesn't do
-	 * error checking, so be sure that the component is actually a physics provider!
+	 * Sets the physics for the object to be the selected component.
+	 * Remove the static pointer cast below to learn why multi inheritance is bad.
 	 * @param component The name of the component to set as the physics provider.
 	 */
-	void setPhysics(const std::string& component);
+	template<typename T>
+	void setPhysics(const std::string& component) {
+		static_assert(std::is_base_of<Component, T>::value && std::is_base_of<ObjectPhysicsInterface, T>::value, "Object::setPhysics called with bad type!");
+		physics = (ObjectPhysicsInterface*) std::static_pointer_cast<T>(components.at(component)).get();
+	}
 
 	/**
 	 * Sets the physics interface for the object. This should never really need to be

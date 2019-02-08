@@ -49,7 +49,3 @@ const ObjectPhysicsInterface* Object::getPhysics() const {
 
 	return physics;
 }
-
-void Object::setPhysics(const std::string& component) {
-	physics = (ObjectPhysicsInterface*) components.at(component).get();
-}
