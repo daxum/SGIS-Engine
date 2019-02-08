@@ -89,7 +89,6 @@ private:
 		switch (filter) {
 			case Filter::NEAREST: return VK_FILTER_NEAREST;
 			case Filter::LINEAR: return VK_FILTER_LINEAR;
-			case Filter::CUBIC: return VK_FILTER_CUBIC_IMG;
 			default: throw std::runtime_error("Missing sampler filter!");
 		}
 	}

@@ -44,9 +44,7 @@ struct TextureData {
 //Texture filtering options
 enum class Filter {
 	NEAREST,
-	LINEAR,
-	//This might not be supported by OpenGL
-	CUBIC
+	LINEAR
 };
 
 //A generic texture loader, to go with RenderingEngine.
