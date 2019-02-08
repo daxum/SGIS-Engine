@@ -36,5 +36,5 @@ public:
 	/**
 	 * Returns the rotation of the object.
 	 */
-	virtual glm::quat getRotation() const { return glm::quat(0.0, glm::vec3(0.0, 0.0, 0.0)); }
+	virtual glm::quat getRotation() const { return glm::quat(1.0, 0.0, 0.0, 0.0); }
 };
