@@ -83,6 +83,13 @@ public:
 	bool hasPhysics() const { return physics != nullptr; }
 
 	/**
+	 * Sets the physics for the object to be the selected component. This doesn't do
+	 * error checking, so be sure that the component is actually a physics provider!
+	 * @param component The name of the component to set as the physics provider.
+	 */
+	void setPhysics(const std::string& component);
+
+	/**
 	 * Sets the physics interface for the object. This should never really need to be
 	 * called outside of the engine except for in rare circumstances.
 	 * The set interface will not be deleted by the object.
