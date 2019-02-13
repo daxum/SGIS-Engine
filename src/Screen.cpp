@@ -30,6 +30,7 @@ Screen::Screen(DisplayEngine& display, bool hideMouse) :
 
 	camera->setProjection();
 }
+
 void Screen::update() {
 	//Skip update if paused
 	if (paused) {

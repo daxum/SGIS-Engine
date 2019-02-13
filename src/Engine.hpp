@@ -40,7 +40,7 @@ public:
 	//Patch is everything else.
 	static constexpr uint32_t VERSION_MAJOR = 2;
 	static constexpr uint32_t VERSION_MINOR = 1;
-	static constexpr uint32_t VERSION_PATCH = 1;
+	static constexpr uint32_t VERSION_PATCH = 2;
 
 	//Global engine instance. Use sparingly!
 	static Engine* instance;
@@ -79,6 +79,12 @@ public:
 	std::shared_ptr<ModelRef> getModel(const std::string& name) { return modelManager.getModel(name); }
 
 	/**
+	 * A (hopefully) temporary hack until model loading can be re-written.
+	 * @return The model manager.
+	 */
+	ModelManager& getModelManager() { return modelManager; }
+
+	/**
 	 * Gets the configuration the engine was created with.
 	 * @return the engine's configuration.
 	 */
@@ -104,7 +110,7 @@ public:
 	 * @param func The function to run. Will be called with the current index of the loop.
 	 * @param grainSize How many invokations of func to do serially per task. Set to zero to determine automatically.
 	 */
-	void parallelFor(size_t begin, size_t end, const std::function<void(size_t)>& func, size_t grainSize = 0);
+	static void parallelFor(size_t begin, size_t end, const std::function<void(size_t)>& func, size_t grainSize = 0);
 
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
