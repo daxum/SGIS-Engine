@@ -33,6 +33,7 @@ PhysicsObject::PhysicsObject(const PhysicsInfo& createInfo) :
 		case PhysicsShape::PLANE: shape = createPlaneObject(createInfo); break;
 		case PhysicsShape::BOX: shape = createBoxObject(createInfo); break;
 		case PhysicsShape::CAPSULE: shape = createCapsuleObject(createInfo); break;
+		case PhysicsShape::SPHERE: shape = createSphereObject(createInfo); break;
 		default: throw std::runtime_error("Missing physics shape!");
 	}
 

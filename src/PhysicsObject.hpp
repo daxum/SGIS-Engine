@@ -31,7 +31,9 @@ enum class PhysicsShape {
 	//A three-dimensional square.
 	BOX,
 	//A cylinder with half-spheres at the ends
-	CAPSULE
+	CAPSULE,
+	//A sphere
+	SPHERE
 };
 
 //TODO: expose all of btRigidBodyConstructionInfo.
@@ -132,5 +134,16 @@ private:
 		Aabb<float> box = createInfo.box;
 
 		return new btCapsuleShape(box.xLength() / 2.0f, box.yLength() / 2.0f);
+	}
+
+	/**
+	 * Creates a sphere. This assumes that the bounding box is a cube.
+	 * @param createInfo The physics object creation info.
+	 * @return A new sphere shape.
+	 */
+	btSphereShape* createSphereObject(const PhysicsInfo& createInfo) {
+		Aabb<float> box = createInfo.box;
+
+		return new btSphereShape(box.xLength() / 2.0f);
 	}
 };

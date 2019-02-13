@@ -24,7 +24,7 @@ PhysicsComponent::PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::
 	physics(physics),
 	collider(collHandler),
 	currentMode(PhysicsControlMode::DYNAMIC),
-	linearBrakes(true),
+	linearBrakes(false),
 	angularBrakes(false),
 	velocity(0.0, 0.0, 0.0),
 	angularVelocity(0.0, 0.0, 0.0),
