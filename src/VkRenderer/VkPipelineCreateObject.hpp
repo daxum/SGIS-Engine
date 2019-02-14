@@ -102,6 +102,7 @@ private:
 			case VertexElementType::VEC2: return VK_FORMAT_R32G32_SFLOAT;
 			case VertexElementType::VEC3: return VK_FORMAT_R32G32B32_SFLOAT;
 			case VertexElementType::VEC4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case VertexElementType::UINT32: return VK_FORMAT_R32_UINT;
 			default: return VK_FORMAT_UNDEFINED;
 		}
 	}

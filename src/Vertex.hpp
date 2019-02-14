@@ -36,7 +36,8 @@ enum class VertexElementType {
 	FLOAT,
 	VEC2,
 	VEC3,
-	VEC4
+	VEC4,
+	UINT32,
 };
 
 constexpr size_t sizeFromVertexType(const VertexElementType type) {
@@ -45,6 +46,7 @@ constexpr size_t sizeFromVertexType(const VertexElementType type) {
 		case VertexElementType::VEC2: return sizeof(glm::vec2);
 		case VertexElementType::VEC3: return sizeof(glm::vec3);
 		case VertexElementType::VEC4: return sizeof(glm::vec4);
+		case VertexElementType::UINT32: return sizeof(uint32_t);
 		default: return 0;
 	}
 }
@@ -84,6 +86,7 @@ public:
 	void setVec2(const std::string& name, const glm::vec2& value) { setData(name, VertexElementType::VEC2, &value); }
 	void setVec3(const std::string& name, const glm::vec3& value) { setData(name, VertexElementType::VEC3, &value); }
 	void setVec4(const std::string& name, const glm::vec4& value) { setData(name, VertexElementType::VEC4, &value); }
+	void setUint32(const std::string& name, uint32_t value) { setData(name, VertexElementType::UINT32, &value); }
 
 	/**
 	 * "Getting" functions, gets the value of the name in the data buffer.
@@ -97,6 +100,7 @@ public:
 	glm::vec2 getVec2(const std::string& name) { return *(glm::vec2*) getData(name, VertexElementType::VEC2); }
 	glm::vec3 getVec3(const std::string& name) { return *(glm::vec3*) getData(name, VertexElementType::VEC3); }
 	glm::vec4 getVec4(const std::string& name) { return *(glm::vec4*) getData(name, VertexElementType::VEC4); }
+	uint32_t getUint32(const std::string& name) { return *(uint32_t*) getData(name, VertexElementType::UINT32); }
 
 	/**
 	 * Returns the vertex data for copying into a buffer.
