@@ -53,8 +53,13 @@ PhysicsObject::PhysicsObject(const PhysicsInfo& createInfo) :
 	state->setWorldTransform(initialTransform);
 
 	btRigidBody::btRigidBodyConstructionInfo info(createInfo.mass, state, shape, localInertia);
+	info.m_friction = createInfo.friction;
 
 	body = new btRigidBody(info);
+
+	if (createInfo.disableRotation) {
+		body->setAngularFactor(0);
+	}
 }
 
 PhysicsObject::PhysicsObject(const std::string& modelName, const glm::vec3& pos) :

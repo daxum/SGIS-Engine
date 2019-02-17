@@ -47,6 +47,11 @@ struct PhysicsInfo {
 	glm::vec3 pos;
 	//The mass of the object. 0 indicates a (permanently) static object.
 	float mass;
+	//Friction of the object with other objects. This should correspond to static friction.
+	//Bullet defaults to 0.5.
+	float friction;
+	//Disables rotation of the created object, suitable for character controllers.
+	bool disableRotation;
 };
 
 //A wrapper for bullet physics objects for easier deletion.
