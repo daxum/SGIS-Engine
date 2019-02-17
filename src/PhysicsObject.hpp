@@ -133,7 +133,7 @@ private:
 	btCapsuleShape* createCapsuleObject(const PhysicsInfo& createInfo) {
 		Aabb<float> box = createInfo.box;
 
-		return new btCapsuleShape(box.xLength() / 2.0f, box.yLength() / 2.0f);
+		return new btCapsuleShape(box.xLength() / 2.0f, box.yLength());
 	}
 
 	/**
