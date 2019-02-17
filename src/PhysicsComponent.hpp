@@ -115,6 +115,11 @@ public:
 	glm::vec3 getVelocity();
 
 	/**
+	 * Applies a single-time force to the object.
+	 */
+	void applyImpulse(glm::vec3 impulse);
+
+	/**
 	 * Directly applies torque to the underlying physics object.
 	 */
 	void rotate(glm::vec3 amount);

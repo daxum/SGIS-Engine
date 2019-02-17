@@ -138,6 +138,10 @@ glm::vec3 PhysicsComponent::getVelocity() {
 	return glm::vec3(velocity.x(), velocity.y(), velocity.z());
 }
 
+void PhysicsComponent::applyImpulse(glm::vec3 impulse) {
+	physics->getBody()->applyCentralImpulse(btVector3(impulse.x, impulse.y, impulse.z));
+}
+
 void PhysicsComponent::rotate(glm::vec3 amount) {
 	physics->getBody()->activate(true);
 	physics->getBody()->applyTorque(btVector3(amount.x, amount.y, amount.z));
