@@ -81,7 +81,7 @@ public:
 	 * Get's the mesh's radius.
 	 * @return The radius of the mesh.
 	 */
-	const float getRadius() const { return radius; }
+	float getRadius() const { return radius; }
 
 	/**
 	 * Adds a user to this mesh.

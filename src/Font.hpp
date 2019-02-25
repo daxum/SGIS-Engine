@@ -80,7 +80,7 @@ public:
 	/**
 	 * Returns the size of the font.
 	 */
-	const size_t getSize() const { return size; }
+	size_t getSize() const { return size; }
 
 private:
 	std::unordered_map<char32_t, GlyphData> glyphs;
