@@ -139,6 +139,7 @@ glm::vec3 PhysicsComponent::getVelocity() {
 }
 
 void PhysicsComponent::applyImpulse(glm::vec3 impulse) {
+	physics->getBody()->activate(true);
 	physics->getBody()->applyCentralImpulse(btVector3(impulse.x, impulse.y, impulse.z));
 }
 
