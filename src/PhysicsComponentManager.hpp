@@ -44,11 +44,21 @@ public:
 
 	/**
 	 * Raytraces through the world and returns the first physics object in the path.
+	 * Note that if the ray starts inside an object, that object will be missed.
 	 * @param start Where the raytrace starts.
 	 * @param end Where the raytrace ends.
 	 * @return The first object hit, or null if none were hit.
 	 */
 	PhysicsComponent* raytraceSingle(glm::vec3 start, glm::vec3 end);
+
+	/**
+	 * Raytraces through the world and returns all physics object in the path.
+	 * Also see the note on raytraceSingle above.
+	 * @param start Where the raytrace starts.
+	 * @param end Where the raytrace ends.
+	 * @return A list of physics objects found on the path.
+	 */
+	std::vector<PhysicsComponent*> raytraceAll(glm::vec3 start, glm::vec3 end);
 
 	/**
 	 * Returns the physics world, for use in things like debug drawing.

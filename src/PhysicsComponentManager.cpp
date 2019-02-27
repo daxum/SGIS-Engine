@@ -66,6 +66,10 @@ PhysicsComponent* PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::
 	btVector3 from(start.x, start.y, start.z);
 	btVector3 to(end.x, end.y, end.z);
 
+	if (world->getDebugDrawer()) {
+		world->getDebugDrawer()->drawLine(from, to, btVector3(1.0, 1.0, 0.0));
+	}
+
 	btCollisionWorld::ClosestRayResultCallback closestResult(from, to);
 
 	world->rayTest(from, to, closestResult);
@@ -75,6 +79,28 @@ PhysicsComponent* PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::
 	}
 
 	return nullptr;
+}
+
+std::vector<PhysicsComponent*> PhysicsComponentManager::raytraceAll(glm::vec3 start, glm::vec3 end) {
+	btVector3 from(start.x, start.y, start.z);
+	btVector3 to(end.x, end.y, end.z);
+
+	if (world->getDebugDrawer()) {
+		world->getDebugDrawer()->drawLine(from, to, btVector3(1.0, 0.0, 0.0));
+	}
+
+	btCollisionWorld::AllHitsRayResultCallback allResults(from, to);
+
+	world->rayTest(from, to, allResults);
+
+	std::vector<PhysicsComponent*> out;
+
+	//Apparently bullet arrays can have negative sizes
+	for (size_t i = 0; i < (size_t) allResults.m_collisionObjects.size(); i++) {
+		out.push_back((PhysicsComponent*) allResults.m_collisionObjects.at(i)->getUserPointer());
+	}
+
+	return out;
 }
 
 void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
