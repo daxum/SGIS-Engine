@@ -11,7 +11,6 @@ set(ENGINE_FILES
 	AIComponentManager.cpp
 	PhysicsComponentManager.cpp
 	MatrixStack.cpp
-	UpdateComponentManager.cpp
 	PhysicsComponent.cpp
 	Object.cpp
 	RenderComponentManager.cpp

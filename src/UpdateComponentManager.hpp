@@ -19,6 +19,7 @@
 #pragma once
 
 #include "ComponentManager.hpp"
+#include "UpdateComponent.hpp"
 
 class UpdateComponentManager : public ComponentManager {
 public:
@@ -27,5 +28,9 @@ public:
 	/**
 	 * Updates all the update components, non-concurrently.
 	 */
-	void update() override;
+	void update() override {
+		for (std::shared_ptr<Component> comp : components) {
+			std::static_pointer_cast<UpdateComponent>(comp)->update(screen);
+		}
+	}
 };
