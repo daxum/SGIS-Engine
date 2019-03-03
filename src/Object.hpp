@@ -110,9 +110,23 @@ public:
 
 	/**
 	 * Returns the previously set state pointer, or null if none was set.
+	 * @return The user-specified state pointer.
 	 */
-	std::shared_ptr<ObjectState> getState() { return state; }
-	std::shared_ptr<const ObjectState> getState() const { return state; }
+	template<typename T = ObjectState>
+	std::shared_ptr<T> getState() {
+		static_assert(std::is_base_of<ObjectState, T>::value, "Object::getState called with bad type!");
+		return std::static_pointer_cast<T>(state);
+	}
+
+	/**
+	 * Same as the above, but const.
+	 * @return A const version of the user-set state pointer.
+	 */
+	template<typename T = ObjectState>
+	std::shared_ptr<const T> getState() const {
+		static_assert(std::is_base_of<ObjectState, T>::value, "Object::getState called with bad type!");
+		return std::static_pointer_cast<T>(state);
+	}
 
 private:
 	//Used by objects with no set physics interface. Completely stateless.
