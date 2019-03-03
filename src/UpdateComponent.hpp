@@ -36,7 +36,7 @@ public:
 	//manager makes the assumption that this doesn't change while the component
 	//is in the sleep state.
 	size_t wakeTime;
-	//Current state of the component. Don't change this outside of onWait, or the
+	//Current state of the component. Don't change this outside of onWake, or the
 	//component manager will get confused.
 	UpdateState state;
 
