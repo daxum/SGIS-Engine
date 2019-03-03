@@ -29,6 +29,8 @@ set(ENGINE_FILES
 	RenderingEngine.cpp
 	Std140Aligner.cpp
 	PhysicsObject.cpp
+	UpdateComponentManager.cpp
+	UpdateComponent.cpp
 )
 
 if (USE_OPENGL)

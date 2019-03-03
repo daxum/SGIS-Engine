@@ -21,15 +21,81 @@
 #include "Component.hpp"
 #include "Screen.hpp"
 
+class UpdateComponentManager;
+
 class UpdateComponent : public Component {
 public:
-	UpdateComponent() : Component(UPDATE_COMPONENT_NAME) {}
+	enum class UpdateState {
+		INACTIVE,
+		ACTIVE,
+		SLEEPING,
+	};
+
+	//If the component is sleeping, the time to wake it up at. Do not change
+	//this without a good reason, such as sleeping again in onWake - the sleep queue in the
+	//manager makes the assumption that this doesn't change while the component
+	//is in the sleep state.
+	size_t wakeTime;
+	//Current state of the component. Don't change this outside of onWait, or the
+	//component manager will get confused.
+	UpdateState state;
+
+	/**
+	 * Creates an update component.
+	 * @param startingState The state the component will start in.
+	 * @param startingTime The amount of time the component will start sleeping for
+	 *     when it is added.
+	 * @param concurrent Whether the component can update asynchronously.
+	 */
+	UpdateComponent(UpdateState startingState = UpdateState::ACTIVE, size_t startingTime = 0, bool concurrent = false) :
+		Component(UPDATE_COMPONENT_NAME),
+		wakeTime(startingTime),
+		state(startingState),
+		manager(nullptr),
+		concurrent(concurrent) {}
 
 	virtual ~UpdateComponent() {}
 
 	/**
-	 * Does an update. This will never be called concurrently.
+	 * Does an update. This will only be called concurrently if isConcurrent
+	 * returns true. This will never be called if state is INACTIVE or SLEEPING.
 	 * @param screen The screen this component is a part of.
 	 */
-	virtual void update(Screen* screen) = 0;
+	virtual void update(Screen* screen) {}
+
+	/**
+	 * Called when the component's sleep timer runs out. When this function returns,
+	 * the component will be moved into the list that corresponds with its currently
+	 * set state, and, if it is still SLEEPING, it will sleep for wakeTime more ticks.
+	 */
+	virtual void onWake() { state = UpdateState::ACTIVE; }
+
+	/**
+	 * These are convenience functions to transition the component to the respective state.
+	 * @param time The amount of time to sleep for.
+	 */
+	void activate();
+	void deactivate();
+	void sleep(size_t time);
+
+	/**
+	 * Returns whether the component can be updated asynchronously to other
+	 * concurrent components.
+	 * @return Whether the component is threadsafe.
+	 */
+	bool isConcurrent() const { return concurrent; }
+
+	/**
+	 * Sets the component's current manager. Only called from UpdateComponentManager.
+	 * @param newManager The new manager of the component.
+	 */
+	void setManager(UpdateComponentManager* newManager) { manager = newManager; }
+
+protected:
+	//The parent manager. Will be set once the component is added to the screen.
+	UpdateComponentManager* manager;
+
+private:
+	//Whether the component can be updated concurrently.
+	bool concurrent;
 };
