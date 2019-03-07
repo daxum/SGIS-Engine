@@ -129,8 +129,11 @@ glm::vec3 PhysicsComponent::getFront() {
 }
 
 void PhysicsComponent::setVelocity(glm::vec3 v) {
-	physics->getBody()->activate(true);
-	velocity = btVector3(v.x, v.y, v.z);
+	//TODO: Make threshold configurable?
+	if (glm::distance(v, glm::vec3(velocity.x(), velocity.y(), velocity.z())) > 0.01f) {
+		physics->getBody()->activate(true);
+		velocity = btVector3(v.x, v.y, v.z);
+	}
 }
 
 glm::vec3 PhysicsComponent::getVelocity() {

@@ -103,6 +103,15 @@ std::vector<PhysicsComponent*> PhysicsComponentManager::raytraceAll(glm::vec3 st
 	return out;
 }
 
+void PhysicsComponentManager::drawDebugLine(glm::vec3 from, glm::vec3 to, glm::vec3 color) {
+	btVector3 start(from.x, from.y, from.z);
+	btVector3 end(to.x, to.y, to.z);
+
+	if (world->getDebugDrawer()) {
+		world->getDebugDrawer()->drawLine(start, end, btVector3(color.x, color.y, color.z));
+	}
+}
+
 void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 

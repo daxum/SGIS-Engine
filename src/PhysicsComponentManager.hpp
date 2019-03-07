@@ -61,6 +61,15 @@ public:
 	std::vector<PhysicsComponent*> raytraceAll(glm::vec3 start, glm::vec3 end);
 
 	/**
+	 * If using a physics debug renderer, draws a line of the given color at the
+	 * specified positions. Does nothing if debug drawing is disabled.
+	 * @param from The start of the line.
+	 * @param to The end of the line.
+	 * @param color The color of the line.
+	 */
+	void drawDebugLine(glm::vec3 from, glm::vec3 to, glm::vec3 color);
+
+	/**
 	 * Returns the physics world, for use in things like debug drawing.
 	 * @return The physics world.
 	 */
