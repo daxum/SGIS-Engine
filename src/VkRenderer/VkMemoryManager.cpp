@@ -353,21 +353,20 @@ void VkMemoryManager::executeTransfers() {
 	transferOffset = 0;
 }
 
-uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame) {
-	const unsigned char* writeData = uniformProvider.getData().first;
-	const size_t writeSize = uniformProvider.getData().second;
+std::pair<Std140Aligner, uint32_t> VkMemoryManager::getDescriptorAligner(const std::string& name, size_t currentFrame) {
+	const Std140AlignerFactory& alignerFactory = descriptorAligners.at(name);
 
 	//Handle uniform alignment
 	currentUniformOffset = ExMath::roundToVal<uint32_t>(currentUniformOffset, getMinUniformBufferAlignment());
 
+	//The uniform buffers for the different frames are compressed into one - this offsets into
+	//the correct one
 	const size_t writeOffset = screenObjectBufferSize * currentFrame + currentUniformOffset;
+	currentUniformOffset += alignerFactory.getUniformDataSize();
 
-	memcpy(&uniformMem[writeOffset], writeData, writeSize);
-	currentUniformOffset += writeSize;
+	//TODO: flush if not coherent (needs moving to rendering engine)
 
-	//TODO: flush if not coherent
-
-	return writeOffset;
+	return {alignerFactory.getAligner(&uniformMem[writeOffset]), writeOffset};
 }
 
 void VkMemoryManager::allocateImage(const std::string& imageName, const VkImageCreateInfo& imageInfo, const unsigned char* imageData, size_t dataSize) {

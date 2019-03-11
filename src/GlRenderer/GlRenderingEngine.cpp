@@ -269,27 +269,27 @@ void GlRenderingEngine::setPerModelUniforms(const GlShader* shader, const Unifor
 		if (!isSampler(uniform.type)) {
 			switch (uniform.type) {
 				case UniformType::FLOAT: {
-					float temp = model->uniforms.getFloat(uniform.name);
+					float temp = model->getAligner().getFloat(uniform.name);
 					setUniformValue(shader, uniform.type, uniform.name, &temp);
 				} break;
 				case UniformType::VEC2: {
-					glm::vec2 temp = model->uniforms.getVec2(uniform.name);
+					glm::vec2 temp = model->getAligner().getVec2(uniform.name);
 					setUniformValue(shader, uniform.type, uniform.name, &temp);
 				} break;
 				case UniformType::VEC3: {
-					glm::vec3 temp = model->uniforms.getVec3(uniform.name);
+					glm::vec3 temp = model->getAligner().getVec3(uniform.name);
 					setUniformValue(shader, uniform.type, uniform.name, &temp);
 				} break;
 				case UniformType::VEC4: {
-					glm::vec4 temp = model->uniforms.getVec4(uniform.name);
+					glm::vec4 temp = model->getAligner().getVec4(uniform.name);
 					setUniformValue(shader, uniform.type, uniform.name, &temp);
 				} break;
 				case UniformType::MAT3: {
-					glm::mat3 temp = model->uniforms.getMat3(uniform.name);
+					glm::mat3 temp = model->getAligner().getMat3(uniform.name);
 					setUniformValue(shader, uniform.type, uniform.name, &temp);
 				} break;
 				case UniformType::MAT4: {
-					glm::mat4 temp = model->uniforms.getMat4(uniform.name);
+					glm::mat4 temp = model->getAligner().getMat4(uniform.name);
 					setUniformValue(shader, uniform.type, uniform.name, &temp);
 				} break;
 				default: throw std::runtime_error("Invalid uniform type in per-model switch!");

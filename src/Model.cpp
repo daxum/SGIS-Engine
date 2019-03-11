@@ -87,9 +87,10 @@ Model::Model(const std::string modelName, const std::string& mesh, const std::st
 	uniformSet(uniformSet),
 	hasBufferedUniforms(false),
 	textures(),
-	uniforms(stripNonBufferedModel(uniforms)),
 	viewCull(viewCull),
-	references(0) {
+	references(0),
+	uniforms(stripNonBufferedModel(uniforms)),
+	uniformData(new unsigned char[this->uniforms.getUniformDataSize()], ArrayDeleter()) {
 
 	for (const UniformDescription& descr : uniforms.uniforms) {
 		if (!isSampler(descr.type)) {

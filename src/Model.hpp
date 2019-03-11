@@ -200,13 +200,38 @@ public:
 	bool hasBufferedUniforms;
 	//The textures the model uses, in binding order.
 	std::vector<std::string> textures;
-	//Uniform data for the model, aligned to std140 rules.
-	Std140Aligner uniforms;
 	//Whether to use view culling on the model.
 	bool viewCull;
 
 	//Amount of references this model has.
 	size_t references;
+
+	/**
+	 * Gets an interface into the model's currently set uniform data.
+	 * Only the const version is threadsafe.
+	 * @return An aligner for this model.
+	 */
+	Std140Aligner getAligner() { return uniforms.getAligner(uniformData.get()); }
+	const Std140Aligner getAligner() const { return uniforms.getAligner(uniformData.get()); }
+
+	/**
+	 * Gets the model's uniform data, for uploading to the rendering engine.
+	 * @return A pair consisting of the raw data and size of the data.
+	 */
+	std::pair<const unsigned char*, size_t> getUniformData() const { return {uniformData.get(), uniforms.getUniformDataSize()}; }
+
+private:
+	//TODO: Rectify temporary hack.
+	struct ArrayDeleter {
+		void operator()(unsigned char* p) {
+			delete[] p;
+		}
+	};
+
+	//Uniform data for the model, aligned to std140 rules.
+	Std140AlignerFactory uniforms;
+	//Only shallow copies for now, pretty sure this is read only anyway.
+	std::shared_ptr<unsigned char> uniformData;
 };
 
 class ModelRef {

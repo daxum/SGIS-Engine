@@ -188,8 +188,8 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 	if (model.hasBufferedUniforms) {
 		ENGINE_LOG_DEBUG(logger, "Uploading model uniform data for \"" + name + "\" to rendering engine");
 
-		size_t dataSize = model.uniforms.getData().second;
-		const unsigned char* modelData = model.uniforms.getData().first;
+		size_t dataSize = model.getUniformData().second;
+		const unsigned char* modelData = model.getUniformData().first;
 
 		//Align the model data to the minimum alignment before allocating. If every allocation
 		//does this, all allocated memory will end up implicitly aligned.

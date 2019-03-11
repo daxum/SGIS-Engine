@@ -36,6 +36,49 @@ struct UniformData {
 	uint32_t size;
 };
 
+/**
+ * Calculates the base alignment of the provided type. When used with
+ * alignedSize, this should help reduce the complexity of aligning
+ * elements, especially in cases like floats following vec3s.
+ * Still might not be a good idea to have vec3s in opengl shaders,
+ * though, because apparently some drivers handle that wrong.
+ * @param type The type to get the base alignment for.
+ * @return The base alignment for the type.
+ */
+static constexpr uint32_t baseUniformAlignment(const UniformType type) {
+	switch (type) {
+		case UniformType::FLOAT: return sizeof(float);
+		case UniformType::VEC2: return 2 * sizeof(float);
+		case UniformType::VEC3: return 4 * sizeof(float);
+		case UniformType::VEC4: return 4 * sizeof(float);
+		//Calculated by: roundToVal(baseAlignment(UniformType::VEC3), baseAlignment(UniformType::VEC4))
+		case UniformType::MAT3: return baseUniformAlignment(UniformType::VEC4);
+		case UniformType::MAT4: return baseUniformAlignment(UniformType::VEC4);
+		default: throw std::runtime_error("Invalid uniform type provided to baseAlignment!");
+	}
+}
+
+/**
+ * Calculates the size of the data type once it has been properly aligned.
+ * This is mainly useful for arrays and matrices, because the stride is a
+ * bit odd.
+ * @param type The type to get the size of.
+ * @return The size of the type. Note that this does not necessarily determine
+ *     the offset of the next element, due to alignment restrictions.
+ */
+static constexpr uint32_t alignedUniformSize(const UniformType type) {
+	switch (type) {
+		case UniformType::FLOAT: return sizeof(float);
+		case UniformType::VEC2: return 2 * sizeof(float);
+		case UniformType::VEC3: return 3 * sizeof(float);
+		case UniformType::VEC4: return 4 * sizeof(float);
+		//Calculated by: roundToVal(alignedSize(UniformType::VEC3), alignedSize(UniformType::VEC4))
+		case UniformType::MAT3: return 3 * alignedUniformSize(UniformType::VEC4);
+		case UniformType::MAT4: return 4 * alignedUniformSize(UniformType::VEC4);
+		default: throw std::runtime_error("Invalid uniform type provided to alignedSize!");
+	}
+}
+
 //Aligns a uniform block to the std140 layout for use in uniform buffers.
 //Rules taken from OpenGL 4.6 core profile specification, section 7.6.2.2.
 class Std140Aligner {
@@ -52,29 +95,9 @@ public:
 	 * @param uniforms The uniforms that will be stored. Samplers and
 	 *     similar aren't allowed, for obvious reasons.
 	 */
-	Std140Aligner(const std::vector<UniformDescription>& uniforms);
-
-	/**
-	 * Turns out models need to be copied, and not having this function
-	 * causes error messages longer than the terminal buffer.
-	 * @param other The aligner to copy.
-	 */
-	Std140Aligner(const Std140Aligner& other);
-
-	/**
-	 * Just a move constructor.
-	 * @param other The aligner to move.
-	 */
-	Std140Aligner(Std140Aligner&& other);
-
-	/**
-	 * Just a destructor.
-	 */
-	~Std140Aligner() {
-		if (uniformData != nullptr) {
-			delete[] uniformData;
-		}
-	}
+	Std140Aligner(unsigned char* buffer, const std::unordered_map<std::string, UniformData>& uniformMap) :
+		uniformMap(uniformMap),
+		uniformData(buffer) {}
 
 	/**
 	 * Setters for uniform values. These functions check the uniform's type,
@@ -105,12 +128,6 @@ public:
 	glm::mat4 getMat4(const std::string& name) const;
 
 	/**
-	 * Returns the aligned uniform data along with its size.
-	 * @return A pair of the uniform data and its size.
-	 */
-	const std::pair<const unsigned char*, size_t> getData() const { return {uniformData, dataSize}; }
-
-	/**
 	 * Checks whether a uniform is present with the given name and type.
 	 * @param name The name of the uniform.
 	 * @param type The expected type of the uniform.
@@ -118,50 +135,11 @@ public:
 	 */
 	bool hasUniform(const std::string& name, const UniformType type) const { return uniformMap.count(name) && uniformMap.at(name).type == type; }
 
-	/**
-	 * Copy assignment.
-	 * @param other The object to copy.
-	 * @return This object.
-	 */
-	Std140Aligner& operator=(const Std140Aligner& other) {
-		if (this != &other) {
-			if (dataSize != other.dataSize) {
-				delete[] uniformData;
-				dataSize = 0;
-				uniformData = nullptr;
-				uniformData = new unsigned char[other.dataSize];
-				dataSize = other.dataSize;
-			}
-
-			memcpy(uniformData, other.uniformData, dataSize);
-			uniformMap = other.uniformMap;
-		}
-
-		return *this;
-	}
-
-	/**
-	 * Move assignment.
-	 * @param other The object to move.
-	 * @return This object.
-	 */
-	Std140Aligner& operator=(Std140Aligner&& other) {
-		if (this != &other) {
-			uniformMap = std::move(other.uniformMap);
-			uniformData = std::exchange(other.uniformData, nullptr);
-			dataSize = std::exchange(other.dataSize, 0);
-		}
-
-		return *this;
-	}
-
 private:
-	//Map of uniforms, for fast retrieval.
-	std::unordered_map<std::string, UniformData> uniformMap;
+	//Map specifying uniform format.
+	const std::unordered_map<std::string, UniformData>& uniformMap;
 	//Raw aligned data for the uniforms.
 	unsigned char* uniformData;
-	//Size of uniformData.
-	size_t dataSize;
 
 	/**
 	 * Checks whether the type of the uniform with the given name matches
@@ -202,47 +180,39 @@ private:
 		const UniformData& data = uniformMap.at(name);
 		return *(T*)(&uniformData[data.offset]);
 	}
+};
+
+//Stores the layout of the uniform data, without actually keeping track
+//of the backing memory itself. Used to create Std140Aligners.
+class Std140AlignerFactory {
+public:
+	/**
+	 * Creates the object used to create Std140Aligners.
+	 * @param uniforms The uniform layout all aligners created from this
+	 *     object will use.
+	 */
+	Std140AlignerFactory(const std::vector<UniformDescription>& uniforms);
 
 	/**
-	 * Calculates the size of the data type once it has been properly aligned.
-	 * This is mainly useful for arrays and matrices, because the stride is a
-	 * bit odd.
-	 * @param type The type to get the size of.
-	 * @return The size of the type. Note that this does not necessarily determine
-	 *     the offset of the next element, due to alignment restrictions.
+	 * Creates an aligner which uses the provided buffer as its underlying
+	 * data store. The buffer is assumed to be big enough to store all the
+	 * uniforms.
+	 * @param buffer The memory where the uniform data will be written to
+	 *     and read from.
+	 * @return A new Std140Aligner which can be used for manipulating uniform
+	 *     values.
 	 */
-	static constexpr uint32_t alignedSize(const UniformType type) {
-		switch (type) {
-			case UniformType::FLOAT: return sizeof(float);
-			case UniformType::VEC2: return 2 * sizeof(float);
-			case UniformType::VEC3: return 3 * sizeof(float);
-			case UniformType::VEC4: return 4 * sizeof(float);
-			//Calculated by: roundToVal(alignedSize(UniformType::VEC3), alignedSize(UniformType::VEC4))
-			case UniformType::MAT3: return 3 * alignedSize(UniformType::VEC4);
-			case UniformType::MAT4: return 4 * alignedSize(UniformType::VEC4);
-			default: throw std::runtime_error("Invalid uniform type provided to alignedSize!");
-		}
-	}
+	Std140Aligner getAligner(unsigned char* buffer) const { return Std140Aligner(buffer, uniformMap); }
 
 	/**
-	 * Calculates the base alignment of the provided type. When used with
-	 * alignedSize, this should help reduce the complexity of aligning
-	 * elements, especially in cases like floats following vec3s.
-	 * Still might not be a good idea to have vec3s in opengl shaders,
-	 * though, because apparently some drivers handle that wrong.
-	 * @param type The type to get the base alignment for.
-	 * @return The base alignment for the type.
+	 * Returns the space used by the uniform data.
+	 * @return The size of the aligned uniform data.
 	 */
-	static constexpr uint32_t baseAlignment(const UniformType type) {
-		switch (type) {
-			case UniformType::FLOAT: return sizeof(float);
-			case UniformType::VEC2: return 2 * sizeof(float);
-			case UniformType::VEC3: return 4 * sizeof(float);
-			case UniformType::VEC4: return 4 * sizeof(float);
-			//Calculated by: roundToVal(baseAlignment(UniformType::VEC3), baseAlignment(UniformType::VEC4))
-			case UniformType::MAT3: return baseAlignment(UniformType::VEC4);
-			case UniformType::MAT4: return baseAlignment(UniformType::VEC4);
-			default: throw std::runtime_error("Invalid uniform type provided to baseAlignment!");
-		}
-	}
+	size_t getUniformDataSize() const { return dataSize; }
+
+private:
+	//Map specifying the uniform format for all created aligners.
+	std::unordered_map<std::string, UniformData> uniformMap;
+	//Size of aligned data.
+	size_t dataSize;
 };

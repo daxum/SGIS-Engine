@@ -324,12 +324,23 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 
 						//Bind descriptor sets if needed
 
+						//TODO
+						/*
+						std::array<uint32_t, 3> bindSets;
+						std::array<uint32_t, 3> bindOffsets;
+						size_t numSets = 0;
+						//Which set to start binding at - don't rebind already bound sets.
+						size_t startSet = 0;
+						*/
+
 						//Screen set
 						if (!screenSetBound && screenSetName != "") {
-							Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(screenSetName);
+							auto alignerOffsetPair = memoryManager.getDescriptorAligner(screenSetName, currentFrame);
+							Std140Aligner& screenAligner = alignerOffsetPair.first;
+							uint32_t screenOffset = alignerOffsetPair.second;
+
 							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState, camera);
 
-							uint32_t screenOffset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
 							VkDescriptorSet screenSet = memoryManager.getDescriptorSet(screenSetName);
 
 							vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
@@ -357,10 +368,12 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 						if (shader->getPerObjectDescriptor() != "") {
 							const std::string& objectDescriptor = shader->getPerObjectDescriptor();
 
-							Std140Aligner& objectAligner = memoryManager.getDescriptorAligner(objectDescriptor);
+							auto alignerOffsetPair = memoryManager.getDescriptorAligner(objectDescriptor, currentFrame);
+							Std140Aligner& objectAligner = alignerOffsetPair.first;
+							uint32_t objectOffset = alignerOffsetPair.second;
+
 							setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp, camera);
 
-							uint32_t objectOffset = memoryManager.writePerFrameUniforms(objectAligner, currentFrame);
 							uint32_t objectSetOffset = screenSetBound ? 2 : 1;
 							VkDescriptorSet objectSet = memoryManager.getDescriptorSet(objectDescriptor);
 
