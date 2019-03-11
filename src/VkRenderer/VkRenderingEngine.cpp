@@ -305,87 +305,98 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 
 				//Per-object loop
 				for (const RenderComponent* comp : objectSet.second) {
-					if (objects.count(comp)) {
-						//Set shader / buffer if needed
-						if (!shaderBound) {
-							vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipeline());
-							shaderBound = true;
-						}
+					if (!objects.count(comp)) {
+						continue;
+					}
 
-						if (!bufferBound) {
-							const VkDeviceSize zero = 0;
-							std::shared_ptr<VkBufferData> bufferData = std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer(buffer).getRenderData());
+					//Set shader / buffer if needed
+					if (!shaderBound) {
+						vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipeline());
+						shaderBound = true;
+					}
 
-							vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &bufferData->vertexBuffer, &zero);
-							vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), bufferData->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+					if (!bufferBound) {
+						const VkDeviceSize zero = 0;
+						std::shared_ptr<VkBufferData> bufferData = std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer(buffer).getRenderData());
 
-							bufferBound = true;
-						}
+						vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &bufferData->vertexBuffer, &zero);
+						vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), bufferData->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-						//Bind descriptor sets if needed
+						bufferBound = true;
+					}
 
-						//TODO
-						/*
-						std::array<uint32_t, 3> bindSets;
-						std::array<uint32_t, 3> bindOffsets;
-						size_t numSets = 0;
-						//Which set to start binding at - don't rebind already bound sets.
-						size_t startSet = 0;
-						*/
+					//Bind descriptor sets if needed
 
-						//Screen set
-						if (!screenSetBound && screenSetName != "") {
+					std::array<VkDescriptorSet, 3> bindSets;
+					std::array<uint32_t, 3> bindOffsets;
+					size_t numSets = 0;
+					size_t numOffsets = 0;
+					//Which set to start binding at - don't rebind already bound sets.
+					size_t startSet = 0;
+
+					//Screen set
+					if (!screenSetName.empty()) {
+						if (!screenSetBound) {
 							auto alignerOffsetPair = memoryManager.getDescriptorAligner(screenSetName, currentFrame);
 							Std140Aligner& screenAligner = alignerOffsetPair.first;
-							uint32_t screenOffset = alignerOffsetPair.second;
 
 							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState, camera);
 
-							VkDescriptorSet screenSet = memoryManager.getDescriptorSet(screenSetName);
+							bindSets.at(numSets) = memoryManager.getDescriptorSet(screenSetName);
+							bindOffsets.at(numOffsets) = alignerOffsetPair.second;
 
-							vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), 0, 1, &screenSet, 1, &screenOffset);
 							screenSetBound = true;
+							numSets++;
+							numOffsets++;
 						}
-
-						//Model set
-						if (!modelSetBound) {
-							uint32_t modelSetOffset = screenSetBound ? 1 : 0;
-							VkDescriptorSet modelSet = memoryManager.getDescriptorSet(model->name);
-
-							if (model->hasBufferedUniforms) {
-								uint32_t modelUniformOffset = memoryManager.getModelUniformData(model->name).offset;
-
-								vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 1, &modelUniformOffset);
-							}
-							else {
-								vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), modelSetOffset, 1, &modelSet, 0, nullptr);
-							}
-
-							modelSetBound = true;
+						else {
+							//Screen set already bound, start binding at model set
+							startSet++;
 						}
-
-						//Object set
-						if (shader->getPerObjectDescriptor() != "") {
-							const std::string& objectDescriptor = shader->getPerObjectDescriptor();
-
-							auto alignerOffsetPair = memoryManager.getDescriptorAligner(objectDescriptor, currentFrame);
-							Std140Aligner& objectAligner = alignerOffsetPair.first;
-							uint32_t objectOffset = alignerOffsetPair.second;
-
-							setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp, camera);
-
-							uint32_t objectSetOffset = screenSetBound ? 2 : 1;
-							VkDescriptorSet objectSet = memoryManager.getDescriptorSet(objectDescriptor);
-
-							vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), objectSetOffset, 1, &objectSet, 1, &objectOffset);
-						}
-
-						setPushConstants(shader, comp, camera);
-
-						const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh);
-
-						vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshRenderData.indexCount, 1, meshRenderData.indexStart, 0, 0);
 					}
+
+					//Model set
+					if (!modelSetBound) {
+						bindSets.at(numSets) = memoryManager.getDescriptorSet(model->name);
+						numSets++;
+
+						if (model->hasBufferedUniforms) {
+							bindOffsets.at(numOffsets) = memoryManager.getModelUniformData(model->name).offset;
+							numOffsets++;
+						}
+
+						modelSetBound = true;
+					}
+					else {
+						//Model set will never be bound without a screen set, so this is perfectly safe
+						startSet++;
+					}
+
+					//Object set
+					if (!shader->getPerObjectDescriptor().empty()) {
+						const std::string& objectDescriptor = shader->getPerObjectDescriptor();
+
+						auto alignerOffsetPair = memoryManager.getDescriptorAligner(objectDescriptor, currentFrame);
+						Std140Aligner& objectAligner = alignerOffsetPair.first;
+
+						setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp, camera);
+
+						bindSets.at(numSets) = memoryManager.getDescriptorSet(objectDescriptor);
+						bindOffsets.at(numOffsets) = alignerOffsetPair.second;;
+
+						numSets++;
+						numOffsets++;
+					}
+
+					if (numSets > 0) {
+						vkCmdBindDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, shader->getPipelineLayout(), startSet, numSets, bindSets.data(), numOffsets, bindOffsets.data());
+					}
+
+					setPushConstants(shader, comp, camera);
+
+					const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh);
+
+					vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshRenderData.indexCount, 1, meshRenderData.indexStart, 0, 0);
 				}
 			}
 		}
