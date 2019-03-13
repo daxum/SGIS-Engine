@@ -19,7 +19,6 @@
 #pragma once
 
 #include <unordered_map>
-#include <unordered_set>
 #include <string>
 
 #include "ComponentManager.hpp"
@@ -28,7 +27,7 @@
 class RenderComponentManager : public ComponentManager {
 public:
 	//Sorts the RenderComponents by buffer, then shader, then model.
-	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Model*, std::unordered_set<const RenderComponent*>>>> RenderPassList;
+	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Model*, std::vector<const RenderComponent*>>>> RenderPassList;
 
 	/**
 	 * Constructor, sets name.
@@ -91,5 +90,5 @@ private:
 	 * @param model The model of the render component to fetch the set for.
 	 * @return The set the component belongs in.
 	 */
-	std::unordered_set<const RenderComponent*>& getComponentSet(std::shared_ptr<const ModelRef> model);
+	std::vector<const RenderComponent*>& getComponentSet(std::shared_ptr<const ModelRef> model);
 };
