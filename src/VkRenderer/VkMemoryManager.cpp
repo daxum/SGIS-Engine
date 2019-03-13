@@ -197,7 +197,10 @@ void VkMemoryManager::executeTransfers() {
 	}
 
 	//Wait for any previous transfers to complete
-	vkWaitForFences(objects.getDevice(), 1, &transferFence, VK_TRUE, 0);
+	if (vkWaitForFences(objects.getDevice(), 1, &transferFence, VK_TRUE, 0xFFFFFFFFFFFFFFFF) != VK_SUCCESS) {
+		throw std::runtime_error("Transfer fence wait failed!");
+	}
+
 	vkResetFences(objects.getDevice(), 1, &transferFence);
 
 	//Resize transfer buffer if needed

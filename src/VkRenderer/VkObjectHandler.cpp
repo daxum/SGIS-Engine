@@ -120,6 +120,9 @@ void VkObjectHandler::createInstance() {
 	extensionNames.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
 	//Validation layers
+	//----------- Current score -----------
+	//	I was right:                  1
+	//	Validation layers were right: 2
 	std::vector<const char*> layerCStr;
 
 	if (!config.renderer.validationLayers.empty()) {
