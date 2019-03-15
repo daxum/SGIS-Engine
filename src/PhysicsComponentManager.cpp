@@ -23,6 +23,7 @@
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Engine.hpp"
+#include "Camera.hpp"
 
 void PhysicsComponentManager::physicsTickCallback(btDynamicsWorld* world, btScalar timeStep) {
 	static_cast<PhysicsComponentManager*>(world->getWorldUserInfo())->tickCallback();
@@ -101,6 +102,26 @@ std::vector<PhysicsComponent*> PhysicsComponentManager::raytraceAll(glm::vec3 st
 	}
 
 	return out;
+}
+
+PhysicsComponent* PhysicsComponentManager::raytraceUnderMouse() {
+	const WindowSystemInterface& interface = Engine::instance->getWindowInterface();
+
+	glm::mat4 projection = screen->getCamera()->getProjection();
+	glm::mat4 view = screen->getCamera()->getView();
+	float width = interface.getWindowWidth();
+	float height = interface.getWindowHeight();
+
+	const auto nearFarPlanes = screen->getCamera()->getNearFar();
+	float near = nearFarPlanes.first;
+	float far = nearFarPlanes.second;
+
+	glm::vec2 mousePos = screen->getInputHandler().getMousePos();
+
+	//Position of mouse on near and far plane.
+	std::pair<glm::vec3, glm::vec3> nearFar = ExMath::screenToWorld(mousePos, projection, view, width, height, near, far);
+
+	return raytraceSingle(nearFar.first, nearFar.second);
 }
 
 void PhysicsComponentManager::drawDebugLine(glm::vec3 from, glm::vec3 to, glm::vec3 color) {

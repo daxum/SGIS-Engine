@@ -90,21 +90,7 @@ bool GuiComponentManager::handleMouseMove(const std::shared_ptr<const MouseMoveE
 }
 
 std::shared_ptr<GuiComponent> GuiComponentManager::getUnderMouse(const glm::vec2& mousePos) {
-	const WindowSystemInterface& interface = Engine::instance->getWindowInterface();
-
-	glm::mat4 projection = screen->getCamera()->getProjection();
-	glm::mat4 view = screen->getCamera()->getView();
-	float width = interface.getWindowWidth();
-	float height = interface.getWindowHeight();
-
-	const auto nearFarPlanes = screen->getCamera()->getNearFar();
-	float near = nearFarPlanes.first;
-	float far = nearFarPlanes.second;
-
-	//Position of mouse on near and far plane.
-	std::pair<glm::vec3, glm::vec3> nearFar = ExMath::screenToWorld(mousePos, projection, view, width, height, near, far);
-
-	PhysicsComponent* hit = std::static_pointer_cast<PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME))->raytraceSingle(nearFar.first, nearFar.second);
+	PhysicsComponent* hit = std::static_pointer_cast<PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME))->raytraceUnderMouse();
 
 	if (hit != nullptr) {
 		return hit->getParent()->getComponent<GuiComponent>(GUI_COMPONENT_NAME);

@@ -61,6 +61,14 @@ public:
 	std::vector<PhysicsComponent*> raytraceAll(glm::vec3 start, glm::vec3 end);
 
 	/**
+	 * Raytraces from the mouse position projected into 3d space using the
+	 * current camera, and returns the first physics component hit, if any.
+	 * @return The physics component under the mouse, or nullptr if there
+	 *     wasn't one.
+	 */
+	PhysicsComponent* raytraceUnderMouse();
+
+	/**
 	 * If using a physics debug renderer, draws a line of the given color at the
 	 * specified positions. Does nothing if debug drawing is disabled.
 	 * @param from The start of the line.
