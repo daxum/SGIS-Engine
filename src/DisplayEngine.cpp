@@ -116,7 +116,7 @@ void DisplayEngine::render(float partialTicks) {
 
 	renderer->beginFrame();
 
-	//Render all screens in the overlay stack from botom to top.
+	//Render all screens in the overlay stack from bottom to top.
 	for (std::shared_ptr<Screen> screen : screenStack.back()) {
 		renderer->render(screen.get());
 	}
