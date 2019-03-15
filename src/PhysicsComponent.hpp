@@ -154,6 +154,12 @@ public:
 	void setRotationalAcceleration(float accel);
 
 	/**
+	 * Sets the damping on the linear velocity of the object.
+	 * @param amount The new damping value.
+	 */
+	void setLinearDamping(float amount) { physics->getBody()->setDamping(amount, physics->getBody()->getAngularDamping()); }
+
+	/**
 	 * Called by the physics component manager when this object collides with another.
 	 * @param screen A screen, can be used for removing / adding other objects as a result of a collision.
 	 * @param other The object that was collided with.
