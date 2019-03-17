@@ -175,6 +175,43 @@ private:
 	size_t users;
 };
 
+class MeshRef {
+public:
+	/**
+	 * Creates a reference to the given mesh.
+	 * @param manager The model manager that created this reference.
+	 * @param meshName The name of the referenced mesh.
+	 * @param mesh The mesh to reference.
+	 */
+	MeshRef(ModelManager* manager, const std::string& meshName, Mesh& mesh);
+
+	/**
+	 * Decrements the mesh's reference count.
+	 */
+	~MeshRef();
+
+	/**
+	 * Returns the mesh this reference is referencing. The returned
+	 * pointer is only guaranteed to have the same lifespan as the
+	 * reference object it was retrieved from.
+	 */
+	const Mesh& getMesh() const { return mesh; }
+
+	/**
+	 * Returns the name of the mesh.
+	 * @return The mesh's name.
+	 */
+	const std::string getName() const { return meshName; }
+
+private:
+	//The parent model manager.
+	ModelManager* manager;
+	//The mesh this object is referencing.
+	Mesh& mesh;
+	//The name of the referenced mesh.
+	std::string meshName;
+};
+
 class Model {
 public:
 	/**
@@ -186,12 +223,12 @@ public:
 	 * @param uniforms The uniform set for the model, used to determine uniform buffer layout.
 	 * @param viewCull Whether to use view culling on this model.
 	 */
-	Model(const std::string modelName, const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull = true);
+	Model(const std::string& name, std::shared_ptr<const MeshRef> mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull = true);
 
-	//The name of this model.
+	//TODO: This should only be needed by the Vk renderer, remove once that's fixed.
 	std::string name;
-	//The name of this model's mesh.
-	std::string mesh;
+	//A reference to this model's mesh.
+	std::shared_ptr<const MeshRef> mesh;
 	//The shader the model uses.
 	std::string shader;
 	//Name of the uniform set the model uses.
@@ -239,12 +276,9 @@ public:
 	/**
 	 * Creates a reference to the given model.
 	 * @param manager The model manager that created this reference.
-	 * @param modelName The name of the model this reference is referencing.
 	 * @param model The model to reference.
-	 * @param mesh The model's mesh, used to avoid repeated lookups from the name
-	 *     stored in the model.
 	 */
-	ModelRef(ModelManager* manager, const std::string& modelName, Model& model, Mesh& mesh);
+	ModelRef(ModelManager* manager, std::string modelName, Model& model);
 
 	/**
 	 * Decrements the model's reference count.
@@ -253,28 +287,24 @@ public:
 
 	/**
 	 * Returns the model this reference is referencing. The returned
-	 * reference is only guarenteed to have the same lifespan as the
+	 * reference is only guaranteed to have the same lifespan as the
 	 * reference object it was retrieved from.
 	 */
 	const Model& getModel() const { return model; }
 
 	/**
-	 * Gets the model's mesh, has same restrictions as the model.
+	 * Returns the model's mesh.
+	 * @return The mesh.
 	 */
 	const Mesh& getMesh() const { return mesh; }
-
-	/**
-	 * Gets the name of the model this reference is referencing.
-	 */
-	const std::string& getName() const { return modelName; }
 
 private:
 	//The parent model manager.
 	ModelManager* manager;
 	//The model this object is referencing.
 	Model& model;
-	//The model's mesh.
-	Mesh& mesh;
-	//The name of the above model.
+	//The mesh for the model.
+	const Mesh& mesh;
+	//The name of the referenced model.
 	std::string modelName;
 };

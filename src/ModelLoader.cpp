@@ -39,7 +39,7 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 		modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius));
 	}
 
-	Model model(name, filename, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
+	Model model(name, modelManager.getMesh(filename), shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
 	model.textures.push_back(texture);
 	Std140Aligner modelUniforms = model.getAligner();
 

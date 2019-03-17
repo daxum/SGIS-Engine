@@ -18,25 +18,14 @@
 
 #include "ModelManager.hpp"
 
-std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
+std::shared_ptr<const ModelRef> ModelManager::getModel(const std::string& modelName) {
 	ENGINE_LOG_SPAM(logger, "Retrieving reference for model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
-	Mesh& mesh = meshMap.at(model.mesh);
 
-	std::shared_ptr<ModelRef> ref = std::make_shared<ModelRef>(this, modelName, model, mesh);
+	std::shared_ptr<ModelRef> ref = std::make_shared<ModelRef>(this, modelName, model);
 
-	mesh.addUser();
 	model.references++;
-
-	//Upload mesh if needed
-	if (!memoryManager->markUsed(model.mesh, mesh.getBuffer())) {
-		ENGINE_LOG_DEBUG(logger, "Mesh data for \"" + model.mesh + "\" not present on renderer, uploading now...");
-
-		auto meshData = mesh.getMeshData();
-
-		memoryManager->addMesh(model.mesh, mesh.getBuffer(), std::get<0>(meshData), std::get<1>(meshData), std::get<2>(meshData));
-	}
 
 	//Upload model uniform data - the memory manager will skip redundant uploads
 	memoryManager->addModel(modelName, model);
@@ -44,19 +33,33 @@ std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
 	return ref;
 }
 
-void ModelManager::removeReference(const std::string& modelName) {
+std::shared_ptr<const MeshRef> ModelManager::getMesh(const std::string& meshName) {
+	ENGINE_LOG_SPAM(logger, "Retrieving reference for mesh \"" + meshName + "\"");
+
+	Mesh& mesh = meshMap.at(meshName);
+	std::shared_ptr<MeshRef> ref = std::make_shared<MeshRef>(this, meshName, mesh);
+
+	mesh.addUser();
+
+	//Upload mesh if needed
+	if (!memoryManager->markUsed(meshName, mesh.getBuffer())) {
+		ENGINE_LOG_DEBUG(logger, "Mesh data for \"" + meshName + "\" not present on renderer, uploading now...");
+
+		auto meshData = mesh.getMeshData();
+
+		memoryManager->addMesh(meshName, mesh.getBuffer(), std::get<0>(meshData), std::get<1>(meshData), std::get<2>(meshData));
+	}
+
+	return ref;
+}
+
+void ModelManager::removeModelReference(const std::string& modelName) {
 	ENGINE_LOG_SPAM(logger, "Removing reference to model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
-	const std::string meshName = model.mesh;
 
-	Mesh& mesh = meshMap.at(meshName);
-
-	//Get vertex buffer to determine mesh persistence, same with models and uniform sets
+	//Determine whether the model's uniform set needs freeing.
 	const UniformSetType setType = memoryManager->getUniformSet(model.uniformSet).setType;
-	const BufferUsage usage = memoryManager->getBuffer(mesh.getBuffer()).getUsage();
-
-	const bool meshPersistent = usage == BufferUsage::DEDICATED_LAZY;
 	const bool modelPersistent = setType == UniformSetType::MODEL_STATIC;
 
 	model.references--;
@@ -73,12 +76,17 @@ void ModelManager::removeReference(const std::string& modelName) {
 			modelMap.erase(modelName);
 		}
 	}
+}
 
-	//Model might not exist past this point! Don't use it!
+void ModelManager::removeMeshReference(const std::string meshName) {
+	ENGINE_LOG_SPAM(logger, "Removing reference to mesh \"" + meshName + "\"");
 
-	//Remove mesh user even if model is still present; this is so unreferenced meshes don't
-	//take up unnecessary space in the vertex buffers when they're not in use (they will remain
-	//present in the buffers, however, unless memory runs out)
+	Mesh& mesh = meshMap.at(meshName);
+
+	//Get vertex buffer to determine mesh persistence
+	const BufferUsage usage = memoryManager->getBuffer(mesh.getBuffer()).getUsage();
+	const bool meshPersistent = usage == BufferUsage::DEDICATED_LAZY;
+
 	mesh.removeUser();
 	ENGINE_LOG_SPAM(logger, "Remaining mesh users: " + std::to_string(mesh.getUsers()));
 

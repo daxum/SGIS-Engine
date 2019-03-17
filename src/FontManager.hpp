@@ -52,7 +52,7 @@ public:
 	 * @param uniformSet The set of uniforms for the model to use.
 	 * @return a reference to a model for the given text.
 	 */
-	std::shared_ptr<ModelRef> createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet);
+	std::shared_ptr<const ModelRef> createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet);
 
 private:
 	//The model manager.

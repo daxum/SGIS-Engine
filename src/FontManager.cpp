@@ -27,7 +27,7 @@ Font& FontManager::addFont(const std::string& name, int spaceWidth, size_t size)
 	return fontMap.at(name);
 }
 
-std::shared_ptr<ModelRef> FontManager::createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet) {
+std::shared_ptr<const ModelRef> FontManager::createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet) {
 	std::string meshName = getMeshName(fontName, text, buffer);
 
 	if (!modelManager.hasMesh(meshName)) {
@@ -39,7 +39,7 @@ std::shared_ptr<ModelRef> FontManager::createTextModel(const std::string& fontNa
 	if (!modelManager.hasModel(modelName)) {
 		const Font& font = fontMap.at(fontName);
 
-		Model model(modelName, meshName, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), true);
+		Model model(modelName, modelManager.getMesh(meshName), shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), true);
 		model.textures.push_back(font.getTexture());
 
 		modelManager.addModel(modelName, std::move(model));

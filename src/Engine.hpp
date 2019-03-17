@@ -76,7 +76,7 @@ public:
 	 * @return A reference to the requested model.
 	 * @throw std::out_of_range if the model isn't present.
 	 */
-	std::shared_ptr<ModelRef> getModel(const std::string& name) { return modelManager.getModel(name); }
+	std::shared_ptr<const ModelRef> getModel(const std::string& name) { return modelManager.getModel(name); }
 
 	/**
 	 * A (hopefully) temporary hack until model loading can be re-written.

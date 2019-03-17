@@ -46,9 +46,17 @@ public:
 	 * it will be when this function is called.
 	 * @param model The model to retrieve.
 	 * @return A reference to the model.
-	 * @throw std::out_of_range if either the model or the model's mesh doesn't exist.
+	 * @throw std::out_of_range if the model doesn't exist.
 	 */
-	std::shared_ptr<ModelRef> getModel(const std::string& model);
+	std::shared_ptr<const ModelRef> getModel(const std::string& model);
+
+	/**
+	 * Gets a mesh, with similar semantics to getModel.
+	 * @param mesh The mesh to retrieve.
+	 * @return A reference to the mesh.
+	 * @throw std::out_of_range if the mesh doesn't exist.
+	 */
+	std::shared_ptr<const MeshRef> getMesh(const std::string& mesh);
 
 	/**
 	 * Adds a mesh to the model manager. Mesh persistence is determined by the
@@ -89,12 +97,17 @@ public:
 
 	/**
 	 * Only called from ModelRef's destructor. Removes a reference to the given model, and
-	 * frees the model if needed. In addition, a reference to the model's mesh is also
-	 * removed, and if the mesh has no more references, it is removed from the rendering
-	 * engine.
+	 * frees the model if needed.
 	 * @param model The model to remove a reference from.
 	 */
-	void removeReference(const std::string& model);
+	void removeModelReference(const std::string& model);
+
+	/**
+	 * Only called from MeshRef's destructor. Almost exactly like removeModelReference, but
+	 * will additionally remove the mesh from the rendering engine if needed.
+	 * @param mesh The mesh to remove a reference from.
+	 */
+	void removeMeshReference(const std::string meshName);
 
 	/**
 	 * Called from the engine to set the renderer memory manager.

@@ -80,8 +80,19 @@ Mesh::Mesh(Mesh&& mesh) :
 
 }
 
-Model::Model(const std::string modelName, const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull)  :
-	name(modelName),
+MeshRef::MeshRef(ModelManager* manager, const std::string& meshName, Mesh& mesh) :
+	manager(manager),
+	mesh(mesh),
+	meshName(meshName) {
+
+}
+
+MeshRef::~MeshRef()  {
+	manager->removeMeshReference(meshName);
+}
+
+Model::Model(const std::string& name, std::shared_ptr<const MeshRef> mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull)  :
+	name(name),
 	mesh(mesh),
 	shader(shader),
 	uniformSet(uniformSet),
@@ -100,14 +111,14 @@ Model::Model(const std::string modelName, const std::string& mesh, const std::st
 	}
 }
 
-ModelRef::ModelRef(ModelManager* manager, const std::string& modelName, Model& model, Mesh& mesh) :
+ModelRef::ModelRef(ModelManager* manager, std::string modelName, Model& model) :
 	manager(manager),
 	model(model),
-	mesh(mesh),
+	mesh(model.mesh->getMesh()),
 	modelName(modelName) {
 
 }
 
-ModelRef::~ModelRef() {
-	manager->removeReference(modelName);
+ModelRef::~ModelRef()  {
+	manager->removeModelReference(modelName);
 }

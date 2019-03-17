@@ -93,7 +93,7 @@ private:
 
 	std::string currentFont;
 	std::u32string currentText;
-	std::shared_ptr<ModelRef> textModel;
+	std::shared_ptr<const ModelRef> textModel;
 
 	//Only used in onParentSet.
 	glm::vec3 initScale;

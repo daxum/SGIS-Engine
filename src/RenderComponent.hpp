@@ -42,7 +42,7 @@ public:
 	 * @param model The model to use to render this object.
 	 * @param renderScale The scale of the object.
 	 */
-	RenderComponent(std::shared_ptr<ModelRef> model, glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
+	RenderComponent(std::shared_ptr<const ModelRef> model, glm::vec3 renderScale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Returns the translation of this object.
@@ -90,7 +90,7 @@ public:
 	 * Changes the component's model to the specified one.
 	 * @param newModel The new model to use.
 	 */
-	void setModel(std::shared_ptr<ModelRef> newModel);
+	void setModel(std::shared_ptr<const ModelRef> newModel);
 
 	/**
 	 * Only to be called from RenderComponentManager.
@@ -105,7 +105,7 @@ public:
 
 private:
 	//Which model to use for this object.
-	std::shared_ptr<ModelRef> model;
+	std::shared_ptr<const ModelRef> model;
 	//The scale of the object's model.
 	glm::vec3 scale;
 	//The manager for this component, null if none.
