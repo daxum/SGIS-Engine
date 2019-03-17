@@ -382,7 +382,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 						setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp, camera);
 
 						bindSets.at(numSets) = memoryManager.getDescriptorSet(objectDescriptor);
-						bindOffsets.at(numOffsets) = alignerOffsetPair.second;;
+						bindOffsets.at(numOffsets) = alignerOffsetPair.second;
 
 						numSets++;
 						numOffsets++;
