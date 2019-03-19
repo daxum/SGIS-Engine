@@ -142,8 +142,10 @@ glm::vec3 PhysicsComponent::getVelocity() {
 }
 
 void PhysicsComponent::applyImpulse(glm::vec3 impulse) {
-	physics->getBody()->activate(true);
-	physics->getBody()->applyCentralImpulse(btVector3(impulse.x, impulse.y, impulse.z));
+	if (currentMode == PhysicsControlMode::DYNAMIC) {
+		physics->getBody()->activate(true);
+		physics->getBody()->applyCentralImpulse(btVector3(impulse.x, impulse.y, impulse.z));
+	}
 }
 
 void PhysicsComponent::rotate(glm::vec3 amount) {
