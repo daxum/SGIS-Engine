@@ -32,6 +32,8 @@ class ModelManager;
 
 class Mesh {
 public:
+	bool render;
+
 	/**
 	 * Creates a mesh with the given vertices and indices.
 	 * @param buffer The buffer to place the mesh in for rendering.
@@ -42,7 +44,7 @@ public:
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
-	Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
+	Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius, bool render = true);
 
 	/**
 	 * Copy constructor.
@@ -130,6 +132,7 @@ public:
 			box = mesh.box;
 			radius = mesh.radius;
 			users = mesh.users;
+			render = mesh.render;
 		}
 
 		return *this;
@@ -148,6 +151,7 @@ public:
 			box = std::move(mesh.box);
 			radius = std::exchange(mesh.radius, 0.0f);
 			users = std::exchange(mesh.users, 0);
+			render = std::exchange(mesh.render, false);
 		}
 
 		return *this;

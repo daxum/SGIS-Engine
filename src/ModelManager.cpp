@@ -42,7 +42,7 @@ std::shared_ptr<const MeshRef> ModelManager::getMesh(const std::string& meshName
 	mesh.addUser();
 
 	//Upload mesh if needed
-	if (!memoryManager->markUsed(meshName, mesh.getBuffer())) {
+	if (mesh.render && !memoryManager->markUsed(meshName, mesh.getBuffer())) {
 		ENGINE_LOG_DEBUG(logger, "Mesh data for \"" + meshName + "\" not present on renderer, uploading now...");
 
 		auto meshData = mesh.getMeshData();
@@ -91,8 +91,10 @@ void ModelManager::removeMeshReference(const std::string meshName) {
 	ENGINE_LOG_SPAM(logger, "Remaining mesh users: " + std::to_string(mesh.getUsers()));
 
 	if (mesh.getUsers() == 0) {
-		ENGINE_LOG_DEBUG(logger, "Removing unused mesh \"" + meshName + "\" from vertex buffers...");
-		memoryManager->freeMesh(meshName, mesh.getBuffer());
+		if (mesh.render) {
+			ENGINE_LOG_DEBUG(logger, "Removing unused mesh \"" + meshName + "\" from vertex buffers...");
+			memoryManager->freeMesh(meshName, mesh.getBuffer());
+		}
 
 		//If mesh is not persistent, completely remove it
 		if (!meshPersistent) {

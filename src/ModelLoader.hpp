@@ -75,6 +75,12 @@ public:
 	 */
 	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull = true);
 
+	/**
+	 * TODO: Possibly temp?
+	 * This doesn't upload to the rendering engine, despite the buffer parameter.
+	 */
+	void loadMesh(const std::string& filename, const std::string& buffer);
+
 protected:
 	//The logger.
 	Logger logger;

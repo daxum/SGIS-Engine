@@ -63,6 +63,19 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + Engine::instance->getConfig().resourceBase + filename + "\" as \"" + name + "\".");
 }
 
+void ModelLoader::loadMesh(const std::string& filename, const std::string& buffer) {
+	std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, buffer);
+
+	Aabb<float> box = calculateBox(data);
+	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for mesh " + filename);
+
+	float radius = calculateMaxRadius(data, box.getCenter());
+	ENGINE_LOG_DEBUG(logger, "Radius of mesh is " + std::to_string(radius));
+
+	const std::vector<VertexElement>& format = modelManager.getMemoryManager()->getBuffer(buffer).getVertexFormat();
+	modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius, false));
+}
+
 std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const std::string& vertexBuffer) {
 	std::shared_ptr<ModelData> data = std::make_shared<ModelData>();
 

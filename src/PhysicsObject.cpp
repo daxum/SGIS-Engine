@@ -62,7 +62,7 @@ PhysicsObject::PhysicsObject(const PhysicsInfo& createInfo) :
 	}
 }
 
-PhysicsObject::PhysicsObject(const std::string& modelName, const glm::vec3& pos) :
+PhysicsObject::PhysicsObject(const std::string& meshName, const glm::vec3& pos) :
 	body(nullptr),
 	shape(nullptr),
 	state(nullptr),
@@ -71,8 +71,8 @@ PhysicsObject::PhysicsObject(const std::string& modelName, const glm::vec3& pos)
 
 	//TODO: This will currently upload the mesh and model to the rendering engine.
 	//Prevent this in the future?
-	std::shared_ptr<const ModelRef> model = Engine::instance->getModel(modelName);
-	const std::vector<VertexElement>& format = model->getMesh().getFormat();
+	std::shared_ptr<const MeshRef> meshRef = Engine::instance->getModelManager().getMesh(meshName);
+	const std::vector<VertexElement>& format = meshRef->getMesh().getFormat();
 
 	size_t vertexSize = 0;
 	size_t posOffset = 0;
@@ -92,7 +92,7 @@ PhysicsObject::PhysicsObject(const std::string& modelName, const glm::vec3& pos)
 		throw std::runtime_error("Attempt to generate physics shape from mesh without positions!");
 	}
 
-	const std::tuple<const unsigned char*, size_t, const std::vector<uint32_t>&>& meshData = model->getMesh().getMeshData();
+	const std::tuple<const unsigned char*, size_t, const std::vector<uint32_t>&>& meshData = meshRef->getMesh().getMeshData();
 	btTriangleMesh* mesh = new btTriangleMesh();
 
 	//Create physics mesh
