@@ -36,13 +36,6 @@ struct ModelData {
 	std::vector<uint32_t> indices;
 };
 
-struct LightInfo {
-	glm::vec3 ka;
-	glm::vec3 kd;
-	glm::vec3 ks;
-	float s;
-};
-
 class ModelLoader {
 public:
 	/**
@@ -73,7 +66,7 @@ public:
 	 * @param lighting The lighting information for the model.
 	 * @param viewCull Whether to cull the object when it can't be seen by the camera.
 	 */
-	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull = true);
+	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, bool viewCull = true);
 
 	/**
 	 * TODO: Possibly temp?
