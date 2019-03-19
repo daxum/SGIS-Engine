@@ -35,16 +35,14 @@ namespace {
 	}
 }
 
-Mesh::Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius, bool render) :
-	render(render),
+Mesh::Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
 	vertexData(new unsigned char[vertices.at(0).getSize() * vertices.size()]),
 	vertexSize(vertices.at(0).getSize() * vertices.size()),
 	indices(indices),
 	buffer(buffer),
 	format(format),
 	box(box),
-	radius(radius),
-	users(0) {
+	radius(radius) {
 
 	size_t vertSize = vertices.at(0).getSize();
 	size_t offset = 0;
@@ -57,44 +55,41 @@ Mesh::Mesh(const std::string& buffer, const std::vector<VertexElement>& format, 
 }
 
 Mesh::Mesh(const Mesh& mesh) :
-	render(mesh.render),
 	vertexData(new unsigned char[mesh.vertexSize]),
 	vertexSize(mesh.vertexSize),
 	indices(mesh.indices),
 	buffer(mesh.buffer),
 	format(mesh.format),
 	box(mesh.box),
-	radius(mesh.radius),
-	users(mesh.users) {
+	radius(mesh.radius) {
 
 	memcpy(vertexData, mesh.vertexData, mesh.vertexSize);
 }
 
 Mesh::Mesh(Mesh&& mesh) :
-	render(std::exchange(mesh.render, false)),
 	vertexData(std::exchange(mesh.vertexData, nullptr)),
 	vertexSize(std::exchange(mesh.vertexSize, 0)),
 	indices(std::move(mesh.indices)),
 	buffer(std::move(mesh.buffer)),
 	format(std::move(mesh.format)),
 	box(std::move(mesh.box)),
-	radius(std::exchange(mesh.radius, 0.0f)),
-	users(std::exchange(mesh.users, 0)) {
+	radius(std::exchange(mesh.radius, 0.0f)) {
 
 }
 
-MeshRef::MeshRef(ModelManager* manager, const std::string& meshName, Mesh& mesh) :
+MeshRef::MeshRef(ModelManager* manager, const std::string& meshName, Mesh& mesh, CacheLevel level) :
 	manager(manager),
 	mesh(mesh),
-	meshName(meshName) {
+	meshName(meshName),
+	level(level) {
 
 }
 
 MeshRef::~MeshRef()  {
-	manager->removeMeshReference(meshName);
+	manager->removeMeshReference(meshName, level);
 }
 
-Model::Model(const std::string& name, std::shared_ptr<const MeshRef> mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull)  :
+Model::Model(const std::string& name, const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull)  :
 	name(name),
 	mesh(mesh),
 	shader(shader),
@@ -114,10 +109,10 @@ Model::Model(const std::string& name, std::shared_ptr<const MeshRef> mesh, const
 	}
 }
 
-ModelRef::ModelRef(ModelManager* manager, std::string modelName, Model& model) :
+ModelRef::ModelRef(ModelManager* manager, std::string modelName, Model& model, std::shared_ptr<MeshRef> mesh) :
 	manager(manager),
 	model(model),
-	mesh(model.mesh->getMesh()),
+	mesh(mesh),
 	modelName(modelName) {
 
 }

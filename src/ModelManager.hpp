@@ -48,15 +48,16 @@ public:
 	 * @return A reference to the model.
 	 * @throw std::out_of_range if the model doesn't exist.
 	 */
-	std::shared_ptr<const ModelRef> getModel(const std::string& model);
+	std::shared_ptr<ModelRef> getModel(const std::string& model);
 
 	/**
 	 * Gets a mesh, with similar semantics to getModel.
 	 * @param mesh The mesh to retrieve.
+	 * @param requiredLevel The level the retriever needs the mesh to be at.
 	 * @return A reference to the mesh.
 	 * @throw std::out_of_range if the mesh doesn't exist.
 	 */
-	std::shared_ptr<const MeshRef> getMesh(const std::string& mesh);
+	std::shared_ptr<MeshRef> getMesh(const std::string& mesh, CacheLevel requiredLevel);
 
 	/**
 	 * Adds a mesh to the model manager. Mesh persistence is determined by the
@@ -64,9 +65,10 @@ public:
 	 * has referenced it.
 	 * @param name The name to store the mesh under.
 	 * @param mesh The mesh to add.
+	 * @param persist Whether to keep the mesh when it becomes unused.
 	 */
-	void addMesh(const std::string& name, Mesh&& mesh) {
-		meshMap.emplace(name, std::move(mesh));
+	void addMesh(const std::string& name, Mesh&& mesh, bool persist) {
+		meshMap.emplace(name, MeshData{std::move(mesh), std::array<size_t, CacheLevel::NUM_LEVELS>{}, persist});
 		ENGINE_LOG_INFO(logger, "Added mesh \"" + name + "\"");
 	}
 
@@ -106,8 +108,9 @@ public:
 	 * Only called from MeshRef's destructor. Almost exactly like removeModelReference, but
 	 * will additionally remove the mesh from the rendering engine if needed.
 	 * @param mesh The mesh to remove a reference from.
+	 * @param level The level to remove a user from.
 	 */
-	void removeMeshReference(const std::string meshName);
+	void removeMeshReference(const std::string meshName, CacheLevel level);
 
 	/**
 	 * Called from the engine to set the renderer memory manager.
@@ -123,12 +126,22 @@ public:
 	RendererMemoryManager* getMemoryManager() { return memoryManager; }
 
 private:
+	//Structure for storing meshes.
+	struct MeshData {
+		//The stored mesh.
+		Mesh mesh;
+		//Number of users for the mesh on each cache level.
+		std::array<size_t, CacheLevel::NUM_LEVELS> users;
+		//Whether the mesh stays loaded when it has no users.
+		bool persist;
+	};
+
 	//The logger
 	Logger logger;
 	//Pointer to memory manager, for uploading mesh data.
 	RendererMemoryManager* memoryManager;
 	//Map of meshes for models.
-	std::unordered_map<std::string, Mesh> meshMap;
+	std::unordered_map<std::string, MeshData> meshMap;
 	//Map of models.
 	std::unordered_map<std::string, Model> modelMap;
 };

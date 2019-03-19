@@ -18,12 +18,12 @@
 
 #include "ModelManager.hpp"
 
-std::shared_ptr<const ModelRef> ModelManager::getModel(const std::string& modelName) {
+std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
 	ENGINE_LOG_SPAM(logger, "Retrieving reference for model \"" + modelName + "\"");
 
 	Model& model = modelMap.at(modelName);
 
-	std::shared_ptr<ModelRef> ref = std::make_shared<ModelRef>(this, modelName, model);
+	std::shared_ptr<ModelRef> ref = std::make_shared<ModelRef>(this, modelName, model, getMesh(model.mesh, CacheLevel::GPU));
 
 	model.references++;
 
@@ -33,16 +33,16 @@ std::shared_ptr<const ModelRef> ModelManager::getModel(const std::string& modelN
 	return ref;
 }
 
-std::shared_ptr<const MeshRef> ModelManager::getMesh(const std::string& meshName) {
+std::shared_ptr<MeshRef> ModelManager::getMesh(const std::string& meshName, CacheLevel level) {
 	ENGINE_LOG_SPAM(logger, "Retrieving reference for mesh \"" + meshName + "\"");
 
-	Mesh& mesh = meshMap.at(meshName);
-	std::shared_ptr<MeshRef> ref = std::make_shared<MeshRef>(this, meshName, mesh);
+	MeshData& meshData = meshMap.at(meshName);
+	Mesh& mesh = meshData.mesh;
 
-	mesh.addUser();
+	meshData.users.at(level)++;
 
 	//Upload mesh if needed
-	if (mesh.render && !memoryManager->markUsed(meshName, mesh.getBuffer())) {
+	if (meshData.users.at(CacheLevel::GPU) > 0 && !memoryManager->attemptSetUsed(meshName, mesh.getBuffer())) {
 		ENGINE_LOG_DEBUG(logger, "Mesh data for \"" + meshName + "\" not present on renderer, uploading now...");
 
 		auto meshData = mesh.getMeshData();
@@ -50,7 +50,7 @@ std::shared_ptr<const MeshRef> ModelManager::getMesh(const std::string& meshName
 		memoryManager->addMesh(meshName, mesh.getBuffer(), std::get<0>(meshData), std::get<1>(meshData), std::get<2>(meshData));
 	}
 
-	return ref;
+	return std::make_shared<MeshRef>(this, meshName, mesh, level);
 }
 
 void ModelManager::removeModelReference(const std::string& modelName) {
@@ -78,26 +78,24 @@ void ModelManager::removeModelReference(const std::string& modelName) {
 	}
 }
 
-void ModelManager::removeMeshReference(const std::string meshName) {
+void ModelManager::removeMeshReference(const std::string meshName, CacheLevel level) {
 	ENGINE_LOG_SPAM(logger, "Removing reference to mesh \"" + meshName + "\"");
 
-	Mesh& mesh = meshMap.at(meshName);
+	MeshData& meshData = meshMap.at(meshName);
+	Mesh& mesh = meshData.mesh;
 
-	//Get vertex buffer to determine mesh persistence
-	const BufferUsage usage = memoryManager->getBuffer(mesh.getBuffer()).getUsage();
-	const bool meshPersistent = usage == BufferUsage::DEDICATED_LAZY;
+	meshData.users.at(level)--;
+	ENGINE_LOG_SPAM(logger, "Remaining mesh users: " + std::to_string(meshData.users.at(level)));
 
-	mesh.removeUser();
-	ENGINE_LOG_SPAM(logger, "Remaining mesh users: " + std::to_string(mesh.getUsers()));
-
-	if (mesh.getUsers() == 0) {
-		if (mesh.render) {
+	if (meshData.users.at(CacheLevel::GPU) == 0) {
+		//Rendering mesh, can remove from gpu
+		if (!mesh.getBuffer().empty()) {
 			ENGINE_LOG_DEBUG(logger, "Removing unused mesh \"" + meshName + "\" from vertex buffers...");
 			memoryManager->freeMesh(meshName, mesh.getBuffer());
 		}
 
 		//If mesh is not persistent, completely remove it
-		if (!meshPersistent) {
+		if (!meshData.persist && meshData.users.at(CacheLevel::MEMORY) == 0) {
 			ENGINE_LOG_DEBUG(logger, "Deleting transitory mesh \"" + meshName + "\"");
 			meshMap.erase(meshName);
 		}

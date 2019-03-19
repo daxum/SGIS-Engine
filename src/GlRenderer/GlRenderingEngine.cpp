@@ -227,7 +227,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 						//will change if uniform buffers are implemented
 						setPerObjectUniforms(shader.get(), shader->pushConstants, comp, camera);
 
-						const GlMeshRenderData& renderData = memoryManager.getMeshData(comp->getModel()->getModel().mesh->getName());
+						const GlMeshRenderData& renderData = memoryManager.getMeshData(comp->getModel()->getModel().mesh);
 
 						glDrawElements(GL_TRIANGLES, renderData.indexCount, GL_UNSIGNED_INT, (void*) renderData.indexStart);
 					}

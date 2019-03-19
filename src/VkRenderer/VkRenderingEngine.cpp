@@ -394,7 +394,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 
 					setPushConstants(shader, comp, camera);
 
-					const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh->getName());
+					const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh);
 
 					vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshRenderData.indexCount, 1, meshRenderData.indexStart, 0, 0);
 				}

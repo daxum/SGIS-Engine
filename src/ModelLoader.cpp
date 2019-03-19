@@ -22,10 +22,11 @@
 #include "ModelLoader.hpp"
 #include "ModelManager.hpp"
 #include "Engine.hpp"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, const LightInfo& lighting, bool viewCull) {
+void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, bool viewCull) {
 	if (!modelManager.hasMesh(filename)) {
 		std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, buffer);
 
@@ -36,12 +37,12 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 		ENGINE_LOG_DEBUG(logger, "Radius of model is " + std::to_string(radius));
 
 		const std::vector<VertexElement>& format = modelManager.getMemoryManager()->getBuffer(buffer).getVertexFormat();
-		modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius));
+		modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius), true);
 	}
 
-	Model model(name, modelManager.getMesh(filename), shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
+	Model model(name, filename, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
 	model.textures.push_back(texture);
-	Std140Aligner modelUniforms = model.getAligner();
+	/*Std140Aligner modelUniforms = model.getAligner();
 
 	if (modelUniforms.hasUniform("ka", UniformType::VEC3)) {
 		modelUniforms.setVec3("ka", lighting.ka);
@@ -57,7 +58,7 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 
 	if (modelUniforms.hasUniform("s", UniformType::FLOAT)) {
 		modelUniforms.setFloat("s", lighting.s);
-	}
+	}*/
 
 	modelManager.addModel(name, std::move(model));
 	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + Engine::instance->getConfig().resourceBase + filename + "\" as \"" + name + "\".");
@@ -73,7 +74,7 @@ void ModelLoader::loadMesh(const std::string& filename, const std::string& buffe
 	ENGINE_LOG_DEBUG(logger, "Radius of mesh is " + std::to_string(radius));
 
 	const std::vector<VertexElement>& format = modelManager.getMemoryManager()->getBuffer(buffer).getVertexFormat();
-	modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius, false));
+	modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius), true);
 }
 
 std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const std::string& vertexBuffer) {
@@ -84,11 +85,16 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 	tinyobj::attrib_t attributes;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
+	std::string warn;
 	std::string error;
 
-	if (!tinyobj::LoadObj(&attributes, &shapes, &materials, &error, filename.c_str())) {
+	if (!tinyobj::LoadObj(&attributes, &shapes, &materials, &warn, &error, filename.c_str())) {
 		ENGINE_LOG_FATAL(logger, "Failed to load model \"" + filename + "\"!");
 		throw std::runtime_error(error);
+	}
+
+	if (!warn.empty()) {
+		ENGINE_LOG_WARN(logger, warn);
 	}
 
 	VertexBuffer& buffer = modelManager.getMemoryManager()->getBuffer(vertexBuffer);

@@ -146,7 +146,7 @@ public:
 	 * @param buffer The buffer to check for the name.
 	 * @return true if the mesh was present, false if it wasn't and the data needs to be reuploaded.
 	 */
-	bool markUsed(const std::string& mesh, const std::string& buffer);
+	bool attemptSetUsed(const std::string& mesh, const std::string& buffer);
 
 	/**
 	 * Marks the mesh as unused. If the mesh is transitory (BufferUsage::DEDICATED_SINGLE),

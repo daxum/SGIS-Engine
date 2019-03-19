@@ -30,10 +30,16 @@
 
 class ModelManager;
 
+//Caching level for meshes.
+enum CacheLevel {
+	DISK,
+	MEMORY,
+	GPU,
+	NUM_LEVELS
+};
+
 class Mesh {
 public:
-	bool render;
-
 	/**
 	 * Creates a mesh with the given vertices and indices.
 	 * @param buffer The buffer to place the mesh in for rendering.
@@ -44,7 +50,7 @@ public:
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
-	Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius, bool render = true);
+	Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
 
 	/**
 	 * Copy constructor.
@@ -86,26 +92,6 @@ public:
 	float getRadius() const { return radius; }
 
 	/**
-	 * Adds a user to this mesh.
-	 */
-	void addUser() { users++; }
-
-	/**
-	 * Removes a user of this mesh.
-	 */
-	void removeUser() {
-		if (users > 0) {
-			users--;
-		}
-	}
-
-	/**
-	 * Returns the number of users of this mesh.
-	 * @return the number of users.
-	 */
-	size_t getUsers() { return users; }
-
-	/**
 	 * Retrieves all the mesh data, for uploading into a vertex / index buffer.
 	 */
 	const std::tuple<const unsigned char*, size_t, const std::vector<uint32_t>&> getMeshData() const {
@@ -131,8 +117,6 @@ public:
 			format = mesh.format;
 			box = mesh.box;
 			radius = mesh.radius;
-			users = mesh.users;
-			render = mesh.render;
 		}
 
 		return *this;
@@ -143,6 +127,8 @@ public:
 	 */
 	Mesh& operator=(Mesh&& mesh) {
 		if (this != &mesh) {
+			delete[] vertexData;
+
 			vertexData = std::exchange(mesh.vertexData, nullptr);
 			vertexSize = std::exchange(mesh.vertexSize, 0);
 			indices = std::move(mesh.indices);
@@ -150,8 +136,6 @@ public:
 			format = std::move(mesh.format);
 			box = std::move(mesh.box);
 			radius = std::exchange(mesh.radius, 0.0f);
-			users = std::exchange(mesh.users, 0);
-			render = std::exchange(mesh.render, false);
 		}
 
 		return *this;
@@ -174,9 +158,6 @@ private:
 	//Possibly useful dimensions for the mesh, calculated on construction.
 	Aabb<float> box;
 	float radius;
-
-	//How many models use this mesh.
-	size_t users;
 };
 
 class MeshRef {
@@ -186,8 +167,9 @@ public:
 	 * @param manager The model manager that created this reference.
 	 * @param meshName The name of the referenced mesh.
 	 * @param mesh The mesh to reference.
+	 * @param level The required cache level for the mesh.
 	 */
-	MeshRef(ModelManager* manager, const std::string& meshName, Mesh& mesh);
+	MeshRef(ModelManager* manager, const std::string& meshName, Mesh& mesh, CacheLevel level);
 
 	/**
 	 * Decrements the mesh's reference count.
@@ -214,6 +196,8 @@ private:
 	Mesh& mesh;
 	//The name of the referenced mesh.
 	std::string meshName;
+	//The cache level the reference requires the mesh to be at.
+	CacheLevel level;
 };
 
 class Model {
@@ -227,12 +211,12 @@ public:
 	 * @param uniforms The uniform set for the model, used to determine uniform buffer layout.
 	 * @param viewCull Whether to use view culling on this model.
 	 */
-	Model(const std::string& name, std::shared_ptr<const MeshRef> mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull = true);
+	Model(const std::string& name, const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull = true);
 
 	//TODO: This should only be needed by the Vk renderer, remove once that's fixed.
 	std::string name;
-	//A reference to this model's mesh.
-	std::shared_ptr<const MeshRef> mesh;
+	//The name of this model's mesh.
+	std::string mesh;
 	//The shader the model uses.
 	std::string shader;
 	//Name of the uniform set the model uses.
@@ -281,8 +265,9 @@ public:
 	 * Creates a reference to the given model.
 	 * @param manager The model manager that created this reference.
 	 * @param model The model to reference.
+	 * @param mesh The mesh the model uses.
 	 */
-	ModelRef(ModelManager* manager, std::string modelName, Model& model);
+	ModelRef(ModelManager* manager, std::string modelName, Model& model, std::shared_ptr<MeshRef> mesh);
 
 	/**
 	 * Decrements the model's reference count.
@@ -300,7 +285,7 @@ public:
 	 * Returns the model's mesh.
 	 * @return The mesh.
 	 */
-	const Mesh& getMesh() const { return mesh; }
+	const Mesh& getMesh() const { return mesh->getMesh(); }
 
 private:
 	//The parent model manager.
@@ -308,7 +293,7 @@ private:
 	//The model this object is referencing.
 	Model& model;
 	//The mesh for the model.
-	const Mesh& mesh;
+	std::shared_ptr<MeshRef> mesh;
 	//The name of the referenced model.
 	std::string modelName;
 };

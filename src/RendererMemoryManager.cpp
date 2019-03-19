@@ -88,7 +88,12 @@ void RendererMemoryManager::addMesh(const std::string& name, const std::string& 
 	ENGINE_LOG_DEBUG(logger, "Uploaded mesh \"" + name + "\" to rendering engine");
 }
 
-bool RendererMemoryManager::markUsed(const std::string& mesh, const std::string& buffer) {
+bool RendererMemoryManager::attemptSetUsed(const std::string& mesh, const std::string& buffer) {
+	if (buffer.empty()) {
+		ENGINE_LOG_FATAL(logger, "Attempted to upload non-rendering mesh (no vertex buffer set)!");
+		throw std::invalid_argument("Attempted to upload non-rendering mesh (no vertex buffer set)!");
+	}
+
 	BufferData& bufferData = buffers.at(buffer);
 
 	//Mesh was never uploaded in the first place
