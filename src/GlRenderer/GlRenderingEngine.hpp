@@ -159,7 +159,7 @@ private:
 	 * @param value The value to set the uniform to.
 	 */
 	void setUniformValue(const GlShader* shader, const UniformType type, const std::string& uniformName, const void* value) {
-		GLuint uniformLoc = glGetUniformLocation(shader->id, uniformName.c_str());
+		GLuint uniformLoc = shader->getUniformLocation(uniformName);
 
 		switch (type) {
 			case UniformType::FLOAT: glUniform1f(uniformLoc, *(const float*)value); break;

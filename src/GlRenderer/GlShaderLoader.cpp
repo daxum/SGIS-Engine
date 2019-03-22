@@ -54,6 +54,18 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, screenSet, objectSet, info.pushConstants.pushConstants);
 	shaderMap.insert({name, shader});
 
+	//Add uniforms to shader to cache locations
+	for (const std::string& set : info.uniformSets) {
+		for (const UniformDescription& uniform : memoryManager->getUniformSet(set).uniforms) {
+			shader->addUniformLoc(uniform.name);
+		}
+	}
+
+	//Do the same thing for push constants (for now)
+	for (const UniformDescription& uniform : info.pushConstants.pushConstants) {
+		shader->addUniformLoc(uniform.name);
+	}
+
 	ENGINE_LOG_DEBUG(logger, "Shader \"" + name + "\" loaded");
 }
 
