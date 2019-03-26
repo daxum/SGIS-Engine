@@ -56,8 +56,7 @@ std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(
 	const float nearPlane,
 	const float farPlane) {
 
-	glm::mat4 viewI = glm::inverse(view);
-	glm::mat4 projI = glm::inverse(projection);
+	glm::mat4 viewProjI = glm::inverse(projection * view);
 
 	screenPos.x = (screenPos.x / screenWidth - 0.5f) * 2.0f;
 	screenPos.y = -(screenPos.y / screenHeight - 0.5f) * 2.0f;
@@ -66,10 +65,10 @@ std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(
 	float wFar = farPlane;
 
 	glm::vec4 nearPos(screenPos * wNear, -wNear, wNear);
-	nearPos = viewI * projI * nearPos;
+	nearPos = viewProjI * nearPos;
 
 	glm::vec4 farPos(screenPos * wFar, wFar, wFar);
-	farPos = viewI * projI * farPos;
+	farPos = viewProjI * farPos;
 
 	return {nearPos, farPos};
 }
