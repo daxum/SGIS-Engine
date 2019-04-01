@@ -66,7 +66,7 @@ private:
 	 * internal list.
 	 * @param comp The component that was added.
 	 */
-	void onComponentAdd(std::shared_ptr<Component> comp) {
+	void onComponentAdd(std::shared_ptr<Component> comp) override {
 		UpdateComponent* upComp = std::static_pointer_cast<UpdateComponent>(comp).get();
 		upComp->setManager(this);
 		//Adjust wake time for if the component starts sleeping - changes it
@@ -80,7 +80,7 @@ private:
 	 * internal list.
 	 * @param comp The component that was removed.
 	 */
-	void onComponentRemove(std::shared_ptr<Component> comp) {
+	void onComponentRemove(std::shared_ptr<Component> comp) override {
 		removeInternal(std::static_pointer_cast<UpdateComponent>(comp).get());
 	}
 
