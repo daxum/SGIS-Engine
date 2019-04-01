@@ -36,12 +36,12 @@ set(ENGINE_FILES
 
 if (USE_OPENGL)
 	set(ENGINE_FILES ${ENGINE_FILES}
-		GlRenderer/GlRenderingEngine.cpp
-		GlRenderer/GlTextureLoader.cpp
-		GlRenderer/GlShaderLoader.cpp
-		GlRenderer/GlMemoryManager.cpp
-		GlRenderer/PhysDebRenderingEngine.cpp
-		GlRenderer/gl_core_4_1.c
+		Renderer/Opengl/GlRenderingEngine.cpp
+		Renderer/Opengl/GlTextureLoader.cpp
+		Renderer/Opengl/GlShaderLoader.cpp
+		Renderer/Opengl/GlMemoryManager.cpp
+		Renderer/Opengl/PhysDebRenderingEngine.cpp
+		Renderer/Opengl/gl_core_4_1.c
 	)
 
 	#TODO: add_compile_definitions(USE_OPENGL) - cmake 3.12
@@ -50,17 +50,17 @@ endif()
 
 if (USE_VULKAN)
 	set(ENGINE_FILES ${ENGINE_FILES}
-		VkRenderer/VkRenderingEngine.cpp
-		VkRenderer/VkObjectHandler.cpp
-		VkRenderer/VkExtensionFuncDefs.cpp
-		VkRenderer/VkShaderLoader.cpp
-		VkRenderer/VkShader.cpp
-		VkRenderer/VkMemoryManager.cpp
-		VkRenderer/VkPipelineCreateObject.cpp
-		VkRenderer/VkRenderInitializer.cpp
-		VkRenderer/VkImageData.cpp
-		VkRenderer/VkTextureLoader.cpp
-		VkRenderer/VkRenderObjects.cpp
+		Renderer/Vulkan/VkRenderingEngine.cpp
+		Renderer/Vulkan/VkObjectHandler.cpp
+		Renderer/Vulkan/VkExtensionFuncDefs.cpp
+		Renderer/Vulkan/VkShaderLoader.cpp
+		Renderer/Vulkan/VkShader.cpp
+		Renderer/Vulkan/VkMemoryManager.cpp
+		Renderer/Vulkan/VkPipelineCreateObject.cpp
+		Renderer/Vulkan/VkRenderInitializer.cpp
+		Renderer/Vulkan/VkImageData.cpp
+		Renderer/Vulkan/VkTextureLoader.cpp
+		Renderer/Vulkan/VkRenderObjects.cpp
 	)
 
 	add_definitions(-DUSE_VULKAN)

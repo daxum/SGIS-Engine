@@ -23,12 +23,12 @@
 #include "ExtraMath.hpp"
 
 #ifdef USE_OPENGL
-#	include "GlRenderer/GlRenderingEngine.hpp"
-#	include "GlRenderer/PhysDebRenderingEngine.hpp"
+#	include "Renderer/Opengl/GlRenderingEngine.hpp"
+#	include "Renderer/Opengl/PhysDebRenderingEngine.hpp"
 #endif
 
 #ifdef USE_VULKAN
-#	include "VkRenderer/VkRenderingEngine.hpp"
+#	include "Renderer/Vulkan/VkRenderingEngine.hpp"
 #endif
 
 Engine* Engine::instance = nullptr;
