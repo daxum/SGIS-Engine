@@ -19,51 +19,29 @@
 #include <stdexcept>
 
 #include "Vertex.hpp"
-#include "VertexBuffer.hpp"
-
-Vertex::Vertex(VertexBuffer* parentBuffer, size_t vertexSize) :
-	buffer(parentBuffer),
-	size(vertexSize),
-	vertexData(new unsigned char[vertexSize]) {
-
-}
 
 Vertex::Vertex(const Vertex& v) :
-	buffer(v.buffer),
-	size(v.size),
-	vertexData(new unsigned char[v.size]) {
+	format(v.format),
+	vertexData(new unsigned char[v.getSize()]) {
 
-	memcpy(vertexData, v.vertexData, v.size);
+	memcpy(vertexData, v.vertexData, v.getSize());
 }
 
-Vertex::Vertex(Vertex&& v) noexcept :
-	buffer(std::exchange(v.buffer, nullptr)),
-	size(std::exchange(v.size, 0)),
-	vertexData(std::exchange(v.vertexData, nullptr)) {
-
-}
-
-Vertex::~Vertex() {
-	if (vertexData) {
-		delete[] vertexData;
-	}
-}
-
-void Vertex::setData(const std::string& name, VertexElementType expectedType, const void* data) {
-	if (!buffer->checkType(name, expectedType)) {
+void Vertex::setDataVal(const std::string& name, VertexFormat::ElementType expectedType, const void* data) {
+	if (!format->checkType(name, expectedType)) {
 		throw std::runtime_error("Type for vertex element \"" + name + "\" doesn't match!");
 	}
 
-	size_t offset = buffer->getElementOffset(name);
-	size_t dataSize = buffer->getElementSize(name);
+	size_t offset = format->getElementOffset(name);
+	size_t dataSize = format->getElementSize(name);
 
 	memcpy(vertexData + offset, data, dataSize);
 }
 
-void* Vertex::getData(const std::string& name, VertexElementType expectedType) {
-	if (!buffer->checkType(name, expectedType)) {
+void* Vertex::getDataVal(const std::string& name, VertexFormat::ElementType expectedType) {
+	if (!format->checkType(name, expectedType)) {
 		throw std::runtime_error("Type for vertex element \"" + name + "\" doesn't match!");
 	}
 
-	return vertexData + buffer->getElementOffset(name);
+	return vertexData + format->getElementOffset(name);
 }

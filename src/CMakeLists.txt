@@ -31,6 +31,7 @@ set(ENGINE_FILES
 	PhysicsObject.cpp
 	UpdateComponentManager.cpp
 	UpdateComponent.cpp
+	VertexFormat.hpp
 )
 
 if (USE_OPENGL)

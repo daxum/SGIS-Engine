@@ -25,40 +25,17 @@
 
 #include <glm/glm.hpp>
 
-class VertexBuffer;
-
-//Some vertex element names, to prevent mistyping.
-const std::string VERTEX_ELEMENT_POSITION = "pos";
-const std::string VERTEX_ELEMENT_NORMAL = "nor";
-const std::string VERTEX_ELEMENT_TEXTURE = "tex";
-
-enum class VertexElementType {
-	FLOAT,
-	VEC2,
-	VEC3,
-	VEC4,
-	UINT32,
-};
-
-constexpr size_t sizeFromVertexType(const VertexElementType type) {
-	switch(type) {
-		case VertexElementType::FLOAT: return sizeof(float);
-		case VertexElementType::VEC2: return sizeof(glm::vec2);
-		case VertexElementType::VEC3: return sizeof(glm::vec3);
-		case VertexElementType::VEC4: return sizeof(glm::vec4);
-		case VertexElementType::UINT32: return sizeof(uint32_t);
-		default: return 0;
-	}
-}
+#include "VertexFormat.hpp"
 
 class Vertex {
 public:
 	/**
 	 * Constructor.
-	 * @param parentBuffer The buffer that owns this vertex - determines vertex format.
-	 * @param vertexSize The size of one vertex in the parent buffer.
+	 * @param format The format of the vertex.
 	 */
-	Vertex(VertexBuffer* parentBuffer, size_t vertexSize);
+	Vertex(const VertexFormat* format) :
+		format(format),
+		vertexData(new unsigned char[format->getVertexSize()]) {}
 
 	/**
 	 * Copy constructor.
@@ -68,12 +45,18 @@ public:
 	/**
 	 * Move constructor.
 	 */
-	Vertex(Vertex&& v) noexcept;
+	Vertex(Vertex&& v) noexcept  :
+		format(std::exchange(v.format, nullptr)),
+		vertexData(std::exchange(v.vertexData, nullptr)) {}
 
 	/**
 	 * Deletes the vertex data.
 	 */
-	~Vertex();
+	~Vertex() {
+		if (vertexData) {
+			delete[] vertexData;
+		}
+	}
 
 	/**
 	 * "Setting" functions, sets the value of the name in the data buffer to the provided value.
@@ -82,11 +65,11 @@ public:
 	 * @throw std::out_of_range if the name doesn't exist or std::runtime_error if the type
 	 *     for the name doesn't match the function's type.
 	 */
-	void setFloat(const std::string& name, float value) { setData(name, VertexElementType::FLOAT, &value); }
-	void setVec2(const std::string& name, const glm::vec2& value) { setData(name, VertexElementType::VEC2, &value); }
-	void setVec3(const std::string& name, const glm::vec3& value) { setData(name, VertexElementType::VEC3, &value); }
-	void setVec4(const std::string& name, const glm::vec4& value) { setData(name, VertexElementType::VEC4, &value); }
-	void setUint32(const std::string& name, uint32_t value) { setData(name, VertexElementType::UINT32, &value); }
+	void setFloat(const std::string& name, float value) { setDataVal(name, VertexFormat::ElementType::FLOAT, &value); }
+	void setVec2(const std::string& name, const glm::vec2& value) { setDataVal(name, VertexFormat::ElementType::VEC2, &value); }
+	void setVec3(const std::string& name, const glm::vec3& value) { setDataVal(name, VertexFormat::ElementType::VEC3, &value); }
+	void setVec4(const std::string& name, const glm::vec4& value) { setDataVal(name, VertexFormat::ElementType::VEC4, &value); }
+	void setUint32(const std::string& name, uint32_t value) { setDataVal(name, VertexFormat::ElementType::UINT32, &value); }
 
 	/**
 	 * "Getting" functions, gets the value of the name in the data buffer.
@@ -96,11 +79,11 @@ public:
 	 * @throw std::out_of_range if the name doesn't exist or std::runtime_error if the type
 	 *     for the name doesn't match the function's type.
 	 */
-	float getFloat(const std::string& name) { return *(float*) getData(name, VertexElementType::FLOAT); }
-	glm::vec2 getVec2(const std::string& name) { return *(glm::vec2*) getData(name, VertexElementType::VEC2); }
-	glm::vec3 getVec3(const std::string& name) { return *(glm::vec3*) getData(name, VertexElementType::VEC3); }
-	glm::vec4 getVec4(const std::string& name) { return *(glm::vec4*) getData(name, VertexElementType::VEC4); }
-	uint32_t getUint32(const std::string& name) { return *(uint32_t*) getData(name, VertexElementType::UINT32); }
+	float getFloat(const std::string& name) { return *(float*) getDataVal(name, VertexFormat::ElementType::FLOAT); }
+	glm::vec2 getVec2(const std::string& name) { return *(glm::vec2*) getDataVal(name, VertexFormat::ElementType::VEC2); }
+	glm::vec3 getVec3(const std::string& name) { return *(glm::vec3*) getDataVal(name, VertexFormat::ElementType::VEC3); }
+	glm::vec4 getVec4(const std::string& name) { return *(glm::vec4*) getDataVal(name, VertexFormat::ElementType::VEC4); }
+	uint32_t getUint32(const std::string& name) { return *(uint32_t*) getDataVal(name, VertexFormat::ElementType::UINT32); }
 
 	/**
 	 * Returns the vertex data for copying into a buffer.
@@ -110,21 +93,22 @@ public:
 	/**
 	 * Returns the size of the vertex, in bytes.
 	 */
-	size_t getSize() const { return size; }
+	size_t getSize() const { return format->getVertexSize(); }
 
 	/**
 	 * Returns whether the two vertices are equal.
 	 */
 	friend bool operator==(const Vertex& v1, const Vertex& v2) {
 		//memcmp returns zero if blocks match.
-		return v1.buffer == v2.buffer && v1.size == v2.size && !memcmp(v1.vertexData, v2.vertexData, v1.size);
+		//TODO: Are formats for sure going to be singletons?
+		return v1.format == v2.format && !memcmp(v1.vertexData, v2.vertexData, v1.size);
 	}
 
 	/**
 	 * Who knows what this does.
 	 */
 	friend bool operator!=(const Vertex& v1, const Vertex& v2) {
-		return !operator==(v1, v2);
+		return !(v1 == v2);
 	}
 
 	/**
@@ -132,16 +116,14 @@ public:
 	 */
 	Vertex& operator=(const Vertex& v) {
 		if (this != &v) {
-			if (size != v.size) {
+			if (getSize() < v.getSize()) {
 				delete[] vertexData;
-				size = 0;
 				vertexData = nullptr;
-				vertexData = new unsigned char[v.size];
-				size = v.size;
+				vertexData = new unsigned char[v.getSize()];
 			}
 
-			buffer = v.buffer;
-			memcpy(vertexData, v.vertexData, size);
+			format = v.format;
+			memcpy(vertexData, v.vertexData, v.getSize());
 		}
 
 		return *this;
@@ -154,18 +136,15 @@ public:
 		if (this != &v) {
 			delete[] vertexData;
 			vertexData = std::exchange(v.vertexData, nullptr);
-			size = std::exchange(v.size, 0);
-			buffer = std::exchange(v.buffer, nullptr);
+			format = std::exchange(v.format, nullptr);
 		}
 
 		return *this;
 	}
 
 private:
-	//The parent buffer, determines vertex format.
-	VertexBuffer* buffer;
-	//Size of vertex, in bytes. Also size of below memory block.
-	size_t size;
+	//The element layout of this vertex.
+	VertexFormat* format;
 	//The data for this vertex. Originally this was going to use template metaprogramming
 	//to auto-generate a vertex struct for each format, but that turned out to be too
 	//impractical, so now we're throwing safety to the wind and doing it this way instead.
@@ -180,7 +159,7 @@ private:
 	 * @param data The data to copy.
 	 * @throw std::out_of_range if name not found or std::runtime_error if name's type doesn't match expectedType.
 	 */
-	void setData(const std::string& name, VertexElementType expectedType, const void* data);
+	void setDataVal(const std::string& name, VertexFormat::ElementType expectedType, const void* data);
 
 	/**
 	 * Helper function for the get* functions. Gets the stored value in the data buffer.
@@ -189,7 +168,7 @@ private:
 	 * @return The data stored at the given name.
 	 * @throw std::out_of_range if name not found, std::runtime_error if name has the wrong type.
 	 */
-	void* getData(const std::string& name, VertexElementType expectedType);
+	void* getDataVal(const std::string& name, VertexFormat::ElementType expectedType);
 };
 
 namespace std {
