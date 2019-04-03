@@ -18,19 +18,18 @@
 
 #include "ModelManager.hpp"
 
-std::shared_ptr<ModelRef> ModelManager::getModel(const std::string& modelName) {
-	ENGINE_LOG_SPAM(logger, "Retrieving reference for model \"" + modelName + "\"");
+Model ModelManager::getModel(const std::string& material, const std::string& mesh) {
+	ENGINE_LOG_SPAM(logger, "Creating model from material \"" + material + "\" and mesh \"" + mesh + "\"");
 
-	Model& model = modelMap.at(modelName);
+	std::shared_ptr<MaterialRef> matRef = getMaterial(material);
+	std::shared_ptr<MeshRef> meshRef = getMesh(mesh);
 
-	std::shared_ptr<ModelRef> ref = std::make_shared<ModelRef>(this, modelName, model, getMesh(model.mesh, CacheLevel::GPU));
-
-	model.references++;
-
-	//Upload model uniform data - the memory manager will skip redundant uploads
-	memoryManager->addModel(modelName, model);
-
-	return ref;
+	return Model{
+		.material = matRef->getMaterial(),
+		.mesh = meshRef->getMesh(),
+		.matRef = matRef,
+		.meshRef = meshRef,
+	};
 }
 
 std::shared_ptr<MeshRef> ModelManager::getMesh(const std::string& meshName, CacheLevel level) {
@@ -50,32 +49,7 @@ std::shared_ptr<MeshRef> ModelManager::getMesh(const std::string& meshName, Cach
 		memoryManager->addMesh(meshName, mesh.getBuffer(), std::get<0>(meshData), std::get<1>(meshData), std::get<2>(meshData));
 	}
 
-	return std::make_shared<MeshRef>(this, meshName, mesh, level);
-}
-
-void ModelManager::removeModelReference(const std::string& modelName) {
-	ENGINE_LOG_SPAM(logger, "Removing reference to model \"" + modelName + "\"");
-
-	Model& model = modelMap.at(modelName);
-
-	//Determine whether the model's uniform set needs freeing.
-	const UniformSetType setType = memoryManager->getUniformSet(model.uniformSet).setType;
-	const bool modelPersistent = setType == UniformSetType::MODEL_STATIC;
-
-	model.references--;
-	ENGINE_LOG_SPAM(logger, "Remaining references: " + std::to_string(model.references));
-
-	//Allow reallocation of model uniform data, but don't actually remove it from the
-	//buffers unless needed
-	if (model.references == 0) {
-		ENGINE_LOG_DEBUG(logger, "Removing unused model \"" + modelName + "\"");
-		memoryManager->freeModel(modelName, model);
-
-		if (!modelPersistent) {
-			ENGINE_LOG_DEBUG(logger, "Deleting transitory model \"" + modelName + "\"");
-			modelMap.erase(modelName);
-		}
-	}
+	return std::make_shared<MeshRef>(this, meshName, &mesh, level);
 }
 
 void ModelManager::removeMeshReference(const std::string meshName, CacheLevel level) {

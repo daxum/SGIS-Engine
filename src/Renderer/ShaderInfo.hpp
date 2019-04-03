@@ -45,7 +45,7 @@ enum class UniformProviderType {
 	OBJECT_TRANSFORM,
 	//Retrieved from the object state.
 	OBJECT_STATE,
-	//Retrieved from the object's model.
+	//Retrieved from the object's material.
 	MATERIAL
 };
 
@@ -88,11 +88,8 @@ struct UniformDescription {
 	//Type of the uniform.
 	UniformType type;
 	//The name of the uniform, primarily used to retrieve values.
-	//This has special meaning for samplers - for dynamic models,
-	//it represents the name of the texture to use, which will be
-	//static for all models using the descriptor set.
-	//Finally, for OpenGL, the name should match the name in the
-	//shader.
+	//For OpenGL, the name should match the name in the shader.
+	//(Disregard above if I bothered to move to 4.3)
 	std::string name;
 	//Where the uniform's value comes from.
 	UniformProviderType provider;
@@ -102,12 +99,8 @@ struct UniformDescription {
 
 //Types of uniform set, restricts where values can be pulled from.
 enum class UniformSetType {
-	//Model uniforms, can only use UniformProviderType::MATERIAL.
-	//The dynamic / static determines the type of uniform buffer
-	//the data is stored in, as well as the management of the
-	//descriptor sets.
-	MODEL_STATIC,
-	MODEL_DYNAMIC,
+	//Material uniforms, can only use UniformProviderType::MATERIAL.
+	MATERIAL,
 	//Per-screen uniforms, allows use of CAMERA_* and SCREEN_* provider types.
 	//Samplers are not allowed for PER_SCREEN uniform sets.
 	PER_SCREEN,

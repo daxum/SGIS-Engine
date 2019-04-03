@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "Model.hpp"
+#include "Material.hpp"
 #include "ModelManager.hpp"
 
 namespace {
@@ -35,29 +35,15 @@ namespace {
 	}
 }
 
-MeshRef::MeshRef(ModelManager* manager, const std::string& meshName, Mesh& mesh, CacheLevel level) :
-	manager(manager),
-	mesh(mesh),
-	meshName(meshName),
-	level(level) {
-
-}
-
-MeshRef::~MeshRef()  {
-	manager->removeMeshReference(meshName, level);
-}
-
-Model::Model(const std::string& name, const std::string& mesh, const std::string& shader, const std::string& uniformSet, const UniformSet& uniforms, bool viewCull)  :
+Material::Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const Std140Aligner& uniformData, bool viewCull)  :
 	name(name),
-	mesh(mesh),
 	shader(shader),
 	uniformSet(uniformSet),
+	uniforms(uniformData),
 	hasBufferedUniforms(false),
 	textures(),
 	viewCull(viewCull),
-	references(0),
-	uniforms(stripNonBufferedModel(uniforms)),
-	uniformData(new unsigned char[this->uniforms.getUniformDataSize()], ArrayDeleter()) {
+	references(0) {
 
 	for (const UniformDescription& descr : uniforms.uniforms) {
 		if (!isSampler(descr.type)) {
@@ -67,14 +53,6 @@ Model::Model(const std::string& name, const std::string& mesh, const std::string
 	}
 }
 
-ModelRef::ModelRef(ModelManager* manager, std::string modelName, Model& model, std::shared_ptr<MeshRef> mesh) :
-	manager(manager),
-	model(model),
-	mesh(mesh),
-	modelName(modelName) {
-
-}
-
-ModelRef::~ModelRef()  {
-	manager->removeModelReference(modelName);
+MaterialRef::~MaterialRef()  {
+	manager->removeMaterialReference(materialName);
 }

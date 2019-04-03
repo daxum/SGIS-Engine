@@ -20,10 +20,23 @@
 
 #include <unordered_map>
 
-#include "Model.hpp"
+#include "Material.hpp"
+#include "Mesh.hpp"
 #include "RendererMemoryManager.hpp"
 #include "EngineConfig.hpp"
 #include "Logger.hpp"
+
+struct Model {
+	//These two are the same as the pointers returned from
+	//the get* functions in the references below. They are
+	//only guaranteed to work while said references exist.
+	const Material* material;
+	const Mesh* mesh;
+
+	//Only used for reference counting.
+	std::shared_ptr<MaterialRef> matRef;
+	std::shared_ptr<MeshRef> meshRef;
+};
 
 class ModelManager {
 public:
@@ -33,25 +46,36 @@ public:
 	 */
 	ModelManager(const LogConfig& logConfig) :
 		logger(logConfig),
-		memoryManager(nullptr),
-		meshMap(),
-		modelMap() {}
+		memoryManager(nullptr) {}
 
 	/**
-	 * Gets a reference to the model with the provided name. This function is not
-	 * threadsafe, however the reference returned should be, with the exception
-	 * of when two or more different references to the same model, obtained from different
-	 * invocations of this function, are destroyed at the same time.
-	 * In addition, if the mesh for the model is not yet uploaded to the rendering engine,
-	 * it will be when this function is called.
-	 * @param model The model to retrieve.
-	 * @return A reference to the model.
-	 * @throw std::out_of_range if the model doesn't exist.
+	 * Creates a model using the provided material and mesh. This function is not
+	 * threadsafe, however the references returned should be, with the exception
+	 * of when two or more different references to the same material or mesh, obtained
+	 * from different invocations of this function, are destroyed at the same time.
+	 * In addition, if the material or mesh for the model is not yet uploaded to the
+	 * rendering engine, it will be when this function is called.
+	 * @param material The material for the model to use.
+	 * @param mesh The mesh for the model to use.
+	 * @return A new model which uses the provided material and mesh.
+	 * @throw std::out_of_range if the material or mesh doesn't exist.
 	 */
-	std::shared_ptr<ModelRef> getModel(const std::string& model);
+	Model getModel(const std::string& material, const std::string mesh);
 
 	/**
-	 * Gets a mesh, with similar semantics to getModel.
+	 * Gets a material. If the requested material is not uploaded to the rendering engine
+	 * when this function is called, then it will be before this function returns.
+	 * As all materials currently last the entire life of the engine, this function
+	 * doesn't really do much at the moment.
+	 * @param material The material to retrieve a reference to.
+	 * @return A reference to the requested material.
+	 * @throw std::out_of_range If the material doesn't exist.
+	 */
+	std::shared_ptr<MaterialRef> getMaterial(const std::string& material) { return std::make_shared<MaterialRef>(materialMap.at(material)); }
+
+	/**
+	 * Gets a mesh. If the mesh is not yet stored at the specified cache level,
+	 * then it will be uploaded there when this function is called.
 	 * @param mesh The mesh to retrieve.
 	 * @param requiredLevel The level the retriever needs the mesh to be at.
 	 * @return A reference to the mesh.
@@ -82,27 +106,25 @@ public:
 	 * Returns whether a model with the provided name has already been uploaded.
 	 * @return true if the model exists, false otherwise.
 	 */
-	bool hasModel(const std::string& name) const { return modelMap.count(name); }
+	bool hasMaterial(const std::string& name) const { return materialMap.count(name); }
 
 	/**
-	 * Adds a model to the manager. The mesh the model references will have its
-	 * reference count increased, but will not be uploaded to the renderer until
-	 * the model is referenced. The model will also never be removed until it is
-	 * referenced at least once.
-	 * @param name The name of the model.
-	 * @param model The model to add.
+	 * Adds a material to the manager. Currently, materials are never deleted, but if
+	 * they were, it wouldn't happen unless they were referenced at least once (like meshes).
+	 * @param name The name of the material.
+	 * @param model The material to add.
 	 */
-	void addModel(const std::string& name, Model&& model) {
-		modelMap.emplace(name, std::move(model));
+	void addMaterial(const std::string& name, Material&& material) {
+		materialMap.emplace(name, std::move(material));
 		ENGINE_LOG_INFO(logger, "Added model \"" + name + "\"");
 	}
 
 	/**
-	 * Only called from ModelRef's destructor. Removes a reference to the given model, and
-	 * frees the model if needed.
-	 * @param model The model to remove a reference from.
+	 * Only called from MaterialRef's destructor. Removes a reference to the given material, and
+	 * frees the material if needed.
+	 * @param material The material to remove a reference from.
 	 */
-	void removeModelReference(const std::string& model);
+	void removeMaterialReference(const std::string& material) { /** Currently, all materials last the entire life of the game **/ }
 
 	/**
 	 * Only called from MeshRef's destructor. Almost exactly like removeModelReference, but
@@ -138,10 +160,10 @@ private:
 
 	//The logger
 	Logger logger;
-	//Pointer to memory manager, for uploading mesh data.
+	//Pointer to memory manager, for uploading mesh and material data.
 	RendererMemoryManager* memoryManager;
-	//Map of meshes for models.
+	//Map of meshes.
 	std::unordered_map<std::string, MeshData> meshMap;
-	//Map of models.
-	std::unordered_map<std::string, Model> modelMap;
+	//Map of materials.
+	std::unordered_map<std::string, Material> materialMap;
 };

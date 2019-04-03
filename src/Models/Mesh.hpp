@@ -20,10 +20,13 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "AxisAlignedBB.hpp"
 #include "Vertex.hpp"
 #include "VertexFormat.hpp"
+
+class ModelManager;
 
 //Caching level for meshes.
 enum CacheLevel {
@@ -153,4 +156,48 @@ private:
 	//Possibly useful dimensions for the mesh, calculated on construction.
 	Aabb<float> box;
 	float radius;
+};
+
+class MeshRef {
+public:
+	/**
+	 * Creates a reference to the given mesh.
+	 * @param manager The model manager that created this reference.
+	 * @param meshName The name of the referenced mesh.
+	 * @param mesh The mesh to reference.
+	 * @param level The required cache level for the mesh.
+	 */
+	MeshRef(ModelManager* manager, const std::string& meshName, Mesh* mesh, CacheLevel level) :
+		manager(manager),
+		mesh(mesh),
+		meshName(meshName),
+		level(level) {}
+
+	/**
+	 * Decrements the mesh's reference count.
+	 */
+	~MeshRef();
+
+	/**
+	 * Returns the mesh this reference is referencing. The returned
+	 * pointer is only guaranteed to have the same lifespan as the
+	 * reference object it was retrieved from.
+	 */
+	const Mesh* getMesh() const { return mesh; }
+
+	/**
+	 * Returns the name of the mesh.
+	 * @return The mesh's name.
+	 */
+	const std::string getName() const { return meshName; }
+
+private:
+	//The parent model manager.
+	ModelManager* manager;
+	//The mesh this object is referencing.
+	Mesh* mesh;
+	//The name of the referenced mesh.
+	std::string meshName;
+	//The cache level the reference requires the mesh to be at.
+	CacheLevel level;
 };
