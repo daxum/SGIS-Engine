@@ -88,8 +88,8 @@ struct UniformDescription {
 	//Type of the uniform.
 	UniformType type;
 	//The name of the uniform, primarily used to retrieve values.
-	//For OpenGL, the name should match the name in the shader.
-	//(Disregard above if I bothered to move to 4.3)
+	//For OpenGL, the name should match the name in the shader
+	//(Disregard above if I bothered to move to 4.3).
 	std::string name;
 	//Where the uniform's value comes from.
 	UniformProviderType provider;
@@ -118,7 +118,7 @@ struct UniformSet {
 	//The type of uniform set, restricts which provider types are allowed.
 	UniformSetType setType;
 	//The maximum allowed users of this uniform set. Determines uniform
-	//buffer sizes and, for MODEL_STATIC set types, the number of available
+	//buffer sizes and, for MATERIAL set types, the number of available
 	//descriptor sets.
 	size_t maxUsers;
 	//The uniforms in the set.
