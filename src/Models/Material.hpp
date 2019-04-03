@@ -39,7 +39,7 @@ public:
 	 */
 	Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const Std140Aligner& uniformData, bool viewCull = true);
 
-	//Name of the material
+	//Name of the material.
 	std::string name;
 	//The shader the material uses.
 	std::string shader;
