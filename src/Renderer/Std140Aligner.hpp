@@ -126,7 +126,7 @@ public:
 	 */
 	Std140Aligner& operator=(const Std140Aligner& other) {
 		if (this != &other) {
-			if (dataSize != other.dataSize) {
+			if (dataSize < other.dataSize) {
 				delete[] uniformData;
 				dataSize = 0;
 				uniformData = nullptr;
@@ -148,6 +148,7 @@ public:
 	 */
 	Std140Aligner& operator=(Std140Aligner&& other) {
 		if (this != &other) {
+			delete[] uniformData;
 			uniformMap = std::move(other.uniformMap);
 			uniformData = std::exchange(other.uniformData, nullptr);
 			dataSize = std::exchange(other.dataSize, 0);
