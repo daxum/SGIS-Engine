@@ -37,7 +37,7 @@ public:
 	 * @param uniformData Values for the buffered uniforms in the material.
 	 * @param viewCull Whether to use view culling with this material.
 	 */
-	Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const Std140Aligner& uniformData, bool viewCull = true);
+	Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const UniformSet& uniformSetLayout, bool viewCull = true);
 
 	//Name of the material.
 	std::string name;

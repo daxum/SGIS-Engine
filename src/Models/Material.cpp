@@ -35,17 +35,17 @@ namespace {
 	}
 }
 
-Material::Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const Std140Aligner& uniformData, bool viewCull)  :
+Material::Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const UniformSet& uniformSetLayout, bool viewCull)  :
 	name(name),
 	shader(shader),
 	uniformSet(uniformSet),
-	uniforms(uniformData),
+	uniforms(uniformSetLayout.uniforms),
 	hasBufferedUniforms(false),
 	textures(),
 	viewCull(viewCull),
 	references(0) {
 
-	for (const UniformDescription& descr : uniforms.uniforms) {
+	for (const UniformDescription& descr : uniformSetLayout.uniforms) {
 		if (!isSampler(descr.type)) {
 			hasBufferedUniforms = true;
 			break;

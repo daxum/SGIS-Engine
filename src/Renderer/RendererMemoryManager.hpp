@@ -59,15 +59,7 @@ struct BufferData {
 //behaves like a rotating stream buffer in device memory.
 enum class UniformBufferType {
 	STATIC_MODEL,
-	DYNAMIC_MODEL,
 	PER_SCREEN_OBJECT
-};
-
-//Used to bind uniform buffer data for models and manage uniform buffer allocations.
-struct ModelUniformData {
-	std::shared_ptr<AllocInfo> allocation;
-	uint64_t offset;
-	uint64_t range;
 };
 
 //An interface to the rendering engine's memory manager.
@@ -82,7 +74,11 @@ public:
 	/**
 	 * Destructor.
 	 */
-	virtual ~RendererMemoryManager() {}
+	virtual ~RendererMemoryManager() {
+		if (materialData) {
+			delete[] materialData;
+		}
+	}
 
 	/**
 	 * Called by the engine after descriptor sets are loaded to initialize the uniform
@@ -111,7 +107,8 @@ public:
 	 * @return The vertex buffer with the given name.
 	 * @throw std::out_of_range if the buffer doesn't exist.
 	 */
-	VertexBuffer& getBuffer(const std::string& name) { return buffers.at(name).buffer; }
+	//Let's see what this breaks
+	//VertexBuffer& getBuffer(const std::string& name) { return buffers.at(name).buffer; }
 
 	/**
 	 * Returns the uniform set with the given name, used during model loading.
@@ -119,13 +116,6 @@ public:
 	 * @return The set with the given name.
 	 */
 	const UniformSet& getUniformSet(const std::string& set) { return uniformSets.at(set); }
-
-	/**
-	 * Returns the offset and size into the uniform buffer the model's data is stored at.
-	 * @param model The model to get the data for.
-	 * @return The offset and range of the buffer the model's data is stored in.
-	 */
-	const ModelUniformData& getModelUniformData(const std::string& model) { return modelDataMap.at(model); }
 
 	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
@@ -158,22 +148,12 @@ public:
 	void freeMesh(const std::string& mesh, const std::string& buffer);
 
 	/**
-	 * Adds a model's uniform data to the uniform buffers, and allocates a descriptor
-	 * set (or similar) for it if it is a static model. If the model is already present,
-	 * this doesn't do anything.
-	 * @param name The name of the model to add.
-	 * @param model The model to add.
+	 * Adds a material's uniform data to the uniform buffers, and allocates a descriptor
+	 * set (or similar) for it.
+	 * @param name The name of the material to add.
+	 * @param model The material to add.
 	 */
-	void addModel(const std::string& name, const Model& model);
-
-	/**
-	 * Frees the model if present. Static models have their uniform data marked as unused,
-	 * and dynamic models are removed completely. This will not, however, free static model
-	 * descriptors. Those will persist until the program terminates.
-	 * @param name The name of the model.
-	 * @param model The model to free.
-	 */
-	void freeModel(const std::string& name, const Model& model);
+	void addMaterial(const std::string& name, const Material& material);
 
 protected:
 	//Logger, logs things.
@@ -190,23 +170,21 @@ protected:
 	/**
 	 * Creates a buffer with the underlying rendering api and returns a pointer to the data
 	 * to be stored with the buffer object.
-	 * @param vertexFormat The format of the vertices in the buffer.
 	 * @param usage The way the buffer is intended to be used - determines which memory type
 	 *     it is stored in.
 	 * @param size The size of the buffer to create.
 	 * @return A pointer to renderer-specific data to be stored with the buffer object.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	virtual std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) = 0;
+	virtual std::shared_ptr<RenderBufferData> createBuffer(BufferUsage usage, size_t size) = 0;
 
 	/**
-	 * Creates the three uniform buffers with the given sizes, which have been calculated by
+	 * Creates the two uniform buffers with the given sizes, which have been calculated by
 	 * the maxUsers variable of all added uniform sets.
-	 * @param modelStaticSize The size of the STATIC_MODEL uniform buffer.
-	 * @param modelDynamicSize The size of the DYNAMIC_MODEL uniform buffer.
+	 * @param modelStaticSize The size of the uniform buffer which stores material data.
 	 * @param screenObjectSize The size of the PER_SCREEN_OBJECT uniform buffer.
 	 */
-	virtual void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) = 0;
+	virtual void createUniformBuffers(size_t materialSize, size_t screenObjectSize) = 0;
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.
@@ -240,46 +218,28 @@ protected:
 
 	/**
 	 * Completely removes the mesh from the rendering engine, so that it must be reuploaded to be used again.
-	 * @param mesh The mesh being removed, used to delete renderer specific data (index offset, size, command buffer, etc).
+	 * @param mesh The mesh being removed, used to delete renderer specific data (index offset, size, etc).
 	 */
 	virtual void invalidateMesh(const std::string& mesh) = 0;
 
 	/**
-	 * Allocates a descriptor set for the model. The model is guaranteed to be static,
-	 * as dynamic models use descriptors that are determined during initialization and
-	 * that use dynamic offsets. This can be called more than once for the same model -
-	 * subsequent calls should be ignored.
-	 * @param model The model to allocate a descriptor set for.
+	 * Allocates a descriptor set for the material. This can be called more than once
+	 * for the same material - subsequent calls should be ignored.
+	 * @param model The material to allocate a descriptor set for.
 	 */
-	virtual void addModelDescriptors(const Model& model) = 0;
+	virtual void addMaterialDescriptors(const Material& material) = 0;
 
 	/**
-	 * Similar to above, but just adds a reference to one of the dynamic descriptors.
-	 * @param model The model to add a descriptor for.
-	 */
-	virtual void addDynamicDescriptors(const Model& model) = 0;
-
-	/**
-	 * Removes the descriptor reference created by addDynamicDescriptors.
-	 * @param model The model to remove descriptors for.
-	 */
-	virtual void removeDynamicDescriptors(const Model& model) = 0;
-
-	/**
-	 * Uploads model uniform data to a uniform buffer.
-	 * @param buffer The uniform buffer to upload to.
+	 * Uploads material uniform data to a uniform buffer.
 	 * @param offset The offset of the data into the buffer.
 	 * @param size The size of the data.
 	 * @param data The data to upload.
 	 */
-	virtual void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) = 0;
+	virtual void uploadMaterialData(const size_t offset, const size_t size, const unsigned char* data) = 0;
 
 private:
 	//Stores all created vertex buffers.
 	std::unordered_map<std::string, BufferData> buffers;
-	//Allocators for model uniform buffers.
-	std::shared_ptr<MemoryAllocator> staticModelUniformAlloc;
-	std::shared_ptr<MemoryAllocator> dynamicModelUniformAlloc;
-	//All rendering data for models.
-	std::unordered_map<std::string, ModelUniformData> modelDataMap;
+	//List of materials which have been uploaded to the rendering engine.
+	std::unordered_set<std::string> uploadedMaterials;
 };
