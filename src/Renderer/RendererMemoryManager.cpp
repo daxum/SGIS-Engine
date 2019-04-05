@@ -20,11 +20,11 @@
 #include "ExtraMath.hpp"
 
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
-	logger(logConfig) {}
+	logger(logConfig),
+	materialSize(0),
+	materialOffset(0) {}
 
 void RendererMemoryManager::UniformBufferInit() {
-	size_t staticModelSize = 0;
-	size_t dynamicModelSize = 0;
 	size_t screenObjectSize = 0;
 
 	for (const auto& setPair : uniformSets) {
@@ -37,8 +37,7 @@ void RendererMemoryManager::UniformBufferInit() {
 		alignedSize *= set.maxUsers;
 
 		switch (set.setType) {
-			case UniformSetType::MODEL_STATIC: staticModelSize += alignedSize; break;
-			case UniformSetType::MODEL_DYNAMIC: dynamicModelSize += alignedSize; break;
+			case UniformSetType::MATERIAL: materialSize += alignedSize; break;
 			//Multiply by three because can get uploaded once for each pass, fix later.
 			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize * 3; break;
 			case UniformSetType::PER_OBJECT: screenObjectSize += alignedSize; break;
@@ -46,10 +45,7 @@ void RendererMemoryManager::UniformBufferInit() {
 		}
 	}
 
-	createUniformBuffers(staticModelSize, dynamicModelSize, screenObjectSize);
-
-	staticModelUniformAlloc = std::make_shared<MemoryAllocator>(staticModelSize);
-	dynamicModelUniformAlloc = std::make_shared<MemoryAllocator>(dynamicModelSize);
+	createUniformBuffers(materialSize, screenObjectSize);
 }
 
 void RendererMemoryManager::addBuffer(const std::string& name, const VertexBufferInfo& info) {
@@ -158,7 +154,7 @@ void RendererMemoryManager::freeMesh(const std::string& mesh, const std::string&
 	}
 }
 
-void RendererMemoryManager::addModel(const std::string& name, const Model& model) {
+void RendererMemoryManager::addMaterial(const std::string& name, const Material& material) {
 	//If data is present, don't reupload
 	if (modelDataMap.count(name)) {
 		ENGINE_LOG_SPAM(logger, "Model \"" + name + "\" possibly present on rendering engine");
@@ -219,30 +215,5 @@ void RendererMemoryManager::addModel(const std::string& name, const Model& model
 	}
 	else {
 		addDynamicDescriptors(model);
-	}
-}
-
-void RendererMemoryManager::freeModel(const std::string& name, const Model& model) {
-	const UniformSet& set = getUniformSet(model.uniformSet);
-	bool staticModel = false;
-
-	switch (set.setType) {
-		case UniformSetType::MODEL_STATIC : staticModel = true; break;
-		case UniformSetType::MODEL_DYNAMIC: staticModel = false; break;
-		default: throw std::runtime_error("Model descriptor set isn't a model type!");
-	}
-
-	//Mark static models as not in use, and just remove dynamic models completely
-	if (staticModel) {
-		if (model.hasBufferedUniforms) {
-			modelDataMap.at(name).allocation->inUse = false;
-		}
-	}
-	else {
-		removeDynamicDescriptors(model);
-
-		if (model.hasBufferedUniforms) {
-			modelDataMap.erase(name);
-		}
 	}
 }

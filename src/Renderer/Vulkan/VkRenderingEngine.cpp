@@ -337,13 +337,12 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 					//Screen set
 					if (!screenSetName.empty()) {
 						if (!screenSetBound) {
-							auto alignerOffsetPair = memoryManager.getDescriptorAligner(screenSetName, currentFrame);
-							Std140Aligner& screenAligner = alignerOffsetPair.first;
+							Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(screenSetName);
 
 							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState, camera);
 
 							bindSets.at(numSets) = memoryManager.getDescriptorSet(screenSetName);
-							bindOffsets.at(numOffsets) = alignerOffsetPair.second;
+							bindOffsets.at(numOffsets) = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
 
 							screenSetBound = true;
 							numSets++;
@@ -376,13 +375,12 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 					if (!shader->getPerObjectDescriptor().empty()) {
 						const std::string& objectDescriptor = shader->getPerObjectDescriptor();
 
-						auto alignerOffsetPair = memoryManager.getDescriptorAligner(objectDescriptor, currentFrame);
-						Std140Aligner& objectAligner = alignerOffsetPair.first;
+						Std140Aligner& objectAligner = memoryManager.getDescriptorAligner(objectDescriptor);
 
 						setPerObjectUniforms(memoryManager.getUniformSet(objectDescriptor), objectAligner, comp, camera);
 
 						bindSets.at(numSets) = memoryManager.getDescriptorSet(objectDescriptor);
-						bindOffsets.at(numOffsets) = alignerOffsetPair.second;
+						bindOffsets.at(numOffsets) = memoryManager.writePerFrameUniforms(objectAligner, currentFrame);
 
 						numSets++;
 						numOffsets++;

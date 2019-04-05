@@ -42,22 +42,21 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 
 	Model model(name, filename, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
 	model.textures.push_back(texture);
-	Std140Aligner modelUniforms = model.getAligner();
 
-	if (modelUniforms.hasUniform("ka", UniformType::VEC3)) {
-		modelUniforms.setVec3("ka", {1.0f, 0.0f, 1.0f});
+	if (model.uniforms.hasUniform("ka", UniformType::VEC3)) {
+		model.uniforms.setVec3("ka", {1.0f, 0.0f, 1.0f});
 	}
 
-	if (modelUniforms.hasUniform("kd", UniformType::VEC3)) {
-		modelUniforms.setVec3("kd", {1.0f, 0.0f, 1.0f});
+	if (model.uniforms.hasUniform("kd", UniformType::VEC3)) {
+		model.uniforms.setVec3("kd", {1.0f, 0.0f, 1.0f});
 	}
 
-	if (modelUniforms.hasUniform("ks", UniformType::VEC3)) {
-		modelUniforms.setVec3("ks", {1.0f, 0.0f, 1.0f});
+	if (model.uniforms.hasUniform("ks", UniformType::VEC3)) {
+		model.uniforms.setVec3("ks", {1.0f, 0.0f, 1.0f});
 	}
 
-	if (modelUniforms.hasUniform("s", UniformType::FLOAT)) {
-		modelUniforms.setFloat("s", 1.0f);
+	if (model.uniforms.hasUniform("s", UniformType::FLOAT)) {
+		model.uniforms.setFloat("s", 1.0f);
 	}
 
 	modelManager.addModel(name, std::move(model));

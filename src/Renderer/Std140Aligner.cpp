@@ -19,27 +19,6 @@
 #include "Std140Aligner.hpp"
 #include "ExtraMath.hpp"
 
-Std140AlignerFactory::Std140AlignerFactory(const std::vector<UniformDescription>& uniforms) :
-	dataSize(0) {
-
-	uint32_t currentOffset = 0;
-
-	for (const UniformDescription& uniform : uniforms) {
-		UniformData data = {};
-		data.type = uniform.type;
-		//Round the uniform's offset to the next multiple of its base alignment
-		data.offset = ExMath::roundToVal(currentOffset, baseUniformAlignment(uniform.type));
-		//Array and matrix types have a larger size due to padding
-		data.size = alignedUniformSize(uniform.type);
-
-		currentOffset = data.offset + data.size;
-
-		uniformMap.insert({uniform.name, data});
-	}
-
-	dataSize = currentOffset;
-}
-
 size_t Std140Aligner::getAlignedSize(const UniformSet& set) {
 	size_t currentSize = 0;
 
@@ -49,11 +28,49 @@ size_t Std140Aligner::getAlignedSize(const UniformSet& set) {
 		}
 
 		//Increase size to account for padding
-		currentSize = ExMath::roundToVal<uint32_t>(currentSize, baseUniformAlignment(uniform.type));
-		currentSize += alignedUniformSize(uniform.type);
+		currentSize = ExMath::roundToVal<uint32_t>(currentSize, baseAlignment(uniform.type));
+		currentSize += alignedSize(uniform.type);
 	}
 
 	return currentSize;
+}
+
+Std140Aligner::Std140Aligner(const std::vector<UniformDescription>& uniforms) :
+	uniformData(nullptr),
+	dataSize(0) {
+
+	uint32_t currentOffset = 0;
+
+	for (const UniformDescription& uniform : uniforms) {
+		UniformData data = {};
+		data.type = uniform.type;
+		//Round the uniform's offset to the next multiple of its base alignment
+		data.offset = ExMath::roundToVal(currentOffset, baseAlignment(uniform.type));
+		//Array and matrix types have a larger size due to padding
+		data.size = alignedSize(uniform.type);
+
+		currentOffset = data.offset + data.size;
+
+		uniformMap.insert({uniform.name, data});
+	}
+
+	uniformData = new unsigned char[currentOffset];
+	dataSize = currentOffset;
+}
+
+Std140Aligner::Std140Aligner(const Std140Aligner& other) :
+	uniformMap(other.uniformMap),
+	uniformData(new unsigned char[other.dataSize]),
+	dataSize(other.dataSize) {
+
+	memcpy(uniformData, other.uniformData, dataSize);
+}
+
+Std140Aligner::Std140Aligner(Std140Aligner&& other) :
+	uniformMap(std::move(other.uniformMap)),
+	uniformData(std::exchange(other.uniformData, nullptr)),
+	dataSize(std::exchange(other.dataSize, 0)) {
+
 }
 
 void Std140Aligner::setMat3(const std::string& name, const glm::mat3& value) {
@@ -64,7 +81,7 @@ void Std140Aligner::setMat3(const std::string& name, const glm::mat3& value) {
 
 	for (size_t i = 0; i < 3; i++) {
 		memcpy(&uniformData[data.offset + arrayOffset], &value[i], sizeof(glm::vec3));
-		arrayOffset += baseUniformAlignment(UniformType::VEC3);
+		arrayOffset += baseAlignment(UniformType::VEC3);
 	}
 }
 
@@ -76,7 +93,7 @@ void Std140Aligner::setMat4(const std::string& name, const glm::mat4& value) {
 
 	for (size_t i = 0; i < 4; i++) {
 		memcpy(&uniformData[data.offset + arrayOffset], &value[i], sizeof(glm::vec4));
-		arrayOffset += baseUniformAlignment(UniformType::VEC4);
+		arrayOffset += baseAlignment(UniformType::VEC4);
 	}
 }
 
@@ -89,7 +106,7 @@ glm::mat3 Std140Aligner::getMat3(const std::string& name) const {
 
 	for (size_t i = 0; i < 3; i++) {
 		memcpy(&out[i], &uniformData[data.offset + arrayOffset], sizeof(glm::vec3));
-		arrayOffset += baseUniformAlignment(UniformType::VEC3);
+		arrayOffset += baseAlignment(UniformType::VEC3);
 	}
 
 	return out;
@@ -104,7 +121,7 @@ glm::mat4 Std140Aligner::getMat4(const std::string& name) const {
 
 	for (size_t i = 0; i < 4; i++) {
 		memcpy(&out[i], &uniformData[data.offset + arrayOffset], sizeof(glm::vec4));
-		arrayOffset += baseUniformAlignment(UniformType::VEC4);
+		arrayOffset += baseAlignment(UniformType::VEC4);
 	}
 
 	return out;
