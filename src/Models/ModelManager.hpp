@@ -116,7 +116,7 @@ public:
 	 */
 	void addMaterial(const std::string& name, Material&& material) {
 		materialMap.emplace(name, std::move(material));
-		ENGINE_LOG_INFO(logger, "Added model \"" + name + "\"");
+		ENGINE_LOG_INFO(logger, "Added material \"" + name + "\"");
 	}
 
 	/**

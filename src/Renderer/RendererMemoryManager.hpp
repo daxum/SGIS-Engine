@@ -181,7 +181,7 @@ protected:
 	/**
 	 * Creates the two uniform buffers with the given sizes, which have been calculated by
 	 * the maxUsers variable of all added uniform sets.
-	 * @param modelStaticSize The size of the uniform buffer which stores material data.
+	 * @param materialSize The size of the uniform buffer which stores material data.
 	 * @param screenObjectSize The size of the PER_SCREEN_OBJECT uniform buffer.
 	 */
 	virtual void createUniformBuffers(size_t materialSize, size_t screenObjectSize) = 0;

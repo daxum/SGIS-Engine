@@ -20,9 +20,7 @@
 #include "ExtraMath.hpp"
 
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
-	logger(logConfig),
-	materialSize(0),
-	materialOffset(0) {}
+	logger(logConfig) {}
 
 void RendererMemoryManager::UniformBufferInit() {
 	size_t screenObjectSize = 0;
