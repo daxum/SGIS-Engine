@@ -19,7 +19,7 @@
 #include "Mesh.hpp"
 #include "ModelManager.hpp"
 
-Mesh::Mesh(const std::string& buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
+Mesh::Mesh(Buffer* buffer, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
 	vertexData(new unsigned char[format->getVertexSize() * vertices.size()]),
 	vertexSize(format->getVertexSize() * vertices.size()),
 	indices(indices),
@@ -54,7 +54,7 @@ Mesh::Mesh(Mesh&& mesh) :
 	vertexData(std::exchange(mesh.vertexData, nullptr)),
 	vertexSize(std::exchange(mesh.vertexSize, 0)),
 	indices(std::move(mesh.indices)),
-	buffer(std::move(mesh.buffer)),
+	buffer(std::exchange(mesh.buffer, nullptr)),
 	format(std::exchange(mesh.format, nullptr)),
 	box(std::move(mesh.box)),
 	radius(std::exchange(mesh.radius, 0.0f)) {

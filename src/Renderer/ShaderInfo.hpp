@@ -19,9 +19,10 @@
 #pragma once
 
 #include <string>
-#include <bitset>
 #include <vector>
 #include <stdexcept>
+
+#include "UniformSet.hpp"
 
 //Render passes for the engine.
 //Each shader is part of one render pass.
@@ -30,100 +31,10 @@ enum class RenderPass {
 	TRANSPARENT,
 	TRANSLUCENT
 };
-
-//Used to determine where a shader uniform value comes from.
-enum class UniformProviderType {
-	//Projection matrix from the camera.
-	CAMERA_PROJECTION,
-	//View matrix from the camera.
-	CAMERA_VIEW,
-	//Retrieved from the screen state.
-	SCREEN_STATE,
-	//Model-view matrix for the rendered object.
-	OBJECT_MODEL_VIEW,
-	//Transform of the rendered object, separate from the view matrix.
-	OBJECT_TRANSFORM,
-	//Retrieved from the object state.
-	OBJECT_STATE,
-	//Retrieved from the object's material.
-	MATERIAL
-};
-
-//Types of uniforms currently supported.
-enum class UniformType {
-	FLOAT,
-	VEC2,
-	VEC3,
-	VEC4,
-	MAT3,
-	MAT4,
-	SAMPLER_2D,
-	SAMPLER_CUBE
-};
-
+/*
 constexpr bool isSampler(const UniformType type) {
 	return type == UniformType::SAMPLER_2D || type == UniformType::SAMPLER_CUBE;
 }
-
-constexpr uint32_t uniformSize(const UniformType type) {
-	switch (type) {
-		case UniformType::FLOAT: return sizeof(float);
-		case UniformType::VEC2: return 2 * sizeof(float);
-		case UniformType::VEC3: return 3 * sizeof(float);
-		case UniformType::VEC4: return 4 * sizeof(float);
-		case UniformType::MAT3: return 9 * sizeof(float);
-		case UniformType::MAT4: return 16 * sizeof(float);
-		default: throw std::runtime_error("Uniform size missing!");
-	}
-}
-
-//Shader stages. This should match VkShaderStageFlagBits.
-enum UniformShaderUsage {
-	USE_VERTEX_SHADER = 0x00000001,
-	USE_FRAGMENT_SHADER = 0x00000010
-};
-
-//Description of a single uniform value.
-struct UniformDescription {
-	//Type of the uniform.
-	UniformType type;
-	//The name of the uniform, primarily used to retrieve values.
-	//For OpenGL, the name should match the name in the shader
-	//(Disregard above if I bothered to move to 4.3).
-	std::string name;
-	//Where the uniform's value comes from.
-	UniformProviderType provider;
-	//The shader stages that use the uniform.
-	std::bitset<32> shaderStages;
-};
-
-//Types of uniform set, restricts where values can be pulled from.
-enum class UniformSetType {
-	//Material uniforms, can only use UniformProviderType::MATERIAL.
-	MATERIAL,
-	//Per-screen uniforms, allows use of CAMERA_* and SCREEN_* provider types.
-	//Samplers are not allowed for PER_SCREEN uniform sets.
-	PER_SCREEN,
-	//Per-object uniforms, allows only OBJECT_* uniform providers.
-	//Samplers are not allowed in PER_OBJECT uniform sets.
-	PER_OBJECT
-};
-
-//A set of uniforms that can be used in a shader.
-//Order in the uniforms vector determines bindings -
-//The first non-sampler uniform will determine the
-//uniform buffer's binding, and each sampler will
-//be assigned to the next binding, in order.
-struct UniformSet {
-	//The type of uniform set, restricts which provider types are allowed.
-	UniformSetType setType;
-	//The maximum allowed users of this uniform set. Determines uniform
-	//buffer sizes and, for MATERIAL set types, the number of available
-	//descriptor sets.
-	size_t maxUsers;
-	//The uniforms in the set.
-	std::vector<UniformDescription> uniforms;
-};
 
 //A set of push constants. Be very careful with size here - the
 //minimum required in vulkan is 128 bytes. These are probably
@@ -133,7 +44,7 @@ struct PushConstantSet {
 	//All push constant providers must be one of UniformProviderType::OBJECT_*.
 	std::vector<UniformDescription> pushConstants;
 };
-
+*/
 struct ShaderInfo {
 	//Path to vertex shader.
 	std::string vertex;

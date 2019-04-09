@@ -35,29 +35,35 @@ public:
 		memoryManager(memoryManager) {}
 
 	/**
-	 * Destructor.
-	 */
-	virtual ~RenderInitializer() {}
-
-	/**
 	 * Creates a buffer for meshes to load to and shaders to read from.
 	 * @param name The name of the buffer.
-	 * @param info The information for the buffer (format, size, etc).
+	 * @param size The size of the buffer, in bytes.
+	 * @param type What the buffer is going to be used for.
+	 * @param storage In what type of memory the buffer should be stored.
 	 */
-	void createBuffer(const std::string& name, const VertexBufferInfo& info) { memoryManager->addBuffer(name, info); }
+	void createBuffer(const std::string& name, size_t size, BufferType type, BufferStorage storage);
 
 	/**
-	 * Adds a set of uniforms that can be used in shaders and models.
-	 * @param name The name of the set.
-	 * @param set The set to add.
+	 * Adds a vertex format to be used by meshes and shaders.
+	 * @param format The format to add.
 	 */
-	virtual void addUniformSet(const std::string& name, const UniformSet& set) = 0;
+	void addVertexFormat(const VertexFormat& format);
 
-protected:
-	//The logger.
-	Logger logger;
+	/**
+	 * Adds a set of uniforms that can be used in shaders and materials.
+	 * @param name The name of the set.
+	 * @param type The type of the set. Determines which uniform providers are allowed.
+	 * @param maxUsers The maximum allowed users for this set. Determines how many
+	 *     different materials can be created, or screens allowed on the screen stack.
+	 * @param set The list of uniforms to add. When creating the shader bindings, the
+	 *     uniform buffer, if present, will always recieve binding 0, followed by non-
+	 *     buffered unforms, such as samplers, in the order they are listed.
+	 */
+	void addUniformSet(const std::string& name, UniformSetType type, size_t maxUsers, const UniformList& uniforms);
 
 private:
+	//The logger.
+	Logger logger;
 	//Memory manager.
 	RendererMemoryManager* memoryManager;
 };

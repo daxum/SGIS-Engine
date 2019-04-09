@@ -67,7 +67,7 @@ public:
 	 * Creates a vertex format with the given layout.
 	 * @param layout A description of the per-vertex data.
 	 */
-	VertexFormat(const std::vector<VertexElement>& layout);
+	VertexFormat(const std::vector<Element>& layout);
 
 	/**
 	 * Checks whether the type of the given name matches the provided type.

@@ -48,7 +48,7 @@ public:
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
-	Mesh(const std::string& buffer, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
+	Mesh(Buffer* buffer, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
 
 	/**
 	 * Copy constructor.
@@ -67,9 +67,10 @@ public:
 
 	/**
 	 * Gets the buffer the mesh is stored in.
-	 * @return the vertex buffer this mesh belongs to.
+	 * @return the vertex buffer this mesh belongs to, nullptr if the mesh
+	 *     is not for rendering.
 	 */
-	const std::string& getBuffer() const { return buffer; }
+	const Buffer* getBuffer() const { return buffer; }
 
 	/**
 	 * Gets the format that the mesh's vertex data is in.
@@ -130,7 +131,7 @@ public:
 			vertexData = std::exchange(mesh.vertexData, nullptr);
 			vertexSize = std::exchange(mesh.vertexSize, 0);
 			indices = std::move(mesh.indices);
-			buffer = std::move(mesh.buffer);
+			buffer = std::exchange(mesh.buffer, nullptr);
 			format = std::exchange(mesh.format, nullptr);
 			box = std::move(mesh.box);
 			radius = std::exchange(mesh.radius, 0.0f);
@@ -148,7 +149,7 @@ private:
 	std::vector<uint32_t> indices;
 
 	//The buffer this mesh belongs in.
-	std::string buffer;
+	Buffer* buffer;
 
 	//The format the mesh's vertex data is in.
 	const VertexFormat* format;

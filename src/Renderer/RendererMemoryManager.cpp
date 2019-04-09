@@ -20,7 +20,8 @@
 #include "ExtraMath.hpp"
 
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
-	logger(logConfig) {}
+	logger(logConfig),
+	materialOffset(0) {}
 
 void RendererMemoryManager::UniformBufferInit() {
 	size_t screenObjectSize = 0;
@@ -154,64 +155,36 @@ void RendererMemoryManager::freeMesh(const std::string& mesh, const std::string&
 
 void RendererMemoryManager::addMaterial(const std::string& name, const Material& material) {
 	//If data is present, don't reupload
-	if (modelDataMap.count(name)) {
-		ENGINE_LOG_SPAM(logger, "Model \"" + name + "\" possibly present on rendering engine");
-
-		ModelUniformData& uniformData = modelDataMap.at(name);
-
-		//If data was evicted, remove old allocation so the insert works below
-		if (uniformData.allocation->evicted) {
-			ENGINE_LOG_DEBUG(logger, "Model \"" + name + "\" evicted, reuploading");
-			modelDataMap.erase(name);
-		}
-		//Data not evicted, so just reactivate it. Descriptor sets are always persistent, so those
-		//don't need checking.
-		else {
-			uniformData.allocation->inUse = true;
-			return;
-		}
+	if (uploadedMaterials.count(name)) {
+		return;
 	}
 
 	//Determine set type, model type, and retrieve data
 
-	const UniformSet& set = getUniformSet(model.uniformSet);
-	bool staticModel = false;
-
-	switch (set.setType) {
-		case UniformSetType::MODEL_STATIC : staticModel = true; break;
-		case UniformSetType::MODEL_DYNAMIC: staticModel = false; break;
-		default: throw std::runtime_error("Model descriptor set isn't a model type!");
-	}
+	const UniformSet& set = getUniformSet(material.uniformSet);
 
 	//Don't add buffered uniforms if the model doesn't have any
-	if (model.hasBufferedUniforms) {
-		ENGINE_LOG_DEBUG(logger, "Uploading model uniform data for \"" + name + "\" to rendering engine");
+	if (material.hasBufferedUniforms) {
+		ENGINE_LOG_DEBUG(logger, "Uploading material uniform data for \"" + name + "\" to rendering engine");
 
-		size_t dataSize = model.getUniformData().second;
-		const unsigned char* modelData = model.getUniformData().first;
+		const unsigned char* materialData = material.uniforms.getData().first;
+		size_t dataSize = material.uniforms.getData().second;
 
 		//Align the model data to the minimum alignment before allocating. If every allocation
 		//does this, all allocated memory will end up implicitly aligned.
 		size_t allocSize = ExMath::roundToVal(dataSize, getMinUniformBufferAlignment());
 
-		//Make allocation and upload uniform data
+		//Upload uniform data
 
-		std::shared_ptr<AllocInfo> allocation = staticModel ? staticModelUniformAlloc->getMemory(allocSize) : dynamicModelUniformAlloc->getMemory(allocSize);
-
-		uploadModelData(staticModel ? UniformBufferType::STATIC_MODEL : UniformBufferType::DYNAMIC_MODEL, allocation->start, dataSize, modelData);
+		uploadMaterialData(UniformBufferType::MATERIAL, materialOffset, dataSize, materialData);
 
 		//Use dataSize instead of allocation->size to avoid the padding, as the alignment only applies to offset
-		modelDataMap.insert({name, ModelUniformData{allocation, allocation->start, dataSize}});
+		uploadedMaterials.insert(name);
 
-		ENGINE_LOG_DEBUG(logger, "Uploaded model uniform data for \"" + name + "\" to rendering engine");
+		ENGINE_LOG_DEBUG(logger, "Uploaded material uniform data for \"" + name + "\" to rendering engine");
 	}
 
-	//Allocate descriptor set for static models. If the model already has a descriptor set, this call will be ignored.
+	//Allocate descriptor set.
 
-	if (staticModel) {
-		addModelDescriptors(model);
-	}
-	else {
-		addDynamicDescriptors(model);
-	}
+	addMaterialDescriptors(material);
 }
