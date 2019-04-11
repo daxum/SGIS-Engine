@@ -76,6 +76,14 @@ public:
 	void addUniformSet(const std::string& name, size_t maxUsers, const UniformSet& set);
 
 	/**
+	 * Gets the buffer with the provided name.
+	 * @param name The name of the buffer.
+	 * @return the buffer stored under name.
+	 * @throw std::out_of_range If there isn't a buffer with the given name.
+	 */
+	const Buffer* getBuffer(const std::string& name) { return buffers.at(name).get(); }
+
+	/**
 	 * Returns the uniform set with the given name, used during model loading.
 	 * @param set The name of the set to get.
 	 * @return The set with the given name.

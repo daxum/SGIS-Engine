@@ -23,8 +23,12 @@
 #include <glm/glm.hpp>
 
 #include "Component.hpp"
-#include "Model.hpp"
+#include "Models/ModelManager.hpp"
 #include "Logger.hpp"
+#include "FontManager.hpp"
+#include "Engine.hpp"
+#include "Object.hpp"
+#include "RenderComponent.hpp"
 
 class TextComponent : public Component {
 public:
@@ -41,13 +45,13 @@ public:
 	 * add one itself (only if one is not already present).
 	 * @param text The text to render.
 	 * @param font The font to use.
-	 * @param shader The shader to use to render the text.
+	 * @param material The material the text uses for rendering.
 	 * @param buffer The buffer for the text model to reside in.
-	 * @param uniformSet The uniform set for the text model.
+	 * @param format The vertex format of the text's mesh.
 	 * @param scale The scale of the text. Might need to be rather small for
 	 *     large font sizes.
 	 */
-	TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, const std::string& uniformSet, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0));
+	TextComponent(const std::u32string& text, const std::string& font, const std::string& material, const std::string& buffer, const std::string format, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Called from Component, sets the rendering component if one is not
@@ -56,22 +60,31 @@ public:
 	void onParentSet() override;
 
 	/**
-	 * Sets the text to be rendered. Regenerates the text model.
+	 * Sets the text to be rendered. Regenerates the text mesh.
 	 * @param newText The new text to use.
 	 */
-	void setText(const std::u32string& newText);
+	void setText(const std::u32string& newText) {
+		meshInfo.text = newText;
+		reloadModel();
+	}
 
 	/**
-	 * Sets the font. Careful calling this, as it needs to regenerate the model.
+	 * Sets the font. Careful calling this, as it needs to regenerate the mesh.
 	 * @param font The new font.
 	 */
-	void setFont(const std::string& font);
+	void setFont(const std::string& font) {
+		meshInfo.font = font;
+		reloadModel();
+	}
 
 	/**
-	 * Sets the model's shader. Also regenerates the text model.
-	 * @param shader The new shader.
+	 * Changes the material the text uses.
+	 * @param material The new material for the text.
 	 */
-	void setShader(const std::string& shader);
+	void setMaterial(const std::string& newMaterial) {
+		material = newMaterial;
+		reloadModel();
+	}
 
 	/**
 	 * Returns the bounding box of the current text model, centered and
@@ -89,12 +102,25 @@ public:
 	void fitToBox(const glm::vec2& box, bool preserveAspect = true);
 
 private:
+	//Logger for text component.
 	Logger logger;
 
-	std::string currentFont;
-	std::u32string currentText;
-	std::shared_ptr<const ModelRef> textModel;
+	//Info used to create the text mesh.
+	TextMeshInfo meshInfo;
+	//Name of the material the text is using.
+	std::string material;
+	//Model for the text mesh.
+	Model textModel;
 
 	//Only used in onParentSet.
 	glm::vec3 initScale;
+
+	/**
+	 * Regenerates the text model and uploads to the render component.
+	 * This will not create a new mesh if only the material changed.
+	 */
+	void reloadModel() {
+		textModel = Engine::instance->getFontManager().createTextModel(meshInfo, material);
+		lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);
+	}
 };

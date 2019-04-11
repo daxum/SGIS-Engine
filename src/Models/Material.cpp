@@ -19,38 +19,31 @@
 #include "Material.hpp"
 #include "ModelManager.hpp"
 
-namespace {
-	//Needed for model's constructor, maybe make member function?
-	//Strips out all uniforms that don't belong in the model's uniform buffer.
-	std::vector<UniformDescription> stripNonBufferedModel(const UniformSet& uniformSet) {
-		std::vector<UniformDescription> out;
+/* TODO: Move to UniformSet's constructor
+//Needed for model's constructor, maybe make member function?
+//Strips out all uniforms that don't belong in the model's uniform buffer.
+std::vector<UniformDescription> stripNonBufferedModel(const UniformSet& uniformSet) {
+	std::vector<UniformDescription> out;
 
-		for (const UniformDescription& uniform : uniformSet.uniforms) {
-			if (uniform.provider == UniformProviderType::MATERIAL && !isSampler(uniform.type)) {
-				out.push_back(uniform);
-			}
+	for (const UniformDescription& uniform : uniformSet.uniforms) {
+		if (uniform.provider == UniformProviderType::MATERIAL && !isSampler(uniform.type)) {
+			out.push_back(uniform);
 		}
-
-		return out;
 	}
-}
+
+	return out;
+}*/
 
 Material::Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const UniformSet& uniformSetLayout, bool viewCull)  :
 	name(name),
 	shader(shader),
 	uniformSet(uniformSet),
-	uniforms(uniformSetLayout.uniforms),
-	hasBufferedUniforms(false),
+	uniforms(uniformSetLayout.getBufferedUniforms()),
+	hasBufferedUniforms(!uniformSetLayout.getBufferedUniforms().empty()),
 	textures(),
 	viewCull(viewCull),
 	references(0) {
 
-	for (const UniformDescription& descr : uniformSetLayout.uniforms) {
-		if (!isSampler(descr.type)) {
-			hasBufferedUniforms = true;
-			break;
-		}
-	}
 }
 
 MaterialRef::~MaterialRef()  {

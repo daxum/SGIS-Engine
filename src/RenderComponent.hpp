@@ -25,6 +25,7 @@
 #include "Component.hpp"
 #include "Models/Material.hpp"
 #include "Object.hpp"
+#include "Models/ModelManager.hpp"
 
 class RenderComponentManager;
 

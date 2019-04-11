@@ -49,7 +49,7 @@ public:
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
-	Mesh(Buffer* buffer, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
+	Mesh(const Buffer* buffer, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
 
 	/**
 	 * Copy constructor.
@@ -150,7 +150,7 @@ private:
 	std::vector<uint32_t> indices;
 
 	//The buffer this mesh belongs in.
-	Buffer* buffer;
+	const Buffer* buffer;
 
 	//The format the mesh's vertex data is in.
 	const VertexFormat* format;

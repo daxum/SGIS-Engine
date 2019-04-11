@@ -20,7 +20,7 @@
 
 #include "RenderComponentManager.hpp"
 #include "Engine.hpp"
-#include "Model.hpp"
+#include "Models/ModelManager.hpp"
 
 void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
@@ -68,7 +68,7 @@ void RenderComponentManager::removeComponent(const RenderComponent* comp, const 
 	}
 
 	if (compSet.empty()) {
-		const std::string& buffer = oldModel.mesh->getBuffer();
+		const Buffer* buffer = oldModel.mesh->getBuffer();
 		const std::string& shader = oldModel.material->shader;
 
 		renderComponents.at(buffer).at(shader).erase(oldModel.material);
@@ -76,14 +76,19 @@ void RenderComponentManager::removeComponent(const RenderComponent* comp, const 
 }
 
 std::vector<const RenderComponent*>& RenderComponentManager::getComponentSet(const Model& model) {
-	const std::string& buffer = model.mesh->getBuffer();
+	const Buffer* buffer = model.mesh->getBuffer();
 	const std::string& shader = model.material->shader;
 
-	auto& shaderMap = renderComponents[buffer];
+	if (!renderComponents.count(buffer)) {
+		//It was inevitable.
+		renderComponents.emplace(buffer, std::unordered_map<std::string, std::unordered_map<const Material*, std::vector<const RenderComponent*>>>());
+	}
+
+	auto& shaderMap = renderComponents.at(buffer);
 	auto& modelMap = shaderMap[shader];
 
 	if (!modelMap.count(model.material)) {
-		modelMap.insert({model.material, std::vector<const RenderComponent*>()});
+		modelMap.emplace(model.material, std::vector<const RenderComponent*>());
 	}
 
 	return modelMap.at(model.material);

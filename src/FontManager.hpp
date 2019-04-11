@@ -25,6 +25,17 @@
 #include "Models/ModelManager.hpp"
 #include "AxisAlignedBB.hpp"
 
+struct TextMeshInfo {
+	//The font the text uses.
+	std::string font;
+	//The text in the mesh.
+	std::u32string text;
+	//The buffer to store the mesh in.
+	std::string buffer;
+	//The format of the text vertices.
+	std::string format;
+};
+
 //Stores all the fonts used by the game.
 class FontManager {
 public:
@@ -45,14 +56,11 @@ public:
 
 	/**
 	 * Creates a model for the given text using the provided font.
-	 * @param fontName The name of the font to use.
-	 * @param text The text to generate a model for.
-	 * @param shader The shader to use to render the text.
-	 * @param buffer The buffer to upload the text model to.
-	 * @param uniformSet The set of uniforms for the model to use.
-	 * @return a reference to a model for the given text.
+	 * @param meshInfo The info used to create a mesh for the text.
+	 * @param material The material the text uses.
+	 * @return A model for the given text.
 	 */
-	Model createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet);
+	Model createTextModel(const TextMeshInfo& meshInfo, const std::string& material);
 
 private:
 	//The model manager.
@@ -62,18 +70,14 @@ private:
 
 	/**
 	 * Creates a mesh object for the given text and adds it to the model manager.
-	 * @param fontName The font to use.
-	 * @param text The text to generate a mesh for.
-	 * @param buffer The buffer to upload the mesh to.
+	 * @param meshInfo The info used to create the mesh.
 	 */
-	void createTextMesh(const std::string& fontName, const std::u32string& text, const std::string& buffer);
+	void createTextMesh(const TextMeshInfo& meshInfo);
 
 	/**
 	 * Generates a unique name for a text mesh based on its creation parameters.
-	 * @param fontName The name of the font.
-	 * @param text The text the mesh contains.
-	 * @param buffer The buffer the mesh is loaded into.
+	 * @param meshInfo The info that uniquely identifies this text mesh.
 	 * @return a unique name for the mesh.
 	 */
-	std::string getMeshName(const std::string& fontName, const std::u32string& text, const std::string& buffer) const;
+	std::string getMeshName(const TextMeshInfo& meshInfo) const;
 };

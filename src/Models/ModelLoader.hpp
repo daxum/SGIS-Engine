@@ -66,13 +66,13 @@ public:
 	 * @param lighting The lighting information for the model.
 	 * @param viewCull Whether to cull the object when it can't be seen by the camera.
 	 */
-	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, bool viewCull = true);
+	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& bufferName, const std::string& uniformSet, bool viewCull = true);
 
 	/**
 	 * TODO: Possibly temp?
 	 * This doesn't upload to the rendering engine, despite the buffer parameter.
 	 */
-	void loadMesh(const std::string& filename, const std::string& buffer);
+	void loadMesh(const std::string& filename, const VertexFormat* format, const std::string& bufferName);
 
 protected:
 	//The logger.
@@ -83,11 +83,11 @@ protected:
 	/**
 	 * Loads a model from disk (currently only .obj is supported).
 	 * @param filename The filename of the model to load.
-	 * @param vertexBuffer The buffer the mesh goes in, determines vertex format.
+	 * @param format The format of the mesh's vertices.
 	 * @return a pointer to the loaded model data.
 	 * @throw runtime_error if model loading failed.
 	 */
-	std::shared_ptr<ModelData> loadFromDisk(const std::string& filename, const std::string& vertexBuffer);
+	std::shared_ptr<ModelData> loadFromDisk(const std::string& filename, const VertexFormat* format);
 
 	/**
 	 * Calculates a bounding box for a model's mesh.

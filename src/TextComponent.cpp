@@ -31,12 +31,12 @@ std::u32string TextComponent::convToU32(const std::string& s) {
 	return out;
 }
 
-TextComponent::TextComponent(const std::u32string& text, const std::string& font, const std::string& shader, const std::string& buffer, const std::string& uniformSet, glm::vec3 scale) :
+TextComponent::TextComponent(const std::u32string& text, const std::string& font, const std::string& material, const std::string& buffer, const std::string format, glm::vec3 scale) :
 	Component(TEXT_COMPONENT_NAME),
 	logger(Engine::instance->getConfig().componentLog),
-	currentFont(font),
-	currentText(text),
-	textModel(Engine::instance->getFontManager().createTextModel(font, text, shader, buffer, uniformSet)),
+	meshInfo({font, text, buffer, format}),
+	material(material),
+	textModel(Engine::instance->getFontManager().createTextModel(meshInfo, material)),
 	initScale(scale) {
 
 }
@@ -53,43 +53,10 @@ void TextComponent::onParentSet() {
 	}
 }
 
-void TextComponent::setText(const std::u32string& newText) {
-	currentText = newText;
-
-	const std::string& oldShader = textModel->getModel().shader;
-	const std::string& oldBuffer = textModel->getMesh().getBuffer();
-	const std::string& oldSet = textModel->getModel().uniformSet;
-
-	textModel = Engine::instance->getFontManager().createTextModel(currentFont, newText, oldShader, oldBuffer, oldSet);
-	lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);
-}
-
-void TextComponent::setFont(const std::string& font) {
-	currentFont = font;
-
-	const std::string& oldShader = textModel->getModel().shader;
-	const std::string& oldBuffer = textModel->getMesh().getBuffer();
-	const std::string& oldSet = textModel->getModel().uniformSet;
-
-	textModel = Engine::instance->getFontManager().createTextModel(font, currentText, oldShader, oldBuffer, oldSet);
-	lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);
-}
-
-void TextComponent::setShader(const std::string& shader) {
-	const std::string& oldBuffer = textModel->getMesh().getBuffer();
-	const std::string& oldSet = textModel->getModel().uniformSet;
-
-	//This should reuse the old text mesh and just change the shader, as long as
-	//the new model is created before the old one is deleted.
-	textModel = Engine::instance->getFontManager().createTextModel(currentFont, currentText, shader, oldBuffer, oldSet);
-	lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->setModel(textModel);
-}
-
 Aabb<float> TextComponent::getTextBox() {
-	Aabb<float> textBox = textModel->getMesh().getBox();
+	Aabb<float> textBox = textModel.mesh->getBox();
 
 	textBox.translate(-textBox.getCenter());
-
 	textBox.scale(lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME)->getScale());
 
 	return textBox;

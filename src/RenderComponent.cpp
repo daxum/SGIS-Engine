@@ -28,7 +28,7 @@ RenderComponent::RenderComponent(const std::string& material, const std::string&
 
 }
 
-RenderComponent::RenderComponent(std::shared_ptr<const ModelRef> model, glm::vec3 renderScale) :
+RenderComponent::RenderComponent(Model model, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
 	model(model),
 	scale(renderScale),
@@ -36,8 +36,8 @@ RenderComponent::RenderComponent(std::shared_ptr<const ModelRef> model, glm::vec
 
 }
 
-void RenderComponent::setModel(std::shared_ptr<const ModelRef> newModel) {
-	std::shared_ptr<const ModelRef> oldModel = model;
+void RenderComponent::setModel(Model newModel) {
+	Model oldModel = model;
 	model = newModel;
 
 	if (manager) {

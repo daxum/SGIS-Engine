@@ -26,45 +26,37 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& buffer, const std::string& uniformSet, bool viewCull) {
+void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& bufferName, const std::string& uniformSet, bool viewCull) {
 	if (!modelManager.hasMesh(filename)) {
-		std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, buffer);
-
-		Aabb<float> box = calculateBox(data);
-		ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for model " + name);
-
-		float radius = calculateMaxRadius(data, box.getCenter());
-		ENGINE_LOG_DEBUG(logger, "Radius of model is " + std::to_string(radius));
-
-		const std::vector<VertexFormat::ElementType>& format = modelManager.getMemoryManager()->getBuffer(buffer).getVertexFormat();
-		modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius), true);
+		const VertexFormat* format = nullptr; //TODO: Get from wherever vertex formats are stored
+		loadMesh(filename, format, bufferName);
 	}
 
-	Model model(name, filename, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
-	model.textures.push_back(texture);
+	Material material(name, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
+	material.textures.push_back(texture);
 
-	if (model.uniforms.hasUniform("ka", UniformType::VEC3)) {
-		model.uniforms.setVec3("ka", {1.0f, 0.0f, 1.0f});
+	if (material.uniforms.hasUniform("ka", UniformType::VEC3)) {
+		material.uniforms.setVec3("ka", {1.0f, 0.0f, 1.0f});
 	}
 
-	if (model.uniforms.hasUniform("kd", UniformType::VEC3)) {
-		model.uniforms.setVec3("kd", {1.0f, 0.0f, 1.0f});
+	if (material.uniforms.hasUniform("kd", UniformType::VEC3)) {
+		material.uniforms.setVec3("kd", {1.0f, 0.0f, 1.0f});
 	}
 
-	if (model.uniforms.hasUniform("ks", UniformType::VEC3)) {
-		model.uniforms.setVec3("ks", {1.0f, 0.0f, 1.0f});
+	if (material.uniforms.hasUniform("ks", UniformType::VEC3)) {
+		material.uniforms.setVec3("ks", {1.0f, 0.0f, 1.0f});
 	}
 
-	if (model.uniforms.hasUniform("s", UniformType::FLOAT)) {
-		model.uniforms.setFloat("s", 1.0f);
+	if (material.uniforms.hasUniform("s", UniformType::FLOAT)) {
+		material.uniforms.setFloat("s", 1.0f);
 	}
 
-	modelManager.addModel(name, std::move(model));
+	modelManager.addMaterial(name, std::move(material));
 	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + Engine::instance->getConfig().resourceBase + filename + "\" as \"" + name + "\".");
 }
 
-void ModelLoader::loadMesh(const std::string& filename, const std::string& buffer) {
-	std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, buffer);
+void ModelLoader::loadMesh(const std::string& filename, const VertexFormat* format, const std::string& bufferName) {
+	std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, format);
 
 	Aabb<float> box = calculateBox(data);
 	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for mesh " + filename);
@@ -72,11 +64,11 @@ void ModelLoader::loadMesh(const std::string& filename, const std::string& buffe
 	float radius = calculateMaxRadius(data, box.getCenter());
 	ENGINE_LOG_DEBUG(logger, "Radius of mesh is " + std::to_string(radius));
 
-	const std::vector<VertexElement>& format = modelManager.getMemoryManager()->getBuffer(buffer).getVertexFormat();
+	const Buffer* buffer = modelManager.getMemoryManager()->getBuffer(bufferName);
 	modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius), true);
 }
 
-std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const std::string& vertexBuffer) {
+std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const VertexFormat* format) {
 	std::shared_ptr<ModelData> data = std::make_shared<ModelData>();
 
 	ENGINE_LOG_DEBUG(logger, "Loading model \"" + filename + "\".");
@@ -96,14 +88,13 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 		ENGINE_LOG_WARN(logger, warn);
 	}
 
-	VertexBuffer& buffer = modelManager.getMemoryManager()->getBuffer(vertexBuffer);
 	std::unordered_map<Vertex, uint32_t> uniqueVertices;
 
 	for (const tinyobj::shape_t& shape : shapes) {
 		for (const tinyobj::index_t& index : shape.mesh.indices) {
-			Vertex vertex = buffer.getVertex();
+			Vertex vertex(format);
 
-			if (buffer.hasElement(VERTEX_ELEMENT_POSITION)) {
+			if (format->hasElement(VERTEX_ELEMENT_POSITION)) {
 				vertex.setVec3(VERTEX_ELEMENT_POSITION, glm::vec3(
 					attributes.vertices[3 * index.vertex_index],
 					attributes.vertices[3 * index.vertex_index + 1],
@@ -111,7 +102,7 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 				));
 			}
 
-			if (buffer.hasElement(VERTEX_ELEMENT_NORMAL)) {
+			if (format->hasElement(VERTEX_ELEMENT_NORMAL)) {
 				vertex.setVec3(VERTEX_ELEMENT_NORMAL, glm::vec3(
 					attributes.normals[3 * index.normal_index],
 					attributes.normals[3 * index.normal_index + 1],
@@ -119,7 +110,7 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 				));
 			}
 
-			if (buffer.hasElement(VERTEX_ELEMENT_TEXTURE)) {
+			if (format->hasElement(VERTEX_ELEMENT_TEXTURE)) {
 				if (!attributes.texcoords.empty()) {
 					vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(
 						attributes.texcoords[2 * index.texcoord_index],

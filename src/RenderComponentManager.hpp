@@ -27,7 +27,7 @@
 class RenderComponentManager : public ComponentManager {
 public:
 	//Sorts the RenderComponents by buffer, then shader, then material.
-	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Material*, std::vector<const RenderComponent*>>>> RenderPassList;
+	typedef std::unordered_map<const Buffer*, std::unordered_map<std::string, std::unordered_map<const Material*, std::vector<const RenderComponent*>>>> RenderPassList;
 
 	/**
 	 * Constructor, sets name.
