@@ -23,11 +23,11 @@
 
 #include "DisplayEngine.hpp"
 #include "EngineConfig.hpp"
-#include "ModelManager.hpp"
+#include "Models/ModelManager.hpp"
 #include "Logger.hpp"
 #include "FontManager.hpp"
-#include "WindowSystemInterface.hpp"
-#include "ModelLoader.hpp"
+#include "Renderer/WindowSystemInterface.hpp"
+#include "Models/ModelLoader.hpp"
 
 class RenderingEngine;
 class GameInterface;
@@ -72,11 +72,12 @@ public:
 	 * Retrieves a model from the model manager. This used to expose the entire
 	 * manager, but some of the public functions can do very bad things if called
 	 * at the wrong time.
-	 * @param name The name of the model to retreive.
+	 * @param material The material the model uses.
+	 * @param The mesh the model uses.
 	 * @return A reference to the requested model.
 	 * @throw std::out_of_range if the model isn't present.
 	 */
-	std::shared_ptr<const ModelRef> getModel(const std::string& name) { return modelManager.getModel(name); }
+	Model getModel(const std::string& material, const std::string& mesh) { return modelManager.getModel(material, mesh); }
 
 	/**
 	 * A (hopefully) temporary hack until model loading can be re-written.

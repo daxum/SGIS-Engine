@@ -47,14 +47,14 @@ void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) 
 	renderComp->setManager(nullptr);
 }
 
-void RenderComponentManager::reloadComponent(const RenderComponent* renderComp, std::shared_ptr<const ModelRef> oldModel) {
-	std::shared_ptr<const ModelRef> model = renderComp->getModel();
+void RenderComponentManager::reloadComponent(const RenderComponent* renderComp, const Model& oldModel) {
+	const Model& model = renderComp->getModel();
 
 	removeComponent(renderComp, oldModel);
 	getComponentSet(model).push_back(renderComp);
 }
 
-void RenderComponentManager::removeComponent(const RenderComponent* comp, std::shared_ptr<const ModelRef> oldModel) {
+void RenderComponentManager::removeComponent(const RenderComponent* comp, const Model& oldModel) {
 	std::vector<const RenderComponent*>& compSet = getComponentSet(oldModel);
 
 	auto compLoc = std::find(compSet.begin(), compSet.end(), comp);
@@ -68,24 +68,23 @@ void RenderComponentManager::removeComponent(const RenderComponent* comp, std::s
 	}
 
 	if (compSet.empty()) {
-		const std::string& buffer = oldModel->getMesh().getBuffer();
-		const std::string& shader = oldModel->getModel().shader;
+		const std::string& buffer = oldModel.mesh->getBuffer();
+		const std::string& shader = oldModel.material->shader;
 
-		renderComponents.at(buffer).at(shader).erase(&oldModel->getModel());
+		renderComponents.at(buffer).at(shader).erase(oldModel.material);
 	}
 }
 
-std::vector<const RenderComponent*>& RenderComponentManager::getComponentSet(std::shared_ptr<const ModelRef> model) {
-	const std::string& buffer = model->getMesh().getBuffer();
-	const std::string& shader = model->getModel().shader;
-	const Model* modelPtr = &model->getModel();
+std::vector<const RenderComponent*>& RenderComponentManager::getComponentSet(const Model& model) {
+	const std::string& buffer = model.mesh->getBuffer();
+	const std::string& shader = model.material->shader;
 
 	auto& shaderMap = renderComponents[buffer];
 	auto& modelMap = shaderMap[shader];
 
-	if (!modelMap.count(modelPtr)) {
-		modelMap.insert({modelPtr, std::vector<const RenderComponent*>()});
+	if (!modelMap.count(model.material)) {
+		modelMap.insert({model.material, std::vector<const RenderComponent*>()});
 	}
 
-	return modelMap.at(modelPtr);
+	return modelMap.at(model.material);
 }

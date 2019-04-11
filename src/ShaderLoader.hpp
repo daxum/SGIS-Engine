@@ -21,7 +21,7 @@
 #include <string>
 
 #include "Logger.hpp"
-#include "ShaderInfo.hpp"
+#include "Renderer/ShaderInfo.hpp"
 
 class ShaderLoader {
 public:

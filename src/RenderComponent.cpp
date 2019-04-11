@@ -20,9 +20,9 @@
 #include "Engine.hpp"
 #include "RenderComponentManager.hpp"
 
-RenderComponent::RenderComponent(std::string model, glm::vec3 renderScale) :
+RenderComponent::RenderComponent(const std::string& material, const std::string& mesh, glm::vec3 renderScale) :
 	Component(RENDER_COMPONENT_NAME),
-	model(Engine::instance->getModel(model)),
+	model(Engine::instance->getModel(material, mesh)),
 	scale(renderScale),
 	manager(nullptr) {
 

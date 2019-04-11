@@ -24,7 +24,6 @@
 
 #include "KeyList.hpp"
 #include "Object.hpp"
-#include "ModelManager.hpp"
 #include "InputHandler.hpp"
 
 class DisplayEngine;

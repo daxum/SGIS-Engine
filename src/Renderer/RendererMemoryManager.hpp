@@ -28,7 +28,7 @@
 #include "EngineConfig.hpp"
 #include "Logger.hpp"
 #include "ShaderInfo.hpp"
-#include "Model.hpp"
+#include "Models/Material.hpp"
 
 //An interface to the rendering engine's memory manager.
 class RendererMemoryManager {
@@ -134,7 +134,7 @@ protected:
 	 * @param size The size of the buffer to create.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	virtual Buffer createBuffer(Buffer::Usage usage, BufferStorage storage, size_t size) = 0;
+	virtual std::shared_ptr<Buffer> createBuffer(Buffer::Usage usage, BufferStorage storage, size_t size) = 0;
 
 	/**
 	 * Creates a type of uniform set for which descriptors can be allocated.
@@ -168,7 +168,7 @@ protected:
 
 private:
 	//Stores all created buffers.
-	std::unordered_map<std::string, Buffer> buffers;
+	std::unordered_map<std::string, std::shared_ptr<Buffer>> buffers;
 	//Stores all created uniform sets.
 	std::unordered_map<std::string, UniformSet> uniformSets;
 	//Offset for material data in the material uniform buffer.

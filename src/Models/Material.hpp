@@ -21,8 +21,8 @@
 #include <string>
 #include <vector>
 
-#include "ShaderInfo.hpp"
-#include "Std140Aligner.hpp"
+#include "Renderer/ShaderInfo.hpp"
+#include "Renderer/Std140Aligner.hpp"
 
 class ModelManager;
 
@@ -68,7 +68,7 @@ public:
 	 */
 	MaterialRef(ModelManager* manager, const std::string& materialName, Material* material) :
 		manager(manager),
-		material(material)
+		material(material),
 		materialName(materialName) {}
 
 	/**

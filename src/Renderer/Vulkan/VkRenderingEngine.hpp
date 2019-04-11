@@ -23,9 +23,9 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
-#include "RenderingEngine.hpp"
+#include "Renderer/RenderingEngine.hpp"
 #include "DisplayEngine.hpp"
-#include "GlfwInterface.hpp"
+#include "Renderer/GlfwInterface.hpp"
 #include "VkObjectHandler.hpp"
 #include "VkMemoryManager.hpp"
 #include "VkShader.hpp"

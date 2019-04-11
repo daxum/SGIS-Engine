@@ -22,7 +22,7 @@
 #include <memory>
 
 #include "Font.hpp"
-#include "ModelManager.hpp"
+#include "Models/ModelManager.hpp"
 #include "AxisAlignedBB.hpp"
 
 //Stores all the fonts used by the game.
@@ -52,7 +52,7 @@ public:
 	 * @param uniformSet The set of uniforms for the model to use.
 	 * @return a reference to a model for the given text.
 	 */
-	std::shared_ptr<const ModelRef> createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet);
+	Model createTextModel(const std::string& fontName, const std::u32string& text, const std::string& shader, const std::string& buffer, const std::string& uniformSet);
 
 private:
 	//The model manager.

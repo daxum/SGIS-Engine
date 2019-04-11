@@ -20,7 +20,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "ShaderInfo.hpp"
+#include "Renderer/ShaderInfo.hpp"
 #include "VkPipelineCreateObject.hpp"
 
 struct PushRange {

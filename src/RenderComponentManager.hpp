@@ -26,8 +26,8 @@
 
 class RenderComponentManager : public ComponentManager {
 public:
-	//Sorts the RenderComponents by buffer, then shader, then model.
-	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Model*, std::vector<const RenderComponent*>>>> RenderPassList;
+	//Sorts the RenderComponents by buffer, then shader, then material.
+	typedef std::unordered_map<std::string, std::unordered_map<std::string, std::unordered_map<const Material*, std::vector<const RenderComponent*>>>> RenderPassList;
 
 	/**
 	 * Constructor, sets name.
@@ -56,7 +56,7 @@ public:
 	 * @param renderComp The component to reload.
 	 * @param oldModel The model the component previously used.
 	 */
-	void reloadComponent(const RenderComponent* renderComp, std::shared_ptr<const ModelRef> oldModel);
+	void reloadComponent(const RenderComponent* renderComp, const Model& oldModel);
 
 private:
 	//Sorts all RenderComponents by their shader for less context switching.
@@ -83,12 +83,12 @@ private:
 	 * @param oldModel The old model of the render component, or just the
 	 *     model if the component is being removed completely.
 	 */
-	void removeComponent(const RenderComponent* comp, std::shared_ptr<const ModelRef> oldModel);
+	void removeComponent(const RenderComponent* comp, const Model& oldModel);
 
 	/**
 	 * Helper function to get the set a component belongs in.
 	 * @param model The model of the render component to fetch the set for.
 	 * @return The set the component belongs in.
 	 */
-	std::vector<const RenderComponent*>& getComponentSet(std::shared_ptr<const ModelRef> model);
+	std::vector<const RenderComponent*>& getComponentSet(const Model& model);
 };

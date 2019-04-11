@@ -20,8 +20,8 @@
 
 #include <string>
 
-#include "RendererMemoryManager.hpp"
-#include "ShaderInfo.hpp"
+#include "Renderer/RendererMemoryManager.hpp"
+#include "Renderer/ShaderInfo.hpp"
 #include "Engine.hpp"
 
 //Low-level renderer initialization, such as buffers and descriptor sets.

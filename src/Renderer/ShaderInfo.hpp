@@ -35,16 +35,10 @@ enum class RenderPass {
 constexpr bool isSampler(const UniformType type) {
 	return type == UniformType::SAMPLER_2D || type == UniformType::SAMPLER_CUBE;
 }
-
-//A set of push constants. Be very careful with size here - the
-//minimum required in vulkan is 128 bytes. These are probably
-//best used with things that change frequently.
-struct PushConstantSet {
-	//Careful with order here - try to group same shader stages together.
-	//All push constant providers must be one of UniformProviderType::OBJECT_*.
-	std::vector<UniformDescription> pushConstants;
-};
 */
+
+typedef UniformList PushConstantSet;
+
 struct ShaderInfo {
 	//Path to vertex shader.
 	std::string vertex;
@@ -59,6 +53,7 @@ struct ShaderInfo {
 	//Names of all the uniform sets used in the shader. Each shader can only
 	//have one of each type of uniform set.
 	std::vector<std::string> uniformSets;
-	//All push constant values used in the shader.
+	//All push constant values used in the shader. The uniforms in this set
+	//should take up at most 128 bytes.
 	PushConstantSet pushConstants;
 };

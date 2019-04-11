@@ -36,7 +36,7 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 		float radius = calculateMaxRadius(data, box.getCenter());
 		ENGINE_LOG_DEBUG(logger, "Radius of model is " + std::to_string(radius));
 
-		const std::vector<VertexElement>& format = modelManager.getMemoryManager()->getBuffer(buffer).getVertexFormat();
+		const std::vector<VertexFormat::ElementType>& format = modelManager.getMemoryManager()->getBuffer(buffer).getVertexFormat();
 		modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius), true);
 	}
 

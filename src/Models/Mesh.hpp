@@ -25,6 +25,7 @@
 #include "AxisAlignedBB.hpp"
 #include "Vertex.hpp"
 #include "VertexFormat.hpp"
+#include "Renderer/Buffer.hpp"
 
 class ModelManager;
 
@@ -76,7 +77,7 @@ public:
 	 * Gets the format that the mesh's vertex data is in.
 	 * @return The mesh's vertex format.
 	 */
-	const std::vector<VertexElement>& getFormat() const { return format; }
+	const VertexFormat* getFormat() const { return format; }
 
 	/**
 	 * Gets the mesh's bounding box.

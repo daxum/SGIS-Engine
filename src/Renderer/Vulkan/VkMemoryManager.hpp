@@ -26,12 +26,12 @@
 
 #include <vulkan/vulkan.h>
 
-#include "RendererMemoryManager.hpp"
+#include "Renderer/RendererMemoryManager.hpp"
 #include "VkObjectHandler.hpp"
 #include "vk_mem_alloc.h"
 #include "VkImageData.hpp"
 
-struct VkBufferData : public RenderBufferData {
+struct VkBufferData {
 	VmaAllocator allocator;
 
 	VkBuffer vertexBuffer;
@@ -152,14 +152,14 @@ public:
 	 * @param uniformSet The uniform set.
 	 * @param setLayout The layout of the uniform set.
 	 */
-	void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, const DescriptorLayoutInfo& setLayout) {
+	/*void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, const DescriptorLayoutInfo& setLayout) {
 		uniformSets.insert({name, uniformSet});
 		descriptorLayouts.insert({name, setLayout});
 
 		if (uniformSet.setType == UniformSetType::PER_SCREEN || uniformSet.setType == UniformSetType::PER_OBJECT) {
 			descriptorAligners.insert({name, Std140Aligner(uniformSet.uniforms)});
 		}
-	}
+	}*/
 
 	/**
 	 * Gets the aligner for the given descriptor set.
@@ -226,16 +226,17 @@ protected:
 	 * @return A pointer to a VkBufferData object.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) override;
+	std::shared_ptr<Buffer> createBuffer(Buffer::Usage usage, BufferStorage storage, size_t size) override;
 
 	/**
-	 * Creates a uniform buffer with the given size.
-	 * @param buffer The type of uniform buffer being created. This is used for
-	 *     UniformBufferType::PER_SCREEN_OBJECT, which has one buffer for every active
-	 *     frame.
-	 * @param size The size of the buffer.
+	 * Creates a type of uniform set for which descriptors can be allocated. Specifically, this creates the descriptor
+	 * layout and adjusts the size of the descriptor pool to accommodate this set.
+	 * @param name The name of the set.
+	 * @param type The type of the set (material, screen, object).
+	 * @param maxUsers The maximum allowed users of the set. Determines descriptor pool sizes.
+	 * @param set The set itself. Mostly used for creating descriptor layouts.
 	 */
-	void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) override;
+	void createUniformSetType(const std::string& name, UniformSetType type, size_t maxUsers, const UniformSet& set) override { /** TODO **/ }
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.
@@ -244,53 +245,11 @@ protected:
 	size_t getMinUniformBufferAlignment() override { return objects.getPhysicalDeviceProperties().limits.minUniformBufferOffsetAlignment; }
 
 	/**
-	 * Queues the index and vertex data to be transferred before the next frame is drawn.
-	 * @param buffer The vertex buffer to upload to.
-	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
-	 * @param offset The offset into the vertex buffer to place the vertex data.
-	 * @param size The size of the vertex data.
-	 * @param vertexData The vertex data to upload.
-	 * @param indexOffset The offset into the index buffer to place the index data.
-	 * @param indexSize The size of the index data.
-	 * @param indexData The index data to upload.
+	 * Allocates a descriptor set for the material. This can be called more than once
+	 * for the same material - subsequent calls should be ignored.
+	 * @param model The material to allocate a descriptor set for.
 	 */
-	void uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override;
-
-	/**
-	 * Removes the mesh from the rendering engine. No allocated memory is modified.
-	 * @param mesh The mesh being removed.
-	 */
-	void invalidateMesh(const std::string& mesh) override { meshMap.erase(mesh); }
-
-	/**
-	 * Allocates a descriptor set for the model. The model is guaranteed to be static,
-	 * as dynamic models use descriptors that are determined during initialization and
-	 * that use dynamic offsets. This can be called more than once for the same model -
-	 * subsequent calls are ignored.
-	 * @param model The model to allocate a descriptor set for.
-	 */
-	void addModelDescriptors(const Model& model) override;
-
-	/**
-	 * Similar to above, but just adds a reference to one of the dynamic descriptors.
-	 * @param model The model to add a descriptor for.
-	 */
-	void addDynamicDescriptors(const Model& model) override { descriptorSets.insert({model.name, descriptorSets.at(model.uniformSet)}); }
-
-	/**
-	 * Removes the descriptor reference created by addDynamicDescriptors.
-	 * @param model The model to remove descriptors for.
-	 */
-	void removeDynamicDescriptors(const Model& model) override { descriptorSets.erase(model.name); }
-
-	/**
-	 * Uploads model uniform data to a uniform buffer.
-	 * @param buffer The uniform buffer to upload to.
-	 * @param offset The offset of the data into the buffer.
-	 * @param size The size of the data.
-	 * @param data The data to upload.
-	 */
-	void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) override;
+	void addMaterialDescriptors(const Material& material) override { /** TODO **/ }
 
 private:
 	//Object handler for vulkan objects.
@@ -398,10 +357,9 @@ private:
 	 */
 	static constexpr size_t bufferIndexFromSetType(const UniformSetType type) {
 		switch (type) {
-			case UniformSetType::MODEL_STATIC: return 0;
-			case UniformSetType::MODEL_DYNAMIC: return 1;
-			case UniformSetType::PER_SCREEN: return 2;
-			case UniformSetType::PER_OBJECT: return 2;
+			case UniformSetType::MATERIAL: return 0;
+			case UniformSetType::PER_SCREEN: return 1;
+			case UniformSetType::PER_OBJECT: return 1;
 			//Should be optimized better than an exception?
 			default: return 0xFFFFFFFFFFFFFFFF;
 		}

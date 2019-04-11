@@ -22,7 +22,7 @@
 
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
-#include "ModelLoader.hpp"
+#include "Models/ModelLoader.hpp"
 #include "RenderInitializer.hpp"
 #include "DisplayEngine.hpp"
 

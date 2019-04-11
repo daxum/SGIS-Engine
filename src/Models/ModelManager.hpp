@@ -22,7 +22,7 @@
 
 #include "Material.hpp"
 #include "Mesh.hpp"
-#include "RendererMemoryManager.hpp"
+#include "Renderer/RendererMemoryManager.hpp"
 #include "EngineConfig.hpp"
 #include "Logger.hpp"
 
@@ -71,7 +71,7 @@ public:
 	 * @return A reference to the requested material.
 	 * @throw std::out_of_range If the material doesn't exist.
 	 */
-	std::shared_ptr<MaterialRef> getMaterial(const std::string& material) { return std::make_shared<MaterialRef>(materialMap.at(material)); }
+	std::shared_ptr<MaterialRef> getMaterial(const std::string& material) { return std::make_shared<MaterialRef>(this, material, &materialMap.at(material)); }
 
 	/**
 	 * Gets a mesh. If the mesh is not yet stored at the specified cache level,

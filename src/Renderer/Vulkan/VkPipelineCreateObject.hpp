@@ -22,8 +22,7 @@
 
 #include "VkObjectHandler.hpp"
 #include "VkRenderObjects.hpp"
-#include "VertexBuffer.hpp"
-#include "ShaderInfo.hpp"
+#include "Renderer/ShaderInfo.hpp"
 
 class VkPipelineCreateObject {
 public:
@@ -33,9 +32,9 @@ public:
 	 * @param renderObjects The swapchain handler, for the extent.
 	 * @param moduleInfos An array of the shader modules used in the pipeline.
 	 * @param renderPass The render pass the pipeline is in - this is for transparency, not VkRenderPass.
-	 * @param buffer The vertex buffer to pull vertex data from, used to get the input format.
+	 * @param format The format of the vertex input data.
 	 */
-	VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer);
+	VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexFormat& format);
 
 	/**
 	 * Copy constructor.
@@ -62,8 +61,8 @@ private:
 	VkRenderObjects& renderObjects;
 	//The render pass for the pipeline, determines blend state.
 	RenderPass renderPass;
-	//Vertex buffer object.
-	const VertexBuffer& buffer;
+	//Vertex format object.
+	const VertexFormat& buffer;
 
 	//Structures needed to create a pipeline, and that shouldn't change whenever
 	//the pipeline needs to be recreated.
@@ -86,23 +85,23 @@ private:
 
 	/**
 	 * Creates attribute descriptions for the passed in vertex format.
-	 * @param bufferFormat The format of the buffer that will be used.
+	 * @param format The format of the vertex data.
 	 * @return A vector of attribute description structures.
 	 */
-	std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescription(const VertexBuffer& buffer) const;
+	std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescription(const VertexFormat& format) const;
 
 	/**
 	 * Converts the type to a VkFormat.
 	 * @param type The type to convert.
 	 * @return The corresponding format.
 	 */
-	static constexpr VkFormat formatFromVertexType(const VertexElementType type) {
+	static constexpr VkFormat formatFromVertexType(const VertexFormat::ElementType type) {
 		switch (type) {
-			case VertexElementType::FLOAT: return VK_FORMAT_R32_SFLOAT;
-			case VertexElementType::VEC2: return VK_FORMAT_R32G32_SFLOAT;
-			case VertexElementType::VEC3: return VK_FORMAT_R32G32B32_SFLOAT;
-			case VertexElementType::VEC4: return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case VertexElementType::UINT32: return VK_FORMAT_R32_UINT;
+			case VertexFormat::ElementType::FLOAT: return VK_FORMAT_R32_SFLOAT;
+			case VertexFormat::ElementType::VEC2: return VK_FORMAT_R32G32_SFLOAT;
+			case VertexFormat::ElementType::VEC3: return VK_FORMAT_R32G32B32_SFLOAT;
+			case VertexFormat::ElementType::VEC4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case VertexFormat::ElementType::UINT32: return VK_FORMAT_R32_UINT;
 			default: return VK_FORMAT_UNDEFINED;
 		}
 	}
