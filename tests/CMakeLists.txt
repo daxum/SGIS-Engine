@@ -2,7 +2,7 @@
 
 add_executable(memAllocTest
 	memAllocTest.cpp
-	../src/MemoryAllocator.cpp
+	../src/Renderer/MemoryAllocator.cpp
 	../src/ExtraMath.cpp
 )
 
@@ -19,8 +19,8 @@ endif()
 
 add_executable(vertexTest
 	vertexTest.cpp
-	../src/Vertex.cpp
-	../src/VertexBuffer.cpp
+	../src/Models/Vertex.cpp
+	../src/Models/VertexFormat.cpp
 )
 
 set_target_properties(vertexTest PROPERTIES

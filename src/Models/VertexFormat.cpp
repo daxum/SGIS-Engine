@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <stdexcept>
+
 #include "VertexFormat.hpp"
 
-VertexFormat::VertexFormat(const std::vector<VertexElement>& layout) :
+VertexFormat::VertexFormat(const std::vector<Element>& layout) :
 	vertexSize(0) {
 
 	size_t totalSize = 0;
@@ -28,7 +30,7 @@ VertexFormat::VertexFormat(const std::vector<VertexElement>& layout) :
 			.name = element.name,
 			.type = element.type,
 			.offset = totalSize,
-			.size = sizeFromVertexType(element.type),
+			.size = typeSize(element.type),
 		};
 
 		totalSize += data.size;
@@ -40,7 +42,7 @@ VertexFormat::VertexFormat(const std::vector<VertexElement>& layout) :
 }
 
 bool VertexFormat::hasElement(const std::string& name) const {
-	for (ElementData& data : format) {
+	for (const ElementData& data : format) {
 		if (data.name == name) {
 			return true;
 		}
@@ -49,7 +51,7 @@ bool VertexFormat::hasElement(const std::string& name) const {
 	return false;
 }
 
-ElementData& VertexFormat::getElement(const std::string& name) {
+VertexFormat::ElementData& VertexFormat::getElement(const std::string& name) {
 	for (ElementData& data : format) {
 		if (data.name == name) {
 			return data;
@@ -59,8 +61,8 @@ ElementData& VertexFormat::getElement(const std::string& name) {
 	throw std::out_of_range("Vertex element not present in format!");
 }
 
-const ElementData& VertexFormat::getElement(const std::string& name) const {
-	for (ElementData& data : format) {
+const VertexFormat::ElementData& VertexFormat::getElement(const std::string& name) const {
+	for (const ElementData& data : format) {
 		if (data.name == name) {
 			return data;
 		}

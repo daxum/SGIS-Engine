@@ -44,7 +44,7 @@ public:
 		//Name of the element.
 		std::string name;
 		//Type of the vertex element.
-		VertexElementType type;
+		ElementType type;
 	};
 
 	/**
@@ -76,7 +76,7 @@ public:
 	 * @return whether the types matched.
 	 * @throw std::out_of_range if the name is not part of the buffer.
 	 */
-	bool checkType(const std::string& name, VertexElementType type) const {
+	bool checkType(const std::string& name, ElementType type) const {
 		return getElement(name).type == type;
 	}
 
@@ -116,8 +116,10 @@ public:
 private:
 	//Internal representation of vertex elements.
 	struct ElementData {
+		//Name of the element.
+		std::string name;
 		//Type of the element.
-		VertexElementType type;
+		ElementType type;
 		//offset (in bytes) from the start of the vertex.
 		size_t offset;
 		//Size of the element.

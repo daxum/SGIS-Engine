@@ -20,7 +20,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#include "../src/VertexBuffer.hpp"
+#include "../src/Models/Vertex.hpp"
 
 bool checkHash(const Vertex& v1, const Vertex& v2) {
 	if (std::hash<Vertex>()(v1) != std::hash<Vertex>()(v2)) {
@@ -33,17 +33,17 @@ bool checkHash(const Vertex& v1, const Vertex& v2) {
 }
 
 int main(int argc, char** argv) {
-	std::vector<VertexElement> vertexFormat = {
-		{VERTEX_ELEMENT_POSITION, VertexElementType::VEC3},
-		{VERTEX_ELEMENT_NORMAL, VertexElementType::VEC3},
-		{VERTEX_ELEMENT_TEXTURE, VertexElementType::VEC2}
+	std::vector<VertexFormat::Element> vertexFormat = {
+		{VERTEX_ELEMENT_POSITION, VertexFormat::ElementType::VEC3},
+		{VERTEX_ELEMENT_NORMAL, VertexFormat::ElementType::VEC3},
+		{VERTEX_ELEMENT_TEXTURE, VertexFormat::ElementType::VEC2}
 	};
 
-	VertexBuffer buffer(vertexFormat, 0, BufferUsage::STREAM, std::shared_ptr<RenderBufferData>());
+	VertexFormat format(vertexFormat);
 
 	//Check vertex hash function
-	Vertex vert1 = buffer.getVertex();
-	Vertex vert2 = buffer.getVertex();
+	Vertex vert1(&format);
+	Vertex vert2(&format);
 
 	vert1.setVec3(VERTEX_ELEMENT_POSITION, glm::vec3(0.1, 2.3, 4.5));
 	vert1.setVec3(VERTEX_ELEMENT_NORMAL, glm::vec3(6.7, 8.9, 10.11));

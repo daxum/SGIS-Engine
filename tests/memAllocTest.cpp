@@ -19,7 +19,7 @@
 #include <iostream>
 #include <vector>
 
-#include "../src/MemoryAllocator.hpp"
+#include "../src/Renderer/MemoryAllocator.hpp"
 #include "../src/ExtraMath.hpp"
 
 const size_t MEM_AMOUNT = 100;

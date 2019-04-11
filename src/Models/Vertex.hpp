@@ -101,7 +101,7 @@ public:
 	friend bool operator==(const Vertex& v1, const Vertex& v2) {
 		//memcmp returns zero if blocks match.
 		//TODO: Are formats for sure going to be singletons?
-		return v1.format == v2.format && !memcmp(v1.vertexData, v2.vertexData, v1.size);
+		return v1.format == v2.format && !memcmp(v1.vertexData, v2.vertexData, v1.getSize());
 	}
 
 	/**
@@ -144,7 +144,7 @@ public:
 
 private:
 	//The element layout of this vertex.
-	VertexFormat* format;
+	const VertexFormat* format;
 	//The data for this vertex. Originally this was going to use template metaprogramming
 	//to auto-generate a vertex struct for each format, but that turned out to be too
 	//impractical, so now we're throwing safety to the wind and doing it this way instead.

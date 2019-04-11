@@ -2,15 +2,15 @@ set(ENGINE_FILES
 	Engine.cpp
 	TextureLoader.cpp
 	ExtraMath.cpp
-	ModelLoader.cpp
-	Model.cpp
+	Models/ModelLoader.cpp
+	Models/Material.cpp
 	DisplayEngine.cpp
 	Screen.cpp
 	RenderComponent.cpp
 	ComponentManager.cpp
 	AIComponentManager.cpp
 	PhysicsComponentManager.cpp
-	MatrixStack.cpp
+	Renderer/MatrixStack.cpp
 	PhysicsComponent.cpp
 	Object.cpp
 	RenderComponentManager.cpp
@@ -20,18 +20,17 @@ set(ENGINE_FILES
 	TextComponent.cpp
 	SplineAnimation.cpp
 	AnimationComponent.cpp
-	GlfwInterface.cpp
-	Vertex.cpp
-	VertexBuffer.cpp
-	MemoryAllocator.cpp
-	RendererMemoryManager.cpp
-	ModelManager.cpp
-	RenderingEngine.cpp
-	Std140Aligner.cpp
+	Renderer/GlfwInterface.cpp
+	Models/Vertex.cpp
+	Renderer/MemoryAllocator.cpp
+	Renderer/RendererMemoryManager.cpp
+	Models/ModelManager.cpp
+	Renderer/RenderingEngine.cpp
+	Renderer/Std140Aligner.cpp
 	PhysicsObject.cpp
 	UpdateComponentManager.cpp
 	UpdateComponent.cpp
-	VertexFormat.hpp
+	Models/VertexFormat.hpp
 )
 
 if (USE_OPENGL)
