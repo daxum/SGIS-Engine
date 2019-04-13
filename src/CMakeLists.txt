@@ -31,6 +31,7 @@ set(ENGINE_FILES
 	UpdateComponentManager.cpp
 	UpdateComponent.cpp
 	Models/VertexFormat.hpp
+	Renderer/Buffer.cpp
 )
 
 if (USE_OPENGL)

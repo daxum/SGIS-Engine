@@ -68,24 +68,35 @@ public:
 
 	/**
 	 * Returns whether the buffer contains an allocation with the given name.
-	 * If the allocation is inactive but present, it is reactivated here.
+	 * If the allocation exists, it will be marked as used, on the assumption
+	 * that the caller wouldn't be checking if it didn't want the memory.
 	 * @param name The name to check.
 	 * @return Whether an allocation has been made using the provided name.
 	 */
-	bool hasAlloc(const std::string& name);
+	bool hasAlloc(const std::string& name) {
+		if (allocations.count(name) && !allocations.at(name)->evicted) {
+			allocations.at(name)->inUse = true;
+			return true;
+		}
+
+		return false;
+	}
 
 	/**
 	 * Marks an allocation as not in use, so that its memory can be repurposed
 	 * if space runs out.
 	 * @param name The name referencing the allocation.
 	 */
-	void setUnused(const std::string& name);
+	void setUnused(const std::string& name) { allocations.at(name)->inUse = false; }
 
 	/**
 	 * Completely frees an allocation from the buffer.
 	 * @param name The allocation to free.
 	 */
-	void free(const std::string& name);
+	void free(const std::string& name) {
+		allocations.at(name)->inUse = false;
+		allocations.erase(name);
+	}
 
 	/**
 	 * Writes the data into the buffer at the provided offset. This does
