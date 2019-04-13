@@ -30,8 +30,10 @@ struct TextMeshInfo {
 	std::string font;
 	//The text in the mesh.
 	std::u32string text;
-	//The buffer to store the mesh in.
-	std::string buffer;
+	//The vertex buffer to store the mesh in.
+	std::string vertexBuffer;
+	//The index buffer to store the mesh in.
+	std::string indexBuffer;
 	//The format of the text vertices.
 	std::string format;
 };

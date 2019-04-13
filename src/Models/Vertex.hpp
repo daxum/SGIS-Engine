@@ -79,11 +79,11 @@ public:
 	 * @throw std::out_of_range if the name doesn't exist or std::runtime_error if the type
 	 *     for the name doesn't match the function's type.
 	 */
-	float getFloat(const std::string& name) { return *(float*) getDataVal(name, VertexFormat::ElementType::FLOAT); }
-	glm::vec2 getVec2(const std::string& name) { return *(glm::vec2*) getDataVal(name, VertexFormat::ElementType::VEC2); }
-	glm::vec3 getVec3(const std::string& name) { return *(glm::vec3*) getDataVal(name, VertexFormat::ElementType::VEC3); }
-	glm::vec4 getVec4(const std::string& name) { return *(glm::vec4*) getDataVal(name, VertexFormat::ElementType::VEC4); }
-	uint32_t getUint32(const std::string& name) { return *(uint32_t*) getDataVal(name, VertexFormat::ElementType::UINT32); }
+	float getFloat(const std::string& name) const { return *(const float*) getDataVal(name, VertexFormat::ElementType::FLOAT); }
+	glm::vec2 getVec2(const std::string& name) const { return *(const glm::vec2*) getDataVal(name, VertexFormat::ElementType::VEC2); }
+	glm::vec3 getVec3(const std::string& name) const { return *(const glm::vec3*) getDataVal(name, VertexFormat::ElementType::VEC3); }
+	glm::vec4 getVec4(const std::string& name) const { return *(const glm::vec4*) getDataVal(name, VertexFormat::ElementType::VEC4); }
+	uint32_t getUint32(const std::string& name) const { return *(const uint32_t*) getDataVal(name, VertexFormat::ElementType::UINT32); }
 
 	/**
 	 * Returns the vertex data for copying into a buffer.
@@ -168,7 +168,7 @@ private:
 	 * @return The data stored at the given name.
 	 * @throw std::out_of_range if name not found, std::runtime_error if name has the wrong type.
 	 */
-	void* getDataVal(const std::string& name, VertexFormat::ElementType expectedType);
+	const void* getDataVal(const std::string& name, VertexFormat::ElementType expectedType) const;
 };
 
 namespace std {

@@ -26,14 +26,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-void ModelLoader::loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& bufferName, const std::string& uniformSet, bool viewCull) {
-	if (!modelManager.hasMesh(filename)) {
-		const VertexFormat* format = nullptr; //TODO: Get from wherever vertex formats are stored
-		loadMesh(filename, format, bufferName);
-	}
-
-	Material material(name, shader, uniformSet, modelManager.getMemoryManager()->getUniformSet(uniformSet), viewCull);
-	material.textures.push_back(texture);
+void ModelLoader::loadMaterial(const std::string& name, const MaterialCreateInfo& matInfo) {
+	Material material(name, matInfo.shader, matInfo.uniformSet, modelManager.getMemoryManager()->getUniformSet(matInfo.uniformSet), matInfo.viewCull);
+	material.textures.push_back(matInfo.texture);
 
 	if (material.uniforms.hasUniform("ka", UniformType::VEC3)) {
 		material.uniforms.setVec3("ka", {1.0f, 0.0f, 1.0f});
@@ -52,29 +47,35 @@ void ModelLoader::loadModel(const std::string& name, const std::string& filename
 	}
 
 	modelManager.addMaterial(name, std::move(material));
-	ENGINE_LOG_DEBUG(logger, "Loaded model \"" + Engine::instance->getConfig().resourceBase + filename + "\" as \"" + name + "\".");
+	ENGINE_LOG_DEBUG(logger, "Loaded material \"" + Engine::instance->getConfig().resourceBase + matInfo.filename + "\" as \"" + name + "\"");
 }
 
-void ModelLoader::loadMesh(const std::string& filename, const VertexFormat* format, const std::string& bufferName) {
-	std::shared_ptr<ModelData> data = loadFromDisk(Engine::instance->getConfig().resourceBase + filename, format);
+void ModelLoader::loadMesh(const std::string& name, const MeshCreateInfo& meshInfo) {
+	//TODO: get vertex format
+	const VertexFormat* format = nullptr;
+	MeshData data = loadFromDisk(Engine::instance->getConfig().resourceBase + meshInfo.filename, format);
 
 	Aabb<float> box = calculateBox(data);
-	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for mesh " + filename);
+	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for mesh " + name);
 
 	float radius = calculateMaxRadius(data, box.getCenter());
 	ENGINE_LOG_DEBUG(logger, "Radius of mesh is " + std::to_string(radius));
 
 	Mesh::BufferInfo bufferInfo = {};
-	bufferInfo.vertexName = bufferName;
-	bufferInfo.indexName = bufferName + "idx";
-	bufferInfo.vertex = modelManager.getMemoryManager()->getBuffer(bufferInfo.vertexName);
-	bufferInfo.index = modelManager.getMemoryManager()->getBuffer(bufferInfo.indexName);
 
-	modelManager.addMesh(filename, Mesh(bufferInfo, format, data->vertices, data->indices, box, radius), true);
+	if (meshInfo.renderable) {
+		bufferInfo.vertexName = meshInfo.vertexBuffer;
+		bufferInfo.indexName = meshInfo.indexBuffer;
+		bufferInfo.vertex = modelManager.getMemoryManager()->getBuffer(bufferInfo.vertexName);
+		bufferInfo.index = modelManager.getMemoryManager()->getBuffer(bufferInfo.indexName);
+	}
+
+	modelManager.addMesh(name, Mesh(bufferInfo, format, data.vertices, data.indices, box, radius), true);
+	ENGINE_LOG_DEBUG(logger, "Loaded mesh \"" + Engine::instance->getConfig().resourceBase + meshInfo.filename + "\" as \"" + name + "\"");
 }
 
-std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const VertexFormat* format) {
-	std::shared_ptr<ModelData> data = std::make_shared<ModelData>();
+MeshData ModelLoader::loadFromDisk(const std::string& filename, const VertexFormat* format) {
+	MeshData data;
 
 	ENGINE_LOG_DEBUG(logger, "Loading model \"" + filename + "\".");
 
@@ -128,34 +129,34 @@ std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename
 			}
 
 			if (uniqueVertices.count(vertex) == 0) {
-				uniqueVertices[vertex] = data->vertices.size();
-				data->vertices.push_back(vertex);
+				uniqueVertices[vertex] = data.vertices.size();
+				data.vertices.push_back(vertex);
 			}
 
-			data->indices.push_back(uniqueVertices.at(vertex));
+			data.indices.push_back(uniqueVertices.at(vertex));
 		}
 	}
 
 	ENGINE_LOG_DEBUG(logger,
 		"File \"" + filename + "\" loaded from disk. Stats:" +
-		"\n\tVertices:          " + std::to_string(data->vertices.size()) +
-		"\n\tIndices:           " + std::to_string(data->indices.size()) +
-		"\n\tTotal loaded size: " + std::to_string(data->vertices.size() * (data->vertices.empty() ? 0 : data->vertices.at(0).getSize()) + data->indices.size() * sizeof(uint32_t)) + " bytes");
+		"\n\tVertices:          " + std::to_string(data.vertices.size()) +
+		"\n\tIndices:           " + std::to_string(data.indices.size()) +
+		"\n\tTotal loaded size: " + std::to_string(data.vertices.size() * format->getVertexSize() + data.indices.size() * sizeof(uint32_t)) + " bytes");
 
 	return data;
 }
 
-Aabb<float> ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
-	if (data->vertices.size() == 0) {
+Aabb<float> ModelLoader::calculateBox(const MeshData& data) const {
+	if (data.vertices.size() == 0) {
 		ENGINE_LOG_WARN(logger, "Zero vertex mesh loaded?!");
 		return Aabb<float>(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
 	}
 
-	glm::vec3 max = data->vertices.at(0).getVec3(VERTEX_ELEMENT_POSITION);
+	glm::vec3 max = data.vertices.at(0).getVec3(VERTEX_ELEMENT_POSITION);
 	glm::vec3 min(max);
 
-	for (size_t i = 1; i < data->vertices.size(); i++) {
-		const glm::vec3 current = data->vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
+	for (size_t i = 1; i < data.vertices.size(); i++) {
+		const glm::vec3 current = data.vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
 
 		max.x = std::max(max.x, current.x);
 		max.y = std::max(max.y, current.y);
@@ -169,16 +170,16 @@ Aabb<float> ModelLoader::calculateBox(std::shared_ptr<ModelData> data) const {
 	return Aabb<float>(min, max);
 }
 
-float ModelLoader::calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) const {
-	if (data->vertices.size() == 0) {
+float ModelLoader::calculateMaxRadius(const MeshData& data, glm::vec3 center) const {
+	if (data.vertices.size() == 0) {
 		ENGINE_LOG_WARN(logger, "Zero vertex mesh loaded?!");
 		return 0.0f;
 	}
 
 	float maxDistSq = 0.0f;
 
-	for (size_t i = 0; i < data->vertices.size(); i++) {
-		const glm::vec3 current = data->vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
+	for (size_t i = 0; i < data.vertices.size(); i++) {
+		const glm::vec3 current = data.vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
 
 		float vertDistSq = glm::dot(current, current);
 

@@ -38,7 +38,7 @@ void Vertex::setDataVal(const std::string& name, VertexFormat::ElementType expec
 	memcpy(vertexData + offset, data, dataSize);
 }
 
-void* Vertex::getDataVal(const std::string& name, VertexFormat::ElementType expectedType) {
+const void* Vertex::getDataVal(const std::string& name, VertexFormat::ElementType expectedType) const {
 	if (!format->checkType(name, expectedType)) {
 		throw std::runtime_error("Type for vertex element \"" + name + "\" doesn't match!");
 	}

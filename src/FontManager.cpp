@@ -108,8 +108,8 @@ void FontManager::createTextMesh(const TextMeshInfo& meshInfo) {
 	Aabb<float> box(glm::vec3(0.0, lowestY, -0.01), glm::vec3(farthestX, 0.0, 0.01));
 
 	Mesh::BufferInfo bufferInfo = {};
-	bufferInfo.vertexName = meshInfo.buffer;
-	bufferInfo.indexName = meshInfo.buffer + "idx";
+	bufferInfo.vertexName = meshInfo.vertexBuffer;
+	bufferInfo.indexName = meshInfo.indexBuffer;
 	bufferInfo.vertex = modelManager.getMemoryManager()->getBuffer(bufferInfo.vertexName);
 	bufferInfo.index = modelManager.getMemoryManager()->getBuffer(bufferInfo.indexName);
 
@@ -126,7 +126,7 @@ std::string FontManager::getMeshName(const TextMeshInfo& meshInfo) const {
 		out += textPtr[i];
 	}
 
-	out += meshInfo.buffer + meshInfo.format;
+	out += meshInfo.vertexBuffer + meshInfo.indexBuffer + meshInfo.format;
 
 	return out;
 }

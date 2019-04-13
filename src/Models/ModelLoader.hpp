@@ -29,11 +29,40 @@
 
 class ModelManager;
 
-struct ModelData {
+struct MeshData {
 	//The vertices in the model's mesh.
 	std::vector<Vertex> vertices;
 	//The indices for the draw order of the vertices.
 	std::vector<uint32_t> indices;
+};
+
+struct MaterialCreateInfo {
+	//The material file to load from.
+	std::string filename;
+	//The texture for the material. Only here until material file
+	//loading is complete.
+	std::string texture;
+	//The shader to use to render the material.
+	std::string shader;
+	//The uniform set the material uses. Must be compatible with the shader.
+	std::string uniformSet;
+	//Whether to perform view culling for this material. Is this the right
+	//place for this?
+	bool viewCull;
+};
+
+struct MeshCreateInfo {
+	//The file to load the mesh from.
+	std::string filename;
+	//The vertex buffer to store the mesh in.
+	std::string vertexBuffer;
+	//The buffer to place the mesh's indices in.
+	std::string indexBuffer;
+	//The format of the mesh's vertices.
+	std::string vertexFormat;
+	//Whether the mesh is intended to be rendered. If false, the vertexBuffer
+	//and indexBuffer parameters will be ignored.
+	bool renderable;
 };
 
 class ModelLoader {
@@ -53,26 +82,19 @@ public:
 	virtual ~ModelLoader() {}
 
 	/**
-	 * Loads a model from disk and makes it ready for use in drawing.
-	 * This is a temporary interface until the model loader gets rewritten
-	 * to be more flexible. For now, it only supports .obj models.
-	 * TODO: Too many parameters. Move to struct?
-	 * @param name The name to store the loaded model under.
-	 * @param filename The filename for the model to load.
-	 * @param texture The texture to use for the model.
-	 * @param shader The shader to use for the model.
-	 * @param buffer The buffer the model's mesh goes in.
-	 * @param uniformSet The uniform set the model uses.
-	 * @param lighting The lighting information for the model.
-	 * @param viewCull Whether to cull the object when it can't be seen by the camera.
+	 * Loads a material from disk and makes it ready for rendering. This
+	 * currently only supports .mtl files.
+	 * @param name The name for the material.
+	 * @param matInfo information about the material to load.
 	 */
-	void loadModel(const std::string& name, const std::string& filename, const std::string& texture, const std::string& shader, const std::string& bufferName, const std::string& uniformSet, bool viewCull = true);
+	void loadMaterial(const std::string& name, const MaterialCreateInfo& matInfo);
 
 	/**
-	 * TODO: Possibly temp?
-	 * This doesn't upload to the rendering engine, despite the buffer parameter.
+	 * Loads a mesh from disk and adds it to the model manager.
+	 * @param name The name to store the mesh under.
+	 * @param meshInfo The information required to load the mesh.
 	 */
-	void loadMesh(const std::string& filename, const VertexFormat* format, const std::string& bufferName);
+	void loadMesh(const std::string& name, const MeshCreateInfo& meshInfo);
 
 protected:
 	//The logger.
@@ -87,14 +109,14 @@ protected:
 	 * @return a pointer to the loaded model data.
 	 * @throw runtime_error if model loading failed.
 	 */
-	std::shared_ptr<ModelData> loadFromDisk(const std::string& filename, const VertexFormat* format);
+	MeshData loadFromDisk(const std::string& filename, const VertexFormat* format);
 
 	/**
 	 * Calculates a bounding box for a model's mesh.
 	 * @param data The model data to calculate a box for.
 	 * @return a box for the mesh.
 	 */
-	Aabb<float> calculateBox(std::shared_ptr<ModelData> data) const;
+	Aabb<float> calculateBox(const MeshData& data) const;
 
 	/**
 	 * Calculates the maximum radius of the model.
@@ -102,5 +124,5 @@ protected:
 	 * @param center The center of the model.
 	 * @return The distance of the farthest vertex from the center.
 	 */
-	float calculateMaxRadius(std::shared_ptr<ModelData> data, glm::vec3 center) const;
+	float calculateMaxRadius(const MeshData& data, glm::vec3 center) const;
 };
