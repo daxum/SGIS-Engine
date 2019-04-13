@@ -19,21 +19,6 @@
 #include "Material.hpp"
 #include "ModelManager.hpp"
 
-/* TODO: Move to UniformSet's constructor
-//Needed for model's constructor, maybe make member function?
-//Strips out all uniforms that don't belong in the model's uniform buffer.
-std::vector<UniformDescription> stripNonBufferedModel(const UniformSet& uniformSet) {
-	std::vector<UniformDescription> out;
-
-	for (const UniformDescription& uniform : uniformSet.uniforms) {
-		if (uniform.provider == UniformProviderType::MATERIAL && !isSampler(uniform.type)) {
-			out.push_back(uniform);
-		}
-	}
-
-	return out;
-}*/
-
 Material::Material(const std::string& name, const std::string& shader, const std::string& uniformSet, const UniformSet& uniformSetLayout, bool viewCull)  :
 	name(name),
 	shader(shader),

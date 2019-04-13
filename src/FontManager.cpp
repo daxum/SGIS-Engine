@@ -42,8 +42,7 @@ void FontManager::createTextMesh(const TextMeshInfo& meshInfo) {
 	float yPos = 0.0f;
 
 	const Font& font = fontMap.at(meshInfo.font);
-	//TODO: Fetch format
-	const VertexFormat* textFormat = nullptr;
+	const VertexFormat* textFormat = modelManager.getFormat(meshInfo.format);
 
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;

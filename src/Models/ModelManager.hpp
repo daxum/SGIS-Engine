@@ -84,6 +84,14 @@ public:
 	std::shared_ptr<MeshRef> getMesh(const std::string& mesh, CacheLevel requiredLevel);
 
 	/**
+	 * Gets a vertex format from the ModelManager. Used for creating meshes and shaders.
+	 * @param name The name of the format.
+	 * @return The requested format.
+	 * @throw std::out_of_range If the format didn't exist.
+	 */
+	const VertexFormat* getFormat(const std::string& name) const { return &formats.at(name); }
+
+	/**
 	 * Adds a mesh to the model manager. Mesh persistence is determined by the
 	 * buffer it uses, and it will not ever be removed until at least one model
 	 * has referenced it.
@@ -135,6 +143,14 @@ public:
 	void removeMeshReference(const std::string meshName, CacheLevel level);
 
 	/**
+	 * Adds a vertex format for use by meshes. Only intended to be called from
+	 * renderInitializer.
+	 * @param name The name of the format.
+	 * @param format The format to add.
+	 */
+	void addFormat(const std::string& name, const VertexFormat& format) { formats.emplace(name, format); }
+
+	/**
 	 * Called from the engine to set the renderer memory manager.
 	 * @param manager A pointer the renderer's memory manager.
 	 */
@@ -166,4 +182,6 @@ private:
 	std::unordered_map<std::string, MeshData> meshMap;
 	//Map of materials.
 	std::unordered_map<std::string, Material> materialMap;
+	//Map of vertex formats for meshes.
+	std::unordered_map<std::string, VertexFormat> formats;
 };

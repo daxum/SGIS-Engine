@@ -41,13 +41,14 @@ public:
 	 * @param type What the buffer is going to be used for.
 	 * @param storage In what type of memory the buffer should be stored.
 	 */
-	void createBuffer(const std::string& name, size_t size, BufferType type, BufferStorage storage);
+	void createBuffer(const std::string& name, size_t size, BufferType type, BufferStorage storage) { memoryManager->addBuffer(name, size, type, storage); }
 
 	/**
 	 * Adds a vertex format to be used by meshes and shaders.
+	 * @param name The name of the format to add.
 	 * @param format The format to add.
 	 */
-	void addVertexFormat(const VertexFormat& format);
+	void addVertexFormat(const std::string& name, const VertexFormat& format) { Engine::instance->getModelManager().addFormat(name, format); }
 
 	/**
 	 * Adds a set of uniforms that can be used in shaders and materials.

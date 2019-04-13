@@ -100,7 +100,7 @@ public:
 	 */
 	friend bool operator==(const Vertex& v1, const Vertex& v2) {
 		//memcmp returns zero if blocks match.
-		//TODO: Are formats for sure going to be singletons?
+		//Formats are currently singletons, so pointer comparison here is fine.
 		return v1.format == v2.format && !memcmp(v1.vertexData, v2.vertexData, v1.getSize());
 	}
 

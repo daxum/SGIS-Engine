@@ -69,8 +69,6 @@ PhysicsObject::PhysicsObject(const std::string& meshName, const glm::vec3& pos) 
 	mesh(nullptr),
 	startingMass(0) {
 
-	//TODO: This will currently upload the mesh and model to the rendering engine.
-	//Prevent this in the future?
 	std::shared_ptr<const MeshRef> meshRef = Engine::instance->getModelManager().getMesh(meshName, CacheLevel::MEMORY);
 	const VertexFormat* format = meshRef->getMesh()->getFormat();
 

@@ -51,8 +51,7 @@ void ModelLoader::loadMaterial(const std::string& name, const MaterialCreateInfo
 }
 
 void ModelLoader::loadMesh(const std::string& name, const MeshCreateInfo& meshInfo) {
-	//TODO: get vertex format
-	const VertexFormat* format = nullptr;
+	const VertexFormat* format = modelManager.getFormat(meshInfo.vertexFormat);
 	MeshData data = loadFromDisk(Engine::instance->getConfig().resourceBase + meshInfo.filename, format);
 
 	Aabb<float> box = calculateBox(data);
