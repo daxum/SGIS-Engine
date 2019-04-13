@@ -41,12 +41,10 @@ struct ShaderInfo {
 	std::string fragment;
 	//The render pass the shader is part of.
 	RenderPass pass;
-	//The vertex buffer this shader takes its format from. This does not
-	//restrict the shader to use only this buffer, other buffers with
-	//the same format will also work.
-	std::string buffer;
+	//The vertex input format for this shader.
+	std::string format;
 	//Names of all the uniform sets used in the shader. Each shader can only
-	//have one of each type of uniform set.
+	//have one of each type of uniform set (object, material, screen).
 	std::vector<std::string> uniformSets;
 	//All push constant values used in the shader. The uniforms in this set
 	//should take up at most 128 bytes.

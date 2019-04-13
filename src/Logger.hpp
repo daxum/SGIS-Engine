@@ -78,10 +78,7 @@ class Logger {
 public:
 	/**
 	 * Constructs a logger that prints to the given string with the given levels enabled.
-	 * @param type The type of output file.
-	 * @param mask A set of LogLevel bits indicating which levels to enable. If the bit
-	 *     for a level is set, the logger will write messages for that level.
-	 * @param filename The filename to write to. Only used for LogType FILE.
+	 * @param config The configuration for this logger.
 	 */
 	Logger(const LogConfig& config) :
 		freeOut(true),
