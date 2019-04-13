@@ -51,18 +51,24 @@ void RendererMemoryManager::uniformBufferInit() {
 	uniformBuffers.at(UniformBufferType::SCREEN_OBJECT) = createBuffer(Buffer::Usage::UNIFORM_BUFFER, BufferStorage::DEVICE_HOST_VISIBLE, screenObjectSize);
 }
 
-void RendererMemoryManager::addBuffer(const std::string& name, size_t size, BufferStorage storage) {
+void RendererMemoryManager::addBuffer(const std::string& name, size_t size, BufferType type, BufferStorage storage) {
 	uint32_t transferUsage = 0;
 
 	if (storage == BufferStorage::DEVICE) {
 		transferUsage |= Buffer::Usage::TRANSFER_DST;
 	}
 
-	std::shared_ptr<Buffer> vertBuffer = createBuffer(Buffer::Usage::VERTEX_BUFFER | transferUsage, storage, size);
-	std::shared_ptr<Buffer> indexBuffer = createBuffer(Buffer::Usage::INDEX_BUFFER | transferUsage, storage, size);
+	uint32_t typeFlag = 0;
 
-	buffers.emplace(name, vertBuffer);
-	buffers.emplace(name + "idx", indexBuffer);
+	switch (type) {
+		case BufferType::VERTEX: typeFlag = Buffer::Usage::VERTEX_BUFFER; break;
+		case BufferType::INDEX: typeFlag = Buffer::Usage::INDEX_BUFFER; break;
+		default: throw std::runtime_error("Missing buffer type in RenderMemoryManager::addBuffer");
+	};
+
+	std::shared_ptr<Buffer> buffer = createBuffer(typeFlag | transferUsage, storage, size);
+
+	buffers.emplace(name, buffer);
 
 	ENGINE_LOG_INFO(logger, "Created buffer \"" + name + "\"");
 }

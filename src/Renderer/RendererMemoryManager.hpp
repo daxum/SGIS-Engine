@@ -59,14 +59,14 @@ public:
 	virtual void initializeDescriptors() = 0;
 
 	/**
-	 * Adds a vertex buffer to the memory manager. This currently also creates
-	 * an index buffer of the same size.
+	 * Adds a buffer to the memory manager.
 	 * @param name The name of the buffer.
 	 * @param size The size of the buffer, in bytes.
+	 * @param type The type of the buffer to create.
 	 * @param storage Where the buffer will be stored.
 	 * @throw std::runtime_error if not enough memory.
 	 */
-	void addBuffer(const std::string& name, size_t size, BufferStorage storage);
+	void addBuffer(const std::string& name, size_t size, BufferType type, BufferStorage storage);
 
 	/**
 	 * Adds a uniform set to the memory manager, and allocates descriptor sets or
