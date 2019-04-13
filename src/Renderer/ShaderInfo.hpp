@@ -31,11 +31,6 @@ enum class RenderPass {
 	TRANSPARENT,
 	TRANSLUCENT
 };
-/*
-constexpr bool isSampler(const UniformType type) {
-	return type == UniformType::SAMPLER_2D || type == UniformType::SAMPLER_CUBE;
-}
-*/
 
 typedef UniformList PushConstantSet;
 
