@@ -111,12 +111,27 @@ public:
 	 * @param type The type of uniform set, used for validation.
 	 * @param uniforms A list of uniforms in the set.
 	 */
-	UniformSet(UniformSetType type, size_t maxUsers, const UniformList& uniforms);
+	UniformSet(UniformSetType type, size_t maxUsers, const UniformList& uniforms) :
+		type(type),
+		maxUsers(maxUsers) {
 
-	/**
-	 * Allows subclasses to delete their junk.
-	 */
-	virtual ~UniformSet() {}
+		for (UniformDescription uniform : uniforms) {
+			//Pretty much everything here is intended to fallthrough.
+			switch (uniform.type) {
+				case UniformType::FLOAT:
+				case UniformType::VEC2:
+				case UniformType::VEC3:
+				case UniformType::VEC4:
+				case UniformType::MAT3:
+				case UniformType::MAT4:
+					bufferedUniforms.push_back(uniform); break;
+				case UniformType::SAMPLER_2D:
+				case UniformType::SAMPLER_CUBE:
+					otherUniforms.push_back(uniform); break;
+				default: throw std::runtime_error("Missing uniform type in UniformSet!");
+			}
+		}
+	}
 
 	/**
 	 * Gets the type of the uniform set.
