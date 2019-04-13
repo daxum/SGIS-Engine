@@ -22,11 +22,7 @@
 size_t Std140Aligner::getAlignedSize(const UniformSet& set) {
 	size_t currentSize = 0;
 
-	for (const UniformDescription& uniform : set.uniforms) {
-		if (isSampler(uniform.type)) {
-			continue;
-		}
-
+	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
 		//Increase size to account for padding
 		currentSize = ExMath::roundToVal<uint32_t>(currentSize, baseAlignment(uniform.type));
 		currentSize += alignedSize(uniform.type);
@@ -35,7 +31,7 @@ size_t Std140Aligner::getAlignedSize(const UniformSet& set) {
 	return currentSize;
 }
 
-Std140Aligner::Std140Aligner(const std::vector<UniformDescription>& uniforms) :
+Std140Aligner::Std140Aligner(const UniformList& uniforms) :
 	uniformData(nullptr),
 	dataSize(0) {
 

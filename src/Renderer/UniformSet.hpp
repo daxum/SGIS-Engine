@@ -111,7 +111,7 @@ public:
 	 * @param type The type of uniform set, used for validation.
 	 * @param uniforms A list of uniforms in the set.
 	 */
-	UniformSet(UniformSetType type, const UniformList& uniforms);
+	UniformSet(UniformSetType type, size_t maxUsers, const UniformList& uniforms);
 
 	/**
 	 * Allows subclasses to delete their junk.
@@ -123,6 +123,12 @@ public:
 	 * @return The type of the set.
 	 */
 	UniformSetType getType() const { return type; }
+
+	/**
+	 * Gets the maximum allowed users for this uniform set.
+	 * @return The max allowed users.
+	 */
+	size_t getMaxUsers() const { return maxUsers; }
 
 	/**
 	 * Gets all the buffered uniforms within the set.
@@ -139,6 +145,10 @@ public:
 private:
 	//The type of the set. Used for validation of element providers.
 	UniformSetType type;
+	//The maximum allowed users of the uniform set.
+	size_t maxUsers;
+	//List of uniforms stored in an uniform buffer.
 	UniformList bufferedUniforms;
+	//List of uniforms not stored in an uniform buffer (like samplers).
 	UniformList otherUniforms;
 };

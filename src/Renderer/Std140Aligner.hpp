@@ -53,7 +53,7 @@ public:
 	 * @param uniforms The uniforms that will be stored. Samplers and
 	 *     similar aren't allowed, for obvious reasons.
 	 */
-	Std140Aligner(const std::vector<UniformDescription>& uniforms);
+	Std140Aligner(const UniformList& uniforms);
 
 	/**
 	 * Turns out models need to be copied, and not having this function

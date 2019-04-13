@@ -20,10 +20,10 @@
 #include "ExtraMath.hpp"
 
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
-	logger(logConfig),
-	materialOffset(0) {}
+	logger(logConfig) {}
 
-void RendererMemoryManager::UniformBufferInit() {
+void RendererMemoryManager::uniformBufferInit() {
+	size_t materialSize = 0;
 	size_t screenObjectSize = 0;
 
 	for (const auto& setPair : uniformSets) {
@@ -33,9 +33,9 @@ void RendererMemoryManager::UniformBufferInit() {
 		size_t partiallyAlignedSize = Std140Aligner::getAlignedSize(set);
 		//Align aligned size to min uniform buffer alignment (at most 256)
 		size_t alignedSize = ExMath::roundToVal(partiallyAlignedSize, getMinUniformBufferAlignment());
-		alignedSize *= set.maxUsers;
+		alignedSize *= set.getMaxUsers();
 
-		switch (set.setType) {
+		switch (set.getType()) {
 			case UniformSetType::MATERIAL: materialSize += alignedSize; break;
 			//Multiply by three because can get uploaded once for each pass, fix later.
 			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize * 3; break;
@@ -44,147 +44,107 @@ void RendererMemoryManager::UniformBufferInit() {
 		}
 	}
 
-	createUniformBuffers(materialSize, screenObjectSize);
+	//TODO: Move max frames variable and add this
+	//screenObjectSize *= VkRenderingEngine::MAX_ACTIVE_FRAMES;
+
+	uniformBuffers.at(UniformBufferType::MATERIAL) = createBuffer(Buffer::Usage::UNIFORM_BUFFER | Buffer::Usage::TRANSFER_DST, BufferStorage::DEVICE, materialSize);
+	uniformBuffers.at(UniformBufferType::SCREEN_OBJECT) = createBuffer(Buffer::Usage::UNIFORM_BUFFER, BufferStorage::DEVICE_HOST_VISIBLE, screenObjectSize);
 }
 
-void RendererMemoryManager::addBuffer(const std::string& name, const VertexBufferInfo& info) {
-	std::shared_ptr<RenderBufferData> renderData = createBuffer(info.format, info.usage, info.size);
-	VertexBuffer buffer(info.format, info.size, info.usage, renderData);
+void RendererMemoryManager::addBuffer(const std::string& name, size_t size, BufferStorage storage) {
+	uint32_t transferUsage = 0;
 
-	buffers.insert({name, {
-		buffer,
-		MemoryAllocator(info.size),
-		MemoryAllocator(info.size)
-	}});
+	if (storage == BufferStorage::DEVICE) {
+		transferUsage |= Buffer::Usage::TRANSFER_DST;
+	}
+
+	std::shared_ptr<Buffer> vertBuffer = createBuffer(Buffer::Usage::VERTEX_BUFFER | transferUsage, storage, size);
+	std::shared_ptr<Buffer> indexBuffer = createBuffer(Buffer::Usage::INDEX_BUFFER | transferUsage, storage, size);
+
+	buffers.emplace(name, vertBuffer);
+	buffers.emplace(name + "idx", indexBuffer);
 
 	ENGINE_LOG_INFO(logger, "Created buffer \"" + name + "\"");
 }
 
-void RendererMemoryManager::addMesh(const std::string& name, const std::string& buffer, const unsigned char* vertexData, size_t dataSize, std::vector<uint32_t> indices) {
-	BufferData& bufferData = buffers.at(buffer);
+void RendererMemoryManager::addMesh(const std::string& name, Mesh* mesh) {
+	const Mesh::BufferInfo& bufferInfo = mesh->getBufferInfo();
+	Buffer* vertexBuffer = buffers.at(bufferInfo.vertexName).get();
+	Buffer* indexBuffer = buffers.at(bufferInfo.indexName).get();
 
-	if (bufferData.vertexAllocations.count(name)) {
-		throw std::runtime_error("Tried to reupload mesh!");
+	bool vertexPresent = vertexBuffer->hasAlloc(name);
+	bool indexPresent = indexBuffer->hasAlloc(name);
+
+	if (vertexPresent && indexPresent) {
+		return;
 	}
 
-	std::shared_ptr<AllocInfo> vertexAlloc = bufferData.vertexAllocator.getMemory(dataSize);
-	std::shared_ptr<AllocInfo> indexAlloc = bufferData.indexAllocator.getMemory(sizeof(uint32_t) * indices.size());
+	const unsigned char* vertexData = std::get<0>(mesh->getMeshData());
+	size_t vertexSize = std::get<1>(mesh->getMeshData());
+	std::vector<uint32_t> indices = std::get<2>(mesh->getMeshData());
 
-	bufferData.vertexAllocations.insert({name, vertexAlloc});
-	bufferData.indexAllocations.insert({name, indexAlloc});
+	std::shared_ptr<AllocInfo> vertexAlloc = vertexBuffer->allocate(name, vertexSize);
+	std::shared_ptr<AllocInfo> indexAlloc = indexBuffer->allocate(name, sizeof(uint32_t) * indices.size());
 
-	//Set index offsets
-	for (size_t i = 0; i < indices.size(); i++) {
-		indices.at(i) += vertexAlloc->start / bufferData.buffer.getVertexSize();
+	if (!indexPresent) {
+		//Set index offsets
+		for (size_t i = 0; i < indices.size(); i++) {
+			indices.at(i) += vertexAlloc->start / mesh->getFormat()->getVertexSize();
+		}
+
+		indexBuffer->write(indexAlloc->start, indexAlloc->size, (const unsigned char*) indices.data());
+		mesh->setIndexOffset(indexAlloc->start / sizeof(uint32_t));
 	}
 
-	uploadMeshData(bufferData.buffer, name, vertexAlloc->start, vertexAlloc->size, vertexData, indexAlloc->start, indexAlloc->size, indices.data());
+	if (!vertexPresent) {
+		vertexBuffer->write(vertexAlloc->start, vertexAlloc->size, vertexData);
+	}
 
 	ENGINE_LOG_DEBUG(logger, "Uploaded mesh \"" + name + "\" to rendering engine");
 }
 
-bool RendererMemoryManager::attemptSetUsed(const std::string& mesh, const std::string& buffer) {
-	if (buffer.empty()) {
-		ENGINE_LOG_FATAL(logger, "Attempted to upload non-rendering mesh (no vertex buffer set)!");
-		throw std::invalid_argument("Attempted to upload non-rendering mesh (no vertex buffer set)!");
+void RendererMemoryManager::freeMesh(const std::string& name, const Mesh* mesh, bool persist) {
+	const Mesh::BufferInfo& bufferInfo = mesh->getBufferInfo();
+	Buffer* vertexBuffer = buffers.at(bufferInfo.vertexName).get();
+	Buffer* indexBuffer = buffers.at(bufferInfo.indexName).get();
+
+	if (persist) {
+		//Set as not in use
+		vertexBuffer->setUnused(name);
+		indexBuffer->setUnused(name);
+
+		ENGINE_LOG_DEBUG(logger, "Marked mesh \"" + name + "\" in buffer \"" + bufferInfo.vertexName + "\" as unused");
 	}
+	else {
+		//If the mesh data is never needed again, just get rid of it.
+		vertexBuffer->free(name);
+		indexBuffer->free(name);
 
-	BufferData& bufferData = buffers.at(buffer);
-
-	//Mesh was never uploaded in the first place
-	if (!bufferData.vertexAllocations.count(mesh)) {
-		return false;
-	}
-
-	std::shared_ptr<AllocInfo> vertexAlloc = bufferData.vertexAllocations.at(mesh);
-	std::shared_ptr<AllocInfo> indexAlloc = bufferData.indexAllocations.at(mesh);
-
-	//If any of the mesh's data was evicted, it needs to be reuploaded. If only the indices/vertices were evicted,
-	//then the other needs to be changed to match, because addMesh always loads both.
-	//TODO: Change later?
-	if (vertexAlloc->evicted || indexAlloc->evicted) {
-		ENGINE_LOG_DEBUG(logger, "Mesh \"" + mesh + "\" from buffer \"" + buffer + "\" requested, but was evicted");
-
-		invalidateMesh(mesh);
-
-		bufferData.vertexAllocations.erase(mesh);
-		bufferData.indexAllocations.erase(mesh);
-
-		return false;
-	}
-
-	//Neither evicted, so reuse old data
-	if (!vertexAlloc->inUse || !indexAlloc->inUse) {
-		ENGINE_LOG_DEBUG(logger, "Reactivated mesh \"" + mesh + "\" in buffer \"" + buffer + "\"");
-
-		vertexAlloc->inUse = true;
-		indexAlloc->inUse = true;
-	}
-
-	return true;
-}
-
-void RendererMemoryManager::freeMesh(const std::string& mesh, const std::string& buffer) {
-	BufferData& bufferData = buffers.at(buffer);
-
-	if (!bufferData.vertexAllocations.count(mesh)) {
-		return;
-	}
-
-	//Set as not in use
-	std::shared_ptr<AllocInfo> vertexAlloc = bufferData.vertexAllocations.at(mesh);
-	std::shared_ptr<AllocInfo> indexAlloc = bufferData.indexAllocations.at(mesh);
-
-	vertexAlloc->inUse = false;
-	indexAlloc->inUse = false;
-
-	ENGINE_LOG_DEBUG(logger, "Marked mesh \"" + mesh + "\" in buffer \"" + buffer + "\" as unused");
-
-	//If the mesh data is never needed again, just get rid of it.
-	//Stream isn't really a stream buffer in the technical sense right now. It's just a
-	//DEDICATED_SINGLE buffer in system memory.
-	if (bufferData.buffer.getUsage() == BufferUsage::DEDICATED_SINGLE || bufferData.buffer.getUsage() == BufferUsage::STREAM) {
-		invalidateMesh(mesh);
-
-		bufferData.vertexAllocations.erase(mesh);
-		bufferData.indexAllocations.erase(mesh);
-
-		ENGINE_LOG_DEBUG(logger, "Deleted transitory mesh \"" + mesh + "\"");
+		ENGINE_LOG_DEBUG(logger, "Deleted transitory mesh \"" + name + "\"");
 	}
 }
 
-void RendererMemoryManager::addMaterial(const std::string& name, const Material& material) {
-	//If data is present, don't reupload
-	if (uploadedMaterials.count(name)) {
-		return;
-	}
+void RendererMemoryManager::addMaterial(const Material* material) {
+	std::shared_ptr<Buffer> matBuffer = uniformBuffers.at(UniformBufferType::MATERIAL);
 
-	//Determine set type, model type, and retrieve data
+	//Only upload uniforms if the material has them and they haven't been uploaded already
+	if (material->hasBufferedUniforms && !matBuffer->hasAlloc(material->name)) {
+		ENGINE_LOG_DEBUG(logger, "Uploading material uniform data for \"" + material->name + "\" to rendering engine");
 
-	const UniformSet& set = getUniformSet(material.uniformSet);
-
-	//Don't add buffered uniforms if the model doesn't have any
-	if (material.hasBufferedUniforms) {
-		ENGINE_LOG_DEBUG(logger, "Uploading material uniform data for \"" + name + "\" to rendering engine");
-
-		const unsigned char* materialData = material.uniforms.getData().first;
-		size_t dataSize = material.uniforms.getData().second;
+		const unsigned char* materialData = material->uniforms.getData().first;
+		size_t dataSize = material->uniforms.getData().second;
 
 		//Align the model data to the minimum alignment before allocating. If every allocation
 		//does this, all allocated memory will end up implicitly aligned.
 		size_t allocSize = ExMath::roundToVal(dataSize, getMinUniformBufferAlignment());
 
 		//Upload uniform data
+		std::shared_ptr<AllocInfo> uniAlloc = matBuffer->allocate(material->name, allocSize);
+		matBuffer->write(uniAlloc->start, uniAlloc->size, materialData);
 
-		uploadMaterialData(UniformBufferType::MATERIAL, materialOffset, dataSize, materialData);
-
-		//Use dataSize instead of allocation->size to avoid the padding, as the alignment only applies to offset
-		uploadedMaterials.insert(name);
-
-		ENGINE_LOG_DEBUG(logger, "Uploaded material uniform data for \"" + name + "\" to rendering engine");
+		ENGINE_LOG_DEBUG(logger, "Uploaded material uniform data for \"" + material->name + "\" to rendering engine");
 	}
 
-	//Allocate descriptor set.
-
+	//Allocate descriptor set
 	addMaterialDescriptors(material);
 }

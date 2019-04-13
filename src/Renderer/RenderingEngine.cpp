@@ -57,7 +57,7 @@ void RenderingEngine::render(const Screen* screen) {
 	};
 
 	Engine::instance->parallelFor(0, componentVec.size(), [&](size_t index) {
-		if (!(componentVec.at(index)->getModel()->getModel().viewCull) || checkVisible(cameraBox, view, componentVec.at(index), nearDist, farDist)) {
+		if (!(componentVec.at(index)->getModel().material->viewCull) || checkVisible(cameraBox, view, componentVec.at(index), nearDist, farDist)) {
 			visibleComponents.insert(componentVec.at(index));
 		}
 	});
@@ -72,7 +72,7 @@ bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::ve
 	const float far = -farDist;
 
 	const glm::vec3 objectPosCamera = viewMat * glm::vec4(object->getTranslation(), 1.0f);
-	const float objectRadius = object->getModel()->getMesh().getRadius() * std::max({object->getScale().x, object->getScale().y, object->getScale().z});
+	const float objectRadius = object->getModel().mesh->getRadius() * std::max({object->getScale().x, object->getScale().y, object->getScale().z});
 
 	//Object behind near plane or beyond far plane
 	if ((objectPosCamera.z - objectRadius) > near || (objectPosCamera.z + objectRadius) < far) {

@@ -64,8 +64,13 @@ void ModelLoader::loadMesh(const std::string& filename, const VertexFormat* form
 	float radius = calculateMaxRadius(data, box.getCenter());
 	ENGINE_LOG_DEBUG(logger, "Radius of mesh is " + std::to_string(radius));
 
-	const Buffer* buffer = modelManager.getMemoryManager()->getBuffer(bufferName);
-	modelManager.addMesh(filename, Mesh(buffer, format, data->vertices, data->indices, box, radius), true);
+	Mesh::BufferInfo bufferInfo = {};
+	bufferInfo.vertexName = bufferName;
+	bufferInfo.indexName = bufferName + "idx";
+	bufferInfo.vertex = modelManager.getMemoryManager()->getBuffer(bufferInfo.vertexName);
+	bufferInfo.index = modelManager.getMemoryManager()->getBuffer(bufferInfo.indexName);
+
+	modelManager.addMesh(filename, Mesh(bufferInfo, format, data->vertices, data->indices, box, radius), true);
 }
 
 std::shared_ptr<ModelData> ModelLoader::loadFromDisk(const std::string& filename, const VertexFormat* format) {

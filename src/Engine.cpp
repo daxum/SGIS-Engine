@@ -21,6 +21,7 @@
 #include "Engine.hpp"
 #include "GameInterface.hpp"
 #include "ExtraMath.hpp"
+#include "Renderer/RenderingEngine.hpp"
 
 #ifdef USE_OPENGL
 #	include "Renderer/Opengl/GlRenderingEngine.hpp"
@@ -99,7 +100,7 @@ void Engine::run(GameInterface& game) {
 	ENGINE_LOG_INFO(logger, "Initializing renderer objects...");
 
 	game.createRenderObjects(renderer->getRenderInitializer());
-	renderer->getMemoryManager()->UniformBufferInit();
+	renderer->getMemoryManager()->uniformBufferInit();
 	ENGINE_LOG_INFO(logger, "Renderer initialization complete.");
 
 	//Pre-loading of a splash screen might go here

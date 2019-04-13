@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "PhysicsObject.hpp"
-#include "Model.hpp"
+#include "Models/Mesh.hpp"
 #include "Engine.hpp"
 
 PhysicsObject::PhysicsObject(const PhysicsInfo& createInfo) :
@@ -72,27 +72,16 @@ PhysicsObject::PhysicsObject(const std::string& meshName, const glm::vec3& pos) 
 	//TODO: This will currently upload the mesh and model to the rendering engine.
 	//Prevent this in the future?
 	std::shared_ptr<const MeshRef> meshRef = Engine::instance->getModelManager().getMesh(meshName, CacheLevel::MEMORY);
-	const std::vector<VertexElement>& format = meshRef->getMesh().getFormat();
+	const VertexFormat* format = meshRef->getMesh()->getFormat();
 
-	size_t vertexSize = 0;
-	size_t posOffset = 0;
-	bool hasPos = false;
-
-	//Find position component of vertices
-	for (const VertexElement& elem : format) {
-		if (elem.name == VERTEX_ELEMENT_POSITION) {
-			posOffset = vertexSize;
-			hasPos = true;
-		}
-
-		vertexSize += sizeFromVertexType(elem.type);
-	}
-
-	if (!hasPos) {
+	if (!format->hasElement(VERTEX_ELEMENT_POSITION)) {
 		throw std::runtime_error("Attempt to generate physics shape from mesh without positions!");
 	}
 
-	const std::tuple<const unsigned char*, size_t, const std::vector<uint32_t>&>& meshData = meshRef->getMesh().getMeshData();
+	const size_t vertexSize = format->getVertexSize();
+	const size_t posOffset = format->getElementOffset(VERTEX_ELEMENT_POSITION);
+
+	const auto meshData = meshRef->getMesh()->getMeshData();
 	btTriangleMesh* mesh = new btTriangleMesh();
 
 	//Create physics mesh

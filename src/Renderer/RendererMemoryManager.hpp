@@ -29,6 +29,7 @@
 #include "Logger.hpp"
 #include "ShaderInfo.hpp"
 #include "Models/Material.hpp"
+#include "Models/Mesh.hpp"
 
 //An interface to the rendering engine's memory manager.
 class RendererMemoryManager {
@@ -48,7 +49,7 @@ public:
 	 * Called by the engine after descriptor sets are loaded to initialize the uniform
 	 * buffers and their corresponding memory managers.
 	 */
-	void UniformBufferInit();
+	void uniformBufferInit();
 
 	/**
 	 * Initializes descriptor sets or similar, if the rendering engine supports that kind of thing.
@@ -58,7 +59,8 @@ public:
 	virtual void initializeDescriptors() = 0;
 
 	/**
-	 * Adds a buffer to the memory manager.
+	 * Adds a vertex buffer to the memory manager. This currently also creates
+	 * an index buffer of the same size.
 	 * @param name The name of the buffer.
 	 * @param size The size of the buffer, in bytes.
 	 * @param storage Where the buffer will be stored.
@@ -70,10 +72,12 @@ public:
 	 * Adds a uniform set to the memory manager, and allocates descriptor sets or
 	 * similar for it.
 	 * @param name The name of the uniform set.
-	 * @param maxUsers The maximum allowed users for the added set.
 	 * @param set The uniform set to add.
 	 */
-	void addUniformSet(const std::string& name, size_t maxUsers, const UniformSet& set);
+	void addUniformSet(const std::string& name, const UniformSet& set) {
+		uniformSets.emplace(name, set);
+		createUniformSetType(name, set);
+	}
 
 	/**
 	 * Gets the buffer with the provided name.
@@ -92,6 +96,7 @@ public:
 
 	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
+	 * If the mesh has already been added, nothing happens.
 	 * @param name The name to store the mesh under.
 	 * @param mesh The mesh to upload.
 	 * @throw std::runtime_error If the name already exists or if out of memory.
@@ -99,31 +104,21 @@ public:
 	void addMesh(const std::string& name, Mesh* mesh);
 
 	/**
-	 * Checks whether the mesh's data is stored in the given buffer. If it is, it is marked
-	 * as in use if it wasn't already. If it isn't present, nothing happens, and the data
-	 * needs to be reuploaded to be usable.
-	 * @param mesh The name of the mesh to check.
-	 * @param buffer The buffer to check for the name.
-	 * @return true if the mesh was present, false if it wasn't and the data needs to be reuploaded.
-	 */
-	bool attemptSetUsed(const std::string& mesh, const std::string& buffer);
-
-	/**
 	 * Marks the mesh as unused. If the mesh is transitory (BufferUsage::DEDICATED_SINGLE),
 	 * all references to it will be completely deleted from the buffer, otherwise it will
 	 * only be marked as unused. If the mesh doesn't exist, nothing happens.
 	 * @param mesh The mesh to free.
 	 * @param buffer The buffer that contains the mesh.
+	 * @param persist Whether the mesh should remain in the buffer even though it isn't used.
 	 */
-	void freeMesh(const std::string& name, Mesh* mesh);
+	void freeMesh(const std::string& name, const Mesh* mesh, bool persist);
 
 	/**
 	 * Adds a material's uniform data to the uniform buffers, and allocates a descriptor
 	 * set (or similar) for it.
-	 * @param name The name of the material to add.
 	 * @param model The material to add.
 	 */
-	void addMaterial(const std::string& name, const Material& material);
+	void addMaterial(const Material* material);
 
 protected:
 	//Logger, logs things.
@@ -142,16 +137,14 @@ protected:
 	 * @param size The size of the buffer to create.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	virtual std::shared_ptr<Buffer> createBuffer(Buffer::Usage usage, BufferStorage storage, size_t size) = 0;
+	virtual std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) = 0;
 
 	/**
 	 * Creates a type of uniform set for which descriptors can be allocated.
 	 * @param name The name of the set.
-	 * @param type The type of the set (material, screen, object).
-	 * @param maxUsers The maximum allowed users of the set. Determines descriptor pool sizes.
 	 * @param set The set itself. Mostly used for creating descriptor layouts.
 	 */
-	virtual void createUniformSetType(const std::string& name, UniformSetType type, size_t maxUsers, const UniformSet& set) = 0;
+	virtual void createUniformSetType(const std::string& name, const UniformSet& set) = 0;
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.
@@ -172,13 +165,19 @@ protected:
 	 * for the same material - subsequent calls should be ignored.
 	 * @param model The material to allocate a descriptor set for.
 	 */
-	virtual void addMaterialDescriptors(const Material& material) = 0;
+	virtual void addMaterialDescriptors(const Material* material) = 0;
 
 private:
+	enum UniformBufferType {
+		MATERIAL,
+		SCREEN_OBJECT,
+		NUM_TYPES
+	};
+
 	//Stores all created buffers.
 	std::unordered_map<std::string, std::shared_ptr<Buffer>> buffers;
+	//Stores all uniform buffers.
+	std::array<std::shared_ptr<Buffer>, UniformBufferType::NUM_TYPES> uniformBuffers;
 	//Stores all created uniform sets.
 	std::unordered_map<std::string, UniformSet> uniformSets;
-	//Offset for material data in the material uniform buffer.
-	size_t materialOffset;
 };

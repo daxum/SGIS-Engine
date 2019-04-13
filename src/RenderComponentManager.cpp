@@ -68,7 +68,7 @@ void RenderComponentManager::removeComponent(const RenderComponent* comp, const 
 	}
 
 	if (compSet.empty()) {
-		const Buffer* buffer = oldModel.mesh->getBuffer();
+		const Buffer* buffer = oldModel.mesh->getBufferInfo().vertex;
 		const std::string& shader = oldModel.material->shader;
 
 		renderComponents.at(buffer).at(shader).erase(oldModel.material);
@@ -76,7 +76,7 @@ void RenderComponentManager::removeComponent(const RenderComponent* comp, const 
 }
 
 std::vector<const RenderComponent*>& RenderComponentManager::getComponentSet(const Model& model) {
-	const Buffer* buffer = model.mesh->getBuffer();
+	const Buffer* buffer = model.mesh->getBufferInfo().vertex;
 	const std::string& shader = model.material->shader;
 
 	if (!renderComponents.count(buffer)) {

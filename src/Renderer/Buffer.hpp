@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include "MemoryAllocator.hpp"
 
 enum class BufferStorage {
@@ -65,6 +67,14 @@ public:
 	std::shared_ptr<AllocInfo> allocate(const std::string& name, size_t size);
 
 	/**
+	 * Returns whether the buffer contains an allocation with the given name.
+	 * If the allocation is inactive but present, it is reactivated here.
+	 * @param name The name to check.
+	 * @return Whether an allocation has been made using the provided name.
+	 */
+	bool hasAlloc(const std::string& name);
+
+	/**
 	 * Marks an allocation as not in use, so that its memory can be repurposed
 	 * if space runs out.
 	 * @param name The name referencing the allocation.
@@ -85,7 +95,7 @@ public:
 	 * @param size The size of the data to write, in bytes.
 	 * @param data The data to write.
 	 */
-	virtual void write(size_t offset, size_t size, unsigned char* data) = 0;
+	virtual void write(size_t offset, size_t size, const unsigned char* data) = 0;
 
 private:
 	//Size of the buffer.

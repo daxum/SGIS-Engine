@@ -60,7 +60,7 @@ public:
 	 * @return A new model which uses the provided material and mesh.
 	 * @throw std::out_of_range if the material or mesh doesn't exist.
 	 */
-	Model getModel(const std::string& material, const std::string mesh);
+	Model getModel(const std::string& material, const std::string& mesh);
 
 	/**
 	 * Gets a material. If the requested material is not uploaded to the rendering engine

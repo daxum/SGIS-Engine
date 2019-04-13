@@ -52,11 +52,6 @@ struct VkBufferData {
 	}
 };
 
-struct VkMeshRenderData {
-	uintptr_t indexStart;
-	uint32_t indexCount;
-};
-
 struct TransferOperation {
 	//The buffer to transfer to.
 	VkBuffer buffer;
@@ -278,8 +273,6 @@ private:
 	std::queue<TransferOperation> pendingTransfers;
 	//All queued image transfer operations.
 	std::queue<ImageTransferOperation> pendingImageTransfers;
-	//Map of uploaded mesh data.
-	std::unordered_map<std::string, VkMeshRenderData> meshMap;
 	//All possible descriptor set layouts.
 	std::unordered_map<std::string, DescriptorLayoutInfo> descriptorLayouts;
 	//Static model descriptor pool. Once allocated, descriptor sets are never freed or updated.

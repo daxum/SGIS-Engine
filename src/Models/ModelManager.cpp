@@ -22,7 +22,7 @@ Model ModelManager::getModel(const std::string& material, const std::string& mes
 	ENGINE_LOG_SPAM(logger, "Creating model from material \"" + material + "\" and mesh \"" + mesh + "\"");
 
 	std::shared_ptr<MaterialRef> matRef = getMaterial(material);
-	std::shared_ptr<MeshRef> meshRef = getMesh(mesh);
+	std::shared_ptr<MeshRef> meshRef = getMesh(mesh, CacheLevel::GPU);
 
 	return Model{
 		.material = matRef->getMaterial(),
@@ -41,12 +41,14 @@ std::shared_ptr<MeshRef> ModelManager::getMesh(const std::string& meshName, Cach
 	meshData.users.at(level)++;
 
 	//Upload mesh if needed
-	if (meshData.users.at(CacheLevel::GPU) > 0 && !memoryManager->attemptSetUsed(meshName, mesh.getBuffer())) {
+	if (meshData.users.at(CacheLevel::GPU) > 0) {
+		if (!mesh.isForRendering()) {
+			throw std::runtime_error("Attempt to upload non-rendering mesh to rendering engine!");
+		}
+
 		ENGINE_LOG_DEBUG(logger, "Mesh data for \"" + meshName + "\" not present on renderer, uploading now...");
 
-		auto meshData = mesh.getMeshData();
-
-		memoryManager->addMesh(meshName, mesh.getBuffer(), std::get<0>(meshData), std::get<1>(meshData), std::get<2>(meshData));
+		memoryManager->addMesh(meshName, &mesh);
 	}
 
 	return std::make_shared<MeshRef>(this, meshName, &mesh, level);
@@ -63,9 +65,9 @@ void ModelManager::removeMeshReference(const std::string meshName, CacheLevel le
 
 	if (meshData.users.at(CacheLevel::GPU) == 0) {
 		//Rendering mesh, can remove from gpu
-		if (!mesh.getBuffer().empty()) {
+		if (mesh.isForRendering()) {
 			ENGINE_LOG_DEBUG(logger, "Removing unused mesh \"" + meshName + "\" from vertex buffers...");
-			memoryManager->freeMesh(meshName, mesh.getBuffer());
+			memoryManager->freeMesh(meshName, &mesh, meshData.persist);
 		}
 
 		//If mesh is not persistent, completely remove it
