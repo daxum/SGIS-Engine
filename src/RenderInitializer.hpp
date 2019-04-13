@@ -60,7 +60,7 @@ public:
 	 *     uniform buffer, if present, will always recieve binding 0, followed by non-
 	 *     buffered unforms, such as samplers, in the order they are listed.
 	 */
-	void addUniformSet(const std::string& name, UniformSetType type, size_t maxUsers, const UniformList& uniforms);
+	void addUniformSet(const std::string& name, UniformSetType type, size_t maxUsers, const UniformList& uniforms) { memoryManager->addUniformSet(name, UniformSet(type, maxUsers, uniforms)); }
 
 private:
 	//The logger.
