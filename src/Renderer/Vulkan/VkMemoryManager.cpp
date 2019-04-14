@@ -503,72 +503,6 @@ std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vecto
 	return std::make_shared<VkBufferData>(allocator, vertexBuffer, indexBuffer, vertexAllocation, indexAllocation);
 }
 
-void VkMemoryManager::createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) {
-	VkBufferCreateInfo staticModelCreateInfo = {};
-	staticModelCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	staticModelCreateInfo.size = modelStaticSize;
-	staticModelCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	staticModelCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	uint32_t bufferUsers[] = { objects.getGraphicsQueueIndex(), objects.getTransferQueueIndex() };
-
-	if (objects.hasUniqueTransfer()) {
-		staticModelCreateInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
-		staticModelCreateInfo.queueFamilyIndexCount = 2;
-		staticModelCreateInfo.pQueueFamilyIndices = bufferUsers;
-	}
-
-	VkBufferCreateInfo dynamicModelCreateInfo = {};
-	dynamicModelCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	dynamicModelCreateInfo.size = modelDynamicSize;
-	dynamicModelCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	dynamicModelCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	if (objects.hasUniqueTransfer()) {
-		dynamicModelCreateInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
-		dynamicModelCreateInfo.queueFamilyIndexCount = 2;
-		dynamicModelCreateInfo.pQueueFamilyIndices = bufferUsers;
-	}
-
-	VkBufferCreateInfo screenObjectCreateInfo = {};
-	screenObjectCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	screenObjectCreateInfo.size = screenObjectSize * VkRenderingEngine::MAX_ACTIVE_FRAMES;
-	screenObjectCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	screenObjectCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	screenObjectBufferSize = screenObjectSize;
-
-	VmaAllocationCreateInfo modelAllocCreateInfo = {};
-	modelAllocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-	VmaAllocationCreateInfo screenObjectAllocCreateInfo = {};
-	screenObjectAllocCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-	screenObjectAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-	VmaAllocationInfo screenObjectAllocInfo;
-
-	if (!(modelStaticSize == 0 || vmaCreateBuffer(allocator, &staticModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(0), &uniformBufferAllocations.at(0), nullptr) == VK_SUCCESS) ||
-		!(modelDynamicSize == 0 || vmaCreateBuffer(allocator, &dynamicModelCreateInfo, &modelAllocCreateInfo, &uniformBuffers.at(1), &uniformBufferAllocations.at(1), nullptr) == VK_SUCCESS) ||
-		!(screenObjectSize == 0 || vmaCreateBuffer(allocator, &screenObjectCreateInfo, &screenObjectAllocCreateInfo, &uniformBuffers.at(2), &uniformBufferAllocations.at(2), &screenObjectAllocInfo) == VK_SUCCESS)) {
-
-		throw std::runtime_error("Failed to create one or more uniform buffers!");
-	}
-
-	uniformMem = (unsigned char*) screenObjectAllocInfo.pMappedData;
-
-	ENGINE_LOG_DEBUG(logger, "Created uniform buffers");
-}
-
-void VkMemoryManager::uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) {
-	std::shared_ptr<const VkBufferData> bufferData = std::static_pointer_cast<const VkBufferData>(buffer.getRenderData());
-
-	queueTransfer(bufferData->vertexBuffer, offset, size, vertexData);
-	queueTransfer(bufferData->indexBuffer, indexOffset, indexSize, (const unsigned char*) indexData);
-
-	//Add to mesh map
-	meshMap.insert({mesh, VkMeshRenderData{(uint32_t) (indexOffset / sizeof(uint32_t)), (uint32_t) (indexSize / sizeof(uint32_t))}});
-}
-
 void VkMemoryManager::addModelDescriptors(const Model& model) {
 	if (descriptorSets.count(model.name)) {
 		return;
@@ -598,19 +532,6 @@ void VkMemoryManager::addModelDescriptors(const Model& model) {
 
 	descriptorSets.insert({model.name, set});
 	fillDescriptorSet(set, layoutInfo, uniformSet, modelImageViews);
-}
-
-void VkMemoryManager::uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) {
-	VkBuffer uploadBuffer = VK_NULL_HANDLE;
-
-	switch (buffer) {
-		case UniformBufferType::STATIC_MODEL: uploadBuffer = uniformBuffers.at(0); break;
-		case UniformBufferType::DYNAMIC_MODEL: uploadBuffer = uniformBuffers.at(1); break;
-		default: throw std::runtime_error("Invalid uniform buffer for transfer upload!");
-	}
-
-	//Probably need uniform-specific transfer for better concurrency later
-	queueTransfer(uploadBuffer, offset, size, data);
 }
 
 void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data) {

@@ -31,7 +31,8 @@
 #include "vk_mem_alloc.h"
 #include "VkImageData.hpp"
 
-struct VkBufferData {
+//TODO: Move to some sort of VkBuffer class (need a different name, though)
+/*struct VkBufferData {
 	VmaAllocator allocator;
 
 	VkBuffer vertexBuffer;
@@ -50,7 +51,7 @@ struct VkBufferData {
 		vmaDestroyBuffer(allocator, vertexBuffer, vertexAllocation);
 		vmaDestroyBuffer(allocator, indexBuffer, indexAllocation);
 	}
-};
+};*/
 
 struct TransferOperation {
 	//The buffer to transfer to.
@@ -121,13 +122,6 @@ public:
 	void executeTransfers();
 
 	/**
-	 * Gets the rendering data for the mesh with the given name.
-	 * @param mesh The name of the mesh to get data for.
-	 * @return The rendering data for the mesh.
-	 */
-	const VkMeshRenderData& getMeshRenderData(const std::string& mesh) const { return meshMap.at(mesh); }
-
-	/**
 	 * Gets the layout of the provided descriptor set, used in shader loading.
 	 * @param name The name of the descriptor set layout to fetch.
 	 * @return The layout with the given name.
@@ -140,21 +134,6 @@ public:
 	 * @return The set with the given name.
 	 */
 	VkDescriptorSet getDescriptorSet(const std::string& set) const { return descriptorSets.at(set); }
-
-	/**
-	 * Adds a descriptor set to the rendering engine, as well as a layout that can be used in shaders.
-	 * @param name The name of the set to add.
-	 * @param uniformSet The uniform set.
-	 * @param setLayout The layout of the uniform set.
-	 */
-	/*void addDescriptorSet(const std::string& name, const UniformSet& uniformSet, const DescriptorLayoutInfo& setLayout) {
-		uniformSets.insert({name, uniformSet});
-		descriptorLayouts.insert({name, setLayout});
-
-		if (uniformSet.setType == UniformSetType::PER_SCREEN || uniformSet.setType == UniformSetType::PER_OBJECT) {
-			descriptorAligners.insert({name, Std140Aligner(uniformSet.uniforms)});
-		}
-	}*/
 
 	/**
 	 * Gets the aligner for the given descriptor set.
@@ -231,7 +210,7 @@ protected:
 	 * @param maxUsers The maximum allowed users of the set. Determines descriptor pool sizes.
 	 * @param set The set itself. Mostly used for creating descriptor layouts.
 	 */
-	void createUniformSetType(const std::string& name, UniformSetType type, size_t maxUsers, const UniformSet& set) override { /** TODO **/ }
+	void createUniformSetType(const std::string& name, const UniformSet& set) override { /** TODO **/ }
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.
