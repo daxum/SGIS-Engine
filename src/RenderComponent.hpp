@@ -105,11 +105,26 @@ public:
 	 */
 	std::shared_ptr<const ObjectState> getParentState() const { return lockParent()->getState(); }
 
+	/**
+	 * Sets the cached visibility value for the component.
+	 * @param vis Whether the component is visible.
+	 */
+	void setVisible(bool vis) const { visible = vis; }
+
+	/**
+	 * Gets whether the component was marked as visible, to determine
+	 * whether it should be rendered.
+	 * @return Whether the component can be seen by the camera.
+	 */
+	bool isVisible() const { return visible; }
+
 private:
 	//Which model to use for this object.
 	Model model;
 	//The scale of the object's model.
 	glm::vec3 scale;
+	//Whether the RenderComponent was visible in the last frame, cached for the rendering engine.
+	mutable bool visible;
 	//The manager for this component, null if none.
 	RenderComponentManager* manager;
 };

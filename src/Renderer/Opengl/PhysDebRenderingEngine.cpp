@@ -160,8 +160,8 @@ void PhysDebRenderingEngine::flushLines() {
 	pendingLines = 0;
 }
 
-void PhysDebRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
-	GlRenderingEngine::renderObjects(objects, sortedObjects, screen);
+void PhysDebRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
+	GlRenderingEngine::renderObjects(sortedObjects, screen);
 
 	//Get physics component manager and do debug drawing stuff
 	const PhysicsComponentManager* physicsManager = std::static_pointer_cast<const PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME)).get();

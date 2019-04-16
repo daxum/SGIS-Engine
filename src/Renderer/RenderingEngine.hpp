@@ -23,7 +23,6 @@
 #include <array>
 
 #include <glm/glm.hpp>
-#include <tbb/concurrent_unordered_set.h>
 
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
@@ -140,8 +139,6 @@ public:
 	virtual const WindowSystemInterface& getWindowInterface() const = 0;
 
 protected:
-	typedef tbb::concurrent_unordered_set<const RenderComponent*> ConcurrentRenderComponentSet;
-
 	//The texture loader.
 	std::shared_ptr<TextureLoader> texLoader;
 	//The shader loader.
@@ -155,11 +152,10 @@ protected:
 	 * Renders the visible objects, using the sorted map.
 	 * The depth and stencil buffers should be cleared before or after this function
 	 * so different screens don't effect each other's rendering.
-	 * @param objects A set of objects that have been determined to be visible.
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
 	 * @param screen The screen being rendered.
 	 */
-	virtual void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) = 0;
+	virtual void renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) = 0;
 
 private:
 	/**
