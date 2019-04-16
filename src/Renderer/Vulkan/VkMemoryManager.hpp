@@ -196,11 +196,12 @@ protected:
 	 * @param vertexFormat The format of the vertices in the buffer.
 	 * @param usage The way the buffer is intended to be used - determines which memory type
 	 *     it is stored in.
+	 * @param storage Where the buffer is to be stored - device, host, etc.
 	 * @param size The size of the buffer to create.
 	 * @return A pointer to a VkBufferData object.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<Buffer> createBuffer(Buffer::Usage usage, BufferStorage storage, size_t size) override;
+	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) override;
 
 	/**
 	 * Creates a type of uniform set for which descriptors can be allocated. Specifically, this creates the descriptor
@@ -210,7 +211,7 @@ protected:
 	 * @param maxUsers The maximum allowed users of the set. Determines descriptor pool sizes.
 	 * @param set The set itself. Mostly used for creating descriptor layouts.
 	 */
-	void createUniformSetType(const std::string& name, const UniformSet& set) override { /** TODO **/ }
+	void createUniformSetType(const std::string& name, const UniformSet& set) override;
 
 	/**
 	 * Gets the minimum alignment for offsets into a uniform buffer.
@@ -223,7 +224,7 @@ protected:
 	 * for the same material - subsequent calls should be ignored.
 	 * @param model The material to allocate a descriptor set for.
 	 */
-	void addMaterialDescriptors(const Material& material) override { /** TODO **/ }
+	void addMaterialDescriptors(const Material* material) override;
 
 private:
 	//Object handler for vulkan objects.
