@@ -18,11 +18,11 @@
 
 #include "VkPipelineCreateObject.hpp"
 
-VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexBuffer& buffer) :
+VkPipelineCreateObject::VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexFormat* format) :
 	objectHandler(objectHandler),
 	renderObjects(renderObjects),
 	renderPass(renderPass),
-	buffer(buffer),
+	format(format),
 	moduleInfos(moduleInfos),
 	bindingDescription(),
 	vertexInputInfo(),
@@ -40,7 +40,7 @@ VkPipelineCreateObject::VkPipelineCreateObject(const VkPipelineCreateObject& oth
 	objectHandler(other.objectHandler),
 	renderObjects(other.renderObjects),
 	renderPass(other.renderPass),
-	buffer(other.buffer),
+	format(other.format),
 	moduleInfos(other.moduleInfos),
 	bindingDescription(),
 	vertexInputInfo(),
@@ -103,10 +103,10 @@ VkPipeline VkPipelineCreateObject::createPipeline(VkPipelineCache pipelineCache,
 void VkPipelineCreateObject::fillPersistentStructs() {
 	//Might need multiple of these later
 	bindingDescription.binding = 0;
-	bindingDescription.stride = buffer.getVertexSize();
+	bindingDescription.stride = format->getVertexSize();
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	attributeDescriptions = getVertexAttributeDescription(buffer);
+	attributeDescriptions = getVertexAttributeDescription();
 
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
@@ -152,21 +152,20 @@ void VkPipelineCreateObject::fillPersistentStructs() {
 	blendStateCreateInfo.pAttachments = &blendAttach;
 }
 
-std::vector<VkVertexInputAttributeDescription> VkPipelineCreateObject::getVertexAttributeDescription(const VertexBuffer& buffer) const {
+std::vector<VkVertexInputAttributeDescription> VkPipelineCreateObject::getVertexAttributeDescription() const {
 	std::vector<VkVertexInputAttributeDescription> descriptions;
-	const std::vector<VertexElement>& bufferFormat = buffer.getVertexFormat();
+	const std::vector<VertexFormat::ElementData>& elements = format->getFormatVec();
 
-	descriptions.reserve(bufferFormat.size());
 	uint32_t location = 0;
 
-	for (const VertexElement& element : bufferFormat) {
+	for (const VertexFormat::ElementData& element : elements) {
 		VkVertexInputAttributeDescription descr = {};
 		descr.binding = 0;
 		descr.location = location;
 		descr.format = formatFromVertexType(element.type);
-		descr.offset = buffer.getElementOffset(element.name);
+		descr.offset = element.offset;
 
-		descriptions.push_back(descr);
+		descriptions.emplace_back(descr);
 		location++;
 	}
 

@@ -31,11 +31,11 @@ VkShader::VkShader(VkDevice device, VkPipelineCache pipelineCache, VkPipelineLay
 	uint32_t offset = 0;
 	PushRange currentRange = {};
 
-	if (!pushConstants.pushConstants.empty()) {
-		currentRange.shaderStages = pushConstants.pushConstants.front().shaderStages;
+	if (!pushConstants.empty()) {
+		currentRange.shaderStages = pushConstants.front().shaderStages;
 	}
 
-	for (const UniformDescription& uniform : pushConstants.pushConstants) {
+	for (const UniformDescription& uniform : pushConstants) {
 		//Shader stages differ, so start a new range
 		if (uniform.shaderStages != currentRange.shaderStages) {
 			//Set the size - this should not take into account the alignment of the next element

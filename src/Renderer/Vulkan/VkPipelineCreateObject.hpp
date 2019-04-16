@@ -34,7 +34,7 @@ public:
 	 * @param renderPass The render pass the pipeline is in - this is for transparency, not VkRenderPass.
 	 * @param format The format of the vertex input data.
 	 */
-	VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexFormat& format);
+	VkPipelineCreateObject(VkObjectHandler& objectHandler, VkRenderObjects& renderObjects, const std::vector<VkPipelineShaderStageCreateInfo>& moduleInfos, RenderPass renderPass, const VertexFormat* format);
 
 	/**
 	 * Copy constructor.
@@ -62,7 +62,7 @@ private:
 	//The render pass for the pipeline, determines blend state.
 	RenderPass renderPass;
 	//Vertex format object.
-	const VertexFormat& buffer;
+	const VertexFormat* format;
 
 	//Structures needed to create a pipeline, and that shouldn't change whenever
 	//the pipeline needs to be recreated.
@@ -88,7 +88,7 @@ private:
 	 * @param format The format of the vertex data.
 	 * @return A vector of attribute description structures.
 	 */
-	std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescription(const VertexFormat& format) const;
+	std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescription() const;
 
 	/**
 	 * Converts the type to a VkFormat.

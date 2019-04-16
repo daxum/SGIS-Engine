@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "VkRenderObjects.hpp"
-#include "WindowSystemInterface.hpp"
+#include "Renderer/WindowSystemInterface.hpp"
 #include "ExtraMath.hpp"
 #include "Engine.hpp"
 

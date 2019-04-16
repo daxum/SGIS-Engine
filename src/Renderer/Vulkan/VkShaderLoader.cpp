@@ -88,10 +88,10 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	fragCreateInfo.module = fragShader;
 	fragCreateInfo.pName = "main";
 
-	const VertexBuffer& buffer = memoryManager->getBuffer(info.buffer);
+	const VertexFormat* format = Engine::instance->getModelManager().getFormat(info.format);
 
 	//Create pipeline creator
-	VkPipelineCreateObject pipelineCreator(vkObjects, renderObjects, {vertCreateInfo, fragCreateInfo}, info.pass, buffer);
+	VkPipelineCreateObject pipelineCreator(vkObjects, renderObjects, {vertCreateInfo, fragCreateInfo}, info.pass, format);
 
 	//Create pipeline layout
 	std::vector<VkDescriptorSetLayout> layouts;
@@ -121,10 +121,10 @@ void VkShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	std::string objectSet = "";
 
 	for (const std::string& set : info.uniformSets) {
-		if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_SCREEN) {
+		if (memoryManager->getUniformSet(set).getType() == UniformSetType::PER_SCREEN) {
 			screenSet = set;
 		}
-		else if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_OBJECT) {
+		else if (memoryManager->getUniformSet(set).getType() == UniformSetType::PER_OBJECT) {
 			objectSet = set;
 		}
 	}
@@ -175,16 +175,16 @@ std::vector<char> VkShaderLoader::loadFromDisk(const std::string& filename) {
 std::vector<VkPushConstantRange> VkShaderLoader::convertToRanges(const PushConstantSet& pushSet) {
 	std::vector<VkPushConstantRange> ranges;
 
-	if (pushSet.pushConstants.empty()) {
+	if (pushSet.empty()) {
 		return ranges;
 	}
 
-	std::bitset<32> currentShaderStages = pushSet.pushConstants.front().shaderStages;
+	std::bitset<32> currentShaderStages = pushSet.front().shaderStages;
 
 	VkPushConstantRange currentRange = {};
 	currentRange.stageFlags = currentShaderStages.to_ulong();
 
-	for (const UniformDescription& uniform : pushSet.pushConstants) {
+	for (const UniformDescription& uniform : pushSet) {
 		if (uniform.shaderStages != currentShaderStages) {
 			ranges.push_back(currentRange);
 

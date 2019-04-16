@@ -57,7 +57,6 @@ if (USE_VULKAN)
 		Renderer/Vulkan/VkShader.cpp
 		Renderer/Vulkan/VkMemoryManager.cpp
 		Renderer/Vulkan/VkPipelineCreateObject.cpp
-		Renderer/Vulkan/VkRenderInitializer.cpp
 		Renderer/Vulkan/VkImageData.cpp
 		Renderer/Vulkan/VkTextureLoader.cpp
 		Renderer/Vulkan/VkRenderObjects.cpp

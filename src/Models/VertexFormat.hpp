@@ -47,6 +47,18 @@ public:
 		ElementType type;
 	};
 
+	//Internal representation of vertex elements.
+	struct ElementData {
+		//Name of the element.
+		std::string name;
+		//Type of the element.
+		ElementType type;
+		//offset (in bytes) from the start of the vertex.
+		size_t offset;
+		//Size of the element.
+		size_t size;
+	};
+
 	/**
 	 * Gets the size of a vertex type, in bytes.
 	 * @param type The type to get the size for.
@@ -113,19 +125,14 @@ public:
 	 */
 	size_t getVertexSize() const { return vertexSize; }
 
-private:
-	//Internal representation of vertex elements.
-	struct ElementData {
-		//Name of the element.
-		std::string name;
-		//Type of the element.
-		ElementType type;
-		//offset (in bytes) from the start of the vertex.
-		size_t offset;
-		//Size of the element.
-		size_t size;
-	};
+	/**
+	 * Gets the format vector, for creating shader input attribute
+	 * description stuff.
+	 * @return The layout of the vertex elements.
+	 */
+	const std::vector<ElementData>& getFormatVec() const { return format; }
 
+private:
 	//Vertex format vector.
 	std::vector<ElementData> format;
 	//Size of one vertex using this format.
