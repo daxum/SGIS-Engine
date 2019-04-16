@@ -130,7 +130,7 @@ void RendererMemoryManager::freeMesh(const std::string& name, const Mesh* mesh, 
 	}
 }
 
-void RendererMemoryManager::addMaterial(const Material* material) {
+void RendererMemoryManager::addMaterial(Material* material) {
 	std::shared_ptr<Buffer> matBuffer = uniformBuffers.at(UniformBufferType::MATERIAL);
 
 	//Only upload uniforms if the material has them and they haven't been uploaded already
@@ -147,6 +147,7 @@ void RendererMemoryManager::addMaterial(const Material* material) {
 		//Upload uniform data
 		std::shared_ptr<AllocInfo> uniAlloc = matBuffer->allocate(material->name, allocSize);
 		matBuffer->write(uniAlloc->start, uniAlloc->size, materialData);
+		material->uniformOffset = uniAlloc->start;
 
 		ENGINE_LOG_DEBUG(logger, "Uploaded material uniform data for \"" + material->name + "\" to rendering engine");
 	}

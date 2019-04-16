@@ -56,6 +56,9 @@ public:
 
 	//Amount of references this material has.
 	size_t references;
+	//Location of the material's uniform data in its uniform buffer.
+	//Only used by rendering engine.
+	size_t uniformOffset;
 };
 
 class MaterialRef {

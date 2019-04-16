@@ -30,6 +30,7 @@
 #include "VkObjectHandler.hpp"
 #include "vk_mem_alloc.h"
 #include "VkImageData.hpp"
+#include "VkBufferContainer.hpp"
 
 //TODO: Move to some sort of VkBuffer class (need a different name, though)
 /*struct VkBufferData {

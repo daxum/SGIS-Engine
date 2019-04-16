@@ -118,7 +118,7 @@ public:
 	 * set (or similar) for it.
 	 * @param model The material to add.
 	 */
-	void addMaterial(const Material* material);
+	void addMaterial(Material* material);
 
 protected:
 	//Logger, logs things.
@@ -163,7 +163,7 @@ protected:
 	/**
 	 * Allocates a descriptor set for the material. This can be called more than once
 	 * for the same material - subsequent calls should be ignored.
-	 * @param model The material to allocate a descriptor set for.
+	 * @param material The material to allocate a descriptor set for.
 	 */
 	virtual void addMaterialDescriptors(const Material* material) = 0;
 

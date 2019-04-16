@@ -275,7 +275,6 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentM
 
 	//Per-buffer loop
 	for (const auto& shaderObjectMap : sortedObjects) {
-		const std::string& buffer = shaderObjectMap.first;
 		bool bufferBound = false;
 
 		//Per-shader loop
@@ -312,10 +311,15 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentM
 
 					if (!bufferBound) {
 						const VkDeviceSize zero = 0;
-						std::shared_ptr<VkBufferData> bufferData = std::static_pointer_cast<VkBufferData>(memoryManager.getBuffer(buffer).getRenderData());
 
-						vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &bufferData->vertexBuffer, &zero);
-						vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), bufferData->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+						//For now, assume that vertex buffers are always paired with the same index buffers
+						const Mesh::BufferInfo& buffers = comp->getModel().mesh->getBufferInfo();
+
+						VkBuffer vertexBuffer = ((const VkBufferContainer*) buffers.vertex)->getBuffer();
+						VkBuffer indexBuffer = ((const VkBufferContainer*) buffers.index)->getBuffer();
+
+						vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, 1, &vertexBuffer, &zero);
+						vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 						bufferBound = true;
 					}
@@ -355,7 +359,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentM
 						numSets++;
 
 						if (material->hasBufferedUniforms) {
-							bindOffsets.at(numOffsets) = memoryManager.getModelUniformData(material->name).offset;
+							bindOffsets.at(numOffsets) = material->uniformOffset;
 							numOffsets++;
 						}
 
