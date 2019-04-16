@@ -147,18 +147,18 @@ void GlRenderingEngine::setViewport(int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void GlRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
+void GlRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
 	const Camera* camera = screen->getCamera().get();
 	const ScreenState* state = screen->getState().get();
 
 	//Opaque objects
-	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::OPAQUE, sortedObjects, camera, state);
 
 	//Transparent objects
-	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::TRANSPARENT, sortedObjects, camera, state);
 
 	//Translucent objects
-	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::TRANSLUCENT, sortedObjects, camera, state);
 
 	glBindVertexArray(0);
 
@@ -166,7 +166,7 @@ void GlRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& object
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
+void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
 	bool enableBlend = pass == RenderPass::TRANSLUCENT;
 	bool blendOn = false;
 
@@ -189,7 +189,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 				bool modelSetBound = false;
 
 				for (const RenderComponent* comp : objectSet.second) {
-					if (visibleObjects.count(comp)) {
+					if (comp->isVisible()) {
 						//Set shader / buffer / blend if needed
 						if (!shaderBound) {
 							glUseProgram(shader->id);

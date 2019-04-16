@@ -96,11 +96,10 @@ public:
 protected:
 	/**
 	 * Renders the objects as normal, but also renders a physics debug layer if present.
-	 * @param objects The objects to render.
 	 * @param sortedObjects A sorted map of maps of maps of sets of all the possible objects to render.
 	 * @param screen The screen being rendered.
 	 */
-	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
+	void renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
 
 private:
 	//Line vertex format.

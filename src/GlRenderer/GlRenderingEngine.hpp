@@ -98,11 +98,10 @@ public:
 protected:
 	/**
 	 * Renders the passed in objects.
-	 * @param objects The objects to render.
 	 * @param sortedObjects A sorted map of maps of maps of sets of all the possible objects to render.
 	 * @param screen The screen to render.
 	 */
-	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
+	void renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
 
 private:
 	//A map to store texture data
@@ -117,12 +116,11 @@ private:
 	/**
 	 * Renders all the objects in objects. Transparency stuff is set up before this function is called.
 	 * @param pass The current rendering pass.
-	 * @param visibleObjects A set of objects visible on the screen.
 	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
 	 * @param camera The camera to use when rendering.
 	 * @param state The screen state, passed to shaders when setting uniforms.
 	 */
-	void renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& visibleObjects, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
+	void renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
 
 	/**
 	 * Sets the uniforms at the screen level (per-shader).

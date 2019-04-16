@@ -92,11 +92,10 @@ public:
 protected:
 	/**
 	 * Renders the visible objects, using the sorted map.
-	 * @param objects A set of objects that have been determined to be visible.
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
 	 * @param screen The screen to render.
 	 */
-	void renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
+	void renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
 
 private:
 	//Interface with the window system.
@@ -125,12 +124,11 @@ private:
 	/**
 	 * Renders a single transparency pass.
 	 * @param pass The current rendering pass.
-	 * @param visibleObjects A set of objects visible on the screen.
 	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
 	 * @param camera The camera for the current screen.
 	 * @param screenState The state of the current screen.
 	 */
-	void renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
+	void renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
 
 	/**
 	 * Sets the push constant values for the provided object.

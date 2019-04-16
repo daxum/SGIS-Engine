@@ -250,17 +250,13 @@ void VkRenderingEngine::setViewport(int width, int height) {
 	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 }
 
-void VkRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
-	if (objects.empty()) {
-		return;
-	}
-
+void VkRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
 	const Camera* camera = screen->getCamera().get();
 	const ScreenState* state = screen->getState().get();
 
-	renderTransparencyPass(RenderPass::OPAQUE, objects, sortedObjects, camera, state);
-	renderTransparencyPass(RenderPass::TRANSPARENT, objects, sortedObjects, camera, state);
-	renderTransparencyPass(RenderPass::TRANSLUCENT, objects, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::OPAQUE, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::TRANSPARENT, sortedObjects, camera, state);
+	renderTransparencyPass(RenderPass::TRANSLUCENT, sortedObjects, camera, state);
 
 	//TODO: generate render passes at engine initialization to render this unnecessary
 	VkClearAttachment depthClear = {};
@@ -274,7 +270,7 @@ void VkRenderingEngine::renderObjects(const ConcurrentRenderComponentSet& object
 	vkCmdClearAttachments(commandBuffers.at(currentFrame), 1, &depthClear, 1, &clearRect);
 }
 
-void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const ConcurrentRenderComponentSet& objects, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
+void VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
 	//Also, each loop should probably be its own function, this is getting ridiculous.
 
@@ -305,7 +301,7 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 
 				//Per-object loop
 				for (const RenderComponent* comp : objectSet.second) {
-					if (!objects.count(comp)) {
+					if (!comp->isVisible()) {
 						continue;
 					}
 
