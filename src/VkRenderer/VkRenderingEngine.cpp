@@ -254,25 +254,31 @@ void VkRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sor
 	const Camera* camera = screen->getCamera().get();
 	const ScreenState* state = screen->getState().get();
 
-	renderTransparencyPass(RenderPass::OPAQUE, sortedObjects, camera, state);
-	renderTransparencyPass(RenderPass::TRANSPARENT, sortedObjects, camera, state);
-	renderTransparencyPass(RenderPass::TRANSLUCENT, sortedObjects, camera, state);
+	bool drewSomething = false;
 
-	//TODO: generate render passes at engine initialization to render this unnecessary
-	VkClearAttachment depthClear = {};
-	depthClear.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	depthClear.clearValue.depthStencil = {1.0f, 0};
+	drewSomething |= renderTransparencyPass(RenderPass::OPAQUE, sortedObjects, camera, state);
+	drewSomething |= renderTransparencyPass(RenderPass::TRANSPARENT, sortedObjects, camera, state);
+	drewSomething |= renderTransparencyPass(RenderPass::TRANSLUCENT, sortedObjects, camera, state);
 
-	VkClearRect clearRect = {};
-	clearRect.rect.extent = swapObjects.getSwapchainExtent();
-	clearRect.layerCount = 1;
+	if (drewSomething) {
+		//TODO: generate render passes at engine initialization to render this unnecessary
+		VkClearAttachment depthClear = {};
+		depthClear.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		depthClear.clearValue.depthStencil = {1.0f, 0};
 
-	vkCmdClearAttachments(commandBuffers.at(currentFrame), 1, &depthClear, 1, &clearRect);
+		VkClearRect clearRect = {};
+		clearRect.rect.extent = swapObjects.getSwapchainExtent();
+		clearRect.layerCount = 1;
+
+		vkCmdClearAttachments(commandBuffers.at(currentFrame), 1, &depthClear, 1, &clearRect);
+	}
 }
 
-void VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
+bool VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
 	//Also, each loop should probably be its own function, this is getting ridiculous.
+
+	bool drewSomething = false;
 
 	//Per-buffer loop
 	for (const auto& shaderObjectMap : sortedObjects) {
@@ -393,10 +399,13 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentM
 					const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh);
 
 					vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshRenderData.indexCount, 1, meshRenderData.indexStart, 0, 0);
+					drewSomething = true;
 				}
 			}
 		}
 	}
+
+	return drewSomething;
 }
 
 void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const Camera* camera) {

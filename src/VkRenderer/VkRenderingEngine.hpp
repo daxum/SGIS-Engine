@@ -127,8 +127,9 @@ private:
 	 * @param objects A container of the objects to render. See RenderComponentManager.hpp for what it actually is.
 	 * @param camera The camera for the current screen.
 	 * @param screenState The state of the current screen.
+	 * @return Whether something was drawn, used to shut up the validation layers until a better solution is found.
 	 */
-	void renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
+	bool renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
 
 	/**
 	 * Sets the push constant values for the provided object.
