@@ -49,12 +49,12 @@ public:
 	 * the rendering api.
 	 * @param tl The texture loader this engine should use.
 	 * @param sl The shader loader this engine should use.
-	 * @param ri The render initializer this engine should use.
+	 * @param memManager The renderer memory manager used in the render initializer.
 	 * @param rendererLog The logger config for the rendering engine.
 	 * @throw runtime_error if initialization failed.
 	 */
-	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, std::shared_ptr<RenderInitializer> ri, const LogConfig& rendererLog) :
-		texLoader(tl), shaderLoader(sl), renderInit(ri), logger(rendererLog) {}
+	RenderingEngine(std::shared_ptr<TextureLoader> tl, std::shared_ptr<ShaderLoader> sl, RendererMemoryManager* memManager, const LogConfig& rendererLog) :
+		texLoader(tl), shaderLoader(sl), renderInit(memManager), logger(rendererLog) {}
 
 	/**
 	 * Destroys any api-agnostic resources the engine might
@@ -105,7 +105,7 @@ public:
 	 * to add vertex buffers and descriptor sets before everything else is loaded.
 	 * @return The render initializer for this rendering engine.
 	 */
-	std::shared_ptr<RenderInitializer> getRenderInitializer() { return renderInit; }
+	RenderInitializer& getRenderInitializer() { return renderInit; }
 
 	/**
 	 * Called at the very start of a frame. Does any work needed to set
@@ -147,8 +147,8 @@ protected:
 	//The shader loader.
 	std::shared_ptr<ShaderLoader> shaderLoader;
 	//Renderer initializer.
-	std::shared_ptr<RenderInitializer> renderInit;
-	//The general rendering logger
+	RenderInitializer renderInit;
+	//The general rendering logger.
 	Logger logger;
 
 	/**

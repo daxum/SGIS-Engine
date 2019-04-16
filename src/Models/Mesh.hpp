@@ -124,7 +124,7 @@ public:
 	 * first, and the index count in second.
 	 * @return The index info needed to render the mesh.
 	 */
-	std::pair<uintptr_t, uint32_t> getRenderInfo() { return {indexStart, indices.size()}; }
+	const std::pair<uintptr_t, uint32_t> getRenderInfo() const { return {indexStart, indices.size()}; }
 
 	/**
 	 * Copy assignment.

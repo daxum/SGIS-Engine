@@ -42,7 +42,7 @@ public:
 	 * it will always be called before shader and model loading.
 	 * @param initializer The render initializer to use.
 	 */
-	virtual void createRenderObjects(std::shared_ptr<RenderInitializer> initializer) = 0;
+	virtual void createRenderObjects(RenderInitializer& initializer) = 0;
 
 	/**
 	 * Called by the engine to load the game's textures.

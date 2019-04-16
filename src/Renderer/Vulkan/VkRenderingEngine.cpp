@@ -20,7 +20,6 @@
 #include "Engine.hpp"
 #include "VkShaderLoader.hpp"
 #include "VkShader.hpp"
-#include "VkRenderInitializer.hpp"
 #include "VkTextureLoader.hpp"
 
 namespace {
@@ -35,7 +34,7 @@ namespace {
 VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog) :
 	RenderingEngine(std::make_shared<VkTextureLoader>(objectHandler, memoryManager),
 					std::make_shared<VkShaderLoader>(objectHandler, swapObjects, &memoryManager, shaderMap),
-					std::make_shared<VkRenderInitializer>(objectHandler, &memoryManager),
+					&memoryManager,
 					rendererLog),
 	interface(display, this),
 	objectHandler(logger),
@@ -299,9 +298,9 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 
 			//Per-model loop
 			for (const auto& objectSet : modelMap.second) {
-				const Model* model = objectSet.first;
+				const Material* material = objectSet.first;
 
-				bool modelSetBound = false;
+				bool materialSetBound = false;
 
 				//Per-object loop
 				for (const RenderComponent* comp : objectSet.second) {
@@ -355,16 +354,16 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 					}
 
 					//Model set
-					if (!modelSetBound) {
-						bindSets.at(numSets) = memoryManager.getDescriptorSet(model->name);
+					if (!materialSetBound) {
+						bindSets.at(numSets) = memoryManager.getDescriptorSet(material->name);
 						numSets++;
 
-						if (model->hasBufferedUniforms) {
-							bindOffsets.at(numOffsets) = memoryManager.getModelUniformData(model->name).offset;
+						if (material->hasBufferedUniforms) {
+							bindOffsets.at(numOffsets) = memoryManager.getModelUniformData(material->name).offset;
 							numOffsets++;
 						}
 
-						modelSetBound = true;
+						materialSetBound = true;
 					}
 					else {
 						//Model set will never be bound without a screen set, so this is perfectly safe
@@ -392,9 +391,9 @@ void VkRenderingEngine::renderTransparencyPass(RenderPass pass, const Concurrent
 
 					setPushConstants(shader, comp, camera);
 
-					const VkMeshRenderData& meshRenderData = memoryManager.getMeshRenderData(comp->getModel()->getModel().mesh);
+					const std::pair<uintptr_t, uint32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
 
-					vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshRenderData.indexCount, 1, meshRenderData.indexStart, 0, 0);
+					vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshInfo.second, 1, meshInfo.first, 0, 0);
 				}
 			}
 		}
@@ -437,7 +436,7 @@ void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& 
 }
 
 void VkRenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligner& aligner, const ScreenState* state, const Camera* camera) {
-	for (const UniformDescription& uniform : set.uniforms) {
+	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
 		glm::mat4 tempMat;
 		const void* value = nullptr;
 
@@ -453,7 +452,7 @@ void VkRenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligne
 }
 
 void VkRenderingEngine::setPerObjectUniforms(const UniformSet& set, Std140Aligner& aligner, const RenderComponent* comp, const Camera* camera) {
-	for (const UniformDescription& uniform : set.uniforms) {
+	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
 		glm::mat4 tempMat;
 		const void* value = nullptr;
 
