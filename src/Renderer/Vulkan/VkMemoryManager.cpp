@@ -50,17 +50,13 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	allocator(VK_NULL_HANDLE),
 	transferBuffer(VK_NULL_HANDLE),
 	transferAllocation(VK_NULL_HANDLE),
-	uniformBuffers({VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE}),
-	uniformBufferAllocations({VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE}),
 	transferFence(VK_NULL_HANDLE),
 	transferOffset(0),
 	transferSize(0),
 	growTransfer(true),
 	pendingTransfers(),
-	meshMap(),
 	descriptorLayouts(),
-	staticModelPool(VK_NULL_HANDLE),
-	dynamicPool(VK_NULL_HANDLE),
+	descriptorPool(VK_NULL_HANDLE),
 	descriptorSets(),
 	descriptorAligners(),
 	currentUniformOffset(0),
@@ -70,8 +66,7 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	depthBuffer(VK_NULL_HANDLE),
 	depthView(VK_NULL_HANDLE),
 	depthAllocation(VK_NULL_HANDLE),
-	transferMem(nullptr),
-	uniformMem(nullptr) {
+	transferMem(nullptr) {
 
 }
 
@@ -111,12 +106,6 @@ void VkMemoryManager::deinit() {
 		vmaDestroyBuffer(allocator, transferBuffer, transferAllocation);
 	}
 
-	for (size_t i = 0; i < uniformBuffers.size(); i++) {
-		if (uniformBuffers.at(i) != VK_NULL_HANDLE) {
-			vmaDestroyBuffer(allocator, uniformBuffers.at(i), uniformBufferAllocations.at(i));
-		}
-	}
-
 	imageMap.clear();
 
 	vkDestroyImageView(objects.getDevice(), depthView, nullptr);
@@ -145,15 +134,14 @@ void VkMemoryManager::deinit() {
 		vkDestroyDescriptorSetLayout(objects.getDevice(), layoutInfoPair.second.layout, nullptr);
 	}
 
-	vkDestroyDescriptorPool(objects.getDevice(), staticModelPool, nullptr);
-	vkDestroyDescriptorPool(objects.getDevice(), dynamicPool, nullptr);
+	vkDestroyDescriptorPool(objects.getDevice(), descriptorPool, nullptr);
 }
 
 void VkMemoryManager::initializeDescriptors() {
 	//Create descriptor pools
 
-	createDescriptorPool(&staticModelPool, [](UniformSetType type) -> bool { return type == UniformSetType::MODEL_STATIC; });
-	createDescriptorPool(&dynamicPool, [](UniformSetType type) -> bool { return type != UniformSetType::MODEL_STATIC; });
+	createDescriptorPool(&staticModelPool, [](UniformSetType type) -> bool { return type == UniformSetType::MATERIAL; });
+	createDescriptorPool(&dynamicPool, [](UniformSetType type) -> bool { return type != UniformSetType::MATERIAL; });
 
 	//Allocate dynamic descriptor sets from dynamic pool
 	for (const auto& uniformSetPair : uniformSets) {
@@ -446,61 +434,6 @@ VkImageView VkMemoryManager::createDepthBuffer(VkExtent2D swapExtent) {
 	}
 
 	return depthView;
-}
-
-std::shared_ptr<RenderBufferData> VkMemoryManager::createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) {
-	VkBufferUsageFlags transferFlags = 0;
-	VmaMemoryUsage memoryUsage;
-
-	switch (usage) {
-		case BufferUsage::DEDICATED_LAZY:
-			transferFlags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-			memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-			break;
-		case BufferUsage::DEDICATED_SINGLE:
-			transferFlags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-			memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
-			break;
-		case BufferUsage::STREAM:
-			memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-			break;
-		default: throw std::runtime_error("Missing buffer usage in memory manager");
-	}
-
-	VkBufferCreateInfo bufferCreateInfo = {};
-	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.size = size;
-	bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | transferFlags;
-	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	uint32_t bufferUsers[] = { objects.getGraphicsQueueIndex(), objects.getTransferQueueIndex() };
-
-	if (objects.hasUniqueTransfer()) {
-		bufferCreateInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
-		bufferCreateInfo.queueFamilyIndexCount = 2;
-		bufferCreateInfo.pQueueFamilyIndices = bufferUsers;
-	}
-
-	VmaAllocationCreateInfo allocCreateInfo = {};
-	allocCreateInfo.usage = memoryUsage;
-
-	VkBuffer vertexBuffer = VK_NULL_HANDLE;
-	VmaAllocation vertexAllocation = VK_NULL_HANDLE;
-
-	if (vmaCreateBuffer(allocator, &bufferCreateInfo, &allocCreateInfo, &vertexBuffer, &vertexAllocation, nullptr) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create vertex buffer!");
-	}
-
-	bufferCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | transferFlags;
-
-	VkBuffer indexBuffer = VK_NULL_HANDLE;
-	VmaAllocation indexAllocation = VK_NULL_HANDLE;
-
-	if (vmaCreateBuffer(allocator, &bufferCreateInfo, &allocCreateInfo, &indexBuffer, &indexAllocation, nullptr) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create index buffer!");
-	}
-
-	return std::make_shared<VkBufferData>(allocator, vertexBuffer, indexBuffer, vertexAllocation, indexAllocation);
 }
 
 void VkMemoryManager::addModelDescriptors(const Model& model) {

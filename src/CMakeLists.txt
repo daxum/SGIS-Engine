@@ -60,6 +60,7 @@ if (USE_VULKAN)
 		Renderer/Vulkan/VkImageData.cpp
 		Renderer/Vulkan/VkTextureLoader.cpp
 		Renderer/Vulkan/VkRenderObjects.cpp
+		Renderer/Vulkan/VkBufferContainer.cpp
 	)
 
 	add_definitions(-DUSE_VULKAN)

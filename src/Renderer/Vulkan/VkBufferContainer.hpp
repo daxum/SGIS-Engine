@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "vk_mem_alloc.h"
+
+#include "VkObjectHandler.hpp"
 #include "Renderer/Buffer.hpp"
 
 class VkBufferContainer : public Buffer {
@@ -29,12 +32,12 @@ public:
 	 * @param storage Where the buffer should (preferably) be stored.
 	 * @param size The size of the buffer.
 	 */
-	VkBufferContainer(VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size);
+	VkBufferContainer(VkObjectHandler& objects, VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size);
 
 	/**
 	 * Frees the allocation, etc etc.
 	 */
-	~VkBufferContainer();
+	~VkBufferContainer() { vmaDestroyBuffer(allocator, buffer, allocation); }
 
 	/**
 	 * Gets the VkBuffer associated with this buffer.
@@ -53,11 +56,14 @@ public:
 	void write(size_t offset, size_t size, const unsigned char* data) override;
 
 private:
+	//Container of Vulkan objects.
+	VkObjectHandler& objects;
 	//The allocator the buffer was allocated from.
 	VmaAllocator allocator;
-
 	//The buffer object.
 	VkBuffer buffer;
 	//The memory object that the buffer is stored in.
 	VmaAllocation allocation;
+	//The mapped buffer memory, if host visible. If not, this will be nullptr.
+	unsigned char* mappedMem;
 };

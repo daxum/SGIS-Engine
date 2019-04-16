@@ -32,28 +32,6 @@
 #include "VkImageData.hpp"
 #include "VkBufferContainer.hpp"
 
-//TODO: Move to some sort of VkBuffer class (need a different name, though)
-/*struct VkBufferData {
-	VmaAllocator allocator;
-
-	VkBuffer vertexBuffer;
-	VkBuffer indexBuffer;
-	VmaAllocation vertexAllocation;
-	VmaAllocation indexAllocation;
-
-	VkBufferData(VmaAllocator allocator, VkBuffer vertexBuffer, VkBuffer indexBuffer, VmaAllocation vertexAllocation, VmaAllocation indexAllocation) :
-		allocator(allocator),
-		vertexBuffer(vertexBuffer),
-		indexBuffer(indexBuffer),
-		vertexAllocation(vertexAllocation),
-		indexAllocation(indexAllocation) {}
-
-	~VkBufferData() {
-		vmaDestroyBuffer(allocator, vertexBuffer, vertexAllocation);
-		vmaDestroyBuffer(allocator, indexBuffer, indexAllocation);
-	}
-};*/
-
 struct TransferOperation {
 	//The buffer to transfer to.
 	VkBuffer buffer;
@@ -202,7 +180,7 @@ protected:
 	 * @return A pointer to a VkBufferData object.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) override;
+	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) override { return std::make_shared<VkBufferContainer>(objects, allocator, usage, storage, size); }
 
 	/**
 	 * Creates a type of uniform set for which descriptors can be allocated. Specifically, this creates the descriptor
@@ -238,10 +216,6 @@ private:
 	VmaAllocation transferAllocation;
 	//Transfer command buffer.
 	VkCommandBuffer transferCommands;
-	//Uniform buffers and allocations.
-	//0 - static model, 1 - dynamic model, 2 - screen / object.
-	std::array<VkBuffer, 3> uniformBuffers;
-	std::array<VmaAllocation, 3> uniformBufferAllocations;
 	//Fence to prevent overwriting in-transit memory.
 	VkFence transferFence;
 	//Current offset into transfer buffer, reset to 0 after each transfer operation.
@@ -256,11 +230,8 @@ private:
 	std::queue<ImageTransferOperation> pendingImageTransfers;
 	//All possible descriptor set layouts.
 	std::unordered_map<std::string, DescriptorLayoutInfo> descriptorLayouts;
-	//Static model descriptor pool. Once allocated, descriptor sets are never freed or updated.
-	VkDescriptorPool staticModelPool;
-	//Dynamic model, object, and screen descriptor pool. All descriptor sets are allocated once at
-	//pool creation time and then never updated (Unless something happens with textures, of course).
-	VkDescriptorPool dynamicPool;
+	//Pool from which descriptors are allocated.
+	VkDescriptorPool descriptorPool;
 	//Contains all allocated descriptor sets. These are never freed until program termination.
 	std::unordered_map<std::string, VkDescriptorSet> descriptorSets;
 	//Stores one aligner for each per-screen or per-object descriptor set, to avoid dynamic allocation
@@ -282,8 +253,6 @@ private:
 	VmaAllocation depthAllocation;
 	//Transfer buffer memory.
 	unsigned char* transferMem;
-	//Uniform stream buffer memory.
-	unsigned char* uniformMem;
 
 	/**
 	 * Adds a transfer operation to the pending transfer queue.
