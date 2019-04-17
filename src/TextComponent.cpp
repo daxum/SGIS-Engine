@@ -31,10 +31,10 @@ std::u32string TextComponent::convToU32(const std::string& s) {
 	return out;
 }
 
-TextComponent::TextComponent(const std::u32string& text, const std::string& font, const std::string& material, const std::string& buffer, const std::string format, glm::vec3 scale) :
+TextComponent::TextComponent(const TextMeshInfo& meshInfo, const std::string& material, glm::vec3 scale) :
 	Component(TEXT_COMPONENT_NAME),
 	logger(Engine::instance->getConfig().componentLog),
-	meshInfo({font, text, buffer, format}),
+	meshInfo(meshInfo),
 	material(material),
 	textModel(Engine::instance->getFontManager().createTextModel(meshInfo, material)),
 	initScale(scale) {

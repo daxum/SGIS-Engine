@@ -43,15 +43,12 @@ public:
 	 * Creates a text component. If an object is going to be only text,
 	 * adding a render component is uneccessary, as the text component will
 	 * add one itself (only if one is not already present).
-	 * @param text The text to render.
-	 * @param font The font to use.
+	 * @param meshInfo The info about the mesh for the text.
 	 * @param material The material the text uses for rendering.
-	 * @param buffer The buffer for the text model to reside in.
-	 * @param format The vertex format of the text's mesh.
 	 * @param scale The scale of the text. Might need to be rather small for
 	 *     large font sizes.
 	 */
-	TextComponent(const std::u32string& text, const std::string& font, const std::string& material, const std::string& buffer, const std::string format, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0));
+	TextComponent(const TextMeshInfo& meshInfo, const std::string& material, glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0));
 
 	/**
 	 * Called from Component, sets the rendering component if one is not
