@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
+#include <deque>
+
 #define VMA_IMPLEMENTATION
 
 //Unused variable due to VMA_ASSERT
@@ -56,7 +58,7 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	growTransfer(true),
 	pendingTransfers(),
 	descriptorLayouts(),
-	descriptorPool(VK_NULL_HANDLE),
+	poolInfo({}),
 	descriptorSets(),
 	descriptorAligners(),
 	currentUniformOffset(0),
@@ -131,50 +133,60 @@ void VkMemoryManager::deinit() {
 	}
 
 	for (const auto& layoutInfoPair : descriptorLayouts) {
-		vkDestroyDescriptorSetLayout(objects.getDevice(), layoutInfoPair.second.layout, nullptr);
+		vkDestroyDescriptorSetLayout(objects.getDevice(), layoutInfoPair.second, nullptr);
 	}
 
-	vkDestroyDescriptorPool(objects.getDevice(), descriptorPool, nullptr);
+	vkDestroyDescriptorPool(objects.getDevice(), poolInfo.pool, nullptr);
 }
 
 void VkMemoryManager::initializeDescriptors() {
-	//Create descriptor pools
+	//Create descriptor pool
+	if (poolInfo.maxSets == 0) {
+		//Empty descriptor pool, don't create
+		return;
+	}
 
-	createDescriptorPool(&staticModelPool, [](UniformSetType type) -> bool { return type == UniformSetType::MATERIAL; });
-	createDescriptorPool(&dynamicPool, [](UniformSetType type) -> bool { return type != UniformSetType::MATERIAL; });
+	//Convert to VkDescriptorPoolSize
+	std::array<VkDescriptorPoolSize, sizeof(DescriptorPoolInfo::bindingCounts) / sizeof(uint32_t)> poolSizes;
+	poolSizes.at(0) = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, poolInfo.bindingCounts.dynamicUniformBuffers};
+	poolSizes.at(1) = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolInfo.bindingCounts.combinedImageSamplers};
 
-	//Allocate dynamic descriptor sets from dynamic pool
-	for (const auto& uniformSetPair : uniformSets) {
+	//Create pool
+	VkDescriptorPoolCreateInfo poolCreateInfo = {};
+	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolCreateInfo.maxSets = poolInfo.maxSets;
+	poolCreateInfo.poolSizeCount = poolSizes.size();
+	poolCreateInfo.pPoolSizes = poolSizes.data();
+
+	if (vkCreateDescriptorPool(objects.getDevice(), &poolCreateInfo, nullptr, &poolInfo.pool) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create descriptor pool!");
+	}
+
+	//Allocate non-material descriptor sets from pool (TODO: This doesn't seem to be the correct place to do this)
+	for (const auto& uniformSetPair : getUniformSetMap()) {
 		const UniformSet& uniformSet = uniformSetPair.second;
 
-		if (uniformSetPair.second.setType != UniformSetType::MODEL_STATIC) {
-			const DescriptorLayoutInfo& layoutInfo = descriptorLayouts.at(uniformSetPair.first);
-
-			VkDescriptorSetAllocateInfo setAllocInfo = {};
-			setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			setAllocInfo.descriptorPool = dynamicPool;
-			setAllocInfo.descriptorSetCount = 1;
-			setAllocInfo.pSetLayouts = &layoutInfo.layout;
-
-			VkDescriptorSet set = VK_NULL_HANDLE;
-
-			if (vkAllocateDescriptorSets(objects.getDevice(), &setAllocInfo, &set) != VK_SUCCESS) {
-				ENGINE_LOG_FATAL(logger, "Failed to allocate dynamic descriptor set!");
-				throw std::runtime_error("Failed to allocate dynamic descriptor set!");
-			}
-
-			//Collect image views for the set's textures
-			std::vector<VkImageView> setImageViews;
-
-			for (const UniformDescription& uniform : uniformSetPair.second.uniforms) {
-				if (isSampler(uniform.type)) {
-					setImageViews.push_back(imageMap.at(uniform.name)->getImageView());
-				}
-			}
-
-			descriptorSets.insert({uniformSetPair.first, set});
-			fillDescriptorSet(set, layoutInfo, uniformSet, setImageViews);
+		if (uniformSet.getType() == UniformSetType::MATERIAL) {
+			continue;
 		}
+
+		const VkDescriptorSetLayout& layout = descriptorLayouts.at(uniformSetPair.first);
+
+		VkDescriptorSetAllocateInfo setAllocInfo = {};
+		setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		setAllocInfo.descriptorPool = poolInfo.pool;
+		setAllocInfo.descriptorSetCount = 1;
+		setAllocInfo.pSetLayouts = &layout;
+
+		VkDescriptorSet set = VK_NULL_HANDLE;
+
+		if (vkAllocateDescriptorSets(objects.getDevice(), &setAllocInfo, &set) != VK_SUCCESS) {
+			ENGINE_LOG_FATAL(logger, "Failed to allocate dynamic descriptor set!");
+			throw std::runtime_error("Failed to allocate dynamic descriptor set!");
+		}
+
+		descriptorSets.insert({uniformSetPair.first, set});
+		fillDescriptorSet(set, uniformSet, std::vector<std::string>());
 	}
 }
 
@@ -436,6 +448,34 @@ VkImageView VkMemoryManager::createDepthBuffer(VkExtent2D swapExtent) {
 	return depthView;
 }
 
+void VkMemoryManager::createUniformSetType(const std::string& name, const UniformSet& set) {
+	if (poolInfo.pool != VK_NULL_HANDLE) {
+		throw std::runtime_error("Attempted to add uniform set after pools were initialized!");
+	}
+
+	//Create layout
+	VkDescriptorSetLayout layout = createSetLayout(set);
+	descriptorLayouts.emplace(name, layout);
+
+	//Add descriptor types needed to the desriptor pool
+	poolInfo.maxSets += set.getMaxUsers();
+
+	if (!set.getBufferedUniforms().empty()) {
+		poolInfo.bindingCounts.dynamicUniformBuffers += set.getMaxUsers();
+	}
+
+	for (const UniformDescription& uniform : set.getNonBufferedUniforms()) {
+		//This'll make a bit more sense when there are descriptors that aren't textures
+		switch (uniform.type) {
+			case UniformType::SAMPLER_2D:
+			case UniformType::SAMPLER_CUBE:
+				poolInfo.bindingCounts.combinedImageSamplers += set.getMaxUsers();
+				break;
+			default: throw std::runtime_error("Missing uniform type when creating descriptor sets!");
+		}
+	}
+}
+
 void VkMemoryManager::addModelDescriptors(const Model& model) {
 	if (descriptorSets.count(model.name)) {
 		return;
@@ -515,94 +555,105 @@ void VkMemoryManager::queueImageTransfer(VkImage image, size_t size, const unsig
 	transferOffset += size;
 }
 
-void VkMemoryManager::createDescriptorPool(VkDescriptorPool* pool, std::function<bool(UniformSetType)> setInPool) {
-	uint32_t setCount = 0;
-	std::unordered_map<VkDescriptorType, uint32_t> typeCounts;
+VkDescriptorSetLayout VkMemoryManager::createSetLayout(const UniformSet& set) const {
+	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-	//Find all descriptor set counts and max number of sets
-	for (const auto& setPair : uniformSets) {
-		if (setInPool(setPair.second.setType)) {
-			setCount += setPair.second.maxUsers;
+	if (!set.getBufferedUniforms().empty()) {
+		std::bitset<32> uboUseStages;
 
-			//Add all the binding counts
-			for (const auto& bindingPair : descriptorLayouts.at(setPair.first).bindings) {
-				if (typeCounts.count(bindingPair.first) == 0) {
-					typeCounts.insert({bindingPair.first, 0});
-				}
-
-				typeCounts.at(bindingPair.first) += setPair.second.maxUsers;
-			}
+		//Set stages the uniform buffer is used in
+		for (const UniformDescription& descr : set.getBufferedUniforms()) {
+			uboUseStages |= descr.shaderStages;
 		}
+
+		VkDescriptorSetLayoutBinding binding = {};
+		binding.binding = bindings.size();
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		binding.descriptorCount = 1;
+		binding.stageFlags = uboUseStages.to_ulong();
+
+		bindings.push_back(binding);
 	}
 
-	//Empty descriptor pool, don't create
-	if (setCount == 0) {
-		return;
+	//Add non-uniform buffer bindings.
+	for (const UniformDescription& descr : set.getNonBufferedUniforms()) {
+		VkDescriptorSetLayoutBinding binding = {};
+		binding.binding = bindings.size();
+		//For now, everything that isn't a uniform buffer is a texture. When that
+		//changes, there should be a function somewhere to convert descr.type to
+		//a VkDescriptotType
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		//If arrays are supported later, this'll need to change
+		binding.descriptorCount = 1;
+		binding.stageFlags = descr.shaderStages.to_ulong();
+
+		bindings.push_back(binding);
 	}
 
-	//Convert to VkDescriptorPoolSize
+	VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
+	layoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutCreateInfo.bindingCount = bindings.size();
+	layoutCreateInfo.pBindings = bindings.data();
 
-	std::vector<VkDescriptorPoolSize> poolSizes;
+	VkDescriptorSetLayout layout;
 
-	for (const auto& elem : typeCounts) {
-		poolSizes.push_back({elem.first, elem.second});
+	if (vkCreateDescriptorSetLayout(objects.getDevice(), &layoutCreateInfo, nullptr, &layout) != VK_SUCCESS) {
+		throw std::runtime_error("Could not create descriptor set layout");
 	}
 
-	//Create pool
-	VkDescriptorPoolCreateInfo poolCreateInfo = {};
-	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfo.maxSets = setCount;
-	poolCreateInfo.poolSizeCount = poolSizes.size();
-	poolCreateInfo.pPoolSizes = poolSizes.data();
-
-	if (vkCreateDescriptorPool(objects.getDevice(), &poolCreateInfo, nullptr, pool) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create descriptor pool!");
-	}
+	return layout;
 }
 
-void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet, const std::vector<VkImageView>& textures) {
-	std::vector<VkWriteDescriptorSet> writeOps(layoutInfo.bindings.size(), VkWriteDescriptorSet{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET});
-	std::vector<VkDescriptorBufferInfo> bufferInfos;
-	std::vector<VkDescriptorImageInfo> imageInfos;
+void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const UniformSet& uniformSet, const std::vector<std::string>& textures) {
+	std::vector<VkWriteDescriptorSet> writeOps;
+	std::deque<VkDescriptorBufferInfo> bufferInfos;
+	std::deque<VkDescriptorImageInfo> imageInfos;
+
+	if (!uniformSet.getBufferedUniforms().empty()) {
+		//Add dynamic uniform buffer
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = ((const VkBufferContainer*) getUniformBuffer(uniformBufferFromSetType(uniformSet.getType())))->getBuffer();
+		bufferInfo.offset = 0;
+		bufferInfo.range = Std140Aligner::getAlignedSize(uniformSet);
+
+		bufferInfos.push_back(bufferInfo);
+
+		VkWriteDescriptorSet writeSet = {};
+		writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeSet.dstSet = set;
+		writeSet.dstBinding = 0;
+		writeSet.dstArrayElement = 0;
+		writeSet.descriptorCount = 1;
+		writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		writeSet.pBufferInfo = &bufferInfos.back();
+
+		writeOps.push_back(writeSet);
+	}
 
 	size_t currentImageIndex = 0;
 
-	for (size_t i = 0; i < layoutInfo.bindings.size(); i++) {
-		const VkDescriptorType type = layoutInfo.bindings.at(i).first;
-		const std::string& name = layoutInfo.bindings.at(i).second;
+	for (const UniformDescription& descr : uniformSet.getNonBufferedUniforms()) {
+		switch (descr.type) {
+			case UniformType::SAMPLER_2D:
+			case UniformType::SAMPLER_CUBE: {
+				const std::string& texName = textures.at(currentImageIndex);
 
-		switch (type) {
-			case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
-				VkDescriptorBufferInfo bufferInfo = {};
-				bufferInfo.buffer = uniformBuffers.at(bufferIndexFromSetType(uniformSet.setType));
-				bufferInfo.offset = 0;
-				bufferInfo.range = Std140Aligner::getAlignedSize(uniformSet);
-
-				bufferInfos.push_back(bufferInfo);
-
-				VkWriteDescriptorSet& writeSet = writeOps.at(i);
-				writeSet.dstSet = set;
-				writeSet.dstBinding = i;
-				writeSet.dstArrayElement = 0;
-				writeSet.descriptorCount = 1;
-				writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-				writeSet.pBufferInfo = &bufferInfos.back();
-			}; break;
-			case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
 				VkDescriptorImageInfo imageInfo = {};
-				imageInfo.sampler = samplerMap.at(name);
-				imageInfo.imageView = textures.at(currentImageIndex);
+				imageInfo.sampler = samplerMap.at(texName);
+				imageInfo.imageView = imageMap.at(texName)->getImageView();
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 				imageInfos.push_back(imageInfo);
 
-				VkWriteDescriptorSet& writeSet = writeOps.at(i);
+				VkWriteDescriptorSet writeSet = {};
 				writeSet.dstSet = set;
-				writeSet.dstBinding = i;
+				writeSet.dstBinding = writeOps.size();
 				writeSet.dstArrayElement = 0;
 				writeSet.descriptorCount = 1;
 				writeSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				writeSet.pImageInfo = &imageInfos.back();
+
+				writeOps.push_back(writeSet);
 
 				currentImageIndex++;
 			}; break;

@@ -34,6 +34,12 @@
 //An interface to the rendering engine's memory manager.
 class RendererMemoryManager {
 public:
+	enum UniformBufferType {
+		MATERIAL,
+		SCREEN_OBJECT,
+		NUM_TYPES
+	};
+
 	/**
 	 * Creates a memory manager and initializes a logger.
 	 * @param logConfig The logger configuration.
@@ -95,6 +101,13 @@ public:
 	const UniformSet& getUniformSet(const std::string& set) { return uniformSets.at(set); }
 
 	/**
+	 * Gets the uniform buffer stored at the given type.
+	 * @param type The uniform buffer to get.
+	 * @return A pointer the the requested uniform buffer.
+	 */
+	const Buffer* getUniformBuffer(UniformBufferType type) { return uniformBuffers.at(type).get(); }
+
+	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
 	 * If the mesh has already been added, nothing happens.
 	 * @param name The name to store the mesh under.
@@ -128,7 +141,19 @@ protected:
 	 * Function available for subclasses if they need buffers deleted before their destructor completes.
 	 * Destroys all created buffers.
 	 */
-	void deleteBuffers() { buffers.clear(); }
+	void deleteBuffers() {
+		buffers.clear();
+
+		for (std::shared_ptr<Buffer>& buf : uniformBuffers) {
+			buf.reset();
+		}
+	}
+
+	/**
+	 * Gets the map of uniform sets, for if a subclass needs it.
+	 * @return The uniform set map.
+	 */
+	const std::unordered_map<std::string, UniformSet>& getUniformSetMap() { return uniformSets; }
 
 	/**
 	 * Creates a buffer with the underlying rendering api.
@@ -167,13 +192,21 @@ protected:
 	 */
 	virtual void addMaterialDescriptors(const Material* material) = 0;
 
-private:
-	enum UniformBufferType {
-		MATERIAL,
-		SCREEN_OBJECT,
-		NUM_TYPES
-	};
+	/**
+	 * Takes a uniform set type and turns it into a uniform buffer type.
+	 * @param type The uniform buffer type.
+	 * @return The index for the buffer.
+	 */
+	static constexpr UniformBufferType uniformBufferFromSetType(const UniformSetType type) {
+		switch (type) {
+			case UniformSetType::MATERIAL: return UniformBufferType::MATERIAL;
+			case UniformSetType::PER_SCREEN: return UniformBufferType::SCREEN_OBJECT;
+			case UniformSetType::PER_OBJECT: return UniformBufferType::SCREEN_OBJECT;
+			default: throw std::runtime_error("Missing uniform set -> buffer conversion!");
+		}
+	}
 
+private:
 	//Stores all created buffers.
 	std::unordered_map<std::string, std::shared_ptr<Buffer>> buffers;
 	//Stores all uniform buffers.

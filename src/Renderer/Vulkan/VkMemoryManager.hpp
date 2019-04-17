@@ -22,7 +22,6 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
-#include <functional>
 
 #include <vulkan/vulkan.h>
 
@@ -62,12 +61,17 @@ struct ImageTransferOperation {
 	uint32_t arrayLayers;
 };
 
-struct DescriptorLayoutInfo {
-	//Bindings for the descriptor set with this layout. First element
-	//is the type, second is the name, which is used for textures.
-	std::vector<std::pair<VkDescriptorType, std::string>> bindings;
-	//Layout object. Don't forget to delete!
-	VkDescriptorSetLayout layout;
+struct DescriptorPoolInfo {
+	//Pool from which descriptors are allocated.
+	VkDescriptorPool pool;
+	//The maximum number of sets that can be allocated from the pool.
+	size_t maxSets;
+	//Number of bindings of each type the pool has. These should be
+	//added as needed.
+	struct {
+		uint32_t dynamicUniformBuffers;
+		uint32_t combinedImageSamplers;
+	} bindingCounts;
 };
 
 class VkMemoryManager : public RendererMemoryManager {
@@ -105,7 +109,7 @@ public:
 	 * @param name The name of the descriptor set layout to fetch.
 	 * @return The layout with the given name.
 	 */
-	VkDescriptorSetLayout getSetLayout(const std::string& name) const { return descriptorLayouts.at(name).layout; }
+	VkDescriptorSetLayout getSetLayout(const std::string& name) const { return descriptorLayouts.at(name); }
 
 	/**
 	 * Gets the descriptor set with the given name.
@@ -229,9 +233,9 @@ private:
 	//All queued image transfer operations.
 	std::queue<ImageTransferOperation> pendingImageTransfers;
 	//All possible descriptor set layouts.
-	std::unordered_map<std::string, DescriptorLayoutInfo> descriptorLayouts;
-	//Pool from which descriptors are allocated.
-	VkDescriptorPool descriptorPool;
+	std::unordered_map<std::string, VkDescriptorSetLayout> descriptorLayouts;
+	//Discriptor pool, along with amount of available bindings.
+	DescriptorPoolInfo poolInfo;
 	//Contains all allocated descriptor sets. These are never freed until program termination.
 	std::unordered_map<std::string, VkDescriptorSet> descriptorSets;
 	//Stores one aligner for each per-screen or per-object descriptor set, to avoid dynamic allocation
@@ -275,36 +279,17 @@ private:
 	void queueImageTransfer(VkImage image, size_t size, const unsigned char* data, uint32_t imageWidth, uint32_t imageHeight, uint32_t arrayLayers);
 
 	/**
-	 * Creates a descriptor pool that has enough descriptors to hold the sets that setInPool
-	 * returns true for.
-	 * @param pool The descriptor pool to create.
-	 * @param setInPool A function that determines in a given uniform set belongs in the pool
-	 *     to be created.
+	 * Creates the set layout for the provided uniform set.
+	 * @param set The set to create the layout for.
+	 * @return The created layout.
 	 */
-	void createDescriptorPool(VkDescriptorPool* pool, std::function<bool(UniformSetType)> setInPool);
+	VkDescriptorSetLayout createSetLayout(const UniformSet& set) const;
 
 	/**
 	 * Writes the descriptors to the descriptor set.
 	 * @param set The set to write to.
-	 * @param layoutInfo The descriptor layout info for the set.
 	 * @param uniformSet The uniform set that corresponds to the layout info.
-	 * @param textures A vector of image views for all the textures used in the set.
+	 * @param textures A vector of texture names for all the textures used in the set.
 	 */
-	void fillDescriptorSet(VkDescriptorSet set, const DescriptorLayoutInfo& layoutInfo, const UniformSet& uniformSet, const std::vector<VkImageView>& textures);
-
-	/**
-	 * Takes a uniform set type and turns it into an index. This function
-	 * gives an odd feeling of deja vu...
-	 * @param type The uniform buffer type.
-	 * @return The index for the buffer.
-	 */
-	static constexpr size_t bufferIndexFromSetType(const UniformSetType type) {
-		switch (type) {
-			case UniformSetType::MATERIAL: return 0;
-			case UniformSetType::PER_SCREEN: return 1;
-			case UniformSetType::PER_OBJECT: return 1;
-			//Should be optimized better than an exception?
-			default: return 0xFFFFFFFFFFFFFFFF;
-		}
-	}
+	void fillDescriptorSet(VkDescriptorSet set, const UniformSet& uniformSet, const std::vector<std::string>& textures);
 };
