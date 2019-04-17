@@ -17,10 +17,13 @@
  ******************************************************************************/
 
 #include "RendererMemoryManager.hpp"
+#include "RenderingEngine.hpp"
 #include "ExtraMath.hpp"
 
 RendererMemoryManager::RendererMemoryManager(const LogConfig& logConfig) :
-	logger(logConfig) {}
+	logger(logConfig),
+	currentUniformOffset(0),
+	screenObjectBufferSize(0) {}
 
 void RendererMemoryManager::uniformBufferInit() {
 	size_t materialSize = 0;
@@ -44,8 +47,8 @@ void RendererMemoryManager::uniformBufferInit() {
 		}
 	}
 
-	//TODO: Move max frames variable and add this
-	//screenObjectSize *= VkRenderingEngine::MAX_ACTIVE_FRAMES;
+	screenObjectBufferSize = screenObjectSize;
+	screenObjectSize *= RenderingEngine::MAX_ACTIVE_FRAMES;
 
 	uniformBuffers.at(UniformBufferType::MATERIAL) = createBuffer(Buffer::Usage::UNIFORM_BUFFER | Buffer::Usage::TRANSFER_DST, BufferStorage::DEVICE, materialSize);
 	uniformBuffers.at(UniformBufferType::SCREEN_OBJECT) = createBuffer(Buffer::Usage::UNIFORM_BUFFER, BufferStorage::DEVICE_HOST_VISIBLE, screenObjectSize);
@@ -154,4 +157,19 @@ void RendererMemoryManager::addMaterial(Material* material) {
 
 	//Allocate descriptor set
 	addMaterialDescriptors(material);
+}
+
+uint32_t RendererMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame) {
+	const unsigned char* writeData = uniformProvider.getData().first;
+	const size_t writeSize = uniformProvider.getData().second;
+
+	//Handle uniform alignment
+	currentUniformOffset = ExMath::roundToVal<uint32_t>(currentUniformOffset, getMinUniformBufferAlignment());
+
+	const size_t writeOffset = screenObjectBufferSize * currentFrame + currentUniformOffset;
+
+	uniformBuffers.at(UniformBufferType::SCREEN_OBJECT)->write(writeOffset, writeSize, writeData);
+	currentUniformOffset += writeSize;
+
+	return writeOffset;
 }

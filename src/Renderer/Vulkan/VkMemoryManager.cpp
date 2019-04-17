@@ -61,8 +61,6 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	poolInfo({}),
 	descriptorSets(),
 	descriptorAligners(),
-	currentUniformOffset(0),
-	screenObjectBufferSize(0),
 	samplerMap(),
 	imageMap(),
 	depthBuffer(VK_NULL_HANDLE),
@@ -356,23 +354,6 @@ void VkMemoryManager::executeTransfers() {
 	transferOffset = 0;
 }
 
-uint32_t VkMemoryManager::writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame) {
-	const unsigned char* writeData = uniformProvider.getData().first;
-	const size_t writeSize = uniformProvider.getData().second;
-
-	//Handle uniform alignment
-	currentUniformOffset = ExMath::roundToVal<uint32_t>(currentUniformOffset, getMinUniformBufferAlignment());
-
-	const size_t writeOffset = screenObjectBufferSize * currentFrame + currentUniformOffset;
-
-	memcpy(&uniformMem[writeOffset], writeData, writeSize);
-	currentUniformOffset += writeSize;
-
-	//TODO: flush if not coherent
-
-	return writeOffset;
-}
-
 void VkMemoryManager::allocateImage(const std::string& imageName, const VkImageCreateInfo& imageInfo, const unsigned char* imageData, size_t dataSize) {
 	VkImage image = VK_NULL_HANDLE;
 	VmaAllocation allocation = VK_NULL_HANDLE;
@@ -476,19 +457,19 @@ void VkMemoryManager::createUniformSetType(const std::string& name, const Unifor
 	}
 }
 
-void VkMemoryManager::addModelDescriptors(const Model& model) {
-	if (descriptorSets.count(model.name)) {
+void VkMemoryManager::addMaterialDescriptors(const Material* material) {
+	if (descriptorSets.count(material->name)) {
 		return;
 	}
 
-	const DescriptorLayoutInfo& layoutInfo = descriptorLayouts.at(model.uniformSet);
-	const UniformSet& uniformSet = uniformSets.at(model.uniformSet);
+	const VkDescriptorSetLayout layout = descriptorLayouts.at(material->uniformSet);
+	const UniformSet& uniformSet = getUniformSet(material->uniformSet);
 
 	VkDescriptorSetAllocateInfo setAllocInfo = {};
 	setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	setAllocInfo.descriptorPool = staticModelPool;
+	setAllocInfo.descriptorPool = poolInfo.pool;
 	setAllocInfo.descriptorSetCount = 1;
-	setAllocInfo.pSetLayouts = &layoutInfo.layout;
+	setAllocInfo.pSetLayouts = &layout;
 
 	VkDescriptorSet set = VK_NULL_HANDLE;
 
@@ -496,15 +477,8 @@ void VkMemoryManager::addModelDescriptors(const Model& model) {
 		throw std::runtime_error("Failed to allocate static model descriptor set!");
 	}
 
-	//Get image views for all the model's textures
-	std::vector<VkImageView> modelImageViews;
-
-	for (const std::string& texture : model.textures) {
-		modelImageViews.push_back(imageMap.at(texture)->getImageView());
-	}
-
-	descriptorSets.insert({model.name, set});
-	fillDescriptorSet(set, layoutInfo, uniformSet, modelImageViews);
+	descriptorSets.insert({material->name, set});
+	fillDescriptorSet(set, uniformSet, material->textures);
 }
 
 void VkMemoryManager::queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data) {

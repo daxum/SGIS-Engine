@@ -43,6 +43,9 @@
 //information on how to render them. Hopefully this strategy won't be too restrictive.
 class RenderingEngine {
 public:
+	//Max number of queued frames to be rendered.
+	constexpr static size_t MAX_ACTIVE_FRAMES = 2;
+
 	/**
 	 * Constructs the base rendering engine and initializes some parts of
 	 * the rendering api.

@@ -133,6 +133,20 @@ public:
 	 */
 	void addMaterial(Material* material);
 
+	/**
+	 * Writes the provided uniform values into the uniform buffer for the current frame and returns the offset
+	 * they were written at.
+	 * @param uniformProvider The provider of the uniforms.
+	 * @param currentFrame The current frame index.
+	 * @return The offset the uniform values were written at.
+	 */
+	uint32_t writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame);
+
+	/**
+	 * Called after each frame completes.
+	 */
+	void resetPerFrameOffset() { currentUniformOffset = 0; }
+
 protected:
 	//Logger, logs things.
 	Logger logger;
@@ -213,4 +227,8 @@ private:
 	std::array<std::shared_ptr<Buffer>, UniformBufferType::NUM_TYPES> uniformBuffers;
 	//Stores all created uniform sets.
 	std::unordered_map<std::string, UniformSet> uniformSets;
+	//Current offset into the object/screen uniform buffer, gets reset each frame.
+	uint32_t currentUniformOffset;
+	//Allowed usage size of the screen object buffer for each frame.
+	size_t screenObjectBufferSize;
 };

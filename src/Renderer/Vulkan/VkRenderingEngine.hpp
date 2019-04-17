@@ -33,9 +33,6 @@
 
 class VkRenderingEngine : public RenderingEngine {
 public:
-	//Max number of queued frames to be rendered.
-	constexpr static size_t MAX_ACTIVE_FRAMES = 2;
-
 	/**
 	 * Initializes a vulkan rendering engine.
 	 * @param display A reference to the display engine, for input callbacks.

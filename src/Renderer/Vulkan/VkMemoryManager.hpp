@@ -126,20 +126,6 @@ public:
 	Std140Aligner& getDescriptorAligner(const std::string& name) { return descriptorAligners.at(name); }
 
 	/**
-	 * Writes the provided uniform values into the uniform buffer for the current frame and returns the offset
-	 * they were written at.
-	 * @param uniformProvider The provider of the uniforms.
-	 * @param currentFrame The current frame index.
-	 * @return The offset the uniform values were written at.
-	 */
-	uint32_t writePerFrameUniforms(const Std140Aligner& uniformProvider, size_t currentFrame);
-
-	/**
-	 * Called after each frame completes.
-	 */
-	void resetPerFrameOffset() { currentUniformOffset = 0; }
-
-	/**
 	 * Allocates memory for an image, and creates a VkImage using that memory.
 	 * Also queues the image data for uploading.
 	 * @param imageName The name of the image to add.
@@ -241,10 +227,6 @@ private:
 	//Stores one aligner for each per-screen or per-object descriptor set, to avoid dynamic allocation
 	//inside the rendering loop.
 	std::unordered_map<std::string, Std140Aligner> descriptorAligners;
-	//Current offset into the object/screen uniform buffer, gets reset each frame.
-	uint32_t currentUniformOffset;
-	//Allowed usage size of the screen object buffer for each frame.
-	size_t screenObjectBufferSize;
 	//Map of all added samplers.
 	std::unordered_map<std::string, VkSampler> samplerMap;
 	//Map to insert loaded images into.
