@@ -17,9 +17,13 @@
  ******************************************************************************/
 
 #include "VkBufferContainer.hpp"
+#include "VkMemoryManager.hpp"
+#include "Engine.hpp"
 
-VkBufferContainer::VkBufferContainer(VkObjectHandler& objects, VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size) :
+VkBufferContainer::VkBufferContainer(VkMemoryManager* memoryManager,VkObjectHandler& objects, VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size) :
 	Buffer(size),
+	logger(Engine::instance->getConfig().rendererLog),
+	memoryManager(memoryManager),
 	objects(objects),
 	allocator(allocator),
 	buffer(VK_NULL_HANDLE),
@@ -66,4 +70,15 @@ VkBufferContainer::VkBufferContainer(VkObjectHandler& objects, VmaAllocator allo
 	}
 
 	mappedMem = (unsigned char*) allocInfo.pMappedData;
+
+	ENGINE_LOG_DEBUG(logger, "Created " + std::to_string(size) + " byte Vkbuffer stored in " + (mappedMem ? "host" : "device") + " memory");
+}
+
+void VkBufferContainer::write(size_t offset, size_t size, const unsigned char* data) {
+	if (mappedMem) {
+		memcpy(mappedMem + offset, data, size);
+	}
+	else {
+		memoryManager->queueTransfer(buffer, offset, size, data);
+	}
 }

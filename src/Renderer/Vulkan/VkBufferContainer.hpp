@@ -23,16 +23,20 @@
 #include "VkObjectHandler.hpp"
 #include "Renderer/Buffer.hpp"
 
+class VkMemoryManager;
+
 class VkBufferContainer : public Buffer {
 public:
 	/**
 	 * Creates the buffer with the given parameters.
+	 * @param memoryManager The parent memory manager.
+	 * @param objects The vulkan object container.
 	 * @param allocator The allocator to use when creating the buffer.
 	 * @param usage How the buffer will be used. Forwarded directly to Vulkan.
 	 * @param storage Where the buffer should (preferably) be stored.
 	 * @param size The size of the buffer.
 	 */
-	VkBufferContainer(VkObjectHandler& objects, VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size);
+	VkBufferContainer(VkMemoryManager* memoryManager, VkObjectHandler& objects, VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size);
 
 	/**
 	 * Frees the allocation, etc etc.
@@ -56,6 +60,10 @@ public:
 	void write(size_t offset, size_t size, const unsigned char* data) override;
 
 private:
+	//Logger, for logging.
+	Logger logger;
+	//Pointer to the memory manager, for transfers.
+	VkMemoryManager* memoryManager;
 	//Container of Vulkan objects.
 	VkObjectHandler& objects;
 	//The allocator the buffer was allocated from.

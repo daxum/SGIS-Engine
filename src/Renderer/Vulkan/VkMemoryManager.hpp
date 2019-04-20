@@ -159,6 +159,15 @@ public:
 	 */
 	VkImageView createDepthBuffer(VkExtent2D swapExtent);
 
+	/**
+	 * Adds a transfer operation to the pending transfer queue.
+	 * @param buffer The destination buffer for the transfer.
+	 * @param offset The offset into the destination buffer to place the data.
+	 * @param size The size of the data.
+	 * @param data The data to transfer.
+	 */
+	void queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data);
+
 protected:
 	/**
 	 * Creates a buffer and allocation with the given parameters.
@@ -170,7 +179,7 @@ protected:
 	 * @return A pointer to a VkBufferData object.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) override { return std::make_shared<VkBufferContainer>(objects, allocator, usage, storage, size); }
+	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) override { return std::make_shared<VkBufferContainer>(this, objects, allocator, usage, storage, size); }
 
 	/**
 	 * Creates a type of uniform set for which descriptors can be allocated. Specifically, this creates the descriptor
@@ -239,15 +248,6 @@ private:
 	VmaAllocation depthAllocation;
 	//Transfer buffer memory.
 	unsigned char* transferMem;
-
-	/**
-	 * Adds a transfer operation to the pending transfer queue.
-	 * @param buffer The destination buffer for the transfer.
-	 * @param offset The offset into the destination buffer to place the data.
-	 * @param size The size of the data.
-	 * @param data The data to transfer.
-	 */
-	void queueTransfer(VkBuffer buffer, size_t offset, size_t size, const unsigned char* data);
 
 	/**
 	 * Adds an image transfer operation to the pending image transfer queue.
