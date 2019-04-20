@@ -27,23 +27,73 @@
 #include "tiny_obj_loader.h"
 
 void ModelLoader::loadMaterial(const std::string& name, const MaterialCreateInfo& matInfo) {
-	Material material(name, matInfo.shader, matInfo.uniformSet, modelManager.getMemoryManager()->getUniformSet(matInfo.uniformSet), matInfo.viewCull);
-	material.textures.push_back(matInfo.texture);
+	const UniformSet& matSet = modelManager.getMemoryManager()->getUniformSet(matInfo.uniformSet);
 
-	if (material.uniforms.hasUniform("ka", UniformType::VEC3)) {
-		material.uniforms.setVec3("ka", {1.0f, 0.0f, 1.0f});
+	Material material(name, matInfo.shader, matInfo.uniformSet, matSet, matInfo.viewCull);
+
+	//Someone should probably change this to unordered...
+	std::map<std::string, int> matMap;
+	std::vector<tinyobj::material_t> loadedMats;
+	std::string warn;
+	std::string error;
+
+	std::string matFileName = Engine::instance->getConfig().resourceBase + matInfo.filename;
+	std::ifstream matFile(matFileName);
+
+	if (!matFile.is_open()) {
+		throw std::runtime_error("Couldn't open material file " + matFileName + "!");
 	}
 
-	if (material.uniforms.hasUniform("kd", UniformType::VEC3)) {
-		material.uniforms.setVec3("kd", {1.0f, 0.0f, 1.0f});
+	tinyobj::LoadMtl(&matMap, &loadedMats, &matFile, &warn, &error);
+
+	if (!error.empty()) {
+		ENGINE_LOG_ERROR(logger, error);
 	}
 
-	if (material.uniforms.hasUniform("ks", UniformType::VEC3)) {
-		material.uniforms.setVec3("ks", {1.0f, 0.0f, 1.0f});
+	if (!warn.empty()) {
+		ENGINE_LOG_WARN(logger, warn);
 	}
 
-	if (material.uniforms.hasUniform("s", UniformType::FLOAT)) {
-		material.uniforms.setFloat("s", 1.0f);
+	if (loadedMats.empty()) {
+		throw std::runtime_error("Failed to load material " + matFileName + "!");
+	}
+
+	tinyobj::material_t mat = loadedMats.at(0);
+
+	for (const UniformDescription& uniform : matSet.getBufferedUniforms()) {
+		//I should probably just write my own material loader, honestly
+		if (uniform.name == UNIFORM_NAME_KA) material.uniforms.setVec3(UNIFORM_NAME_KA, glm::vec3(mat.ambient[0], mat.ambient[1], mat.ambient[2]));
+		if (uniform.name == UNIFORM_NAME_KD) material.uniforms.setVec3(UNIFORM_NAME_KD, glm::vec3(mat.diffuse[0], mat.diffuse[1], mat.diffuse[2]));
+		if (uniform.name == UNIFORM_NAME_KS) material.uniforms.setVec3(UNIFORM_NAME_KS, glm::vec3(mat.specular[0], mat.specular[1], mat.specular[2]));
+		if (uniform.name == UNIFORM_NAME_TRANSMITTANCE) material.uniforms.setVec3(UNIFORM_NAME_TRANSMITTANCE, glm::vec3(mat.transmittance[0], mat.transmittance[1], mat.transmittance[2]));
+		if (uniform.name == UNIFORM_NAME_EMISSION) material.uniforms.setVec3(UNIFORM_NAME_EMISSION, glm::vec3(mat.emission[0], mat.emission[1], mat.emission[2]));
+		if (uniform.name == UNIFORM_NAME_SHININESS) material.uniforms.setFloat(UNIFORM_NAME_SHININESS, mat.shininess);
+		if (uniform.name == UNIFORM_NAME_IOR) material.uniforms.setFloat(UNIFORM_NAME_IOR, mat.ior);
+		if (uniform.name == UNIFORM_NAME_DISSOLVE) material.uniforms.setFloat(UNIFORM_NAME_DISSOLVE, mat.dissolve);
+		if (uniform.name == UNIFORM_NAME_ROUGHNESS) material.uniforms.setFloat(UNIFORM_NAME_ROUGHNESS, mat.roughness);
+		if (uniform.name == UNIFORM_NAME_METALLIC) material.uniforms.setFloat(UNIFORM_NAME_METALLIC, mat.metallic);
+		if (uniform.name == UNIFORM_NAME_SHEEN) material.uniforms.setFloat(UNIFORM_NAME_SHEEN, mat.sheen);
+		if (uniform.name == UNIFORM_NAME_CLEARCOAT_THICK) material.uniforms.setFloat(UNIFORM_NAME_CLEARCOAT_THICK, mat.clearcoat_thickness);
+		if (uniform.name == UNIFORM_NAME_CLEARCOAT_ROUGH) material.uniforms.setFloat(UNIFORM_NAME_CLEARCOAT_ROUGH, mat.clearcoat_roughness);
+		if (uniform.name == UNIFORM_NAME_ANISOTROPY) material.uniforms.setFloat(UNIFORM_NAME_ANISOTROPY, mat.anisotropy);
+		if (uniform.name == UNIFORM_NAME_ANISOTROPY_ROTATION) material.uniforms.setFloat(UNIFORM_NAME_ANISOTROPY_ROTATION, mat.anisotropy_rotation);
+	}
+
+	//Lots of textures
+	for (const UniformDescription& uniform : matSet.getNonBufferedUniforms()) {
+		if (uniform.name == UNIFORM_NAME_KA_TEX) material.textures.push_back(mat.ambient_texname);
+		if (uniform.name == UNIFORM_NAME_KD_TEX) material.textures.push_back(mat.diffuse_texname);
+		if (uniform.name == UNIFORM_NAME_KS_TEX) material.textures.push_back(mat.specular_texname);
+		if (uniform.name == UNIFORM_NAME_SPEC_HILIGHT_TEX) material.textures.push_back(mat.specular_highlight_texname);
+		if (uniform.name == UNIFORM_NAME_BUMP_TEX) material.textures.push_back(mat.bump_texname);
+		if (uniform.name == UNIFORM_NAME_DISPLACE_TEX) material.textures.push_back(mat.displacement_texname);
+		if (uniform.name == UNIFORM_NAME_ALPHA_TEX) material.textures.push_back(mat.alpha_texname);
+		if (uniform.name == UNIFORM_NAME_REFLECTION_TEX) material.textures.push_back(mat.reflection_texname);
+		if (uniform.name == UNIFORM_NAME_ROUGHNESS_TEX) material.textures.push_back(mat.roughness_texname);
+		if (uniform.name == UNIFORM_NAME_METALLIC_TEX) material.textures.push_back(mat.metallic_texname);
+		if (uniform.name == UNIFORM_NAME_SHEEN_TEX) material.textures.push_back(mat.sheen_texname);
+		if (uniform.name == UNIFORM_NAME_EMISSIVE_TEX) material.textures.push_back(mat.emissive_texname);
+		if (uniform.name == UNIFORM_NAME_NORMAL_TEX) material.textures.push_back(mat.normal_texname);
 	}
 
 	modelManager.addMaterial(name, std::move(material));

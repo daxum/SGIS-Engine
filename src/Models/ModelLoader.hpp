@@ -39,9 +39,6 @@ struct MeshData {
 struct MaterialCreateInfo {
 	//The material file to load from.
 	std::string filename;
-	//The texture for the material. Only here until material file
-	//loading is complete.
-	std::string texture;
 	//The shader to use to render the material.
 	std::string shader;
 	//The uniform set the material uses. Must be compatible with the shader.
@@ -64,6 +61,42 @@ struct MeshCreateInfo {
 	//and indexBuffer parameters will be ignored.
 	bool renderable;
 };
+
+//Lots of material names, to prevent mistyping.
+const std::string UNIFORM_NAME_KA = "ka";
+const std::string UNIFORM_NAME_KD = "kd";
+const std::string UNIFORM_NAME_KS = "ks";
+const std::string UNIFORM_NAME_TRANSMITTANCE = "trns";
+const std::string UNIFORM_NAME_EMISSION = "emsn";
+const std::string UNIFORM_NAME_SHININESS = "s";
+const std::string UNIFORM_NAME_IOR = "ior";
+const std::string UNIFORM_NAME_DISSOLVE = "dslv";
+
+//Textures.
+const std::string UNIFORM_NAME_KA_TEX = "katx";
+const std::string UNIFORM_NAME_KD_TEX = "kdtx";
+const std::string UNIFORM_NAME_KS_TEX = "kstx";
+const std::string UNIFORM_NAME_SPEC_HILIGHT_TEX = "shltx";
+const std::string UNIFORM_NAME_BUMP_TEX = "bmptx";
+const std::string UNIFORM_NAME_DISPLACE_TEX = "dsptx";
+const std::string UNIFORM_NAME_ALPHA_TEX = "altx";
+const std::string UNIFORM_NAME_REFLECTION_TEX = "rfltx";
+
+//PBR.
+const std::string UNIFORM_NAME_ROUGHNESS = "rgh";
+const std::string UNIFORM_NAME_METALLIC = "mtlc";
+const std::string UNIFORM_NAME_SHEEN = "shn";
+const std::string UNIFORM_NAME_CLEARCOAT_THICK = "clctthck";
+const std::string UNIFORM_NAME_CLEARCOAT_ROUGH = "clctrgh";
+const std::string UNIFORM_NAME_ANISOTROPY = "atrpy";
+const std::string UNIFORM_NAME_ANISOTROPY_ROTATION = "atrpyrt";
+
+//More textures.
+const std::string UNIFORM_NAME_ROUGHNESS_TEX = "rghtx";
+const std::string UNIFORM_NAME_METALLIC_TEX = "mtlctx";
+const std::string UNIFORM_NAME_SHEEN_TEX = "shntx";
+const std::string UNIFORM_NAME_EMISSIVE_TEX = "emsvtx";
+const std::string UNIFORM_NAME_NORMAL_TEX = "nrmtx";
 
 class ModelLoader {
 public:
