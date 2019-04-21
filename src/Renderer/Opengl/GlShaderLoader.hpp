@@ -25,7 +25,7 @@
 #include "ShaderLoader.hpp"
 #include "GlShader.hpp"
 #include "GlTextureLoader.hpp"
-#include "RendererMemoryManager.hpp"
+#include "Renderer/RendererMemoryManager.hpp"
 
 class GlShaderLoader : public ShaderLoader {
 public:

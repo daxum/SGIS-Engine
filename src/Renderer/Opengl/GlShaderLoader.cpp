@@ -43,28 +43,16 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	std::string objectSet = "";
 
 	for (const std::string& set : info.uniformSets) {
-		if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_SCREEN) {
+		if (memoryManager->getUniformSet(set).getType() == UniformSetType::PER_SCREEN) {
 			screenSet = set;
 		}
-		else if (memoryManager->getUniformSet(set).setType == UniformSetType::PER_OBJECT) {
+		else if (memoryManager->getUniformSet(set).getType() == UniformSetType::PER_OBJECT) {
 			objectSet = set;
 		}
 	}
 
-	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, screenSet, objectSet, info.pushConstants.pushConstants);
+	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, screenSet, objectSet, info.pushConstants);
 	shaderMap.insert({name, shader});
-
-	//Add uniforms to shader to cache locations
-	for (const std::string& set : info.uniformSets) {
-		for (const UniformDescription& uniform : memoryManager->getUniformSet(set).uniforms) {
-			shader->addUniformLoc(uniform.name);
-		}
-	}
-
-	//Do the same thing for push constants (for now)
-	for (const UniformDescription& uniform : info.pushConstants.pushConstants) {
-		shader->addUniformLoc(uniform.name);
-	}
 
 	ENGINE_LOG_DEBUG(logger, "Shader \"" + name + "\" loaded");
 }

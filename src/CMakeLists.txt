@@ -42,7 +42,7 @@ if (USE_OPENGL)
 		Renderer/Opengl/GlShaderLoader.cpp
 		Renderer/Opengl/GlMemoryManager.cpp
 		Renderer/Opengl/PhysDebRenderingEngine.cpp
-		Renderer/Opengl/gl_core_4_1.c
+		Renderer/Opengl/glad/glad.c
 	)
 
 	#TODO: add_compile_definitions(USE_OPENGL) - cmake 3.12

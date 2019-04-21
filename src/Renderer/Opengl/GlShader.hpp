@@ -22,7 +22,7 @@
 #include <unordered_map>
 
 #include "CombinedGl.h"
-#include "ShaderInfo.hpp"
+#include "Renderer/ShaderInfo.hpp"
 
 class GlShader {
 public:
@@ -61,22 +61,4 @@ public:
 	~GlShader() {
 		glDeleteProgram(id);
 	}
-
-	/**
-	 * Adds a uniform location to the shader, for faster retrieval during rendering.
-	 * @param uniform The name of the uniform to add.
-	 */
-	void addUniformLoc(const std::string& uniform) {
-		uniformLocCache[uniform] = glGetUniformLocation(id, uniform.c_str());
-	}
-
-	/**
-	 * Gets the uniform location for the given shader variable name.
-	 * @param The name of the variable in the shader.
-	 * @return The location the uniform is stored at.
-	 */
-	GLuint getUniformLocation(const std::string& name) const { return uniformLocCache.at(name); }
-
-private:
-	std::unordered_map<std::string, GLuint> uniformLocCache;
 };

@@ -30,12 +30,11 @@
 #include "RenderComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
-#include "GlRenderInitializer.hpp"
 
 GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap),
 					std::make_shared<GlShaderLoader>(&memoryManager, shaderMap),
-					std::make_shared<GlRenderInitializer>(memoryManager),
+					&memoryManager,
 					rendererLog),
 	interface(display, this),
 	memoryManager(rendererLog) {
@@ -107,9 +106,7 @@ void GlRenderingEngine::init() {
 
 	//Load OpenGL functions
 
-	int loadStatus = ogl_LoadFunctions();
-
-	if (loadStatus != 1) {
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		throw new std::runtime_error("OpenGl function loading failed");
 	}
 
@@ -171,7 +168,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 	bool blendOn = false;
 
 	for (const auto& shaderObjectMap : objects) {
-		const std::string& buffer = shaderObjectMap.first;
+		//TODO: Buffers const std::string& buffer = shaderObjectMap.first;
 		bool bufferBound = false;
 
 		for (const auto& modelMap : shaderObjectMap.second) {
@@ -185,8 +182,8 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 			}
 
 			for (const auto& objectSet : modelMap.second) {
-				const Model* model = objectSet.first;
-				bool modelSetBound = false;
+				//const Material* material = objectSet.first;
+				bool materialSetBound = false;
 
 				for (const RenderComponent* comp : objectSet.second) {
 					if (comp->isVisible()) {
@@ -194,16 +191,16 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 						if (!shaderBound) {
 							glUseProgram(shader->id);
 
-							//Set screen uniforms for the shader if present
+							//TODO: Uniform buffer stuff
 							if (shader->screenSet != "") {
-								setPerScreenUniforms(shader.get(), memoryManager.getUniformSet(shader->screenSet), state, camera);
+
 							}
 
 							shaderBound = true;
 						}
 
 						if (!bufferBound) {
-							memoryManager.bindBuffer(buffer);
+							//TODO: Buffers memoryManager.bindBuffer(buffer);
 							bufferBound = true;
 						}
 
@@ -212,24 +209,22 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 							blendOn = true;
 						}
 
-						//Set per-model uniforms if not done already
-						if (!modelSetBound) {
-							setPerModelUniforms(shader.get(), memoryManager.getUniformSet(model->uniformSet), model);
-							modelSetBound = true;
+						//TODO: Bind uniform buffer
+						if (!materialSetBound) {
+							materialSetBound = true;
 						}
 
-						//Set per-object uniforms if needed
+						//TODO: Bind uniform buffer
 						if (shader->objectSet != "") {
-							setPerObjectUniforms(shader.get(), memoryManager.getUniformSet(shader->objectSet).uniforms, comp, camera);
+
 						}
 
 						//Set push constants - this is currently exactly the same as the per-object uniforms,
 						//will change if uniform buffers are implemented
 						setPerObjectUniforms(shader.get(), shader->pushConstants, comp, camera);
 
-						const GlMeshRenderData& renderData = memoryManager.getMeshData(comp->getModel()->getModel().mesh);
-
-						glDrawElements(GL_TRIANGLES, renderData.indexCount, GL_UNSIGNED_INT, (void*) renderData.indexStart);
+						const std::pair<uintptr_t, uint32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
+						glDrawElements(GL_TRIANGLES, meshInfo.second, GL_UNSIGNED_INT, (void*) meshInfo.first);
 					}
 				}
 			}
@@ -242,7 +237,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 }
 
 void GlRenderingEngine::setPerScreenUniforms(const GlShader* shader, const UniformSet& set, const ScreenState* state, const Camera* camera) {
-	for (const UniformDescription& uniform : set.uniforms) {
+	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
 		glm::mat4 tempMat;
 		const void* value = nullptr;
 
@@ -253,61 +248,7 @@ void GlRenderingEngine::setPerScreenUniforms(const GlShader* shader, const Unifo
 			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
 		}
 
-		setUniformValue(shader, uniform.type, uniform.name, value);
-	}
-}
-
-void GlRenderingEngine::setPerModelUniforms(const GlShader* shader, const UniformSet& set, const Model* model) {
-	GLuint nextTextureIndex = 0;
-
-	for (const UniformDescription& uniform : set.uniforms) {
-		if (uniform.provider != UniformProviderType::MATERIAL) {
-			throw std::runtime_error("Invalid model uniform provider type!");
-		}
-
-		//Values, move to buffer later if possible
-		if (!isSampler(uniform.type)) {
-			switch (uniform.type) {
-				case UniformType::FLOAT: {
-					float temp = model->uniforms.getFloat(uniform.name);
-					setUniformValue(shader, uniform.type, uniform.name, &temp);
-				} break;
-				case UniformType::VEC2: {
-					glm::vec2 temp = model->uniforms.getVec2(uniform.name);
-					setUniformValue(shader, uniform.type, uniform.name, &temp);
-				} break;
-				case UniformType::VEC3: {
-					glm::vec3 temp = model->uniforms.getVec3(uniform.name);
-					setUniformValue(shader, uniform.type, uniform.name, &temp);
-				} break;
-				case UniformType::VEC4: {
-					glm::vec4 temp = model->uniforms.getVec4(uniform.name);
-					setUniformValue(shader, uniform.type, uniform.name, &temp);
-				} break;
-				case UniformType::MAT3: {
-					glm::mat3 temp = model->uniforms.getMat3(uniform.name);
-					setUniformValue(shader, uniform.type, uniform.name, &temp);
-				} break;
-				case UniformType::MAT4: {
-					glm::mat4 temp = model->uniforms.getMat4(uniform.name);
-					setUniformValue(shader, uniform.type, uniform.name, &temp);
-				} break;
-				default: throw std::runtime_error("Invalid uniform type in per-model switch!");
-			}
-		}
-		//Images
-		else {
-			glActiveTexture(GL_TEXTURE0 + nextTextureIndex);
-			const GlTextureData& data = textureMap.at(model->textures.at(nextTextureIndex));
-
-			switch (data.type) {
-				case TextureType::TEX_2D: glBindTexture(GL_TEXTURE_2D, data.id); break;
-				case TextureType::CUBEMAP: glBindTexture(GL_TEXTURE_CUBE_MAP, data.id); break;
-				default: throw std::runtime_error("Missing texture type!");
-			}
-
-			nextTextureIndex++;
-		}
+		//setUniformValue(shader, uniform.type, uniform.name, value);
 	}
 }
 
@@ -323,6 +264,6 @@ void GlRenderingEngine::setPerObjectUniforms(const GlShader* shader, const std::
 			default: throw std::runtime_error("Invalid provider type for object uniform set!");
 		}
 
-		setUniformValue(shader, uniform.type, uniform.name, value);
+		//setUniformValue(shader, uniform.type, uniform.name, value);
 	}
 }

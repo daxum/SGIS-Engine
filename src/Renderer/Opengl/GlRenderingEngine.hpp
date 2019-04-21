@@ -25,16 +25,15 @@
 
 #include <glm/glm.hpp>
 
-#include "RenderingEngine.hpp"
+#include "Renderer/RenderingEngine.hpp"
 #include "CombinedGl.h"
 #include "GlShader.hpp"
 #include "GlMemoryManager.hpp"
 #include "GlTextureLoader.hpp"
-#include "Model.hpp"
 #include "Logger.hpp"
-#include "ModelManager.hpp"
+#include "Models/ModelManager.hpp"
 #include "RenderComponent.hpp"
-#include "GlfwInterface.hpp"
+#include "Renderer/GlfwInterface.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.
 class GlRenderingEngine : public RenderingEngine {
@@ -132,14 +131,6 @@ private:
 	void setPerScreenUniforms(const GlShader* shader, const UniformSet& set, const ScreenState* state, const Camera* camera);
 
 	/**
-	 * Sets the uniforms at the model level.
-	 * @param shader The shader to set uniforms for.
-	 * @param set The uniform set that specifies which uniforms to bind.
-	 * @param model The model to get uniform values from.
-	 */
-	void setPerModelUniforms(const GlShader* shader, const UniformSet& set, const Model* model);
-
-	/**
 	 * Sets the uniforms at the object level. Currently also used for push constants, will probably change if
 	 * uniform buffers implemented.
 	 * @param shader The shader to set uniforms for.
@@ -156,7 +147,7 @@ private:
 	 * @param uniformName The name of the uniform to set in the shader.
 	 * @param value The value to set the uniform to.
 	 */
-	void setUniformValue(const GlShader* shader, const UniformType type, const std::string& uniformName, const void* value) {
+	/*void setUniformValue(const GlShader* shader, const UniformType type, const std::string& uniformName, const void* value) {
 		GLuint uniformLoc = shader->getUniformLocation(uniformName);
 
 		switch (type) {
@@ -168,5 +159,5 @@ private:
 			case UniformType::MAT4: glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, (const float*)value); break;
 			default: throw std::runtime_error("Invalid uniform type for uniform \"" + uniformName + "\"!");
 		}
-	}
+	}*/
 };

@@ -23,34 +23,9 @@
 #include <unordered_map>
 #include <list>
 
-#include "Vertex.hpp"
+#include "Models/Vertex.hpp"
 #include "CombinedGl.h"
-#include "Model.hpp"
-#include "RendererMemoryManager.hpp"
-
-struct GlBufferData : public RenderBufferData {
-	GLuint vertexArray;
-	GLuint vertexBufferId;
-	GLuint indexBufferId;
-	bool useTransfer;
-
-	GlBufferData() :
-		vertexArray(0),
-		vertexBufferId(0),
-		indexBufferId(0),
-		useTransfer(false) {}
-
-	~GlBufferData() {
-		glDeleteVertexArrays(1, &vertexArray);
-		glDeleteBuffers(1, &vertexBufferId);
-		glDeleteBuffers(1, &indexBufferId);
-	}
-};
-
-struct GlMeshRenderData {
-	uintptr_t indexStart;
-	uint32_t indexCount;
-};
+#include "Renderer/RendererMemoryManager.hpp"
 
 class GlMemoryManager : public RendererMemoryManager {
 public:
@@ -70,49 +45,22 @@ public:
 	 */
 	void initializeDescriptors() override {}
 
-	/**
-	 * Binds the specified buffer for drawing.
-	 * @param buffer The buffer to bind.
-	 */
-	void bindBuffer(const std::string& buffer);
-
-	/**
-	 * Returns the data needed to render the mesh with the given name.
-	 * @param name The name of the mesh.
-	 * @return The render data for the mesh.
-	 * @throw std::out_of_range if the mesh isn't present.
-	 */
-	const GlMeshRenderData& getMeshData(const std::string& name) { return meshData.at(name); }
-
-	/**
-	 * Adds a uniform set to the memory manager.
-	 * @param name The name of the set.
-	 * @param set The set to add.
-	 */
-	void addUniformSet(const std::string& name, const UniformSet& set) { uniformSets.insert({name, set}); }
-
 protected:
 	/**
-	 * Creates a buffer.
-	 * @param vertexFormat The format of the vertices in the buffer.
-	 * @param usage The way the buffer is intended to be used. This will use
-	 *     GL_STATIC_DRAW for all buffers that should be in dedicated memory,
-	 *     and GL_STREAM_DRAW for all buffers that should be in system memory.
-	 *     Hopefully the driver cooperates...
+	 * Creates a buffer with the underlying rendering api.
+	 * @param usage Flags specifying what is allowed to be done with the buffer.
+	 * @param storage Where the buffer will be stored.
 	 * @param size The size of the buffer to create.
-	 * @return A pointer to a GlBufferData struct that contains the vertex and index buffer ids.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<RenderBufferData> createBuffer(const std::vector<VertexElement>& vertexFormat, BufferUsage usage, size_t size) override;
+	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size);
 
 	/**
-	 * Does nothing for now - if a newer OpenGL version is used in the future,
-	 * or if the uniform buffer extension is found, this will initialize the buffers.
-	 * @param modelStaticSize The size of the static model uniform buffer.
-	 * @param modelDynamicSize The size of the dynamic model uniform buffer.
-	 * @param screenObjectSize The size of the screen / object uniform buffer.
+	 * Creates a type of uniform set for which descriptors can be allocated.
+	 * @param name The name of the set.
+	 * @param set The set itself. Mostly used for creating descriptor layouts.
 	 */
-	void createUniformBuffers(size_t modelStaticSize, size_t modelDynamicSize, size_t screenObjectSize) override {}
+	void createUniformSetType(const std::string& name, const UniformSet& set);
 
 	/**
 	 * Minimum uniform buffer alignment, not used until uniform buffers are.
@@ -121,39 +69,13 @@ protected:
 	virtual size_t getMinUniformBufferAlignment() override { return 1; }
 
 	/**
-	 * Uploads the vertex and index data into the given buffer.
-	 * @param buffer The buffer to upload to.
-	 * @param mesh The name of the mesh being uploaded, used to store rendering data.
-	 * @param offset The offset into the vertex buffer to place the vertex data.
-	 * @param size The size of the vertex data.
-	 * @param vertexData The vertex data to upload.
-	 * @param indexOffset The offset into the index buffer to place the index data.
-	 * @param indexSize The size of the index data.
-	 * @param indexData The index data to upload.
+	 * Allocates a descriptor set for the material. This can be called more than once
+	 * for the same material - subsequent calls should be ignored.
+	 * @param material The material to allocate a descriptor set for.
 	 */
-	void uploadMeshData(const VertexBuffer& buffer, const std::string& mesh, size_t offset, size_t size, const unsigned char* vertexData, size_t indexOffset, size_t indexSize, const uint32_t* indexData) override;
-
-	/**
-	 * Removes the mesh's render data from the render map.
-	 * @param mesh The name of the mesh to remove.
-	 */
-	void invalidateMesh(const std::string& mesh) override;
-
-	/**
-	 * Some more functions that aren't needed for opengl.
-	 */
-	void addModelDescriptors(const Model& model) override {}
-	void addDynamicDescriptors(const Model& model) override {}
-	void removeDynamicDescriptors(const Model& model) override {}
-
-	/**
-	 * This one might be used eventually.
-	 */
-	void uploadModelData(const UniformBufferType buffer, const size_t offset, const size_t size, const unsigned char* data) override {}
+	void addMaterialDescriptors(const Material* material);
 
 private:
-	//Stores the rendering data for all uploaded meshes.
-	std::unordered_map<std::string, GlMeshRenderData> meshData;
 	//Transfer buffer for uploading mesh data to static buffers on the gpu.
 	GLuint transferBuffer;
 	//Current size of the transfer buffer, will grow for larger meshes.
