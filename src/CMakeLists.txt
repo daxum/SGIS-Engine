@@ -30,8 +30,9 @@ set(ENGINE_FILES
 	PhysicsObject.cpp
 	UpdateComponentManager.cpp
 	UpdateComponent.cpp
-	Models/VertexFormat.hpp
+	Models/VertexFormat.cpp
 	Renderer/Buffer.cpp
+	Models/Mesh.cpp
 )
 
 if (USE_OPENGL)

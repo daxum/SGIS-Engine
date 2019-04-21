@@ -19,7 +19,7 @@
 #include "Mesh.hpp"
 #include "ModelManager.hpp"
 
-Mesh::Mesh(BufferInfo bufferInfo, const std::vector<VertexElement>& format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
+Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
 	vertexData(new unsigned char[format->getVertexSize() * vertices.size()]),
 	vertexSize(format->getVertexSize() * vertices.size()),
 	indices(indices),
@@ -46,7 +46,7 @@ Mesh::Mesh(const Mesh& mesh) :
 	bufferInfo(mesh.bufferInfo),
 	format(mesh.format),
 	box(mesh.box),
-	radius(mesh.radius)
+	radius(mesh.radius),
 	indexStart(mesh.indexStart) {
 
 	memcpy(vertexData, mesh.vertexData, mesh.vertexSize);
