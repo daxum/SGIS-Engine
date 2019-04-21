@@ -71,7 +71,7 @@ VkBufferContainer::VkBufferContainer(VkMemoryManager* memoryManager,VkObjectHand
 
 	mappedMem = (unsigned char*) allocInfo.pMappedData;
 
-	ENGINE_LOG_DEBUG(logger, "Created " + std::to_string(size) + " byte Vkbuffer stored in " + (mappedMem ? "host" : "device") + " memory");
+	ENGINE_LOG_DEBUG(logger, "Created " + std::to_string(size) + " byte Vkbuffer stored in " + (mappedMem ? "host visible" : "device") + " memory");
 }
 
 void VkBufferContainer::write(size_t offset, size_t size, const unsigned char* data) {
