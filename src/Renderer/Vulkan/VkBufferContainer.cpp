@@ -37,10 +37,10 @@ VkBufferContainer::VkBufferContainer(VkMemoryManager* memoryManager,VkObjectHand
 			memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
 			break;
 		case BufferStorage::DEVICE_HOST_VISIBLE:
-			memoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
+			memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 			break;
 		case BufferStorage::HOST:
-			memoryUsage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+			memoryUsage = VMA_MEMORY_USAGE_CPU_ONLY;
 			break;
 		default: throw std::runtime_error("Missing buffer storage type in memory manager");
 	}

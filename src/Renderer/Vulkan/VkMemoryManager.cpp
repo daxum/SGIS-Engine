@@ -455,6 +455,12 @@ void VkMemoryManager::createUniformSetType(const std::string& name, const Unifor
 			default: throw std::runtime_error("Missing uniform type when creating descriptor sets!");
 		}
 	}
+
+	//Materials hold their own aligners, but screen and object aligners need to go here for now
+	//(Move to RenderComponent/Manager later?)
+	if (set.getType() != UniformSetType::MATERIAL) {
+		descriptorAligners.emplace(name, Std140Aligner(set.getBufferedUniforms()));
+	}
 }
 
 void VkMemoryManager::addMaterialDescriptors(const Material* material) {
@@ -477,7 +483,7 @@ void VkMemoryManager::addMaterialDescriptors(const Material* material) {
 		throw std::runtime_error("Failed to allocate static model descriptor set!");
 	}
 
-	descriptorSets.insert({material->name, set});
+	descriptorSets.emplace(material->name, set);
 	fillDescriptorSet(set, uniformSet, material->textures);
 }
 
@@ -620,6 +626,7 @@ void VkMemoryManager::fillDescriptorSet(VkDescriptorSet set, const UniformSet& u
 				imageInfos.push_back(imageInfo);
 
 				VkWriteDescriptorSet writeSet = {};
+				writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				writeSet.dstSet = set;
 				writeSet.dstBinding = writeOps.size();
 				writeSet.dstArrayElement = 0;

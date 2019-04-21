@@ -150,7 +150,7 @@ public:
 	 * @param texture The texture the sampler is for.
 	 * @param sampler The sampler to add.
 	 */
-	void addSamplerForTexture(const std::string& texture, VkSampler sampler) { samplerMap.insert({texture, sampler}); }
+	void addSamplerForTexture(const std::string& texture, VkSampler sampler) { samplerMap.emplace(texture, sampler); }
 
 	/**
 	 * Creates a depth buffer. If there was already a depth buffer, it is destroyed and a new one is created.

@@ -71,7 +71,11 @@ public:
 	 * @return A reference to the requested material.
 	 * @throw std::out_of_range If the material doesn't exist.
 	 */
-	std::shared_ptr<MaterialRef> getMaterial(const std::string& material) { return std::make_shared<MaterialRef>(this, material, &materialMap.at(material)); }
+	std::shared_ptr<MaterialRef> getMaterial(const std::string& material) {
+		Material* mat = &materialMap.at(material);
+		memoryManager->addMaterial(mat);
+		return std::make_shared<MaterialRef>(this, material, mat);
+	}
 
 	/**
 	 * Gets a mesh. If the mesh is not yet stored at the specified cache level,

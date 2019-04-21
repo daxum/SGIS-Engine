@@ -46,8 +46,6 @@ std::shared_ptr<MeshRef> ModelManager::getMesh(const std::string& meshName, Cach
 			throw std::runtime_error("Attempt to upload non-rendering mesh to rendering engine!");
 		}
 
-		ENGINE_LOG_DEBUG(logger, "Mesh data for \"" + meshName + "\" not present on renderer, uploading now...");
-
 		memoryManager->addMesh(meshName, &mesh);
 	}
 
