@@ -74,7 +74,7 @@ public:
 	 * @param manager The manager to add.
 	 */
 	template<typename T>
-	void addComponentManager(std::shared_ptr<ComponentManager> manager = std::make_shared<T>());
+	void addComponentManager(std::shared_ptr<T> manager = std::make_shared<T>());
 
 	/**
 	 * Queues an object and its components to be added to the screen.
@@ -192,12 +192,13 @@ protected:
 };
 
 template<typename T>
-void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
+void Screen::addComponentManager(std::shared_ptr<T> manager) {
 	static_assert(std::is_base_of<ComponentManager, T>::value, "Attempt to add component manager which isn't a ComponentManager!");
 
-	//Rendering managers are set as the screens render data
+	//Rendering managers are set as the screens render data.
 	if (std::is_same<RenderComponentManager, T>::value) {
-		renderManager = std::static_pointer_cast<RenderComponentManager>(manager);
+		//You would think that this would work without the double cast, due to the if statement, but no.
+		renderManager = std::static_pointer_cast<RenderComponentManager>(std::static_pointer_cast<void>(manager));
 	}
 
 	//Subscribe manager to events if needed. It never needs to be unsubscribed, because it can't
