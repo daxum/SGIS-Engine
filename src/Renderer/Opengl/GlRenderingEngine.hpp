@@ -21,7 +21,6 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include <array>
 
 #include <glm/glm.hpp>
 
@@ -31,7 +30,6 @@
 #include "GlMemoryManager.hpp"
 #include "GlTextureLoader.hpp"
 #include "Logger.hpp"
-#include "Models/ModelManager.hpp"
 #include "RenderComponent.hpp"
 #include "Renderer/GlfwInterface.hpp"
 

@@ -18,12 +18,6 @@
 
 #pragma once
 
-#include <cstdint>
-#include <vector>
-#include <unordered_map>
-#include <list>
-
-#include "Models/Vertex.hpp"
 #include "CombinedGl.h"
 #include "Renderer/RendererMemoryManager.hpp"
 
