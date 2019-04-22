@@ -21,8 +21,9 @@
 #include <unordered_set>
 
 #include "Component.hpp"
-#include "Screen.hpp"
 #include "InputListener.hpp"
+
+class Screen;
 
 class ComponentManager : public InputListener {
 public:

@@ -25,9 +25,9 @@
 #include "KeyList.hpp"
 #include "Object.hpp"
 #include "InputHandler.hpp"
+#include "Components/ComponentManager.hpp"
 
 class DisplayEngine;
-class ComponentManager;
 class RenderComponentManager;
 class Camera;
 
@@ -65,7 +65,7 @@ public:
 	std::shared_ptr<const RenderComponentManager> getRenderData() const { return renderManager; }
 
 	/**
-	 * Adds the given manager to the list of managers for this screen. Some things to note:
+	 * Creates and adds the given manager to the list of managers for this screen. Some things to note:
 	 *  - Only one manager for each type should exist. Duplicates might work, but won't do anything useful.
 	 *  - Managers will be updated in the order they are added.
 	 *  - Objects that existed before the addition of the manager will not (currently) be added to it.
@@ -73,7 +73,8 @@ public:
 	 *      overwrite old ones, and the old ones will become functionally useless.
 	 * @param manager The manager to add.
 	 */
-	void addComponentManager(std::shared_ptr<ComponentManager> manager);
+	template<typename T>
+	void addComponentManager(std::shared_ptr<ComponentManager> manager = std::make_shared<T>());
 
 	/**
 	 * Queues an object and its components to be added to the screen.
@@ -189,3 +190,22 @@ protected:
 	 */
 	void addObjectToList(std::shared_ptr<Object> object);
 };
+
+template<typename T>
+void Screen::addComponentManager(std::shared_ptr<ComponentManager> manager) {
+	static_assert(std::is_base_of<ComponentManager, T>::value, "Attempt to add component manager which isn't a ComponentManager!");
+
+	//Rendering managers are set as the screens render data
+	if (std::is_same<RenderComponentManager, T>::value) {
+		renderManager = std::static_pointer_cast<RenderComponentManager>(manager);
+	}
+
+	//Subscribe manager to events if needed. It never needs to be unsubscribed, because it can't
+	//be removed and managers have the same lifetime as the input handler.
+	if (manager->receiveEvents) {
+		inputHandler.addListener(manager);
+	}
+
+	managers.push_back(manager);
+	manager->setScreen(this);
+}

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include "ComponentManager.hpp"
 
 class GuiComponent;
