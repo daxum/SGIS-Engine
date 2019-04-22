@@ -198,7 +198,13 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 						}
 
 						if (!bufferBound) {
-							//TODO: Buffers memoryManager.bindBuffer(buffer);
+							//This might need to go with the shader stuff
+							const Mesh* mesh = comp->getModel().mesh;
+							const VertexFormat* format = mesh->getFormat();
+							const Mesh::BufferInfo& buffers = mesh->getBufferInfo();
+
+							glBindVertexBuffer(0, ((GlBuffer*)buffers.vertex)->getBufferId(), 0, format->getVertexSize());
+							glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((GlBuffer*)buffers.index)->getBufferId());
 							bufferBound = true;
 						}
 

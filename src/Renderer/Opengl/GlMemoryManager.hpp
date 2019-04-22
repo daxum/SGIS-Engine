@@ -20,6 +20,7 @@
 
 #include "CombinedGl.h"
 #include "Renderer/RendererMemoryManager.hpp"
+#include "GlBuffer.hpp"
 
 class GlMemoryManager : public RendererMemoryManager {
 public:
@@ -47,7 +48,7 @@ protected:
 	 * @param size The size of the buffer to create.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size);
+	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) { return std::make_shared<GlBuffer>(usage, storage, size); }
 
 	/**
 	 * Creates a type of uniform set for which descriptors can be allocated.
