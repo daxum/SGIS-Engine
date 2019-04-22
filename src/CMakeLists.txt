@@ -6,20 +6,20 @@ set(ENGINE_FILES
 	Models/Material.cpp
 	DisplayEngine.cpp
 	Screen.cpp
-	RenderComponent.cpp
-	ComponentManager.cpp
-	AIComponentManager.cpp
-	PhysicsComponentManager.cpp
+	Components/RenderComponent.cpp
+	Components/ComponentManager.cpp
+	Components/AIComponentManager.cpp
+	Components/PhysicsComponentManager.cpp
 	Renderer/MatrixStack.cpp
-	PhysicsComponent.cpp
+	Components/PhysicsComponent.cpp
 	Object.cpp
-	RenderComponentManager.cpp
+	Components/RenderComponentManager.cpp
 	InputHandler.cpp
-	GuiComponentManager.cpp
+	Components/GuiComponentManager.cpp
 	FontManager.cpp
-	TextComponent.cpp
+	Components/TextComponent.cpp
 	SplineAnimation.cpp
-	AnimationComponent.cpp
+	Components/AnimationComponent.cpp
 	Renderer/GlfwInterface.cpp
 	Models/Vertex.cpp
 	Renderer/MemoryAllocator.cpp
@@ -27,9 +27,9 @@ set(ENGINE_FILES
 	Models/ModelManager.cpp
 	Renderer/RenderingEngine.cpp
 	Renderer/Std140Aligner.cpp
-	PhysicsObject.cpp
-	UpdateComponentManager.cpp
-	UpdateComponent.cpp
+	Components/PhysicsObject.cpp
+	Components/UpdateComponentManager.cpp
+	Components/UpdateComponent.cpp
 	Models/VertexFormat.cpp
 	Renderer/Buffer.cpp
 	Models/Mesh.cpp

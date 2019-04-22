@@ -22,7 +22,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "Component.hpp"
+#include "Components/Component.hpp"
 #include "ObjectPhysicsInterface.hpp"
 
 struct ObjectState {

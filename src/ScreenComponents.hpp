@@ -29,22 +29,22 @@
 
 //Components
 
-#include "AIComponent.hpp"
-#include "AnimationComponent.hpp"
-#include "GuiComponent.hpp"
-#include "PhysicsComponent.hpp"
-#include "RenderComponent.hpp"
-#include "TextComponent.hpp"
-#include "UpdateComponent.hpp"
+#include "Components/AIComponent.hpp"
+#include "Components/AnimationComponent.hpp"
+#include "Components/GuiComponent.hpp"
+#include "Components/PhysicsComponent.hpp"
+#include "Components/RenderComponent.hpp"
+#include "Components/TextComponent.hpp"
+#include "Components/UpdateComponent.hpp"
 
 //Component Managers
 
-#include "AIComponentManager.hpp"
-#include "AnimationComponentManager.hpp"
-#include "GuiComponentManager.hpp"
-#include "PhysicsComponentManager.hpp"
-#include "RenderComponentManager.hpp"
-#include "UpdateComponentManager.hpp"
+#include "Components/AIComponentManager.hpp"
+#include "Components/AnimationComponentManager.hpp"
+#include "Components/GuiComponentManager.hpp"
+#include "Components/PhysicsComponentManager.hpp"
+#include "Components/RenderComponentManager.hpp"
+#include "Components/UpdateComponentManager.hpp"
 
 //Other stuff
 

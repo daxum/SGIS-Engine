@@ -30,7 +30,7 @@
 #include "GlMemoryManager.hpp"
 #include "GlTextureLoader.hpp"
 #include "Logger.hpp"
-#include "RenderComponent.hpp"
+#include "Components/RenderComponent.hpp"
 #include "Renderer/GlfwInterface.hpp"
 
 //An implementation of RenderingEngine that uses the OpenGL graphics api.

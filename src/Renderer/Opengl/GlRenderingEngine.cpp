@@ -26,8 +26,6 @@
 #include "DisplayEngine.hpp"
 #include "GlRenderingEngine.hpp"
 #include "GlShaderLoader.hpp"
-#include "RenderComponentManager.hpp"
-#include "RenderComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
 

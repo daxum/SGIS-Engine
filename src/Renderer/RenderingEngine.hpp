@@ -26,7 +26,7 @@
 
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
-#include "RenderComponentManager.hpp"
+#include "Components/RenderComponentManager.hpp"
 #include "RendererMemoryManager.hpp"
 #include "Screen.hpp"
 #include "WindowSystemInterface.hpp"

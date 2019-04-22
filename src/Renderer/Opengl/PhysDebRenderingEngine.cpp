@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "PhysDebRenderingEngine.hpp"
-#include "PhysicsComponentManager.hpp"
+#include "Components/PhysicsComponentManager.hpp"
 
 namespace {
 	const char* const lineVertShader = "\
