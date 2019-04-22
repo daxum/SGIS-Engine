@@ -32,6 +32,12 @@ class RenderComponentManager;
 class RenderComponent : public Component {
 public:
 	/**
+	 * Required from component.
+	 * @return The component's name.
+	 */
+	static const std::string getName() { return RENDER_COMPONENT_NAME; }
+
+	/**
 	 * Creates a RenderComponent.
 	 * @param material The name of the material to use to render this object.
 	 * @param mesh The name of the object's mesh.

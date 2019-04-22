@@ -60,6 +60,12 @@ struct CollisionHandler {
 class PhysicsComponent : public Component, ObjectPhysicsInterface {
 public:
 	/**
+	 * Required from component.
+	 * @return The component's name.
+	 */
+	static const std::string getName() { return PHYSICS_COMPONENT_NAME; }
+
+	/**
 	 * Creates a PhysicsComponent.
 	 * @param physics The PhysicsObject that defines this object in the physics engine.
 	 * @param collHandler An object containing a function to call when this object collides with another one.

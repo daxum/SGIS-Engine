@@ -40,6 +40,12 @@ public:
 	static std::u32string convToU32(const std::string& s);
 
 	/**
+	 * Required from component.
+	 * @return The component's name.
+	 */
+	static const std::string getName() { return TEXT_COMPONENT_NAME; }
+
+	/**
 	 * Creates a text component. If an object is going to be only text,
 	 * adding a render component is uneccessary, as the text component will
 	 * add one itself (only if one is not already present).

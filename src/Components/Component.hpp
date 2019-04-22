@@ -26,29 +26,28 @@
 class Object;
 
 //The below strings are the names of the engine-provided components.
-const std::string RENDER_COMPONENT_NAME = "render";
+//Every instantiation of component needs a static member function
+//called 'getName' in order to be properly added to objects.
+const std::string RENDER_COMPONENT_NAME = "rndr";
 const std::string AI_COMPONENT_NAME = "ai";
-const std::string PHYSICS_COMPONENT_NAME = "physics";
-const std::string UPDATE_COMPONENT_NAME = "update";
+const std::string PHYSICS_COMPONENT_NAME = "phys";
+const std::string UPDATE_COMPONENT_NAME = "updt";
 const std::string GUI_COMPONENT_NAME = "gui";
-const std::string TEXT_COMPONENT_NAME = "text";
-const std::string ANIMATION_COMPONENT_NAME = "animation";
+const std::string TEXT_COMPONENT_NAME = "txt";
+const std::string ANIMATION_COMPONENT_NAME = "anim";
 
 //A "piece" of an object. Used to implement rendering, physics, and other stuff.
 class Component : public InputListener {
 public:
-	const std::string name;
 	const bool receiveEvents;
 
 	/**
 	 * Creates a component.
-	 * @param name The name of the component, from the list above or user-defined values.
-	 *     Used to add the component to managers.
 	 * @param events Whether to subscribe the component to the input event handler (for key presses and such).
 	 *     IMPORTANT: If there isn't a component manager for the component's name when it is added to a screen,
 	 *     it WILL NOT be subscribed to any events.
 	 */
-	Component(std::string name, bool events = false) : name(name), receiveEvents(events) {}
+	Component(bool events = false) : receiveEvents(events) {}
 
 	virtual ~Component() {}
 

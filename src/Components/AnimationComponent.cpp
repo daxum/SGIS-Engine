@@ -20,7 +20,6 @@
 #include "Object.hpp"
 
 AnimationComponent::AnimationComponent(const std::vector<std::pair<glm::vec3, glm::quat>>& frames, const float time, const glm::vec3& offset, const glm::mat4& matrix) :
-	Component(ANIMATION_COMPONENT_NAME),
 	animation(frames, time, matrix),
 	time(0),
 	posOffset(offset) {

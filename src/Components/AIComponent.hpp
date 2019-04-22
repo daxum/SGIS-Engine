@@ -27,7 +27,7 @@ public:
 	 * Creates an AIComponent.
 	 * @param events Whether to subscribe to the input event handler.
 	 */
-	AIComponent(bool events = false) : Component(AI_COMPONENT_NAME, events) {}
+	AIComponent(bool events = false) : Component(events) {}
 
 	virtual ~AIComponent() {}
 

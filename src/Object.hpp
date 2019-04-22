@@ -52,8 +52,9 @@ public:
 	 * @return A pointer to the component for this object, will be null if the component isn't found.
 	 */
 	template <typename T>
-	std::shared_ptr<T> getComponent(std::string name) {
+	std::shared_ptr<T> getComponent(const std::string& name = T::getName()) {
 		static_assert(std::is_base_of<Component, T>::value, "Object::getComponent called with non-component type");
+
 		if (components.count(name)) {
 			return std::static_pointer_cast<T>(components.at(name));
 		}
@@ -63,11 +64,30 @@ public:
 	}
 
 	/**
+	 * Constructs a pointer to a component and adds it to the object.
+	 * @param args The arguments to one of the constructors of T.
+	 */
+	template<typename T, class... Args>
+	void addComponent(Args&&... args) {
+		addComponent(std::make_shared<T>(std::forward<Args>(args)...));
+	}
+
+	/**
 	 * Adds a component to the object. This should usually be done before the object is
 	 * added to the world. The object will set itself as the component's parent.
 	 * @param component The component to add.
 	 */
-	void addComponent(std::shared_ptr<Component> component);
+	template<typename T>
+	void addComponent(std::shared_ptr<T> component) {
+		static_assert(std::is_base_of<Component, T>::value, "Attempted to add component which wasn't a Component!");
+
+		if (components.count(T::getName())) {
+			throw std::runtime_error("Duplicate component of type " + T::getName() + " added!");
+		}
+
+		component->setParent(shared_from_this());
+		components.emplace(T::getName(), component);
+	}
 
 	/**
 	 * Returns the physics interface for this object. Primarily used by RenderComponents.

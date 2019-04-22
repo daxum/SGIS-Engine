@@ -21,7 +21,6 @@
 #include "RenderComponentManager.hpp"
 
 RenderComponent::RenderComponent(const std::string& material, const std::string& mesh, glm::vec3 renderScale) :
-	Component(RENDER_COMPONENT_NAME),
 	model(Engine::instance->getModel(material, mesh)),
 	scale(renderScale),
 	manager(nullptr) {
@@ -29,7 +28,6 @@ RenderComponent::RenderComponent(const std::string& material, const std::string&
 }
 
 RenderComponent::RenderComponent(Model model, glm::vec3 renderScale) :
-	Component(RENDER_COMPONENT_NAME),
 	model(model),
 	scale(renderScale),
 	manager(nullptr) {

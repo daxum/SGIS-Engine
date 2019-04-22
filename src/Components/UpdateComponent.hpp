@@ -31,6 +31,12 @@ public:
 		SLEEPING,
 	};
 
+	/**
+	 * Required from component.
+	 * @return The component's name.
+	 */
+	static const std::string getName() { return UPDATE_COMPONENT_NAME; }
+
 	//If the component is sleeping, the time to wake it up at. Do not change
 	//this without a good reason, such as sleeping again in onWake - the sleep queue in the
 	//manager makes the assumption that this doesn't change while the component
@@ -48,7 +54,6 @@ public:
 	 * @param concurrent Whether the component can update asynchronously.
 	 */
 	UpdateComponent(UpdateState startingState = UpdateState::ACTIVE, size_t startingTime = 0, bool concurrent = false) :
-		Component(UPDATE_COMPONENT_NAME),
 		wakeTime(startingTime),
 		state(startingState),
 		manager(nullptr),

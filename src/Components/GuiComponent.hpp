@@ -25,10 +25,16 @@
 class GuiComponent : public Component, ObjectPhysicsInterface {
 public:
 	/**
+	 * Required from component.
+	 * @return The component's name.
+	 */
+	static const std::string getName() { return GUI_COMPONENT_NAME; }
+
+	/**
 	 * Creates a guicomponent for the given object.
 	 * @param position The position of this component, in world coordinates. Won't be used if the parent has a physics component.
 	 */
-	GuiComponent(glm::vec3 position = glm::vec3(0.0, 0.0, 0.0)) : Component(GUI_COMPONENT_NAME), pos(position) {}
+	GuiComponent(glm::vec3 position = glm::vec3(0.0, 0.0, 0.0)) : pos(position) {}
 
 	/**
 	 * Sets this component as the physics provider if there isn't one already.

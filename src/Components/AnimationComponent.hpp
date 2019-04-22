@@ -25,6 +25,12 @@
 class AnimationComponent : public Component, ObjectPhysicsInterface {
 public:
 	/**
+	 * Required by component.
+	 * @return The name of the component.
+	 */
+	static const std::string getName() { return ANIMATION_COMPONENT_NAME; }
+
+	/**
 	 * Constructor.
 	 * @param frames The key frames for the animation.
 	 * @param time The time to complete the animation, in EngineConfig::timestep units.

@@ -32,7 +32,6 @@ std::u32string TextComponent::convToU32(const std::string& s) {
 }
 
 TextComponent::TextComponent(const TextMeshInfo& meshInfo, const std::string& material, glm::vec3 scale) :
-	Component(TEXT_COMPONENT_NAME),
 	logger(Engine::instance->getConfig().componentLog),
 	meshInfo(meshInfo),
 	material(material),
@@ -42,10 +41,10 @@ TextComponent::TextComponent(const TextMeshInfo& meshInfo, const std::string& ma
 }
 
 void TextComponent::onParentSet() {
-	std::shared_ptr<RenderComponent> render = lockParent()->getComponent<RenderComponent>(RENDER_COMPONENT_NAME);
+	std::shared_ptr<RenderComponent> render = lockParent()->getComponent<RenderComponent>();
 
 	if (!render) {
-		lockParent()->addComponent(std::make_shared<RenderComponent>(textModel, initScale));
+		lockParent()->addComponent<RenderComponent>(textModel, initScale);
 	}
 	else {
 		render->setModel(textModel);

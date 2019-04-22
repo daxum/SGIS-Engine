@@ -20,7 +20,6 @@
 #include "ExtraMath.hpp"
 
 PhysicsComponent::PhysicsComponent(std::shared_ptr<PhysicsObject> physics, std::shared_ptr<CollisionHandler> collHandler) :
-	Component(PHYSICS_COMPONENT_NAME),
 	physics(physics),
 	collider(collHandler),
 	currentMode(PhysicsControlMode::DYNAMIC),

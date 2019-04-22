@@ -25,14 +25,6 @@ Object::Object() : physics(nullptr) {
 
 }
 
-void Object::addComponent(std::shared_ptr<Component> component) {
-	if (components.count(component->name)) {
-		throw std::runtime_error("Duplicate component of type " + component->name + " added!");
-	}
-	component->setParent(shared_from_this());
-	components.insert({component->name, component});
-}
-
 //TODO: combine this with below somehow
 ObjectPhysicsInterface* Object::getPhysics() {
 	if (!hasPhysics()) {
