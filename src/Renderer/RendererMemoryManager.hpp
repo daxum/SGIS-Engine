@@ -83,7 +83,20 @@ public:
 	void addUniformSet(const std::string& name, const UniformSet& set) {
 		uniformSets.emplace(name, set);
 		createUniformSetType(name, set);
+
+		//Materials hold their own aligners, but screen and object aligners need to go here for now
+		//(Move to RenderComponent/Manager later?)
+		if (set.getType() != UniformSetType::MATERIAL) {
+			descriptorAligners.emplace(name, Std140Aligner(set.getBufferedUniforms()));
+		}
 	}
+
+	/**
+	 * Gets the aligner for the given descriptor set.
+	 * @param name The name of the descriptor set.
+	 * @return The aligner for the set.
+	 */
+	Std140Aligner& getDescriptorAligner(const std::string& name) { return descriptorAligners.at(name); }
 
 	/**
 	 * Gets the buffer with the provided name.
@@ -231,4 +244,8 @@ private:
 	uint32_t currentUniformOffset;
 	//Allowed usage size of the screen object buffer for each frame.
 	size_t screenObjectBufferSize;
+	//Stores one aligner for each per-screen or per-object descriptor set, to avoid dynamic allocation
+	//inside the rendering loop.
+	//TODO: Move to render components and managers.
+	std::unordered_map<std::string, Std140Aligner> descriptorAligners;
 };

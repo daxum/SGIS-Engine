@@ -75,11 +75,6 @@ public:
 	void beginFrame() override {}
 
 	/**
-	 * Swaps the buffers and clears for the next frame.
-	 */
-	void present() override;
-
-	/**
 	 * Called when the window size has changed and the viewport needs to be updated.
 	 * @param width The new window width.
 	 * @param height The new window height.
@@ -93,6 +88,11 @@ public:
 	const WindowSystemInterface& getWindowInterface() const override { return interface; }
 
 protected:
+	/**
+	 * Swaps the buffers and clears for the next frame.
+	 */
+	void apiPresent() override;
+
 	/**
 	 * Renders the passed in objects.
 	 * @param sortedObjects A sorted map of maps of maps of sets of all the possible objects to render.
@@ -118,25 +118,6 @@ private:
 	 * @param state The screen state, passed to shaders when setting uniforms.
 	 */
 	void renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
-
-	/**
-	 * Sets the uniforms at the screen level (per-shader).
-	 * @param shader The shader to set uniforms for.
-	 * @param set The uniform set specifying what to set and where to get it.
-	 * @param state The state of the screen being rendered.
-	 * @param camera The camera for the screen being rendered.
-	 */
-	void setPerScreenUniforms(const GlShader* shader, const UniformSet& set, const ScreenState* state, const Camera* camera);
-
-	/**
-	 * Sets the uniforms at the object level. Currently also used for push constants, will probably change if
-	 * uniform buffers implemented.
-	 * @param shader The shader to set uniforms for.
-	 * @param set The vector of uniforms to use. Not the uniform set itself to accomodate push constants.
-	 * @param comp The render component of the object to set uniforms for.
-	 * @param camera The camera of the screen the object is in.
-	 */
-	void setPerObjectUniforms(const GlShader* shader, const std::vector<UniformDescription>& set, const RenderComponent* comp, const Camera* camera);
 
 	/**
 	 * Sets the uniform with the given name to the provided value.

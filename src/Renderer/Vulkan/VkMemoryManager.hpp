@@ -119,13 +119,6 @@ public:
 	VkDescriptorSet getDescriptorSet(const std::string& set) const { return descriptorSets.at(set); }
 
 	/**
-	 * Gets the aligner for the given descriptor set.
-	 * @param name The name of the descriptor set.
-	 * @return The aligner for the set.
-	 */
-	Std140Aligner& getDescriptorAligner(const std::string& name) { return descriptorAligners.at(name); }
-
-	/**
 	 * Allocates memory for an image, and creates a VkImage using that memory.
 	 * Also queues the image data for uploading.
 	 * @param imageName The name of the image to add.
@@ -233,9 +226,6 @@ private:
 	DescriptorPoolInfo poolInfo;
 	//Contains all allocated descriptor sets. These are never freed until program termination.
 	std::unordered_map<std::string, VkDescriptorSet> descriptorSets;
-	//Stores one aligner for each per-screen or per-object descriptor set, to avoid dynamic allocation
-	//inside the rendering loop.
-	std::unordered_map<std::string, Std140Aligner> descriptorAligners;
 	//Map of all added samplers.
 	std::unordered_map<std::string, VkSampler> samplerMap;
 	//Map to insert loaded images into.

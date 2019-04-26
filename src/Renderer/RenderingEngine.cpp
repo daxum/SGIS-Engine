@@ -67,6 +67,38 @@ void RenderingEngine::render(const Screen* screen) {
 	renderObjects(renderManager->getComponentList(), screen);
 }
 
+void RenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligner& aligner, const ScreenState* state, const Camera* camera, const glm::mat4& projCorrect) {
+	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
+		glm::mat4 tempMat;
+		const void* value = nullptr;
+
+		switch (uniform.provider) {
+			case UniformProviderType::CAMERA_PROJECTION: tempMat = camera->getProjection(); value = &tempMat; tempMat = projCorrect * tempMat; break;
+			case UniformProviderType::CAMERA_VIEW: tempMat = camera->getView(); value = &tempMat; break;
+			case UniformProviderType::SCREEN_STATE: value = state->getRenderValue(uniform.name); break;
+			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
+		}
+
+		setUniformValue(uniform.type, uniform.name, value, aligner);
+	}
+}
+
+void RenderingEngine::setPerObjectUniforms(const UniformSet& set, Std140Aligner& aligner, const RenderComponent* comp, const Camera* camera) {
+	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
+		glm::mat4 tempMat;
+		const void* value = nullptr;
+
+		switch (uniform.provider) {
+			case UniformProviderType::OBJECT_MODEL_VIEW: tempMat = camera->getView() * comp->getTransform(); value = &tempMat; break;
+			case UniformProviderType::OBJECT_TRANSFORM: tempMat = comp->getTransform(); value = &tempMat; break;
+			case UniformProviderType::OBJECT_STATE: value = comp->getParentState()->getRenderValue(uniform.name); break;
+			default: throw std::runtime_error("Invalid provider type for object uniform set!");
+		}
+
+		setUniformValue(uniform.type, uniform.name, value, aligner);
+	}
+}
+
 bool RenderingEngine::checkVisible(const std::array<std::pair<glm::vec2, glm::vec2>, 4>& cameraBox, const glm::mat4& viewMat, const RenderComponent* object, float nearDist, float farDist) {
 	const float near = -nearDist;
 	const float far = -farDist;

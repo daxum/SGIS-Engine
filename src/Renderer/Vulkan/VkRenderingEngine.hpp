@@ -68,12 +68,6 @@ public:
 	void beginFrame() override;
 
 	/**
-	 * Called when drawing is done and the results can be displayed on the screen.
-	 * Also sets up the pipeline for the next frame.
-	 */
-	void present() override;
-
-	/**
 	 * Called when the window size has changed and the viewport needs to be updated.
 	 * @param width The new window width.
 	 * @param height The new window height.
@@ -87,6 +81,12 @@ public:
 	const WindowSystemInterface& getWindowInterface() const override { return interface; }
 
 protected:
+	/**
+	 * Called when drawing is done and the results can be displayed on the screen.
+	 * Also sets up the pipeline for the next frame.
+	 */
+	void apiPresent() override;
+
 	/**
 	 * Renders the visible objects, using the sorted map.
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
@@ -115,9 +115,6 @@ private:
 	std::array<VkSemaphore, MAX_ACTIVE_FRAMES> renderFinished;
 	std::array<VkFence, MAX_ACTIVE_FRAMES> renderFences;
 
-	//The current frame being rendered, always between 0 and MAX_ACTIVE_FRAMES.
-	size_t currentFrame;
-
 	/**
 	 * Renders a single transparency pass.
 	 * @param pass The current rendering pass.
@@ -135,41 +132,4 @@ private:
 	 * @param camera The current camera, for view transforms.
 	 */
 	void setPushConstants(const std::shared_ptr<const VkShader>& shader, const RenderComponent* comp, const Camera* camera);
-
-	/**
-	 * Sets the per-screen uniforms for set in the provided aligner using the values obtained from state and camera.
-	 * @param set The uniform set containing values to set.
-	 * @param aligner The object the values are set in.
-	 * @param state The screen state object to obtain SCREEN_STATE values from.
-	 * @param camera The camera object to obtain CAMERA_* values from.
-	 */
-	void setPerScreenUniforms(const UniformSet& set, Std140Aligner& aligner, const ScreenState* state, const Camera* camera);
-
-	/**
-	 * Sets the per-object uniforms for the given object.
-	 * @param set The set for the given object.
-	 * @param aligner The aligner to write the uniforms to.
-	 * @param comp The render component for the object.
-	 * @param camera The current camera.
-	 */
-	void setPerObjectUniforms(const UniformSet& set, Std140Aligner& aligner, const RenderComponent* comp, const Camera* camera);
-
-	/**
-	 * Sets the value in aligner to the provided value.
-	 * @param type The type of the uniform to set.
-	 * @param uniformName The name of the uniform to set.
-	 * @param value The value to set the uniform to.
-	 * @param aligner The aligner to set the value in.
-	 */
-	static constexpr void setUniformValue(const UniformType type, const std::string& uniformName, const void* value, Std140Aligner& aligner) {
-		switch (type) {
-			case UniformType::FLOAT: aligner.setFloat(uniformName, *(const float*)value); break;
-			case UniformType::VEC2: aligner.setVec2(uniformName, *(const glm::vec2*)value); break;
-			case UniformType::VEC3: aligner.setVec3(uniformName, *(const glm::vec3*)value); break;
-			case UniformType::VEC4: aligner.setVec4(uniformName, *(const glm::vec4*)value); break;
-			case UniformType::MAT3: aligner.setMat3(uniformName, *(const glm::mat3*)value); break;
-			case UniformType::MAT4: aligner.setMat4(uniformName, *(const glm::mat4*)value); break;
-			default: throw std::runtime_error("Invalid buffered uniform type for uniform \"" + uniformName + "\"!");
-		}
-	}
 };

@@ -23,7 +23,7 @@
 #include "VkTextureLoader.hpp"
 
 namespace {
-	glm::mat4 projectionCorrection = {
+	const glm::mat4 projectionCorrection = {
 		{1.0, 0.0, 0.0, 0.0},
 		{0.0, -1.0, 0.0, 0.0},
 		{0.0, 0.0, 0.5, 0.0},
@@ -40,8 +40,7 @@ VkRenderingEngine::VkRenderingEngine(DisplayEngine& display, const LogConfig& re
 	objectHandler(logger),
 	swapObjects(objectHandler),
 	memoryManager(rendererLog, objectHandler),
-	currentImageIndex(0),
-	currentFrame(0) {
+	currentImageIndex(0) {
 
 	if (!glfwInit()) {
 		throw std::runtime_error("Couldn't initialize glfw");
@@ -194,7 +193,14 @@ void VkRenderingEngine::beginFrame() {
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void VkRenderingEngine::present() {
+void VkRenderingEngine::setViewport(int width, int height) {
+	//Width / height unused, retrieved from window interface in below function.
+	vkDeviceWaitIdle(objectHandler.getDevice());
+	swapObjects.reinit(memoryManager);
+	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
+}
+
+void VkRenderingEngine::apiPresent() {
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS) {
@@ -237,16 +243,6 @@ void VkRenderingEngine::present() {
 	else if (result != VK_SUCCESS) {
 		throw std::runtime_error("Failed to present!");
 	}
-
-	currentFrame = (currentFrame + 1) % MAX_ACTIVE_FRAMES;
-	memoryManager.resetPerFrameOffset();
-}
-
-void VkRenderingEngine::setViewport(int width, int height) {
-	//Width / height unused, retrieved from window interface in below function.
-	vkDeviceWaitIdle(objectHandler.getDevice());
-	swapObjects.reinit(memoryManager);
-	std::static_pointer_cast<VkShaderLoader>(shaderLoader)->reloadShaders();
 }
 
 void VkRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
@@ -344,7 +340,7 @@ bool VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentM
 						if (!screenSetBound) {
 							Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(screenSetName);
 
-							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState, camera);
+							setPerScreenUniforms(memoryManager.getUniformSet(screenSetName), screenAligner, screenState, camera, projectionCorrection);
 
 							bindSets.at(numSets) = memoryManager.getDescriptorSet(screenSetName);
 							bindOffsets.at(numOffsets) = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
@@ -441,37 +437,5 @@ void VkRenderingEngine::setPushConstants(const std::shared_ptr<const VkShader>& 
 		}
 
 		vkCmdPushConstants(commandBuffers.at(currentFrame), shader->getPipelineLayout(), range.shaderStages.to_ulong(), range.start, range.size, &pushConstantMem[range.start]);
-	}
-}
-
-void VkRenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligner& aligner, const ScreenState* state, const Camera* camera) {
-	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
-		glm::mat4 tempMat;
-		const void* value = nullptr;
-
-		switch (uniform.provider) {
-			case UniformProviderType::CAMERA_PROJECTION: tempMat = camera->getProjection(); value = &tempMat; tempMat = projectionCorrection * tempMat; break;
-			case UniformProviderType::CAMERA_VIEW: tempMat = camera->getView(); value = &tempMat; break;
-			case UniformProviderType::SCREEN_STATE: value = state->getRenderValue(uniform.name); break;
-			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
-		}
-
-		setUniformValue(uniform.type, uniform.name, value, aligner);
-	}
-}
-
-void VkRenderingEngine::setPerObjectUniforms(const UniformSet& set, Std140Aligner& aligner, const RenderComponent* comp, const Camera* camera) {
-	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
-		glm::mat4 tempMat;
-		const void* value = nullptr;
-
-		switch (uniform.provider) {
-			case UniformProviderType::OBJECT_MODEL_VIEW: tempMat = camera->getView() * comp->getTransform(); value = &tempMat; break;
-			case UniformProviderType::OBJECT_TRANSFORM: tempMat = comp->getTransform(); value = &tempMat; break;
-			case UniformProviderType::OBJECT_STATE: value = comp->getParentState()->getRenderValue(uniform.name); break;
-			default: throw std::runtime_error("Invalid provider type for object uniform set!");
-		}
-
-		setUniformValue(uniform.type, uniform.name, value, aligner);
 	}
 }

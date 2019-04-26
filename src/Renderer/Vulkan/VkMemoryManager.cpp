@@ -60,7 +60,6 @@ VkMemoryManager::VkMemoryManager(const LogConfig& logConfig, VkObjectHandler& ob
 	descriptorLayouts(),
 	poolInfo({}),
 	descriptorSets(),
-	descriptorAligners(),
 	samplerMap(),
 	imageMap(),
 	depthBuffer(VK_NULL_HANDLE),
@@ -455,12 +454,6 @@ void VkMemoryManager::createUniformSetType(const std::string& name, const Unifor
 				break;
 			default: throw std::runtime_error("Missing uniform type when creating descriptor sets!");
 		}
-	}
-
-	//Materials hold their own aligners, but screen and object aligners need to go here for now
-	//(Move to RenderComponent/Manager later?)
-	if (set.getType() != UniformSetType::MATERIAL) {
-		descriptorAligners.emplace(name, Std140Aligner(set.getBufferedUniforms()));
 	}
 }
 

@@ -58,10 +58,14 @@ protected:
 	void createUniformSetType(const std::string& name, const UniformSet& set);
 
 	/**
-	 * Minimum uniform buffer alignment, not used until uniform buffers are.
-	 * @return 1.
+	 * Minimum uniform buffer alignment.
+	 * @return The minimum required uniform block alignment.
 	 */
-	virtual size_t getMinUniformBufferAlignment() override { return 1; }
+	virtual size_t getMinUniformBufferAlignment() override {
+		GLint align = 0;
+		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &align);
+		return align;
+	}
 
 	/**
 	 * Allocates a descriptor set for the material. This can be called more than once

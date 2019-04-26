@@ -133,13 +133,13 @@ void GlRenderingEngine::init() {
 	ENGINE_LOG_INFO(logger, "OpenGL initialization complete.");
 }
 
-void GlRenderingEngine::present() {
-	glfwSwapBuffers(interface.getWindow());
-	glClear(GL_COLOR_BUFFER_BIT);
-}
-
 void GlRenderingEngine::setViewport(int width, int height) {
 	glViewport(0, 0, width, height);
+}
+
+void GlRenderingEngine::apiPresent() {
+	glfwSwapBuffers(interface.getWindow());
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void GlRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
@@ -173,6 +173,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 			const std::string& shaderName = modelMap.first;
 			const std::shared_ptr<GlShader> shader = shaderMap.at(shaderName);
 			bool shaderBound = false;
+			bool screenSetBound = false;
 
 			//Skip these objects if their shader isn't in the current render pass
 			if (shader->renderPass != pass) {
@@ -188,12 +189,6 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 						//Set shader / buffer / blend if needed
 						if (!shaderBound) {
 							glUseProgram(shader->id);
-
-							//TODO: Uniform buffer stuff
-							if (shader->screenSet != "") {
-
-							}
-
 							shaderBound = true;
 						}
 
@@ -213,6 +208,24 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 							blendOn = true;
 						}
 
+						size_t nextUniformIndex = 0;
+
+						//TODO: Uniform buffer stuff
+						if (!shader->screenSet.empty()) {
+							if (!screenSetBound) {
+								Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(shader->screenSet);
+
+								setPerScreenUniforms(memoryManager.getUniformSet(shader->screenSet), screenAligner, state, camera);
+								GlBuffer* uniBuf = (GlBuffer*) memoryManager.getUniformBuffer(RendererMemoryManager::UniformBufferType::SCREEN_OBJECT);
+								uintptr_t offset = memoryManager.writePerFrameUniforms(screenAligner, currentFrame);
+								uintptr_t size = screenAligner.getData().second;
+
+								glBindBufferRange(GL_UNIFORM_BUFFER, nextUniformIndex, uniBuf->getBufferId(), offset, size);
+							}
+
+							nextUniformIndex++;
+						}
+
 						//TODO: Bind uniform buffer
 						if (!materialSetBound) {
 							materialSetBound = true;
@@ -225,7 +238,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 
 						//Set push constants - this is currently exactly the same as the per-object uniforms,
 						//will change if uniform buffers are implemented
-						setPerObjectUniforms(shader.get(), shader->pushConstants, comp, camera);
+						//setPerObjectUniforms(shader.get(), shader->pushConstants, comp, camera);
 
 						const std::pair<uintptr_t, uint32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
 						glDrawElements(GL_TRIANGLES, meshInfo.second, GL_UNSIGNED_INT, (void*) meshInfo.first);
@@ -240,22 +253,8 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 	}
 }
 
-void GlRenderingEngine::setPerScreenUniforms(const GlShader* shader, const UniformSet& set, const ScreenState* state, const Camera* camera) {
-	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
-		glm::mat4 tempMat;
-		const void* value = nullptr;
-
-		switch (uniform.provider) {
-			case UniformProviderType::CAMERA_PROJECTION: tempMat = camera->getProjection(); value = &tempMat; break;
-			case UniformProviderType::CAMERA_VIEW: tempMat = camera->getView(); value = &tempMat; break;
-			case UniformProviderType::SCREEN_STATE: value = state->getRenderValue(uniform.name); break;
-			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
-		}
-
-		//setUniformValue(shader, uniform.type, uniform.name, value);
-	}
-}
-
+//This'll probably be used for push constants
+/*
 void GlRenderingEngine::setPerObjectUniforms(const GlShader* shader, const std::vector<UniformDescription>& set, const RenderComponent* comp, const Camera* camera) {
 	for (const UniformDescription& uniform : set) {
 		glm::mat4 tempMat;
@@ -270,4 +269,4 @@ void GlRenderingEngine::setPerObjectUniforms(const GlShader* shader, const std::
 
 		//setUniformValue(shader, uniform.type, uniform.name, value);
 	}
-}
+}*/
