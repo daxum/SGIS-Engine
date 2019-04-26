@@ -247,9 +247,15 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 							materialSetBound = true;
 						}
 
-						//TODO: Bind uniform buffer
 						if (shader->objectSet.empty()) {
+							Std140Aligner& objectAligner = memoryManager.getDescriptorAligner(shader->objectSet);
 
+							setPerObjectUniforms(memoryManager.getUniformSet(shader->objectSet), objectAligner, comp, camera);
+							GlBuffer* uniBuf = (GlBuffer*) memoryManager.getUniformBuffer(RendererMemoryManager::UniformBufferType::SCREEN_OBJECT);
+							uintptr_t offset = memoryManager.writePerFrameUniforms(objectAligner, currentFrame);
+							uintptr_t size = objectAligner.getData().second;
+
+							glBindBufferRange(GL_UNIFORM_BUFFER, nextUniformIndex, uniBuf->getBufferId(), offset, size);
 						}
 
 						//Set push constants - this is currently exactly the same as the per-object uniforms,
