@@ -161,7 +161,6 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 	bool blendOn = false;
 
 	for (const auto& shaderObjectMap : objects) {
-		//TODO: Buffers const std::string& buffer = shaderObjectMap.first;
 		bool bufferBound = false;
 
 		for (const auto& modelMap : shaderObjectMap.second) {
@@ -231,8 +230,6 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 								uintptr_t size = material->uniforms.getData().second;
 
 								glBindBufferRange(GL_UNIFORM_BUFFER, nextUniformIndex, uniBuf->getBufferId(), offset, size);
-
-								nextUniformIndex++;
 							}
 
 							//Bind textures
@@ -243,6 +240,10 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 							}
 
 							materialSetBound = true;
+						}
+
+						if (material->hasBufferedUniforms) {
+							nextUniformIndex++;
 						}
 
 						//Set object set
