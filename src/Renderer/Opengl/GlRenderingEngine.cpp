@@ -181,7 +181,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 			}
 
 			for (const auto& objectSet : modelMap.second) {
-				//const Material* material = objectSet.first;
+				const Material* material = objectSet.first;
 				bool materialSetBound = false;
 
 				for (const RenderComponent* comp : objectSet.second) {
@@ -210,7 +210,6 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 
 						size_t nextUniformIndex = 0;
 
-						//TODO: Uniform buffer stuff
 						if (!shader->screenSet.empty()) {
 							if (!screenSetBound) {
 								Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(shader->screenSet);
@@ -221,18 +220,30 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 								uintptr_t size = screenAligner.getData().second;
 
 								glBindBufferRange(GL_UNIFORM_BUFFER, nextUniformIndex, uniBuf->getBufferId(), offset, size);
+								screenSetBound = true;
 							}
 
 							nextUniformIndex++;
 						}
 
-						//TODO: Bind uniform buffer
 						if (!materialSetBound) {
+							if (material->hasBufferedUniforms) {
+								GlBuffer* uniBuf = (GlBuffer*) memoryManager.getUniformBuffer(RendererMemoryManager::UniformBufferType::MATERIAL);
+								uintptr_t offset = material->uniformOffset;
+								uintptr_t size = material->uniforms.getData().second;
+
+								glBindBufferRange(GL_UNIFORM_BUFFER, nextUniformIndex, uniBuf->getBufferId(), offset, size);
+
+								nextUniformIndex++;
+							}
+
+							//TODO: Textures
+
 							materialSetBound = true;
 						}
 
 						//TODO: Bind uniform buffer
-						if (shader->objectSet != "") {
+						if (shader->objectSet.empty()) {
 
 						}
 
