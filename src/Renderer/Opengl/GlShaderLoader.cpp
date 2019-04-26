@@ -63,6 +63,10 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 		shader->addPushLoc(uniform.name);
 	}
 
+	for (size_t i = 0; i < info.uniformSets.size(); i++) {
+		glUniformBlockBinding(shader->id, i, i);
+	}
+
 	ENGINE_LOG_DEBUG(logger, "Shader \"" + name + "\" loaded");
 }
 

@@ -246,7 +246,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 						}
 
 						//Set object set
-						if (shader->objectSet.empty()) {
+						if (!shader->objectSet.empty()) {
 							Std140Aligner& objectAligner = memoryManager.getDescriptorAligner(shader->objectSet);
 
 							setPerObjectUniforms(memoryManager.getUniformSet(shader->objectSet), objectAligner, comp, camera);

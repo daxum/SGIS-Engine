@@ -48,20 +48,20 @@ protected:
 	 * @param size The size of the buffer to create.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) { return std::make_shared<GlBuffer>(usage, storage, size); }
+	std::shared_ptr<Buffer> createBuffer(uint32_t usage, BufferStorage storage, size_t size) override { return std::make_shared<GlBuffer>(usage, storage, size); }
 
 	/**
 	 * Creates a type of uniform set for which descriptors can be allocated.
 	 * @param name The name of the set.
 	 * @param set The set itself. Mostly used for creating descriptor layouts.
 	 */
-	void createUniformSetType(const std::string& name, const UniformSet& set);
+	void createUniformSetType(const std::string& name, const UniformSet& set) override {}
 
 	/**
 	 * Minimum uniform buffer alignment.
 	 * @return The minimum required uniform block alignment.
 	 */
-	virtual size_t getMinUniformBufferAlignment() override {
+	size_t getMinUniformBufferAlignment() override {
 		GLint align = 0;
 		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &align);
 		return align;
@@ -72,7 +72,7 @@ protected:
 	 * for the same material - subsequent calls should be ignored.
 	 * @param material The material to allocate a descriptor set for.
 	 */
-	void addMaterialDescriptors(const Material* material);
+	void addMaterialDescriptors(const Material* material) override {}
 
 private:
 	//Transfer buffer for uploading mesh data to static buffers on the gpu.
