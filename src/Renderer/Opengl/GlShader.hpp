@@ -35,7 +35,7 @@ public:
 	//Name of the object uniform set.
 	const std::string objectSet;
 	//Push constants used in the shader.
-	const std::vector<UniformDescription> pushConstants;
+	const PushConstantSet pushConstants;
 
 	/**
 	 * Creates a GlShader with the given id.
@@ -51,9 +51,7 @@ public:
 		renderPass(pass),
 		screenSet(screenSet),
 		objectSet(objectSet),
-		pushConstants(pushConstants) {
-
-	}
+		pushConstants(pushConstants) {}
 
 	/**
 	 * Destructor. Destroys the program object.
@@ -61,4 +59,21 @@ public:
 	~GlShader() {
 		glDeleteProgram(id);
 	}
+
+	/**
+	 * Adds a uniform location to the shader, for faster retrieval during rendering.
+	 * @param uniform The name of the uniform to add.
+	 */
+	void addPushLoc(const std::string& uniform) { pushConstantCache[uniform] = glGetUniformLocation(id, uniform.c_str()); }
+
+	/**
+	 * Gets the uniform location for the given shader variable name.
+	 * @param The name of the variable in the shader.
+	 * @return The location the uniform is stored at.
+	 */
+	GLuint getPushLoc(const std::string& name) const { return pushConstantCache.at(name); }
+
+private:
+	//Caches the values of the uniforms in the shader which are marked as push constants.
+	std::unordered_map<std::string, GLuint> pushConstantCache;
 };

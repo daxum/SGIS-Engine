@@ -120,23 +120,11 @@ private:
 	void renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
 
 	/**
-	 * Sets the uniform with the given name to the provided value.
-	 * @param shader The shader to set the uniform in.
-	 * @param type The type of the uniform to set.
-	 * @param uniformName The name of the uniform to set in the shader.
-	 * @param value The value to set the uniform to.
+	 * Emulates push constants from Vulkan. Really, this just sets uniform locations in the provided
+	 * program.
+	 * @param shader The shader to set uniforms in.
+	 * @param comp The render component for the object to set constants for.
+	 * @param camera The camera of the screen currently being rendered.
 	 */
-	/*void setUniformValue(const GlShader* shader, const UniformType type, const std::string& uniformName, const void* value) {
-		GLuint uniformLoc = shader->getUniformLocation(uniformName);
-
-		switch (type) {
-			case UniformType::FLOAT: glUniform1f(uniformLoc, *(const float*)value); break;
-			case UniformType::VEC2: glUniform2fv(uniformLoc, 1, (const float*)value); break;
-			case UniformType::VEC3: glUniform3fv(uniformLoc, 1, (const float*)value); break;
-			case UniformType::VEC4: glUniform4fv(uniformLoc, 1, (const float*)value); break;
-			case UniformType::MAT3: glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, (const float*)value); break;
-			case UniformType::MAT4: glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, (const float*)value); break;
-			default: throw std::runtime_error("Invalid uniform type for uniform \"" + uniformName + "\"!");
-		}
-	}*/
+	void setPushConstants(const GlShader* shader, const RenderComponent* comp, const Camera* camera);
 };

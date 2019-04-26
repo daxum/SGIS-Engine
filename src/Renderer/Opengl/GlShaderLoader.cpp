@@ -52,7 +52,12 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	}
 
 	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, screenSet, objectSet, info.pushConstants);
-	shaderMap.insert({name, shader});
+	shaderMap.emplace(name, shader);
+
+	//Cache push constant locations for faster lookup later
+	for (const UniformDescription& uniform : info.pushConstants) {
+		shader->addPushLoc(uniform.name);
+	}
 
 	ENGINE_LOG_DEBUG(logger, "Shader \"" + name + "\" loaded");
 }

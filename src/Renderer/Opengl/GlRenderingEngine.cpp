@@ -146,13 +146,8 @@ void GlRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sor
 	const Camera* camera = screen->getCamera().get();
 	const ScreenState* state = screen->getState().get();
 
-	//Opaque objects
 	renderTransparencyPass(RenderPass::OPAQUE, sortedObjects, camera, state);
-
-	//Transparent objects
 	renderTransparencyPass(RenderPass::TRANSPARENT, sortedObjects, camera, state);
-
-	//Translucent objects
 	renderTransparencyPass(RenderPass::TRANSLUCENT, sortedObjects, camera, state);
 
 	glBindVertexArray(0);
@@ -210,6 +205,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 
 						size_t nextUniformIndex = 0;
 
+						//Set screen set
 						if (!shader->screenSet.empty()) {
 							if (!screenSetBound) {
 								Std140Aligner& screenAligner = memoryManager.getDescriptorAligner(shader->screenSet);
@@ -226,6 +222,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 							nextUniformIndex++;
 						}
 
+						//Set material set
 						if (!materialSetBound) {
 							if (material->hasBufferedUniforms) {
 								GlBuffer* uniBuf = (GlBuffer*) memoryManager.getUniformBuffer(RendererMemoryManager::UniformBufferType::MATERIAL);
@@ -247,6 +244,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 							materialSetBound = true;
 						}
 
+						//Set object set
 						if (shader->objectSet.empty()) {
 							Std140Aligner& objectAligner = memoryManager.getDescriptorAligner(shader->objectSet);
 
@@ -258,9 +256,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 							glBindBufferRange(GL_UNIFORM_BUFFER, nextUniformIndex, uniBuf->getBufferId(), offset, size);
 						}
 
-						//Set push constants - this is currently exactly the same as the per-object uniforms,
-						//will change if uniform buffers are implemented
-						//setPerObjectUniforms(shader.get(), shader->pushConstants, comp, camera);
+						setPushConstants(shader.get(), comp, camera);
 
 						const std::pair<uintptr_t, uint32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
 						glDrawElements(GL_TRIANGLES, meshInfo.second, GL_UNSIGNED_INT, (void*) meshInfo.first);
@@ -275,10 +271,9 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 	}
 }
 
-//This'll probably be used for push constants
-/*
-void GlRenderingEngine::setPerObjectUniforms(const GlShader* shader, const std::vector<UniformDescription>& set, const RenderComponent* comp, const Camera* camera) {
-	for (const UniformDescription& uniform : set) {
+void GlRenderingEngine::setPushConstants(const GlShader* shader, const RenderComponent* comp, const Camera* camera) {
+	for (const UniformDescription& uniform : shader->pushConstants) {
+		//Get push constant value
 		glm::mat4 tempMat;
 		const void* value = nullptr;
 
@@ -289,6 +284,17 @@ void GlRenderingEngine::setPerObjectUniforms(const GlShader* shader, const std::
 			default: throw std::runtime_error("Invalid provider type for object uniform set!");
 		}
 
-		//setUniformValue(shader, uniform.type, uniform.name, value);
+		//Set push constant in shader
+		GLuint uniformLoc = shader->getPushLoc(uniform.name);
+
+		switch (uniform.type) {
+			case UniformType::FLOAT: glUniform1f(uniformLoc, *(const float*)value); break;
+			case UniformType::VEC2: glUniform2fv(uniformLoc, 1, (const float*)value); break;
+			case UniformType::VEC3: glUniform3fv(uniformLoc, 1, (const float*)value); break;
+			case UniformType::VEC4: glUniform4fv(uniformLoc, 1, (const float*)value); break;
+			case UniformType::MAT3: glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, (const float*)value); break;
+			case UniformType::MAT4: glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, (const float*)value); break;
+			default: throw std::runtime_error("Invalid uniform type for uniform \"" + uniform.name + "\"!");
+		}
 	}
-}*/
+}
