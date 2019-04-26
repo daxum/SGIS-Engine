@@ -36,6 +36,8 @@ public:
 	const std::string objectSet;
 	//Push constants used in the shader.
 	const PushConstantSet pushConstants;
+	//The vertex attribute array.
+	const GLuint vao;
 
 	/**
 	 * Creates a GlShader with the given id.
@@ -45,13 +47,15 @@ public:
 	 * @param objectSet The per-object uniform set, empty string if not present.
 	 * @param pushConstants Push constants for this shader, these will never be buffered
 	 *     even if uniform buffers are implemented (will always use glUniform*).
+	 * @param vao The vertex attribute array for this shader.
 	 */
-	GlShader(GLuint id, RenderPass pass, const std::string& screenSet, const std::string& objectSet, const std::vector<UniformDescription>& pushConstants) :
+	GlShader(GLuint id, RenderPass pass, const std::string& screenSet, const std::string& objectSet, const std::vector<UniformDescription>& pushConstants, GLuint vao) :
 		id(id),
 		renderPass(pass),
 		screenSet(screenSet),
 		objectSet(objectSet),
-		pushConstants(pushConstants) {}
+		pushConstants(pushConstants),
+		vao(vao) {}
 
 	/**
 	 * Destructor. Destroys the program object.

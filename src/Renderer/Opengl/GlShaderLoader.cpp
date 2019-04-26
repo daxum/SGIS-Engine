@@ -51,7 +51,11 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 		}
 	}
 
-	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, screenSet, objectSet, info.pushConstants);
+	//Create input attribute format
+	const VertexFormat* format = Engine::instance->getModelManager().getFormat(info.format);
+	GLuint vao = createAttributeArray(format);
+
+	std::shared_ptr<GlShader> shader = std::make_shared<GlShader>(createProgram(info.vertex, info.fragment), info.pass, screenSet, objectSet, info.pushConstants, vao);
 	shaderMap.emplace(name, shader);
 
 	//Cache push constant locations for faster lookup later
@@ -60,6 +64,32 @@ void GlShaderLoader::loadShader(std::string name, const ShaderInfo& info) {
 	}
 
 	ENGINE_LOG_DEBUG(logger, "Shader \"" + name + "\" loaded");
+}
+
+GLuint GlShaderLoader::createAttributeArray(const VertexFormat* format) {
+	//Create array
+	GLuint vao = 0;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	//Enable array things from vertex format
+	const std::vector<VertexFormat::ElementData>& formatElements = format->getFormatVec();
+	size_t vertexSize = format->getVertexSize();
+
+	ENGINE_LOG_DEBUG(logger, "Shader input format:");
+
+	for (size_t i = 0; i < formatElements.size(); i++) {
+		const VertexFormat::ElementData& element = formatElements.at(i);
+
+		uint32_t elementCount = (uint32_t) (element.size / sizeof(float));
+
+		glEnableVertexAttribArray(i);
+		glVertexAttribFormat(i, elementCount, GL_FLOAT, GL_FALSE, element.offset);
+		glVertexAttribBinding(i, 0);
+		ENGINE_LOG_DEBUG(logger, "    Binding " + std::to_string(i) + ": Components=" + std::to_string(elementCount) + ", Stride=" + std::to_string(vertexSize) + ", offset=" + std::to_string(element.offset));
+	}
+
+	return vao;
 }
 
 GLuint GlShaderLoader::createProgram(std::string vertexName, std::string fragmentName) {

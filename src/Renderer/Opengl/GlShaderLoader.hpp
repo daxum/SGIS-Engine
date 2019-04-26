@@ -50,6 +50,13 @@ private:
 	RendererMemoryManager* memoryManager;
 
 	/**
+	 * Creates the vertex attribute array for a shader.
+	 * @param format The vertex format for the array.
+	 * @return The attribute array.
+	 */
+	GLuint createAttributeArray(const VertexFormat* format);
+
+	/**
 	 * Creates a program object using the shaders with the specified filenames.
 	 * @param vertexName The path to the vertex shader.
 	 * @param fragmentName The path to the fragment shader.

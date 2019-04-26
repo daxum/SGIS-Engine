@@ -184,6 +184,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 						//Set shader / buffer / blend if needed
 						if (!shaderBound) {
 							glUseProgram(shader->id);
+							glBindVertexArray(shader->vao);
 							shaderBound = true;
 						}
 
