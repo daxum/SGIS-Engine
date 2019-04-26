@@ -161,8 +161,6 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 	bool blendOn = false;
 
 	for (const auto& shaderObjectMap : objects) {
-		bool bufferBound = false;
-
 		for (const auto& modelMap : shaderObjectMap.second) {
 			const std::string& shaderName = modelMap.first;
 			const std::shared_ptr<GlShader> shader = shaderMap.at(shaderName);
@@ -184,18 +182,15 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 						if (!shaderBound) {
 							glUseProgram(shader->id);
 							glBindVertexArray(shader->vao);
-							shaderBound = true;
-						}
 
-						if (!bufferBound) {
-							//This might need to go with the shader stuff
 							const Mesh* mesh = comp->getModel().mesh;
 							const VertexFormat* format = mesh->getFormat();
 							const Mesh::BufferInfo& buffers = mesh->getBufferInfo();
 
 							glBindVertexBuffer(0, ((GlBuffer*)buffers.vertex)->getBufferId(), 0, format->getVertexSize());
 							glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((GlBuffer*)buffers.index)->getBufferId());
-							bufferBound = true;
+
+							shaderBound = true;
 						}
 
 						if (enableBlend && !blendOn) {
