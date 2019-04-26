@@ -24,14 +24,9 @@
 #include "TextureLoader.hpp"
 #include "CombinedGl.h"
 
-enum class TextureType {
-	TEX_2D,
-	CUBEMAP
-};
-
 //Stores information for rendering a texture.
 struct GlTextureData {
-	TextureType type;
+	GLenum type;
 	GLuint id;
 };
 

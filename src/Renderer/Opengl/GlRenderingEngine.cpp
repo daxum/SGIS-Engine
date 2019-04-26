@@ -237,7 +237,12 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 								nextUniformIndex++;
 							}
 
-							//TODO: Textures
+							//Bind textures
+							for (size_t i = 0; i < material->textures.size(); i++) {
+								glActiveTexture(GL_TEXTURE0 + i);
+								const GlTextureData& texData = textureMap.at(material->textures.at(i));
+								glBindTexture(texData.type, texData.id);
+							}
 
 							materialSetBound = true;
 						}

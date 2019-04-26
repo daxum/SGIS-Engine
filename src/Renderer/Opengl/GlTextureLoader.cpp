@@ -63,7 +63,7 @@ void GlTextureLoader::loadTexture(const std::string& name, const std::string& fi
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
-	textureMap.insert(std::make_pair(name, GlTextureData{TextureType::TEX_2D, texture}));
+	textureMap.emplace(name, GlTextureData{GL_TEXTURE_2D, texture});
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -97,7 +97,7 @@ void GlTextureLoader::loadCubeMap(const std::string& name, const std::array<std:
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	}
 
-	textureMap.insert(std::make_pair(name, GlTextureData{TextureType::CUBEMAP, cubeMap}));
+	textureMap.emplace(name, GlTextureData{GL_TEXTURE_CUBE_MAP, cubeMap});
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -135,7 +135,7 @@ void GlTextureLoader::addFontTexture(const std::string& textureName, const Textu
 	//Generate mipmaps
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	textureMap.insert(std::make_pair(textureName, GlTextureData{TextureType::TEX_2D, texture}));
+	textureMap.emplace(textureName, GlTextureData{GL_TEXTURE_2D, texture});
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
