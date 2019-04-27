@@ -65,6 +65,15 @@ public:
 	std::shared_ptr<const RenderComponentManager> getRenderData() const { return renderManager; }
 
 	/**
+	 * Constructs and adds a component manager to the screen.
+	 * @param args The arguments to the manager's constructor.
+	 */
+	template<typename T, class... Args>
+	void addComponentManager(Args&&... args) {
+		addComponentManager(std::make_shared<T>(std::forward<Args>(args)...));
+	}
+
+	/**
 	 * Creates and adds the given manager to the list of managers for this screen. Some things to note:
 	 *  - Only one manager for each type should exist. Duplicates might work, but won't do anything useful.
 	 *  - Managers will be updated in the order they are added.
@@ -74,7 +83,7 @@ public:
 	 * @param manager The manager to add.
 	 */
 	template<typename T>
-	void addComponentManager(std::shared_ptr<T> manager = std::make_shared<T>());
+	void addComponentManager(std::shared_ptr<T> manager);
 
 	/**
 	 * Queues an object and its components to be added to the screen.
@@ -101,19 +110,27 @@ public:
 	 */
 	void setCamera(std::shared_ptr<Camera> newCamera);
 
+	template<typename T, class... Args>
+	void setState(Args&&... args) {
+		setState(std::make_shared<T>(std::forward<Args>(args)...));
+	}
 	/**
 	 * Sets the state for the screen.
 	 * @param newState The new screen state.
 	 */
-	void setState(std::shared_ptr<ScreenState> newState) { state = newState; }
+	template<typename T>
+	void setState(std::shared_ptr<T> newState) {
+		static_assert(std::is_base_of<ScreenState, T>::value, "Screen::setState called with incorrect type!");
+		state = newState;
+	}
 
 	/**
 	 * Returns the previously set state for the screen, or null if none
 	 * was set.
 	 * @return The state for the screen.
 	 */
-	std::shared_ptr<ScreenState> getState() { return state; }
-	std::shared_ptr<const ScreenState> getState() const { return state; }
+	template<typename T = ScreenState> std::shared_ptr<T> getState() { return std::static_pointer_cast<T>(state); }
+	template<typename T = ScreenState> std::shared_ptr<const T> getState() const { return std::static_pointer_cast<T>(state); }
 
 	/**
 	 * Pauses / unpauses the screen.

@@ -123,10 +123,23 @@ public:
 	void setPhysics(ObjectPhysicsInterface* phys) { physics = phys; }
 
 	/**
+	 * Constructs and sets the state of the object.
+	 * @param args The arguments to the state's constructor.
+	 */
+	template<typename T, class... Args>
+	void setState(Args&&... args) {
+		setState(std::make_shared<T>(std::forward<Args>(args)...));
+	}
+
+	/**
 	 * Sets the state for this object.
 	 * @param newState The new state variable, user defined. Can be anything.
 	 */
-	void setState(std::shared_ptr<ObjectState> newState) { state = newState; }
+	template<typename T>
+	void setState(std::shared_ptr<T> newState) {
+		static_assert(std::is_base_of<ObjectState, T>::value, "Object::setState called with non-ObjectState type!");
+		state = newState;
+	}
 
 	/**
 	 * Returns the previously set state pointer, or null if none was set.
