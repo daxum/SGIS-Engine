@@ -110,6 +110,22 @@ void GlRenderingEngine::init() {
 
 	ENGINE_LOG_INFO(logger, "Loaded all OpenGL functions.");
 
+	//Get context info
+
+	GLint major = 0;
+	GLint minor = 0;
+
+	glGetIntegerv(GL_MAJOR_VERSION, &major);
+	glGetIntegerv(GL_MINOR_VERSION, &minor);
+
+	const char* vendor = (const char*) glGetString(GL_VENDOR);
+	const char* renderer = (const char*) glGetString(GL_RENDERER);
+
+	ENGINE_LOG_INFO(logger, "OpenGL Info:");
+	ENGINE_LOG_INFO(logger, "\tVersion: " + std::to_string(major) + "." + std::to_string(minor));
+	ENGINE_LOG_INFO(logger, "\tVendor: " + std::string(vendor));
+	ENGINE_LOG_INFO(logger, "\tRenderer: " + std::string(renderer));
+
 	//Set callbacks
 
 	interface.init(window);
