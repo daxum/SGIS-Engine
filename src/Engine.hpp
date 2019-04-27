@@ -37,13 +37,25 @@ public:
 	//Engine version information:
 	//Major indicates large changes to the structure of the engine.
 	//Minor indicates breaking changes.
-	//Patch is everything else.
-	static constexpr uint32_t VERSION_MAJOR = 2;
-	static constexpr uint32_t VERSION_MINOR = 1;
-	static constexpr uint32_t VERSION_PATCH = 6;
+	//Patch is everything else (bugfixes, performance boosts, etc).
+	static constexpr uint32_t VERSION_MAJOR = 3;
+	static constexpr uint32_t VERSION_MINOR = 0;
+	static constexpr uint32_t VERSION_PATCH = 0;
 
 	//Global engine instance. Use sparingly!
 	static Engine* instance;
+
+	/**
+	 * Equivalent to VK_MAKE_VERSION, provided so games can have optional or no
+	 * Vulkan support.
+	 * @param major The major version number, as a 10-bit integer (0-1023).
+	 * @param minor The minor version number, as a 10-bit integer (0-1023).
+	 * @param patch The patch number, as a 12-bit integer (0-4095).
+	 * @return The packed version number.
+	 */
+	static constexpr uint32_t makeVersion(uint32_t major, uint32_t minor, uint32_t patch) {
+		return (major << 22) | (minor << 12) | patch;
+	}
 
 	/**
 	 * Constructs an instance of the game engine.
