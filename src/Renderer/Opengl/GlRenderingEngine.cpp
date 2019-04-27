@@ -256,7 +256,7 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 						setPushConstants(shader.get(), comp, camera);
 
 						const std::pair<uintptr_t, uint32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
-						glDrawElements(GL_TRIANGLES, meshInfo.second, GL_UNSIGNED_INT, (void*) meshInfo.first);
+						glDrawElements(GL_TRIANGLES, meshInfo.second, GL_UNSIGNED_INT, (void*) (meshInfo.first * sizeof(uint32_t)));
 					}
 				}
 			}
