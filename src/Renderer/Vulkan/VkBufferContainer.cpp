@@ -30,6 +30,11 @@ VkBufferContainer::VkBufferContainer(VkMemoryManager* memoryManager,VkObjectHand
 	allocation(VK_NULL_HANDLE),
 	mappedMem(nullptr) {
 
+	//Happens with uniform buffers with no descriptor sets
+	if (size == 0) {
+		return;
+	}
+
 	VmaMemoryUsage memoryUsage;
 
 	switch (storage) {

@@ -143,10 +143,11 @@ void VkMemoryManager::initializeDescriptors() {
 		return;
 	}
 
-	//Convert to VkDescriptorPoolSize
+	//Convert to VkDescriptorPoolSize - always create at least one of each type for now, shouldn't have any real impact
+	//since everything uses the same descriptor pool
 	std::array<VkDescriptorPoolSize, sizeof(DescriptorPoolInfo::bindingCounts) / sizeof(uint32_t)> poolSizes;
-	poolSizes.at(0) = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, poolInfo.bindingCounts.dynamicUniformBuffers};
-	poolSizes.at(1) = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolInfo.bindingCounts.combinedImageSamplers};
+	poolSizes.at(0) = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, std::max(1u, poolInfo.bindingCounts.dynamicUniformBuffers)};
+	poolSizes.at(1) = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, std::max(1u, poolInfo.bindingCounts.combinedImageSamplers)};
 
 	//Create pool
 	VkDescriptorPoolCreateInfo poolCreateInfo = {};
