@@ -63,40 +63,40 @@ struct MeshCreateInfo {
 };
 
 //Lots of material names, to prevent mistyping.
-const std::string UNIFORM_NAME_KA = "ka";
-const std::string UNIFORM_NAME_KD = "kd";
-const std::string UNIFORM_NAME_KS = "ks";
-const std::string UNIFORM_NAME_TRANSMITTANCE = "trns";
-const std::string UNIFORM_NAME_EMISSION = "emsn";
-const std::string UNIFORM_NAME_SHININESS = "s";
-const std::string UNIFORM_NAME_IOR = "ior";
-const std::string UNIFORM_NAME_DISSOLVE = "dslv";
+const char* const UNIFORM_NAME_KA = "ka";
+const char* const UNIFORM_NAME_KD = "kd";
+const char* const UNIFORM_NAME_KS = "ks";
+const char* const UNIFORM_NAME_TRANSMITTANCE = "trns";
+const char* const UNIFORM_NAME_EMISSION = "emsn";
+const char* const UNIFORM_NAME_SHININESS = "s";
+const char* const UNIFORM_NAME_IOR = "ior";
+const char* const UNIFORM_NAME_DISSOLVE = "dslv";
 
 //Textures.
-const std::string UNIFORM_NAME_KA_TEX = "katx";
-const std::string UNIFORM_NAME_KD_TEX = "kdtx";
-const std::string UNIFORM_NAME_KS_TEX = "kstx";
-const std::string UNIFORM_NAME_SPEC_HILIGHT_TEX = "shltx";
-const std::string UNIFORM_NAME_BUMP_TEX = "bmptx";
-const std::string UNIFORM_NAME_DISPLACE_TEX = "dsptx";
-const std::string UNIFORM_NAME_ALPHA_TEX = "altx";
-const std::string UNIFORM_NAME_REFLECTION_TEX = "rfltx";
+const char* const UNIFORM_NAME_KA_TEX = "katx";
+const char* const UNIFORM_NAME_KD_TEX = "kdtx";
+const char* const UNIFORM_NAME_KS_TEX = "kstx";
+const char* const UNIFORM_NAME_SPEC_HILIGHT_TEX = "shltx";
+const char* const UNIFORM_NAME_BUMP_TEX = "bmptx";
+const char* const UNIFORM_NAME_DISPLACE_TEX = "dsptx";
+const char* const UNIFORM_NAME_ALPHA_TEX = "altx";
+const char* const UNIFORM_NAME_REFLECTION_TEX = "rfltx";
 
 //PBR.
-const std::string UNIFORM_NAME_ROUGHNESS = "rgh";
-const std::string UNIFORM_NAME_METALLIC = "mtlc";
-const std::string UNIFORM_NAME_SHEEN = "shn";
-const std::string UNIFORM_NAME_CLEARCOAT_THICK = "clctthck";
-const std::string UNIFORM_NAME_CLEARCOAT_ROUGH = "clctrgh";
-const std::string UNIFORM_NAME_ANISOTROPY = "atrpy";
-const std::string UNIFORM_NAME_ANISOTROPY_ROTATION = "atrpyrt";
+const char* const UNIFORM_NAME_ROUGHNESS = "rgh";
+const char* const UNIFORM_NAME_METALLIC = "mtlc";
+const char* const UNIFORM_NAME_SHEEN = "shn";
+const char* const UNIFORM_NAME_CLEARCOAT_THICK = "clctthck";
+const char* const UNIFORM_NAME_CLEARCOAT_ROUGH = "clctrgh";
+const char* const UNIFORM_NAME_ANISOTROPY = "atrpy";
+const char* const UNIFORM_NAME_ANISOTROPY_ROTATION = "atrpyrt";
 
 //More textures.
-const std::string UNIFORM_NAME_ROUGHNESS_TEX = "rghtx";
-const std::string UNIFORM_NAME_METALLIC_TEX = "mtlctx";
-const std::string UNIFORM_NAME_SHEEN_TEX = "shntx";
-const std::string UNIFORM_NAME_EMISSIVE_TEX = "emsvtx";
-const std::string UNIFORM_NAME_NORMAL_TEX = "nrmtx";
+const char* const UNIFORM_NAME_ROUGHNESS_TEX = "rghtx";
+const char* const UNIFORM_NAME_METALLIC_TEX = "mtlctx";
+const char* const UNIFORM_NAME_SHEEN_TEX = "shntx";
+const char* const UNIFORM_NAME_EMISSIVE_TEX = "emsvtx";
+const char* const UNIFORM_NAME_NORMAL_TEX = "nrmtx";
 
 class ModelLoader {
 public:
