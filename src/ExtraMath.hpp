@@ -124,6 +124,15 @@ namespace ExMath {
 	int randomBinomialInt(int min, int max, int average);
 
 	/**
+	 * Generates a floating point value from a normal distribution with
+	 * the given parameters.
+	 * @param mean The average value of the distribution.
+	 * @param stddev The standard deviation of the distribution.
+	 * @return A random floating point value.
+	 */
+	float randomDistribution(float mean, float stddev);
+
+	/**
 	 * Gets the current time, in milliseconds.
 	 * @return The current time.
 	 */

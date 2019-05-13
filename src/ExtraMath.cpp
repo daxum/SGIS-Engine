@@ -42,6 +42,10 @@ int ExMath::randomBinomialInt(int min, int max, int average) {
 	return std::binomial_distribution<int>(max - min, (double)(average - min) / (max - min))(engine) + min;
 }
 
+float ExMath::randomDistribution(float mean, float stddev) {
+	return std::normal_distribution<float>(mean, stddev)(engine);
+}
+
 double ExMath::getTimeMillis() {
 	std::chrono::duration<double, std::ratio<1, 1000>> time = std::chrono::steady_clock::now().time_since_epoch();
 	return time.count();
