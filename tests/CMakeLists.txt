@@ -48,3 +48,21 @@ set_target_properties(loggerOverheadTest PROPERTIES
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	target_compile_options(loggerOverheadTest PRIVATE "-Wall")
 endif()
+
+#Test for vertex hash function quality
+
+add_executable(vertexHashTest
+	vertexHashTest.cpp
+	../src/ExtraMath.cpp
+	../src/Models/Vertex.cpp
+	../src/Models/VertexFormat.cpp
+)
+
+set_target_properties(vertexHashTest PROPERTIES
+	CXX_STANDARD 14
+	CXX_STANDARD_REQUIRED ON
+)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	target_compile_options(vertexHashTest PRIVATE "-Wall")
+endif()
