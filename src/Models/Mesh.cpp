@@ -39,6 +39,19 @@ Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const std::vector<
 	}
 }
 
+Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const unsigned char* vertexData, size_t vertexSize, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
+	vertexData(new unsigned char[vertexSize]),
+	vertexSize(vertexSize),
+	indices(indices),
+	bufferInfo(bufferInfo),
+	format(format),
+	box(box),
+	radius(radius),
+	indexStart(0) {
+
+	memcpy(this->vertexData, vertexData, vertexSize);
+}
+
 Mesh::Mesh(const Mesh& mesh) :
 	vertexData(new unsigned char[mesh.vertexSize]),
 	vertexSize(mesh.vertexSize),

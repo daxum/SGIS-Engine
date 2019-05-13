@@ -22,6 +22,7 @@
 #include "ModelLoader.hpp"
 #include "ModelManager.hpp"
 #include "Engine.hpp"
+#include "MeshBuilder.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -102,13 +103,6 @@ void ModelLoader::loadMaterial(const std::string& name, const MaterialCreateInfo
 
 void ModelLoader::loadMesh(const std::string& name, const MeshCreateInfo& meshInfo) {
 	const VertexFormat* format = modelManager.getFormat(meshInfo.vertexFormat);
-	MeshData data = loadFromDisk(Engine::instance->getConfig().resourceBase + meshInfo.filename, format);
-
-	Aabb<float> box = calculateBox(data);
-	ENGINE_LOG_DEBUG(logger, "Calculated box " + box.toString() + " for mesh " + name);
-
-	float radius = calculateMaxRadius(data, box.getCenter());
-	ENGINE_LOG_DEBUG(logger, "Radius of mesh is " + std::to_string(radius));
 
 	Mesh::BufferInfo bufferInfo = {};
 
@@ -119,13 +113,16 @@ void ModelLoader::loadMesh(const std::string& name, const MeshCreateInfo& meshIn
 		bufferInfo.index = modelManager.getMemoryManager()->getBuffer(bufferInfo.indexName);
 	}
 
-	modelManager.addMesh(name, Mesh(bufferInfo, format, data.vertices, data.indices, box, radius), true);
+	Mesh mesh = loadFromDisk(Engine::instance->getConfig().resourceBase + meshInfo.filename, format, bufferInfo);
+
+	ENGINE_LOG_DEBUG(logger, "Calculated box " + mesh.getBox().toString() + " for mesh " + name);
+	ENGINE_LOG_DEBUG(logger, "Radius of mesh is " + std::to_string(mesh.getRadius()));
+
+	modelManager.addMesh(name, std::move(mesh), true);
 	ENGINE_LOG_DEBUG(logger, "Loaded mesh \"" + Engine::instance->getConfig().resourceBase + meshInfo.filename + "\" as \"" + name + "\"");
 }
 
-MeshData ModelLoader::loadFromDisk(const std::string& filename, const VertexFormat* format) {
-	MeshData data;
-
+Mesh ModelLoader::loadFromDisk(const std::string& filename, const VertexFormat* format, const Mesh::BufferInfo bufferInfo) {
 	ENGINE_LOG_DEBUG(logger, "Loading model \"" + filename + "\".");
 
 	tinyobj::attrib_t attributes;
@@ -143,12 +140,11 @@ MeshData ModelLoader::loadFromDisk(const std::string& filename, const VertexForm
 		ENGINE_LOG_WARN(logger, warn);
 	}
 
-	std::unordered_map<Vertex, uint32_t> uniqueVertices;
+	MeshBuilder meshBuild(format, attributes.vertices.size());
+	Vertex vertex(format);
 
 	for (const tinyobj::shape_t& shape : shapes) {
 		for (const tinyobj::index_t& index : shape.mesh.indices) {
-			Vertex vertex(format);
-
 			if (format->hasElement(VERTEX_ELEMENT_POSITION)) {
 				vertex.setVec3(VERTEX_ELEMENT_POSITION, glm::vec3(
 					attributes.vertices[3 * index.vertex_index],
@@ -177,65 +173,15 @@ MeshData ModelLoader::loadFromDisk(const std::string& filename, const VertexForm
 				}
 			}
 
-			if (uniqueVertices.count(vertex) == 0) {
-				uniqueVertices[vertex] = data.vertices.size();
-				data.vertices.push_back(vertex);
-			}
-
-			data.indices.push_back(uniqueVertices.at(vertex));
+			meshBuild.addVertex(vertex);
 		}
 	}
 
 	ENGINE_LOG_DEBUG(logger,
 		"File \"" + filename + "\" loaded from disk. Stats:" +
-		"\n\tVertices:          " + std::to_string(data.vertices.size()) +
-		"\n\tIndices:           " + std::to_string(data.indices.size()) +
-		"\n\tTotal loaded size: " + std::to_string(data.vertices.size() * format->getVertexSize() + data.indices.size() * sizeof(uint32_t)) + " bytes");
+		"\n\tVertices:          " + std::to_string(meshBuild.vertexCount()) +
+		"\n\tIndices:           " + std::to_string(meshBuild.indexCount()) +
+		"\n\tTotal loaded size: " + std::to_string(meshBuild.vertexCount() * format->getVertexSize() + meshBuild.indexCount() * sizeof(uint32_t)) + " bytes");
 
-	return data;
-}
-
-Aabb<float> ModelLoader::calculateBox(const MeshData& data) const {
-	if (data.vertices.size() == 0) {
-		ENGINE_LOG_WARN(logger, "Zero vertex mesh loaded?!");
-		return Aabb<float>(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
-	}
-
-	glm::vec3 max = data.vertices.at(0).getVec3(VERTEX_ELEMENT_POSITION);
-	glm::vec3 min(max);
-
-	for (size_t i = 1; i < data.vertices.size(); i++) {
-		const glm::vec3 current = data.vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
-
-		max.x = std::max(max.x, current.x);
-		max.y = std::max(max.y, current.y);
-		max.z = std::max(max.z, current.z);
-
-		min.x = std::min(min.x, current.x);
-		min.y = std::min(min.y, current.y);
-		min.z = std::min(min.z, current.z);
-	}
-
-	return Aabb<float>(min, max);
-}
-
-float ModelLoader::calculateMaxRadius(const MeshData& data, glm::vec3 center) const {
-	if (data.vertices.size() == 0) {
-		ENGINE_LOG_WARN(logger, "Zero vertex mesh loaded?!");
-		return 0.0f;
-	}
-
-	float maxDistSq = 0.0f;
-
-	for (size_t i = 0; i < data.vertices.size(); i++) {
-		const glm::vec3 current = data.vertices.at(i).getVec3(VERTEX_ELEMENT_POSITION);
-
-		float vertDistSq = glm::dot(current, current);
-
-		if (maxDistSq < vertDistSq) {
-			maxDistSq = vertDistSq;
-		}
-	}
-
-	return sqrt(maxDistSq);
+	return meshBuild.genMesh(bufferInfo);
 }

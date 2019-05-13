@@ -25,16 +25,9 @@
 
 #include "Vertex.hpp"
 #include "Logger.hpp"
-#include "AxisAlignedBB.hpp"
+#include "Mesh.hpp"
 
 class ModelManager;
-
-struct MeshData {
-	//The vertices in the model's mesh.
-	std::vector<Vertex> vertices;
-	//The indices for the draw order of the vertices.
-	std::vector<uint32_t> indices;
-};
 
 struct MaterialCreateInfo {
 	//The material file to load from.
@@ -139,23 +132,9 @@ protected:
 	 * Loads a model from disk (currently only .obj is supported).
 	 * @param filename The filename of the model to load.
 	 * @param format The format of the mesh's vertices.
-	 * @return a pointer to the loaded model data.
+	 * @param bufferInfo The buffer information for the mesh.
+	 * @return The loaded mesh.
 	 * @throw runtime_error if model loading failed.
 	 */
-	MeshData loadFromDisk(const std::string& filename, const VertexFormat* format);
-
-	/**
-	 * Calculates a bounding box for a model's mesh.
-	 * @param data The model data to calculate a box for.
-	 * @return a box for the mesh.
-	 */
-	Aabb<float> calculateBox(const MeshData& data) const;
-
-	/**
-	 * Calculates the maximum radius of the model.
-	 * @param data The model data.
-	 * @param center The center of the model.
-	 * @return The distance of the farthest vertex from the center.
-	 */
-	float calculateMaxRadius(const MeshData& data, glm::vec3 center) const;
+	Mesh loadFromDisk(const std::string& filename, const VertexFormat* format, const Mesh::BufferInfo bufferInfo);
 };

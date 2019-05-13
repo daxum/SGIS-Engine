@@ -33,6 +33,7 @@ set(ENGINE_FILES
 	Models/VertexFormat.cpp
 	Renderer/Buffer.cpp
 	Models/Mesh.cpp
+	Models/MeshBuilder.cpp
 )
 
 if (USE_OPENGL)

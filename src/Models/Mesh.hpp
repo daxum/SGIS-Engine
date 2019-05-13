@@ -52,11 +52,22 @@ public:
 	 * @param format The format for the mesh's vertex data.
 	 * @param vertices The vertices for the mesh. Their internal data is copied into the mesh.
 	 * @param indices The index data for the mesh.
-	 * TODO: calculate two below in constructor.
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
 	Mesh(BufferInfo bufferInfo, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
+
+	/**
+	 * Creates a mesh with the given vertices and indices.
+	 * @param bufferInfo The info about the buffers the mesh is stored in.
+	 * @param format The format for the mesh's vertex data.
+	 * @param vertices The vertex data for the mesh, which is copied into the mesh.
+	 * @param vertexSize The size, in bytes, of the vertex data to be copied.
+	 * @param indices The index data for the mesh.
+	 * @param box The bounding box for the mesh.
+	 * @param radius The radius of the mesh.
+	 */
+	Mesh(BufferInfo bufferInfo, const VertexFormat* format, const unsigned char* vertexData, size_t vertexSize, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
 
 	/**
 	 * Copy constructor.

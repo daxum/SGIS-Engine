@@ -40,7 +40,7 @@ public:
 	//Patch is everything else (bugfixes, performance boosts, etc).
 	static constexpr uint32_t VERSION_MAJOR = 3;
 	static constexpr uint32_t VERSION_MINOR = 0;
-	static constexpr uint32_t VERSION_PATCH = 1;
+	static constexpr uint32_t VERSION_PATCH = 2;
 
 	//Global engine instance. Use sparingly!
 	static Engine* instance;
