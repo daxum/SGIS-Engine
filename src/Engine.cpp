@@ -32,6 +32,25 @@
 #	include "Renderer/Vulkan/VkRenderingEngine.hpp"
 #endif
 
+namespace {
+	//Does tbb have an easier way to do this?
+	class AsyncTask : public tbb::task {
+		public:
+			AsyncTask(std::function<void()>&& func) :
+				func(std::move(func)) {
+
+			}
+
+			tbb::task* execute() override {
+				func();
+				return nullptr;
+			}
+
+		private:
+			std::function<void()> func;
+	};
+}
+
 Engine* Engine::instance = nullptr;
 
 Engine::Engine(const EngineConfig& config) :
@@ -212,6 +231,11 @@ void Engine::parallelFor(size_t begin, size_t end, const std::function<void(size
 			}
 		});
 	}
+}
+
+void Engine::runAsync(std::function<void()>&& func) {
+	AsyncTask* task = new (tbb::task::allocate_root()) AsyncTask(std::move(func));
+	tbb::task::enqueue(*task);
 }
 
 bool Engine::shouldExit() {

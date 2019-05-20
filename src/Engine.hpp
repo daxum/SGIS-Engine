@@ -40,7 +40,7 @@ public:
 	//Patch is everything else (bugfixes, performance boosts, etc).
 	static constexpr uint32_t VERSION_MAJOR = 3;
 	static constexpr uint32_t VERSION_MINOR = 0;
-	static constexpr uint32_t VERSION_PATCH = 2;
+	static constexpr uint32_t VERSION_PATCH = 3;
 
 	//Global engine instance. Use sparingly!
 	static Engine* instance;
@@ -124,6 +124,14 @@ public:
 	 * @param grainSize How many invokations of func to do serially per task. Set to zero to determine automatically.
 	 */
 	static void parallelFor(size_t begin, size_t end, const std::function<void(size_t)>& func, size_t grainSize = 0);
+
+	/**
+	 * Runs the provided function asynchronously. Be very careful with
+	 * capture by reference when creating func - variables going out of
+	 * scope causes very strange bugs!
+	 * @param func The function to run.
+	 */
+	static void runAsync(std::function<void()>&& func);
 
 private:
 	//The configuration used to create the engine. Non-reference is intentional.
