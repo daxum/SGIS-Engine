@@ -80,7 +80,7 @@ PhysicsObject::PhysicsObject(const std::string& meshName, const glm::vec3& pos) 
 	const size_t posOffset = format->getElementOffset(VERTEX_ELEMENT_POSITION);
 
 	const auto meshData = meshRef->getMesh()->getMeshData();
-	btTriangleMesh* mesh = new btTriangleMesh();
+	mesh = new btTriangleMesh();
 
 	//Create physics mesh
 	for (size_t i = posOffset; i < std::get<1>(meshData); i += vertexSize) {
