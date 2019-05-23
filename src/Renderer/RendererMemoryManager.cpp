@@ -55,6 +55,10 @@ void RendererMemoryManager::uniformBufferInit() {
 }
 
 void RendererMemoryManager::addBuffer(const std::string& name, size_t size, BufferType type, BufferStorage storage) {
+	if (buffers.count(name)) {
+		throw std::runtime_error("Attempted to add duplicate buffer \"" + name + "\"");
+	}
+
 	uint32_t transferUsage = 0;
 
 	if (storage == BufferStorage::DEVICE) {
