@@ -63,7 +63,7 @@ void ModelManager::removeMeshReference(const std::string meshName, CacheLevel le
 
 	if (meshData.users.at(CacheLevel::GPU) == 0) {
 		//Rendering mesh, can remove from gpu
-		if (mesh.isForRendering()) {
+		if (mesh.isForRendering() && level == CacheLevel::GPU) {
 			ENGINE_LOG_DEBUG(logger, "Removing unused mesh \"" + meshName + "\" from vertex buffers...");
 			memoryManager->freeMesh(meshName, &mesh, meshData.persist);
 		}
