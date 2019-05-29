@@ -24,6 +24,12 @@
 class AIComponent : public Component {
 public:
 	/**
+	 * Required from component.
+	 * @return The component's name.
+	 */
+	static const std::string getName() { return AI_COMPONENT_NAME; }
+
+	/**
 	 * Creates an AIComponent.
 	 * @param events Whether to subscribe to the input event handler.
 	 */
