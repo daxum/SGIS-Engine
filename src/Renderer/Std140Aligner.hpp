@@ -24,12 +24,15 @@
 
 #include <glm/glm.hpp>
 
-#include "ShaderInfo.hpp"
+#include "UniformSet.hpp"
+#include "ExtraMath.hpp"
 
 //Information on how uniforms are stored in the memory buffer.
 struct UniformData {
 	//Type of the uniform.
 	UniformType type;
+	//Number of array elements.
+	size_t count;
 	//Offset into the buffer, taking alignment into account.
 	uint32_t offset;
 	//Size of the aligned object. This is different than the size
@@ -90,6 +93,20 @@ public:
 	void setVec4(const std::string& name, const glm::vec4& value) { setValue<glm::vec4>(name, UniformType::VEC4, &value); }
 	void setMat3(const std::string& name, const glm::mat3& value);
 	void setMat4(const std::string& name, const glm::mat4& value);
+
+	/**
+	 * Setters for uniform arrays.
+	 * @param name The name of the uniform to set.
+	 * @param start The array element to start setting at.
+	 * @param count The number of array elements to set.
+	 * @param value A densely packed array of values to set in the uniform block.
+	 */
+	void setFloatArray(const std::string& name, size_t start, size_t count, const float* value) { setArrayValue<float>(name, UniformType::FLOAT, start, count, value); }
+	void setVec2Array(const std::string& name, size_t start, size_t count, const glm::vec2* value) { setArrayValue<glm::vec2>(name, UniformType::VEC2, start, count, value); }
+	void setVec3Array(const std::string& name, size_t start, size_t count, const glm::vec3* value) { setArrayValue<glm::vec3>(name, UniformType::VEC3, start, count, value); }
+	void setVec4Array(const std::string& name, size_t start, size_t count, const glm::vec4* value) { setArrayValue<glm::vec4>(name, UniformType::VEC4, start, count, value); }
+	void setMat3Array(const std::string& name, size_t start, size_t count, const glm::mat3* value);
+	void setMat4Array(const std::string& name, size_t start, size_t count, const glm::mat4* value);
 
 	/**
 	 * Getters for uniform values. These might be a bit slow for matrix types,
@@ -189,6 +206,27 @@ private:
 
 		const UniformData& data = uniformMap.at(name);
 		memcpy(&uniformData[data.offset], value, sizeof(T));
+	}
+
+	/**
+	 * Setting helper function for non-matrix array types.
+	 * @param name The name of the value to set.
+	 * @param type The type of the array elements.
+	 * @param start The index into the array to start setting at.
+	 * @param size The number of elements to set.
+	 * @param value The value to set.
+	 */
+	template<typename T>
+	void setArrayValue(const std::string name, UniformType type, size_t start, size_t size, const void* value) {
+		checkType(name, type);
+
+		const UniformData& data = uniformMap.at(name);
+		size_t elementSize = ExMath::roundToVal(alignedSize(data.type), baseAlignment(UniformType::VEC4));
+		size_t writeStart = data.offset + elementSize * start;
+
+		for (size_t i = 0; i < size; i++) {
+			memcpy(uniformData + writeStart + i * elementSize, ((const unsigned char*)value) + i * sizeof(T), sizeof(T));
+		}
 	}
 
 	/**

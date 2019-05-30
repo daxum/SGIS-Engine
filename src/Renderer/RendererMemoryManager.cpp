@@ -40,8 +40,7 @@ void RendererMemoryManager::uniformBufferInit() {
 
 		switch (set.getType()) {
 			case UniformSetType::MATERIAL: materialSize += alignedSize; break;
-			//Multiply by three because can get uploaded once for each pass, fix later.
-			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize * 3; break;
+			case UniformSetType::PER_SCREEN: screenObjectSize += alignedSize; break;
 			case UniformSetType::PER_OBJECT: screenObjectSize += alignedSize; break;
 			default: throw std::runtime_error("Missing uniform buffer type!");
 		}

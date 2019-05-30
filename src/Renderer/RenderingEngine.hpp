@@ -214,6 +214,26 @@ protected:
 		}
 	}
 
+	/**
+	 * Same as setUniformValue, but for arrays.
+	 * @param type The type of the uniform to set.
+	 * @param uniformName The name of the uniform to set.
+	 * @param count The number of array values to set.
+	 * @param value The value to set the uniform to.
+	 * @param aligner The aligner to set the value in.
+	 */
+	static constexpr void setUniformArrayValue(const UniformType type, const std::string& uniformName, size_t count, const void* value, Std140Aligner& aligner) {
+		switch (type) {
+			case UniformType::FLOAT: aligner.setFloatArray(uniformName, 0, count, (const float*)value); break;
+			case UniformType::VEC2: aligner.setVec2Array(uniformName, 0, count, (const glm::vec2*)value); break;
+			case UniformType::VEC3: aligner.setVec3Array(uniformName, 0, count, (const glm::vec3*)value); break;
+			case UniformType::VEC4: aligner.setVec4Array(uniformName, 0, count, (const glm::vec4*)value); break;
+			case UniformType::MAT3: aligner.setMat3Array(uniformName, 0, count, (const glm::mat3*)value); break;
+			case UniformType::MAT4: aligner.setMat4Array(uniformName, 0, count, (const glm::mat4*)value); break;
+			default: throw std::runtime_error("Invalid buffered uniform type for uniform \"" + uniformName + "\"!");
+		}
+	}
+
 private:
 	/**
 	 * Checks whether the given object is visible from the camera.

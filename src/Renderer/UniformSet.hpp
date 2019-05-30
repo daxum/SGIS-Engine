@@ -92,9 +92,10 @@ struct UniformDescription {
 	//Type of the uniform.
 	UniformType type;
 	//The name of the uniform, only used when loading materials.
-	//For OpenGL, the name should match the name in the shader
-	//(Disregard above if I bothered to move to 4.3).
 	std::string name;
+	//The number of elements in the uniform array, or 0 if the uniform is
+	//not an array.
+	size_t count;
 	//Where the uniform's value comes from.
 	UniformProviderType provider;
 	//The shader stages that use the uniform.
@@ -109,6 +110,13 @@ public:
 	 * Creates a uniform set using the provided uniform list. Also validates
 	 * the given list, to make sure the uniforms have allowed providers.
 	 * @param type The type of uniform set, used for validation.
+	 * @param maxUsers TODO: Find better way to implement. Determines uniform buffer and
+	 *     Decriptor pool sizes. For MATERIAL uniform sets, determines how many materials
+	 *     can be created using the set. For PER_OBJECT and PER_SCREEN, determines the size
+	 *     of the uniform buffer for the uniform data. PER_SCREEN needs one user for every
+	 *     shader that uses the screen set, multiplied by the maximum number of screens on
+	 *     the screen stack for any given frame. PER_OBJECT needs one user for every object
+	 *     which uses the set for any given frame, across all screens.
 	 * @param uniforms A list of uniforms in the set.
 	 */
 	UniformSet(UniformSetType type, size_t maxUsers, const UniformList& uniforms) :

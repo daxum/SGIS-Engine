@@ -17,15 +17,23 @@
  ******************************************************************************/
 
 #include "Std140Aligner.hpp"
-#include "ExtraMath.hpp"
 
 size_t Std140Aligner::getAlignedSize(const UniformSet& set) {
 	size_t currentSize = 0;
 
 	for (const UniformDescription& uniform : set.getBufferedUniforms()) {
-		//Increase size to account for padding
-		currentSize = ExMath::roundToVal<uint32_t>(currentSize, baseAlignment(uniform.type));
-		currentSize += alignedSize(uniform.type);
+		if (uniform.count) {
+			//Handle arrays
+			currentSize = ExMath::roundToVal(ExMath::roundToVal<uint32_t>(currentSize, baseAlignment(uniform.type)), baseAlignment(UniformType::VEC4));
+			size_t arrSize = ExMath::roundToVal(alignedSize(uniform.type), baseAlignment(UniformType::VEC4)) * uniform.count;
+
+			currentSize += arrSize;
+		}
+		else {
+			//Increase size to account for padding
+			currentSize = ExMath::roundToVal<uint32_t>(currentSize, baseAlignment(uniform.type));
+			currentSize += alignedSize(uniform.type);
+		}
 	}
 
 	return currentSize;
@@ -38,12 +46,25 @@ Std140Aligner::Std140Aligner(const UniformList& uniforms) :
 	uint32_t currentOffset = 0;
 
 	for (const UniformDescription& uniform : uniforms) {
+		//Round the uniform's offset to the next multiple of its base alignment
+		uint32_t offset = ExMath::roundToVal(currentOffset, baseAlignment(uniform.type));
+		//Matrix types have a larger size due to padding
+		uint32_t size = alignedSize(uniform.type);
+
+		if (uniform.count) {
+			//Arrays have their base alignment and aligned size rounded up to that of vec4
+			offset = ExMath::roundToVal(offset, baseAlignment(UniformType::VEC4));
+			size = ExMath::roundToVal(size, baseAlignment(UniformType::VEC4));
+
+			//This implicitly handles the padding on the end of the array
+			size *= uniform.count;
+		}
+
 		UniformData data = {};
 		data.type = uniform.type;
-		//Round the uniform's offset to the next multiple of its base alignment
-		data.offset = ExMath::roundToVal(currentOffset, baseAlignment(uniform.type));
-		//Array and matrix types have a larger size due to padding
-		data.size = alignedSize(uniform.type);
+		data.count = uniform.count;
+		data.offset = offset;
+		data.size = size;
 
 		currentOffset = data.offset + data.size;
 
@@ -85,12 +106,28 @@ void Std140Aligner::setMat4(const std::string& name, const glm::mat4& value) {
 	checkType(name, UniformType::MAT4);
 
 	const UniformData& data = uniformMap.at(name);
-	uint32_t arrayOffset = 0;
+	memcpy(&uniformData[data.offset], &value, sizeof(glm::mat4));
+}
 
-	for (size_t i = 0; i < 4; i++) {
-		memcpy(&uniformData[data.offset + arrayOffset], &value[i], sizeof(glm::vec4));
-		arrayOffset += baseAlignment(UniformType::VEC4);
+void Std140Aligner::setMat3Array(const std::string& name, size_t start, size_t count, const glm::mat3* value) {
+	checkType(name, UniformType::MAT3);
+
+	const UniformData& data = uniformMap.at(name);
+	unsigned char* writeStart = uniformData + data.offset + start * alignedSize(UniformType::MAT3);
+
+	//All a mat3 really is is an array of vec3s with padding
+	for (size_t i = 0; i < count * 3; i++) {
+		unsigned char* writePtr = writeStart + i * baseAlignment(UniformType::VEC4);
+		const unsigned char* readPtr = ((const unsigned char*)value) + i * sizeof(glm::vec3);
+		memcpy(writePtr, readPtr, sizeof(glm::vec3));
 	}
+}
+
+void Std140Aligner::setMat4Array(const std::string& name, size_t start, size_t count, const glm::mat4* value) {
+	checkType(name, UniformType::MAT4);
+
+	const UniformData& data = uniformMap.at(name);
+	memcpy(&uniformData[data.offset + start * sizeof(glm::mat4)], value, count * sizeof(glm::mat4));
 }
 
 glm::mat3 Std140Aligner::getMat3(const std::string& name) const {

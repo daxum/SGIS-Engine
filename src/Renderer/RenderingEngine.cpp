@@ -79,7 +79,12 @@ void RenderingEngine::setPerScreenUniforms(const UniformSet& set, Std140Aligner&
 			default: throw std::runtime_error("Invalid provider type for screen uniform set!");
 		}
 
-		setUniformValue(uniform.type, uniform.name, value, aligner);
+		if (uniform.count) {
+			setUniformArrayValue(uniform.type, uniform.name, uniform.count, value, aligner);
+		}
+		else {
+			setUniformValue(uniform.type, uniform.name, value, aligner);
+		}
 	}
 }
 
@@ -95,7 +100,12 @@ void RenderingEngine::setPerObjectUniforms(const UniformSet& set, Std140Aligner&
 			default: throw std::runtime_error("Invalid provider type for object uniform set!");
 		}
 
-		setUniformValue(uniform.type, uniform.name, value, aligner);
+		if (uniform.count) {
+			setUniformArrayValue(uniform.type, uniform.name, uniform.count, value, aligner);
+		}
+		else {
+			setUniformValue(uniform.type, uniform.name, value, aligner);
+		}
 	}
 }
 
