@@ -160,8 +160,8 @@ public:
 	 * or null otherwise.
 	 * @param name The name of the component manager.
 	 */
-	std::shared_ptr<ComponentManager> getManager(const std::string& name);
-	std::shared_ptr<const ComponentManager> getManager(const std::string& name) const;
+	template<typename T = ComponentManager> std::shared_ptr<T> getManager(const std::string& name);
+	template<typename T = ComponentManager> std::shared_ptr<const T> getManager(const std::string& name) const;
 
 protected:
 	//The display engine that manages this screen.
@@ -226,4 +226,30 @@ void Screen::addComponentManager(std::shared_ptr<T> manager) {
 
 	managers.push_back(manager);
 	manager->setScreen(this);
+}
+
+template<typename T>
+std::shared_ptr<T> Screen::getManager(const std::string& name) {
+	static_assert(std::is_base_of<ComponentManager, T>::value, "Attempt to get component manager which isn't a manager!");
+
+	for (std::shared_ptr<ComponentManager> compM : managers) {
+		if (compM->name == name) {
+			return std::static_pointer_cast<T>(compM);
+		}
+	}
+
+	return std::shared_ptr<T>();
+}
+
+template<typename T>
+std::shared_ptr<const T> Screen::getManager(const std::string& name) const {
+	static_assert(std::is_base_of<ComponentManager, T>::value, "Attempt to get component manager which isn't a manager!");
+
+	for (std::shared_ptr<ComponentManager> compM : managers) {
+		if (compM->name == name) {
+			return std::static_pointer_cast<T>(compM);
+		}
+	}
+
+	return std::shared_ptr<const T>();
 }
