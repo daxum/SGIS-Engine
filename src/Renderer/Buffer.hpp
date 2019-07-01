@@ -60,11 +60,11 @@ public:
 	/**
 	 * Allocates memory from the buffer and stores the allocation under
 	 * the given name. Also handles eviction / reactivation logic.
-	 * @param name The name used to refer to the allocation.
+	 * @param name The name used to identify the allocation.
 	 * @param size The size of the allocation, in bytes.
 	 * @return Information about where the allocation is in the buffer.
 	 */
-	std::shared_ptr<AllocInfo> allocate(const std::string& name, size_t size);
+	std::shared_ptr<AllocInfo> allocate(const void* name, size_t size);
 
 	/**
 	 * Returns whether the buffer contains an allocation with the given name.
@@ -73,7 +73,7 @@ public:
 	 * @param name The name to check.
 	 * @return Whether an allocation has been made using the provided name.
 	 */
-	bool hasAlloc(const std::string& name) {
+	bool hasAlloc(const void* name) {
 		if (allocations.count(name) && !allocations.at(name)->evicted) {
 			allocations.at(name)->inUse = true;
 			return true;
@@ -87,13 +87,13 @@ public:
 	 * if space runs out.
 	 * @param name The name referencing the allocation.
 	 */
-	void setUnused(const std::string& name) { allocations.at(name)->inUse = false; }
+	void setUnused(const void* name) { allocations.at(name)->inUse = false; }
 
 	/**
 	 * Completely frees an allocation from the buffer.
 	 * @param name The allocation to free.
 	 */
-	void free(const std::string& name) {
+	void free(const void* name) {
 		allocations.at(name)->inUse = false;
 		allocations.erase(name);
 	}
@@ -114,5 +114,5 @@ private:
 	//Allocator for this buffer.
 	MemoryAllocator bufferAlloc;
 	//All allocations made from this buffer.
-	std::unordered_map<std::string, std::shared_ptr<AllocInfo>> allocations;
+	std::unordered_map<const void*, std::shared_ptr<AllocInfo>> allocations;
 };

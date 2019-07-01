@@ -123,21 +123,19 @@ public:
 	/**
 	 * Adds a mesh to the provided buffer, and creates any resources needed to render it.
 	 * If the mesh has already been added, nothing happens.
-	 * @param name The name to store the mesh under.
 	 * @param mesh The mesh to upload.
 	 * @throw std::runtime_error If the name already exists or if out of memory.
 	 */
-	void addMesh(const std::string& name, Mesh* mesh);
+	void addMesh(Mesh* mesh);
 
 	/**
 	 * Marks the mesh as unused. If the mesh is transitory (BufferUsage::DEDICATED_SINGLE),
 	 * all references to it will be completely deleted from the buffer, otherwise it will
 	 * only be marked as unused. If the mesh doesn't exist, nothing happens.
 	 * @param mesh The mesh to free.
-	 * @param buffer The buffer that contains the mesh.
 	 * @param persist Whether the mesh should remain in the buffer even though it isn't used.
 	 */
-	void freeMesh(const std::string& name, const Mesh* mesh, bool persist);
+	void freeMesh(const Mesh* mesh, bool persist);
 
 	/**
 	 * Adds a material's uniform data to the uniform buffers, and allocates a descriptor

@@ -79,13 +79,15 @@ void RendererMemoryManager::addBuffer(const std::string& name, size_t size, Buff
 	ENGINE_LOG_INFO(logger, "Created buffer \"" + name + "\"");
 }
 
-void RendererMemoryManager::addMesh(const std::string& name, Mesh* mesh) {
+void RendererMemoryManager::addMesh(Mesh* mesh) {
 	const Mesh::BufferInfo& bufferInfo = mesh->getBufferInfo();
-	Buffer* vertexBuffer = buffers.at(bufferInfo.vertexName).get();
-	Buffer* indexBuffer = buffers.at(bufferInfo.indexName).get();
+	//These two variables should have been fetched from here anyway, so the
+	//constant cast just saves two extra lookups
+	Buffer* vertexBuffer = const_cast<Buffer*>(bufferInfo.vertex);
+	Buffer* indexBuffer = const_cast<Buffer*>(bufferInfo.index);
 
-	bool vertexPresent = vertexBuffer->hasAlloc(name);
-	bool indexPresent = indexBuffer->hasAlloc(name);
+	bool vertexPresent = vertexBuffer->hasAlloc(mesh);
+	bool indexPresent = indexBuffer->hasAlloc(mesh);
 
 	if (vertexPresent && indexPresent) {
 		return;
@@ -95,8 +97,8 @@ void RendererMemoryManager::addMesh(const std::string& name, Mesh* mesh) {
 	size_t vertexSize = std::get<1>(mesh->getMeshData());
 	std::vector<uint32_t> indices = std::get<2>(mesh->getMeshData());
 
-	std::shared_ptr<AllocInfo> vertexAlloc = vertexBuffer->allocate(name, vertexSize);
-	std::shared_ptr<AllocInfo> indexAlloc = indexBuffer->allocate(name, sizeof(uint32_t) * indices.size());
+	std::shared_ptr<AllocInfo> vertexAlloc = vertexBuffer->allocate(mesh, vertexSize);
+	std::shared_ptr<AllocInfo> indexAlloc = indexBuffer->allocate(mesh, sizeof(uint32_t) * indices.size());
 
 	if (!indexPresent) {
 		//Set index offsets
@@ -111,28 +113,23 @@ void RendererMemoryManager::addMesh(const std::string& name, Mesh* mesh) {
 	if (!vertexPresent) {
 		vertexBuffer->write(vertexAlloc->start, vertexAlloc->size, vertexData);
 	}
-
-	ENGINE_LOG_DEBUG(logger, "Uploaded mesh \"" + name + "\" to rendering engine");
 }
 
-void RendererMemoryManager::freeMesh(const std::string& name, const Mesh* mesh, bool persist) {
+void RendererMemoryManager::freeMesh(const Mesh* mesh, bool persist) {
 	const Mesh::BufferInfo& bufferInfo = mesh->getBufferInfo();
-	Buffer* vertexBuffer = buffers.at(bufferInfo.vertexName).get();
-	Buffer* indexBuffer = buffers.at(bufferInfo.indexName).get();
+	//Save extra buffer lookups by using the ones stored in the mesh
+	Buffer* vertexBuffer = const_cast<Buffer*>(bufferInfo.vertex);
+	Buffer* indexBuffer = const_cast<Buffer*>(bufferInfo.index);
 
 	if (persist) {
 		//Set as not in use
-		vertexBuffer->setUnused(name);
-		indexBuffer->setUnused(name);
-
-		ENGINE_LOG_DEBUG(logger, "Marked mesh \"" + name + "\" in buffer \"" + bufferInfo.vertexName + "\" as unused");
+		vertexBuffer->setUnused(mesh);
+		indexBuffer->setUnused(mesh);
 	}
 	else {
 		//If the mesh data is never needed again, just get rid of it.
-		vertexBuffer->free(name);
-		indexBuffer->free(name);
-
-		ENGINE_LOG_DEBUG(logger, "Deleted transitory mesh \"" + name + "\"");
+		vertexBuffer->free(mesh);
+		indexBuffer->free(mesh);
 	}
 }
 
@@ -140,7 +137,7 @@ void RendererMemoryManager::addMaterial(Material* material) {
 	std::shared_ptr<Buffer> matBuffer = uniformBuffers.at(UniformBufferType::MATERIAL);
 
 	//Only upload uniforms if the material has them and they haven't been uploaded already
-	if (material->hasBufferedUniforms && !matBuffer->hasAlloc(material->name)) {
+	if (material->hasBufferedUniforms && !matBuffer->hasAlloc(material)) {
 		ENGINE_LOG_DEBUG(logger, "Uploading material uniform data for \"" + material->name + "\" to rendering engine");
 
 		const unsigned char* materialData = material->uniforms.getData().first;
@@ -151,7 +148,7 @@ void RendererMemoryManager::addMaterial(Material* material) {
 		size_t allocSize = ExMath::roundToVal(dataSize, getMinUniformBufferAlignment());
 
 		//Upload uniform data
-		std::shared_ptr<AllocInfo> uniAlloc = matBuffer->allocate(material->name, allocSize);
+		std::shared_ptr<AllocInfo> uniAlloc = matBuffer->allocate(material, allocSize);
 		matBuffer->write(uniAlloc->start, uniAlloc->size, materialData);
 		material->uniformOffset = uniAlloc->start;
 

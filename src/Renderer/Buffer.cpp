@@ -18,7 +18,7 @@
 
 #include "Buffer.hpp"
 
-std::shared_ptr<AllocInfo> Buffer::allocate(const std::string& name, size_t size) {
+std::shared_ptr<AllocInfo> Buffer::allocate(const void* name, size_t size) {
 	if (allocations.count(name)) {
 		//Have some sort of allocation already
 		std::shared_ptr<AllocInfo> alloc = allocations.at(name);

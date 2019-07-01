@@ -46,7 +46,7 @@ std::shared_ptr<MeshRef> ModelManager::getMesh(const std::string& meshName, Cach
 			throw std::runtime_error("Attempt to upload non-rendering mesh to rendering engine!");
 		}
 
-		memoryManager->addMesh(meshName, &mesh);
+		memoryManager->addMesh(&mesh);
 	}
 
 	return std::make_shared<MeshRef>(this, meshName, &mesh, level);
@@ -65,7 +65,7 @@ void ModelManager::removeMeshReference(const std::string meshName, CacheLevel le
 		//Rendering mesh, can remove from gpu
 		if (mesh.isForRendering() && level == CacheLevel::GPU) {
 			ENGINE_LOG_DEBUG(logger, "Removing unused mesh \"" + meshName + "\" from vertex buffers...");
-			memoryManager->freeMesh(meshName, &mesh, meshData.persist);
+			memoryManager->freeMesh(&mesh, meshData.persist);
 		}
 
 		//If mesh is not persistent, completely remove it
