@@ -131,11 +131,18 @@ public:
 	void setIndexOffset(uintptr_t newStart) { indexStart = newStart; }
 
 	/**
-	 * Gets the data needed to render the mesh. The pair contains the index offset in
-	 * first, and the index count in second.
+	 * Sets the value to be added to each index when accessing the vertex buffer.
+	 * This value should also only be set by the renderer memory manager.
+	 * @param newOffset The offset of the mesh's first vertex in the vertex buffer.
+	 */
+	void setVertexOffset(int32_t newOffset) { vertexOffset = newOffset; }
+
+	/**
+	 * Gets the data needed to render the mesh. The tuple contains the index offset in
+	 * the first value, the index count in the second, and the vertex offset in the third.
 	 * @return The index info needed to render the mesh.
 	 */
-	const std::pair<uintptr_t, uint32_t> getRenderInfo() const { return {indexStart, indices.size()}; }
+	const std::tuple<uintptr_t, uint32_t, int32_t> getRenderInfo() const { return {indexStart, indices.size(), vertexOffset}; }
 
 	/**
 	 * Copy assignment.
@@ -157,6 +164,7 @@ public:
 			box = mesh.box;
 			radius = mesh.radius;
 			indexStart = mesh.indexStart;
+			vertexOffset = mesh.vertexOffset;
 		}
 
 		return *this;
@@ -177,6 +185,7 @@ public:
 			box = std::move(mesh.box);
 			radius = std::exchange(mesh.radius, 0.0f);
 			indexStart = std::exchange(mesh.indexStart, 0);
+			vertexOffset = std::exchange(mesh.vertexOffset, 0);
 		}
 
 		return *this;
@@ -202,6 +211,10 @@ private:
 
 	//Offset into the index buffer of the mesh's index data.
 	uintptr_t indexStart;
+
+	//Offset into the mesh's vertex buffer the first index should point to.
+	//This is a number which gets added to all indices when rendering.
+	int32_t vertexOffset;
 };
 
 class MeshRef {

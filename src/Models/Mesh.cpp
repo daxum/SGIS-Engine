@@ -27,7 +27,8 @@ Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const std::vector<
 	format(format),
 	box(box),
 	radius(radius),
-	indexStart(0) {
+	indexStart(0),
+	vertexOffset(0) {
 
 	size_t vertSize = format->getVertexSize();
 	size_t offset = 0;
@@ -47,7 +48,8 @@ Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const unsigned cha
 	format(format),
 	box(box),
 	radius(radius),
-	indexStart(0) {
+	indexStart(0),
+	vertexOffset(0) {
 
 	memcpy(this->vertexData, vertexData, vertexSize);
 }
@@ -60,7 +62,8 @@ Mesh::Mesh(const Mesh& mesh) :
 	format(mesh.format),
 	box(mesh.box),
 	radius(mesh.radius),
-	indexStart(mesh.indexStart) {
+	indexStart(mesh.indexStart),
+	vertexOffset(mesh.vertexOffset) {
 
 	memcpy(vertexData, mesh.vertexData, mesh.vertexSize);
 }
@@ -73,7 +76,8 @@ Mesh::Mesh(Mesh&& mesh) :
 	format(std::exchange(mesh.format, nullptr)),
 	box(std::move(mesh.box)),
 	radius(std::exchange(mesh.radius, 0.0f)),
-	indexStart(std::exchange(mesh.indexStart, 0)) {
+	indexStart(std::exchange(mesh.indexStart, 0)),
+	vertexOffset(std::exchange(mesh.vertexOffset, 0)) {
 
 }
 

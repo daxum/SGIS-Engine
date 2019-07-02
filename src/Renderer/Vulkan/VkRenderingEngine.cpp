@@ -393,9 +393,9 @@ bool VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentM
 
 					setPushConstants(shader, comp, camera);
 
-					const std::pair<uintptr_t, uint32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
+					const std::tuple<uintptr_t, uint32_t, int32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
 
-					vkCmdDrawIndexed(commandBuffers.at(currentFrame), meshInfo.second, 1, meshInfo.first, 0, 0);
+					vkCmdDrawIndexed(commandBuffers.at(currentFrame), std::get<1>(meshInfo), 1, std::get<0>(meshInfo), std::get<2>(meshInfo), 0);
 					drewSomething = true;
 				}
 			}

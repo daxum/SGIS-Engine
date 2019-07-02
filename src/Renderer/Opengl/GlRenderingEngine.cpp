@@ -271,8 +271,8 @@ void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComp
 
 						setPushConstants(shader.get(), comp, camera);
 
-						const std::pair<uintptr_t, uint32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
-						glDrawElements(GL_TRIANGLES, meshInfo.second, GL_UNSIGNED_INT, (void*) (meshInfo.first * sizeof(uint32_t)));
+						const std::tuple<uintptr_t, uint32_t, int32_t> meshInfo = comp->getModel().mesh->getRenderInfo();
+						glDrawElementsBaseVertex(GL_TRIANGLES, std::get<1>(meshInfo), GL_UNSIGNED_INT, (void*) (std::get<0>(meshInfo) * sizeof(uint32_t)), std::get<2>(meshInfo));
 					}
 				}
 			}
