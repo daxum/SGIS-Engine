@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "MemoryAllocator.hpp"
+#include "ExtraMath.hpp"
 
 MemoryAllocator::MemoryAllocator(size_t bufferSize) :
 	allocationList(1, std::make_shared<AllocInfo>(AllocInfo{0, bufferSize, false, false})),
@@ -45,13 +46,13 @@ MemoryAllocator::MemoryAllocator(MemoryAllocator&& memAlloc) :
 
 }
 
-std::shared_ptr<AllocInfo> MemoryAllocator::getMemory(size_t size) {
+std::shared_ptr<AllocInfo> MemoryAllocator::getMemory(size_t size, size_t alignment) {
 	if (size == 0) {
 		throw std::out_of_range("Attempt to allocate 0 bytes!");
 	}
 
 	//Find free block or list of free blocks that are large enough
-	std::array<AllocPos, 2> foundRange = findFreeRange(size);
+	std::array<AllocPos, 2> foundRange = findFreeRange(size, alignment);
 
 	//Invalidate and chuck old value, replace with new one
 	std::shared_ptr<AllocInfo> newVal = std::make_shared<AllocInfo>(**foundRange.at(0));
@@ -68,17 +69,38 @@ std::shared_ptr<AllocInfo> MemoryAllocator::getMemory(size_t size) {
 		allocationList.erase(std::prev(pos));
 	}
 
-	//Add extra
+	//Split off extra at start (produced by alignment)
+	size_t rangeStart = (*foundRange.at(0))->start;
+	size_t alignedStart = ExMath::roundToVal(rangeStart, alignment);
+
+	if (rangeStart != alignedStart) {
+		size_t extraStartSize = alignedStart - rangeStart;
+		size_t alignedSize = (*foundRange.at(0))->size - extraStartSize;
+
+		(*foundRange.at(0))->start = alignedStart;
+		(*foundRange.at(0))->size = alignedSize;
+
+		AllocInfo extraStart = {
+			.start = rangeStart,
+			.size = extraStartSize,
+			.inUse = false,
+			.evicted = false,
+		};
+
+		allocationList.insert(foundRange.at(0), std::make_shared<AllocInfo>(extraStart));
+	}
+
+	//Remove extra at end
 	size_t extra = (*foundRange.at(0))->size - size;
 
 	if (extra > 0) {
 		(*foundRange.at(0))->size = size;
 
 		AllocInfo extraInfo = {
-			(*foundRange.at(0))->start + (*foundRange.at(0))->size,
-			extra,
-			false,
-			false
+			.start = (*foundRange.at(0))->start + (*foundRange.at(0))->size,
+			.size = extra,
+			.inUse = false,
+			.evicted = false,
 		};
 
 		allocationList.insert(foundRange.at(1), std::make_shared<AllocInfo>(extraInfo));
@@ -151,7 +173,22 @@ std::string MemoryAllocator::printMemory() {
 	return out;
 }
 
-std::array<MemoryAllocator::AllocPos, 2> MemoryAllocator::findFreeRange(size_t size) {
+void MemoryAllocator::checkForLeak() {
+	AllocPos current = allocationList.begin();
+	AllocPos next = current;
+	next++;
+
+	while (next != allocationList.end()) {
+		if ((*current)->start + (*current)->size != (*next)->start) {
+			throw std::runtime_error("Memory allocator has holes!");
+		}
+
+		current = next;
+		next++;
+	}
+}
+
+std::array<MemoryAllocator::AllocPos, 2> MemoryAllocator::findFreeRange(size_t size, size_t alignment) {
 	std::array<AllocPos, 2> range = {currentPos, std::next(currentPos)};
 	AllocPos startPos = currentPos;
 
@@ -183,8 +220,13 @@ std::array<MemoryAllocator::AllocPos, 2> MemoryAllocator::findFreeRange(size_t s
 			}
 		}
 
-		//If section big enough, return it, else keep looking
-		if (totalSize >= size) {
+		//Adjust total size for alignment
+		size_t rangeStart = (*range.at(0))->start;
+		size_t firstAligned = ExMath::roundToVal(rangeStart, alignment);
+		size_t alignedSize = totalSize - (firstAligned - rangeStart);
+
+		//If aligned start not past the end and the section is big enough, return it, else keep looking
+		if (firstAligned <= rangeStart + totalSize && alignedSize >= size) {
 			return range;
 		}
 

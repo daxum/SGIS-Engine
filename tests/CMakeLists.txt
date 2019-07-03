@@ -12,8 +12,10 @@ set_target_properties(memAllocTest PROPERTIES
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-	target_compile_options(memAllocTest PRIVATE "-Wall")
+	target_compile_options(memAllocTest PRIVATE "-Wall" "-g")
 endif()
+
+target_include_directories(memAllocTest PRIVATE "../src")
 
 #Now vertices get lightly tested too!
 

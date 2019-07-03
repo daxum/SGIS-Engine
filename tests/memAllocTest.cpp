@@ -71,6 +71,8 @@ void testAllocator(MemoryAllocator& alloc) {
 		std::cout << "Successfully allocated " << totalAlloc << " bytes\n";
 	}
 
+	alloc.checkForLeak();
+
 	std::cout << "Current state:\n" << alloc.printMemory() << "\n";
 	std::cout << "Recieved allocations:\n";
 	printAllocations(allocations);
@@ -88,6 +90,8 @@ void testAllocator(MemoryAllocator& alloc) {
 			}
 		}
 	}
+
+	alloc.checkForLeak();
 
 	std::cout << "Current state:\n" << alloc.printMemory() << "\n";
 
@@ -118,12 +122,16 @@ void testAllocator(MemoryAllocator& alloc) {
 		std::cout << "Successfully allocated " << totalAlloc << " bytes\n";
 	}
 
+	alloc.checkForLeak();
+
 	std::cout << "Current state:\n" << alloc.printMemory() << "\n";
 	std::cout << "All allocations:\n";
 	printAllocations(allocations);
 
 	std::cout << "Defragmenting pool...\n";
 	alloc.defragment();
+
+	alloc.checkForLeak();
 
 	std::cout << "Current state:\n" << alloc.printMemory() << "\n";
 	std::cout << "All allocations:\n";

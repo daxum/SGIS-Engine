@@ -62,10 +62,11 @@ public:
 	 * of the returned block should always be checked before setting inUse to
 	 * true (for when a block is needed again).
 	 * @param size The number of bytes to allocate.
+	 * @param alignment The minimum alignment required for the returned block.
 	 * @return Allocation information for the given name.
 	 * @throw std::runtime_error if out of memory, std::out_of_range if size is zero.
 	 */
-	std::shared_ptr<AllocInfo> getMemory(size_t size);
+	std::shared_ptr<AllocInfo> getMemory(size_t size, size_t alignment = 1);
 
 	/**
 	 * Defragments the memory pool by moving the allocations to be tightly packed
@@ -81,6 +82,12 @@ public:
 	 * For debugging, prints out the contents of the allocation list and currentPos.
 	 */
 	std::string printMemory();
+
+	/**
+	 * Ensures that the allocation list contains a contigous sequence of blocks, and
+	 * throws an exception if it does not.
+	 */
+	void checkForLeak();
 
 	/**
 	 * Copy assignment.
@@ -126,8 +133,9 @@ private:
 	 * Finds a range of free or evictable blocks that can be used for a new
 	 * allocation of size bytes. Starts searching at currentPos.
 	 * @param size The number of bytes to allocate.
+	 * @param alignment The minimum alignment required by the returned range.
 	 * @return The begin and one-past-the-end of the found range, in that order.
 	 * @throw std::runtime_error if out of memory.
 	 */
-	std::array<AllocPos, 2> findFreeRange(size_t size);
+	std::array<AllocPos, 2> findFreeRange(size_t size, size_t alignment = 1);
 };
