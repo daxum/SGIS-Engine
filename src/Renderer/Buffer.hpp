@@ -62,9 +62,10 @@ public:
 	 * the given name. Also handles eviction / reactivation logic.
 	 * @param name The name used to identify the allocation.
 	 * @param size The size of the allocation, in bytes.
+	 * @param alignment The minimum required alignment of the allocation, in bytes.
 	 * @return Information about where the allocation is in the buffer.
 	 */
-	std::shared_ptr<AllocInfo> allocate(const void* name, size_t size);
+	std::shared_ptr<AllocInfo> allocate(const void* name, size_t size, size_t alignment = 1);
 
 	/**
 	 * Returns whether the buffer contains an allocation with the given name.

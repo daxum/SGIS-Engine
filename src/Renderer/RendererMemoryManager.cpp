@@ -94,15 +94,16 @@ void RendererMemoryManager::addMesh(Mesh* mesh) {
 	}
 
 	const unsigned char* vertexData = std::get<0>(mesh->getMeshData());
-	size_t vertexSize = std::get<1>(mesh->getMeshData());
+	size_t vertexDataSize = std::get<1>(mesh->getMeshData());
+	size_t vertexSize = mesh->getFormat()->getVertexSize();
 	const std::vector<uint32_t>& indices = std::get<2>(mesh->getMeshData());
 
-	std::shared_ptr<AllocInfo> vertexAlloc = vertexBuffer->allocate(mesh, vertexSize);
+	std::shared_ptr<AllocInfo> vertexAlloc = vertexBuffer->allocate(mesh, vertexDataSize, vertexSize);
 	std::shared_ptr<AllocInfo> indexAlloc = indexBuffer->allocate(mesh, sizeof(uint32_t) * indices.size());
 
 	if (!indexPresent) {
 		//Set offsets based on the allocation location
-		mesh->setVertexOffset(vertexAlloc->start / mesh->getFormat()->getVertexSize());
+		mesh->setVertexOffset(vertexAlloc->start / vertexSize);
 		mesh->setIndexOffset(indexAlloc->start / sizeof(uint32_t));
 
 		indexBuffer->write(indexAlloc->start, indexAlloc->size, (const unsigned char*) indices.data());

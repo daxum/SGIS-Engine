@@ -18,7 +18,7 @@
 
 #include "Buffer.hpp"
 
-std::shared_ptr<AllocInfo> Buffer::allocate(const void* name, size_t size) {
+std::shared_ptr<AllocInfo> Buffer::allocate(const void* name, size_t size, size_t alignment) {
 	if (allocations.count(name)) {
 		//Have some sort of allocation already
 		std::shared_ptr<AllocInfo> alloc = allocations.at(name);
@@ -37,7 +37,7 @@ std::shared_ptr<AllocInfo> Buffer::allocate(const void* name, size_t size) {
 
 	//No usable previous allocation, so make a new one
 
-	std::shared_ptr<AllocInfo> alloc = bufferAlloc.getMemory(size);
+	std::shared_ptr<AllocInfo> alloc = bufferAlloc.getMemory(size, alignment);
 	allocations.emplace(name, alloc);
 	return alloc;
 }
