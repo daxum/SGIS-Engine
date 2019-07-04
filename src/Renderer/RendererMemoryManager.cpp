@@ -86,30 +86,23 @@ void RendererMemoryManager::addMesh(Mesh* mesh) {
 	Buffer* vertexBuffer = const_cast<Buffer*>(bufferInfo.vertex);
 	Buffer* indexBuffer = const_cast<Buffer*>(bufferInfo.index);
 
-	bool vertexPresent = vertexBuffer->hasAlloc(mesh);
-	bool indexPresent = indexBuffer->hasAlloc(mesh);
+	if (!indexBuffer->hasAlloc(mesh)) {
+		const std::vector<uint32_t>& indices = std::get<2>(mesh->getMeshData());
 
-	if (vertexPresent && indexPresent) {
-		return;
-	}
+		std::shared_ptr<AllocInfo> indexAlloc = indexBuffer->allocate(mesh, sizeof(uint32_t) * indices.size());
 
-	const unsigned char* vertexData = std::get<0>(mesh->getMeshData());
-	size_t vertexDataSize = std::get<1>(mesh->getMeshData());
-	size_t vertexSize = mesh->getFormat()->getVertexSize();
-	const std::vector<uint32_t>& indices = std::get<2>(mesh->getMeshData());
-
-	std::shared_ptr<AllocInfo> vertexAlloc = vertexBuffer->allocate(mesh, vertexDataSize, vertexSize);
-	std::shared_ptr<AllocInfo> indexAlloc = indexBuffer->allocate(mesh, sizeof(uint32_t) * indices.size());
-
-	if (!indexPresent) {
-		//Set offsets based on the allocation location
-		mesh->setVertexOffset(vertexAlloc->start / vertexSize);
 		mesh->setIndexOffset(indexAlloc->start / sizeof(uint32_t));
-
 		indexBuffer->write(indexAlloc->start, indexAlloc->size, (const unsigned char*) indices.data());
 	}
 
-	if (!vertexPresent) {
+	if (!vertexBuffer->hasAlloc(mesh)) {
+		const unsigned char* vertexData = std::get<0>(mesh->getMeshData());
+		size_t vertexDataSize = std::get<1>(mesh->getMeshData());
+		size_t vertexSize = mesh->getFormat()->getVertexSize();
+
+		std::shared_ptr<AllocInfo> vertexAlloc = vertexBuffer->allocate(mesh, vertexDataSize, vertexSize);
+
+		mesh->setVertexOffset(vertexAlloc->start / vertexSize);
 		vertexBuffer->write(vertexAlloc->start, vertexAlloc->size, vertexData);
 	}
 }
