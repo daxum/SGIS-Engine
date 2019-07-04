@@ -86,6 +86,7 @@ void RendererMemoryManager::addMesh(Mesh* mesh) {
 	Buffer* vertexBuffer = const_cast<Buffer*>(bufferInfo.vertex);
 	Buffer* indexBuffer = const_cast<Buffer*>(bufferInfo.index);
 
+	//Upload index data if needed
 	if (!indexBuffer->hasAlloc(mesh)) {
 		const std::vector<uint32_t>& indices = std::get<2>(mesh->getMeshData());
 
@@ -95,6 +96,7 @@ void RendererMemoryManager::addMesh(Mesh* mesh) {
 		indexBuffer->write(indexAlloc->start, indexAlloc->size, (const unsigned char*) indices.data());
 	}
 
+	//Upload vertex data if needed
 	if (!vertexBuffer->hasAlloc(mesh)) {
 		const unsigned char* vertexData = std::get<0>(mesh->getMeshData());
 		size_t vertexDataSize = std::get<1>(mesh->getMeshData());
