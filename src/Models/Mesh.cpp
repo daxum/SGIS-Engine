@@ -20,8 +20,8 @@
 #include "ModelManager.hpp"
 
 Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, std::vector<unsigned char>&& vertices, std::vector<uint32_t>&& indices, const Aabb<float>& box, float radius) :
-	vertexData(vertices),
-	indices(indices),
+	vertexData(std::move(vertices)),
+	indices(std::move(indices)),
 	bufferInfo(bufferInfo),
 	format(format),
 	box(box),
