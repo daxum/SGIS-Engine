@@ -21,22 +21,18 @@
 MeshBuilder::MeshBuilder(const VertexFormat* format, size_t maxVerts) :
 	format(format),
 	numVerts(0),
-	vertexData(new unsigned char[format->getVertexSize() * maxVerts]),
-	maxVerts(maxVerts),
 	hasPos(format->hasElement(VERTEX_ELEMENT_POSITION)),
 	radiusSq(0.0f) {
 
+	vertexData.reserve(maxVerts * format->getVertexSize());
 }
 
 void MeshBuilder::addVertex(const Vertex& vert) {
-	if (numVerts >= maxVerts) {
-		throw std::runtime_error("Too many vertices added to mesh!");
-	}
-
 	const size_t vertSize = format->getVertexSize();
 
 	if (!uniqueVertices.count(vert)) {
 		uniqueVertices[vert] = numVerts;
+		vertexData.insert(vertexData.end(), vertSize, 0);
 		memcpy(&vertexData[numVerts * vertSize], vert.getData(), vertSize);
 		numVerts++;
 	}
@@ -54,5 +50,5 @@ void MeshBuilder::addVertex(const Vertex& vert) {
 }
 
 Mesh MeshBuilder::genMesh(Mesh::BufferInfo bufferInfo) {
-	return Mesh(bufferInfo, format, vertexData, numVerts * format->getVertexSize(), indices, meshBox, std::sqrt(radiusSq));
+	return Mesh(bufferInfo, format, std::move(vertexData), std::move(indices), meshBox, std::sqrt(radiusSq));
 }

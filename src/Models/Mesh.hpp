@@ -50,39 +50,12 @@ public:
 	 * Creates a mesh with the given vertices and indices.
 	 * @param bufferInfo The info about the buffers the mesh is stored in.
 	 * @param format The format for the mesh's vertex data.
-	 * @param vertices The vertices for the mesh. Their internal data is copied into the mesh.
+	 * @param vertices The vertex data for the mesh.
 	 * @param indices The index data for the mesh.
 	 * @param box The bounding box for the mesh.
 	 * @param radius The radius of the mesh.
 	 */
-	Mesh(BufferInfo bufferInfo, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
-
-	/**
-	 * Creates a mesh with the given vertices and indices.
-	 * @param bufferInfo The info about the buffers the mesh is stored in.
-	 * @param format The format for the mesh's vertex data.
-	 * @param vertices The vertex data for the mesh, which is copied into the mesh.
-	 * @param vertexSize The size, in bytes, of the vertex data to be copied.
-	 * @param indices The index data for the mesh.
-	 * @param box The bounding box for the mesh.
-	 * @param radius The radius of the mesh.
-	 */
-	Mesh(BufferInfo bufferInfo, const VertexFormat* format, const unsigned char* vertexData, size_t vertexSize, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius);
-
-	/**
-	 * Copy constructor.
-	 */
-	Mesh(const Mesh& mesh);
-
-	/**
-	 * Move constructor.
-	 */
-	Mesh(Mesh&& mesh);
-
-	/**
-	 * Destructor.
-	 */
-	~Mesh() { delete[] vertexData; }
+	Mesh(BufferInfo bufferInfo, const VertexFormat* format, std::vector<unsigned char>&& vertices, std::vector<uint32_t>&& indices, const Aabb<float>& box, float radius);
 
 	/**
 	 * Gets the vertex and index buffers the mesh is stored in.
@@ -114,7 +87,7 @@ public:
 	 * Retrieves all the mesh data, for uploading into a vertex / index buffer.
 	 */
 	const std::tuple<const unsigned char*, size_t, const std::vector<uint32_t>&> getMeshData() const {
-		return {vertexData, vertexSize, indices};
+		return {vertexData.data(), vertexData.size(), indices};
 	}
 
 	/**
@@ -144,74 +117,20 @@ public:
 	 */
 	const std::tuple<uintptr_t, uint32_t, int32_t> getRenderInfo() const { return {indexStart, indices.size(), vertexOffset}; }
 
-	/**
-	 * Copy assignment.
-	 */
-	Mesh& operator=(const Mesh& mesh) {
-		if (this != &mesh) {
-			if (vertexSize != mesh.vertexSize) {
-				delete[] vertexData;
-				vertexSize = 0;
-				vertexData = nullptr;
-				vertexData  = new unsigned char[mesh.vertexSize];
-				vertexSize = mesh.vertexSize;
-			}
-
-			memcpy(vertexData, mesh.vertexData, vertexSize);
-			indices = mesh.indices;
-			bufferInfo = mesh.bufferInfo;
-			format = mesh.format;
-			box = mesh.box;
-			radius = mesh.radius;
-			indexStart = mesh.indexStart;
-			vertexOffset = mesh.vertexOffset;
-		}
-
-		return *this;
-	}
-
-	/**
-	 * Move assignment.
-	 */
-	Mesh& operator=(Mesh&& mesh) {
-		if (this != &mesh) {
-			delete[] vertexData;
-
-			vertexData = std::exchange(mesh.vertexData, nullptr);
-			vertexSize = std::exchange(mesh.vertexSize, 0);
-			indices = std::move(mesh.indices);
-			bufferInfo = std::move(mesh.bufferInfo);
-			format = std::exchange(mesh.format, nullptr);
-			box = std::move(mesh.box);
-			radius = std::exchange(mesh.radius, 0.0f);
-			indexStart = std::exchange(mesh.indexStart, 0);
-			vertexOffset = std::exchange(mesh.vertexOffset, 0);
-		}
-
-		return *this;
-	}
-
 private:
 	//The mesh's vertex data and size.
-	unsigned char* vertexData;
-	size_t vertexSize;
-
+	std::vector<unsigned char> vertexData;
 	//Indices for the vertices.
 	std::vector<uint32_t> indices;
-
 	//Information about the vertex and index buffers this mesh belongs in.
 	BufferInfo bufferInfo;
-
 	//The format the mesh's vertex data is in.
 	const VertexFormat* format;
-
 	//Possibly useful dimensions for the mesh, calculated on construction.
 	Aabb<float> box;
 	float radius;
-
 	//Offset into the index buffer of the mesh's index data.
 	uintptr_t indexStart;
-
 	//Offset into the mesh's vertex buffer the first index should point to.
 	//This is a number which gets added to all indices when rendering.
 	int32_t vertexOffset;

@@ -19,9 +19,8 @@
 #include "Mesh.hpp"
 #include "ModelManager.hpp"
 
-Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
-	vertexData(new unsigned char[format->getVertexSize() * vertices.size()]),
-	vertexSize(format->getVertexSize() * vertices.size()),
+Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, std::vector<unsigned char>&& vertices, std::vector<uint32_t>&& indices, const Aabb<float>& box, float radius) :
+	vertexData(vertices),
 	indices(indices),
 	bufferInfo(bufferInfo),
 	format(format),
@@ -29,55 +28,6 @@ Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const std::vector<
 	radius(radius),
 	indexStart(0),
 	vertexOffset(0) {
-
-	size_t vertSize = format->getVertexSize();
-	size_t offset = 0;
-
-	//Copy over all vertex data
-	for (const Vertex& vertex : vertices) {
-		memcpy(&vertexData[offset], vertex.getData(), vertSize);
-		offset += vertSize;
-	}
-}
-
-Mesh::Mesh(BufferInfo bufferInfo, const VertexFormat* format, const unsigned char* vertexData, size_t vertexSize, const std::vector<uint32_t>& indices, const Aabb<float>& box, float radius) :
-	vertexData(new unsigned char[vertexSize]),
-	vertexSize(vertexSize),
-	indices(indices),
-	bufferInfo(bufferInfo),
-	format(format),
-	box(box),
-	radius(radius),
-	indexStart(0),
-	vertexOffset(0) {
-
-	memcpy(this->vertexData, vertexData, vertexSize);
-}
-
-Mesh::Mesh(const Mesh& mesh) :
-	vertexData(new unsigned char[mesh.vertexSize]),
-	vertexSize(mesh.vertexSize),
-	indices(mesh.indices),
-	bufferInfo(mesh.bufferInfo),
-	format(mesh.format),
-	box(mesh.box),
-	radius(mesh.radius),
-	indexStart(mesh.indexStart),
-	vertexOffset(mesh.vertexOffset) {
-
-	memcpy(vertexData, mesh.vertexData, mesh.vertexSize);
-}
-
-Mesh::Mesh(Mesh&& mesh) :
-	vertexData(std::exchange(mesh.vertexData, nullptr)),
-	vertexSize(std::exchange(mesh.vertexSize, 0)),
-	indices(std::move(mesh.indices)),
-	bufferInfo(std::move(mesh.bufferInfo)),
-	format(std::exchange(mesh.format, nullptr)),
-	box(std::move(mesh.box)),
-	radius(std::exchange(mesh.radius, 0.0f)),
-	indexStart(std::exchange(mesh.indexStart, 0)),
-	vertexOffset(std::exchange(mesh.vertexOffset, 0)) {
 
 }
 

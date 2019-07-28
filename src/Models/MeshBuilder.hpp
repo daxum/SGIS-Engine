@@ -34,17 +34,6 @@ public:
 	MeshBuilder(const VertexFormat* format, size_t maxVerts);
 
 	/**
-	 * Mercilessly destroys the vertex data.
-	 */
-	~MeshBuilder() { delete[] vertexData; }
-
-	/**
-	 * Can't have these screwing up the pointers.
-	 */
-	MeshBuilder(const MeshBuilder&) = delete;
-	MeshBuilder(MeshBuilder&&) = delete;
-
-	/**
 	 * Adds a vertex to the resulting mesh, assigning it the next index
 	 * if it is not a duplicate.
 	 * @param vert The vertex to add.
@@ -52,7 +41,8 @@ public:
 	void addVertex(const Vertex& vert);
 
 	/**
-	 * Generates the mesh using all added vertices.
+	 * Generates the mesh using all added vertices. The mesh builder will
+	 * become invalid after this is called.
 	 * @param bufferInfo The buffer info for the mesh.
 	 * @return The generated mesh.
 	 */
@@ -79,10 +69,8 @@ private:
 	std::vector<uint32_t> indices;
 	//Current number of added vertices.
 	size_t numVerts;
-	//Vertex data store, to be directly copied to the mesh.
-	unsigned char* vertexData;
-	//The maximum allowed number of vertices in the mesh.
-	size_t maxVerts;
+	//Vertex data store, to be transferred to the mesh.
+	std::vector<unsigned char> vertexData;
 	//Whether the format has a position element suitable for calculating the radius/box.
 	bool hasPos;
 	//Current box of the mesh.

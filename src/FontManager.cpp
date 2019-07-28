@@ -43,8 +43,9 @@ void FontManager::createTextMesh(const TextMeshInfo& meshInfo) {
 
 	const Font& font = fontMap.at(meshInfo.font);
 	const VertexFormat* textFormat = modelManager.getFormat(meshInfo.format);
+	size_t vertexSize = textFormat->getVertexSize();
 
-	std::vector<Vertex> vertices;
+	std::vector<unsigned char> vertices;
 	std::vector<uint32_t> indices;
 
 	float farthestX = 0.0f;
@@ -67,28 +68,30 @@ void FontManager::createTextMesh(const TextMeshInfo& meshInfo) {
 		const float baseline = yPos - font.getSize();
 
 		farthestX = std::max(farthestX, xPos + data.bearing.x + data.size.x);
-		uint32_t indexStart = vertices.size();
+		uint32_t indexStart = vertices.size() / vertexSize;
 
 		//Place vertices.
 
 		Vertex vertex(textFormat);
+		size_t copyStart = vertices.size();
+		vertices.insert(vertices.end(), 4 * vertexSize, 0);
 
 		//Top left
 		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x, baseline + data.bearing.y));
 		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.x, data.fPos.y));
-		vertices.push_back(vertex);
+		memcpy(&vertices.data()[copyStart], vertex.getData(), vertexSize);
 		//Top right
 		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x + data.size.x, baseline + data.bearing.y));
 		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.z, data.fPos.y));
-		vertices.push_back(vertex);
+		memcpy(&vertices.data()[copyStart + vertexSize], vertex.getData(), vertexSize);
 		//Bottom left
 		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x, baseline - (data.size.y - data.bearing.y)));
 		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.x, data.fPos.w));
-		vertices.push_back(vertex);
+		memcpy(&vertices.data()[copyStart + vertexSize * 2], vertex.getData(), vertexSize);
 		//Bottom right
 		vertex.setVec2(VERTEX_ELEMENT_POSITION, glm::vec2(xPos + data.bearing.x + data.size.x, baseline - (data.size.y - data.bearing.y)));
 		vertex.setVec2(VERTEX_ELEMENT_TEXTURE, glm::vec2(data.fPos.z, data.fPos.w));
-		vertices.push_back(vertex);
+		memcpy(&vertices.data()[copyStart + vertexSize * 3], vertex.getData(), vertexSize);
 
 		//Add indices.
 
@@ -112,7 +115,7 @@ void FontManager::createTextMesh(const TextMeshInfo& meshInfo) {
 	bufferInfo.vertex = modelManager.getMemoryManager()->getBuffer(bufferInfo.vertexName);
 	bufferInfo.index = modelManager.getMemoryManager()->getBuffer(bufferInfo.indexName);
 
-	modelManager.addMesh(getMeshName(meshInfo), Mesh(bufferInfo, textFormat, vertices, indices, box, radius), false);
+	modelManager.addMesh(getMeshName(meshInfo), Mesh(bufferInfo, textFormat, std::move(vertices), std::move(indices), box, radius), false);
 }
 
 std::string FontManager::getMeshName(const TextMeshInfo& meshInfo) const {
