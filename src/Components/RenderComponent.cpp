@@ -23,6 +23,8 @@
 RenderComponent::RenderComponent(const std::string& material, const std::string& mesh, glm::vec3 renderScale) :
 	model(Engine::instance->getModel(material, mesh)),
 	scale(renderScale),
+	visible(false),
+	hidden(false),
 	manager(nullptr) {
 
 }
@@ -30,6 +32,8 @@ RenderComponent::RenderComponent(const std::string& material, const std::string&
 RenderComponent::RenderComponent(Model model, glm::vec3 renderScale) :
 	model(model),
 	scale(renderScale),
+	visible(false),
+	hidden(false),
 	manager(nullptr) {
 
 }

@@ -56,10 +56,10 @@ void RenderingEngine::render(const Screen* screen) {
 	};
 
 	Engine::instance->parallelFor(0, componentVec.size(), [&](size_t index) {
-		componentVec.at(index)->setVisible(
-			!(componentVec.at(index)->getModel().material->viewCull) ||
-			checkVisible(cameraBox, view, componentVec.at(index), nearDist, farDist)
-		);
+		const RenderComponent* comp = componentVec.at(index);
+		bool isCulled = comp->getModel().material->viewCull;
+
+		comp->setVisible(!comp->isHidden() &&  (!isCulled || checkVisible(cameraBox, view, componentVec.at(index), nearDist, farDist)));
 	});
 
 	//Render all visible objects

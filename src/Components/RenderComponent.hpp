@@ -113,6 +113,8 @@ public:
 
 	/**
 	 * Sets the cached visibility value for the component.
+	 * Internal only! For disabling rendering of objects,
+	 * see setHidden.
 	 * @param vis Whether the component is visible.
 	 */
 	void setVisible(bool vis) const { visible = vis; }
@@ -124,6 +126,18 @@ public:
 	 */
 	bool isVisible() const { return visible; }
 
+	/**
+	 * Sets whether the RenderComponent should currently be rendered.
+	 * @param newHidden The new hidden state.
+	 */
+	void setHidden(bool newHidden) { hidden = newHidden; }
+
+	/**
+	 * Gets whether the render component has been prevented from rendering.
+	 * @return The current hidden state of the component.
+	 */
+	bool isHidden() const { return hidden; }
+
 private:
 	//Which model to use for this object.
 	Model model;
@@ -131,6 +145,8 @@ private:
 	glm::vec3 scale;
 	//Whether the RenderComponent was visible in the last frame, cached for the rendering engine.
 	mutable bool visible;
+	//Whether the RenderComponent should be rendered, for external use.
+	bool hidden;
 	//The manager for this component, null if none.
 	RenderComponentManager* manager;
 };
