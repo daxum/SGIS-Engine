@@ -1,6 +1,6 @@
 /******************************************************************************
  * SGIS-Engine - the engine for SGIS
- * Copyright (C) 2018
+ * Copyright (C) 2018, 2019
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -24,6 +24,11 @@
 #include "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h"
 #include "ComponentManager.hpp"
 #include "PhysicsComponent.hpp"
+
+struct RaytraceResult {
+	PhysicsComponent* hitComp;
+	glm::vec3 hitPos;
+};
 
 class PhysicsComponentManager : public ComponentManager {
 public:
@@ -49,7 +54,7 @@ public:
 	 * @param end Where the raytrace ends.
 	 * @return The first object hit, or null if none were hit.
 	 */
-	PhysicsComponent* raytraceSingle(glm::vec3 start, glm::vec3 end);
+	RaytraceResult raytraceSingle(glm::vec3 start, glm::vec3 end);
 
 	/**
 	 * Raytraces through the world and returns all physics object in the path.
@@ -58,7 +63,7 @@ public:
 	 * @param end Where the raytrace ends.
 	 * @return A list of physics objects found on the path.
 	 */
-	std::vector<PhysicsComponent*> raytraceAll(glm::vec3 start, glm::vec3 end);
+	std::vector<RaytraceResult> raytraceAll(glm::vec3 start, glm::vec3 end);
 
 	/**
 	 * Raytraces from the mouse position projected into 3d space using the
@@ -66,7 +71,7 @@ public:
 	 * @return The physics component under the mouse, or nullptr if there
 	 *     wasn't one.
 	 */
-	PhysicsComponent* raytraceUnderMouse();
+	RaytraceResult raytraceUnderMouse();
 
 	/**
 	 * If using a physics debug renderer, draws a line of the given color at the

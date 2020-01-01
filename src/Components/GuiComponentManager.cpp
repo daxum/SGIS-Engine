@@ -1,6 +1,6 @@
 /******************************************************************************
  * SGIS-Engine - the engine for SGIS
- * Copyright (C) 2018
+ * Copyright (C) 2018, 2019
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -90,10 +90,10 @@ bool GuiComponentManager::handleMouseMove(const std::shared_ptr<const MouseMoveE
 }
 
 std::shared_ptr<GuiComponent> GuiComponentManager::getUnderMouse(const glm::vec2& mousePos) {
-	PhysicsComponent* hit = std::static_pointer_cast<PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME))->raytraceUnderMouse();
+	RaytraceResult hit = std::static_pointer_cast<PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME))->raytraceUnderMouse();
 
-	if (hit != nullptr) {
-		return hit->getParent()->getComponent<GuiComponent>(GUI_COMPONENT_NAME);
+	if (hit.hitComp != nullptr) {
+		return hit.hitComp->getParent()->getComponent<GuiComponent>(GUI_COMPONENT_NAME);
 	}
 
 	return std::shared_ptr<GuiComponent>();

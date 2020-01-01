@@ -1,6 +1,6 @@
 /******************************************************************************
  * SGIS-Engine - the engine for SGIS
- * Copyright (C) 2018
+ * Copyright (C) 2018, 2019
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -63,7 +63,7 @@ void PhysicsComponentManager::update() {
 	world->stepSimulation(Engine::instance->getConfig().timestep / 1000.0, 20, Engine::instance->getConfig().physicsTimestep);
 }
 
-PhysicsComponent* PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::vec3 end) {
+RaytraceResult PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::vec3 end) {
 	btVector3 from(start.x, start.y, start.z);
 	btVector3 to(end.x, end.y, end.z);
 
@@ -74,15 +74,17 @@ PhysicsComponent* PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::
 	btCollisionWorld::ClosestRayResultCallback closestResult(from, to);
 
 	world->rayTest(from, to, closestResult);
+	RaytraceResult out = {};
 
 	if (closestResult.hasHit()) {
-		return (PhysicsComponent*) closestResult.m_collisionObject->getUserPointer();
+		out.hitComp = (PhysicsComponent*) closestResult.m_collisionObject->getUserPointer();
+		out.hitPos = glm::vec3(closestResult.m_hitPointWorld.getX(), closestResult.m_hitPointWorld.getY(), closestResult.m_hitPointWorld.getZ());
 	}
 
-	return nullptr;
+	return out;
 }
 
-std::vector<PhysicsComponent*> PhysicsComponentManager::raytraceAll(glm::vec3 start, glm::vec3 end) {
+std::vector<RaytraceResult> PhysicsComponentManager::raytraceAll(glm::vec3 start, glm::vec3 end) {
 	btVector3 from(start.x, start.y, start.z);
 	btVector3 to(end.x, end.y, end.z);
 
@@ -94,17 +96,19 @@ std::vector<PhysicsComponent*> PhysicsComponentManager::raytraceAll(glm::vec3 st
 
 	world->rayTest(from, to, allResults);
 
-	std::vector<PhysicsComponent*> out;
+	std::vector<RaytraceResult> out;
 
 	//Apparently bullet arrays can have negative sizes
 	for (size_t i = 0; i < (size_t) allResults.m_collisionObjects.size(); i++) {
-		out.push_back((PhysicsComponent*) allResults.m_collisionObjects.at(i)->getUserPointer());
+		out.emplace_back(RaytraceResult{});
+		out.back().hitComp = (PhysicsComponent*) allResults.m_collisionObjects.at(i)->getUserPointer();
+		out.back().hitPos = glm::vec3(allResults.m_hitPointWorld.at(i).getX(), allResults.m_hitPointWorld.at(i).getY(), allResults.m_hitPointWorld.at(i).getZ());
 	}
 
 	return out;
 }
 
-PhysicsComponent* PhysicsComponentManager::raytraceUnderMouse() {
+RaytraceResult PhysicsComponentManager::raytraceUnderMouse() {
 	const WindowSystemInterface& interface = Engine::instance->getWindowInterface();
 
 	glm::mat4 projection = screen->getCamera()->getProjection();
