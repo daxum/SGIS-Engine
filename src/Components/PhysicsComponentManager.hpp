@@ -26,8 +26,12 @@
 #include "PhysicsComponent.hpp"
 
 struct RaytraceResult {
+	//The physics component of the object that was hit, nullptr if nothing was hit.
 	PhysicsComponent* hitComp;
+	//The world position of the hit.
 	glm::vec3 hitPos;
+	//The normal of the face that was hit.
+	glm::vec3 hitNormal;
 };
 
 class PhysicsComponentManager : public ComponentManager {
@@ -52,7 +56,7 @@ public:
 	 * Note that if the ray starts inside an object, that object will be missed.
 	 * @param start Where the raytrace starts.
 	 * @param end Where the raytrace ends.
-	 * @return The first object hit, or null if none were hit.
+	 * @return The first hit, or blank if nothing were hit.
 	 */
 	RaytraceResult raytraceSingle(glm::vec3 start, glm::vec3 end);
 
@@ -61,15 +65,14 @@ public:
 	 * Also see the note on raytraceSingle above.
 	 * @param start Where the raytrace starts.
 	 * @param end Where the raytrace ends.
-	 * @return A list of physics objects found on the path.
+	 * @return A list of objects found on the path, with hit information for each.
 	 */
 	std::vector<RaytraceResult> raytraceAll(glm::vec3 start, glm::vec3 end);
 
 	/**
 	 * Raytraces from the mouse position projected into 3d space using the
 	 * current camera, and returns the first physics component hit, if any.
-	 * @return The physics component under the mouse, or nullptr if there
-	 *     wasn't one.
+	 * @return The object under the mouse, or blank if there wasn't one.
 	 */
 	RaytraceResult raytraceUnderMouse();
 

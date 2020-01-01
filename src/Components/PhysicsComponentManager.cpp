@@ -79,6 +79,7 @@ RaytraceResult PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::vec
 	if (closestResult.hasHit()) {
 		out.hitComp = (PhysicsComponent*) closestResult.m_collisionObject->getUserPointer();
 		out.hitPos = glm::vec3(closestResult.m_hitPointWorld.getX(), closestResult.m_hitPointWorld.getY(), closestResult.m_hitPointWorld.getZ());
+		out.hitNormal = glm::vec3(closestResult.m_hitNormalWorld.getX(), closestResult.m_hitNormalWorld.getY(), closestResult.m_hitNormalWorld.getZ());
 	}
 
 	return out;
@@ -103,6 +104,7 @@ std::vector<RaytraceResult> PhysicsComponentManager::raytraceAll(glm::vec3 start
 		out.emplace_back(RaytraceResult{});
 		out.back().hitComp = (PhysicsComponent*) allResults.m_collisionObjects.at(i)->getUserPointer();
 		out.back().hitPos = glm::vec3(allResults.m_hitPointWorld.at(i).getX(), allResults.m_hitPointWorld.at(i).getY(), allResults.m_hitPointWorld.at(i).getZ());
+		out.back().hitNormal = glm::vec3(allResults.m_hitNormalWorld.at(i).getX(), allResults.m_hitNormalWorld.at(i).getY(), allResults.m_hitNormalWorld.at(i).getZ());
 	}
 
 	return out;
