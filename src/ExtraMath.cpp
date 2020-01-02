@@ -1,6 +1,6 @@
 /******************************************************************************
  * SGIS-Engine - the engine for SGIS
- * Copyright (C) 2018
+ * Copyright (C) 2018, 2020
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -60,7 +60,9 @@ std::pair<glm::vec3, glm::vec3> ExMath::screenToWorld(
 	const float nearPlane,
 	const float farPlane) {
 
-	glm::mat4 viewProjI = glm::inverse(projection * view);
+	glm::dmat4 dProj(projection);
+	glm::dmat4 dView(view);
+	glm::mat4 viewProjI = glm::inverse(dProj * dView);
 
 	screenPos.x = (screenPos.x / screenWidth - 0.5f) * 2.0f;
 	screenPos.y = -(screenPos.y / screenHeight - 0.5f) * 2.0f;
