@@ -158,7 +158,7 @@ void GlRenderingEngine::apiPresent() {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void GlRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
+void GlRenderingEngine::renderObjects(RenderManager::RenderPassList sortedObjects, const Screen* screen) {
 	const Camera* camera = screen->getCamera().get();
 	const ScreenState* state = screen->getState().get();
 
@@ -172,7 +172,7 @@ void GlRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sor
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
+void GlRenderingEngine::renderTransparencyPass(RenderPass pass, const RenderManager::RenderPassList& objects, const Camera* camera, const ScreenState* state) {
 	bool enableBlend = pass == RenderPass::TRANSLUCENT;
 	bool blendOn = false;
 

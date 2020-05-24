@@ -34,10 +34,10 @@ struct RaytraceResult {
 	glm::vec3 hitNormal;
 };
 
-class PhysicsComponentManager : public ComponentManager {
+class PhysicsManager : public ComponentManager {
 public:
-	PhysicsComponentManager();
-	~PhysicsComponentManager();
+	PhysicsManager();
+	~PhysicsManager();
 
 	/**
 	 * Updates all physics components.

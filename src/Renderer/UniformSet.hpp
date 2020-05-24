@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <bitset>
+#include <stdexcept>
 
 //Types of uniform set, restricts where values can be pulled from.
 enum class UniformSetType {

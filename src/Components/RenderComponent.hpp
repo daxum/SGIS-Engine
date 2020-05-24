@@ -27,7 +27,7 @@
 #include "Object.hpp"
 #include "Models/ModelManager.hpp"
 
-class RenderComponentManager;
+class RenderManager;
 
 class RenderComponent : public Component {
 public:
@@ -103,7 +103,7 @@ public:
 	/**
 	 * Only to be called from RenderComponentManager.
 	 */
-	void setManager(RenderComponentManager* renderManager) { manager = renderManager; }
+	void setManager(RenderManager* renderManager) { manager = renderManager; }
 
 	/**
 	 * Gets the object state, for retrieving uniform values.
@@ -148,5 +148,5 @@ private:
 	//Whether the RenderComponent should be rendered, for external use.
 	bool hidden;
 	//The manager for this component, null if none.
-	RenderComponentManager* manager;
+	RenderManager* manager;
 };

@@ -24,12 +24,12 @@
 
 class GuiComponent;
 
-class GuiComponentManager : public ComponentManager {
+class GuiManager : public ComponentManager {
 public:
 	/**
 	 * Constructor.
 	 */
-	GuiComponentManager() : ComponentManager(GUI_COMPONENT_NAME, true) {}
+	GuiManager() : ComponentManager(GUI_COMPONENT_NAME, true) {}
 
 	/**
 	 * Does nothing at the moment, might change later to allow gui components to update themselves.

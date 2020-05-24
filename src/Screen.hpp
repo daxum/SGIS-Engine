@@ -28,7 +28,7 @@
 #include "Components/ComponentManager.hpp"
 
 class DisplayEngine;
-class RenderComponentManager;
+class RenderManager;
 class Camera;
 
 //State for a screen.
@@ -61,8 +61,8 @@ public:
 	 * Gets all the information required to render the screen (models for objects, post-processing steps, etc).
 	 * @return Rendering data that can be used by RenderingEngine to produce a picture.
 	 */
-	std::shared_ptr<RenderComponentManager> getRenderData() { return renderManager; }
-	std::shared_ptr<const RenderComponentManager> getRenderData() const { return renderManager; }
+	std::shared_ptr<RenderManager> getRenderData() { return renderManager; }
+	std::shared_ptr<const RenderManager> getRenderData() const { return renderManager; }
 
 	/**
 	 * Constructs and adds a component manager to the screen.
@@ -171,7 +171,7 @@ protected:
 	InputHandler inputHandler;
 
 	//The rendering manager for this screen.
-	std::shared_ptr<RenderComponentManager> renderManager;
+	std::shared_ptr<RenderManager> renderManager;
 
 	//Just the camera
 	std::shared_ptr<Camera> camera;
@@ -213,9 +213,9 @@ void Screen::addComponentManager(std::shared_ptr<T> manager) {
 	static_assert(std::is_base_of<ComponentManager, T>::value, "Attempt to add component manager which isn't a ComponentManager!");
 
 	//Rendering managers are set as the screens render data.
-	if (std::is_same<RenderComponentManager, T>::value) {
+	if (std::is_same<RenderManager, T>::value) {
 		//You would think that this would work without the double cast, due to the if statement, but no.
-		renderManager = std::static_pointer_cast<RenderComponentManager>(std::static_pointer_cast<void>(manager));
+		renderManager = std::static_pointer_cast<RenderManager>(std::static_pointer_cast<void>(manager));
 	}
 
 	//Subscribe manager to events if needed. It never needs to be unsubscribed, because it can't

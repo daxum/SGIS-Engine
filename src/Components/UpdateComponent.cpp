@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "UpdateComponentManager.hpp"
+#include "UpdateManager.hpp"
 #include "UpdateComponent.hpp"
 
 //I've given up at this point. The include dependencies have won.

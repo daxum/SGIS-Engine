@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "PhysDebRenderingEngine.hpp"
-#include "Components/PhysicsComponentManager.hpp"
+#include "Components/PhysicsManager.hpp"
 
 namespace {
 	const char* const lineVertShader = "\
@@ -160,9 +160,9 @@ void PhysDebRenderingEngine::flushLines() {
 	pendingLines = 0;
 }
 
-void PhysDebRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
+void PhysDebRenderingEngine::renderObjects(RenderManager::RenderPassList sortedObjects, const Screen* screen) {
 	//Get physics component manager and do debug drawing stuff
-	const PhysicsComponentManager* physicsManager = std::static_pointer_cast<const PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME)).get();
+	const PhysicsManager* physicsManager = std::static_pointer_cast<const PhysicsManager>(screen->getManager(PHYSICS_COMPONENT_NAME)).get();
 
 	if (physicsManager) {
 		btCollisionWorld* world = physicsManager->getWorld();

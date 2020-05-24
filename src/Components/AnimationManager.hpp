@@ -16,11 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "AIComponentManager.hpp"
-#include "AIComponent.hpp"
+#pragma once
 
-void AIComponentManager::update() {
-	for (std::shared_ptr<Component> comp : components) {
-		std::static_pointer_cast<AIComponent>(comp)->update(screen);
+#include "ComponentManager.hpp"
+#include "AnimationComponent.hpp"
+
+class AnimationManager : public ComponentManager {
+public:
+	AnimationManager() : ComponentManager(ANIMATION_COMPONENT_NAME) {}
+
+	void update() override {
+		for (std::shared_ptr<Component> comp : components) {
+			std::static_pointer_cast<AnimationComponent>(comp)->update();
+		}
 	}
-}
+};

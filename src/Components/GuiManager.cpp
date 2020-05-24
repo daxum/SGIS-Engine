@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#include "GuiComponentManager.hpp"
+#include "GuiManager.hpp"
 #include "GuiComponent.hpp"
 #include "Engine.hpp"
-#include "PhysicsComponentManager.hpp"
+#include "PhysicsManager.hpp"
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
 
-bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
+bool GuiManager::onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
 	if (event->type == EventType::KEY) {
 		std::shared_ptr<const KeyEvent> keyEvent = std::static_pointer_cast<const KeyEvent>(event);
 
@@ -59,7 +59,7 @@ bool GuiComponentManager::onEvent(const InputHandler* handler, const std::shared
 	return false;
 }
 
-bool GuiComponentManager::handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event) {
+bool GuiManager::handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event) {
 	std::shared_ptr<GuiComponent> element = getUnderMouse(handler->getMousePos());
 
 	if (element) {
@@ -70,7 +70,7 @@ bool GuiComponentManager::handleMouseClick(const InputHandler* handler, const st
 	return false;
 }
 
-bool GuiComponentManager::handleMouseMove(const std::shared_ptr<const MouseMoveEvent> event) {
+bool GuiManager::handleMouseMove(const std::shared_ptr<const MouseMoveEvent> event) {
 	std::shared_ptr<GuiComponent> element = getUnderMouse(glm::vec2(event->x, event->y));
 
 	if (element != currentHovered) {
@@ -89,8 +89,8 @@ bool GuiComponentManager::handleMouseMove(const std::shared_ptr<const MouseMoveE
 	return !element;
 }
 
-std::shared_ptr<GuiComponent> GuiComponentManager::getUnderMouse(const glm::vec2& mousePos) {
-	RaytraceResult hit = std::static_pointer_cast<PhysicsComponentManager>(screen->getManager(PHYSICS_COMPONENT_NAME))->raytraceUnderMouse();
+std::shared_ptr<GuiComponent> GuiManager::getUnderMouse(const glm::vec2& mousePos) {
+	RaytraceResult hit = std::static_pointer_cast<PhysicsManager>(screen->getManager(PHYSICS_COMPONENT_NAME))->raytraceUnderMouse();
 
 	if (hit.hitComp != nullptr) {
 		return hit.hitComp->getParent()->getComponent<GuiComponent>(GUI_COMPONENT_NAME);
@@ -99,7 +99,7 @@ std::shared_ptr<GuiComponent> GuiComponentManager::getUnderMouse(const glm::vec2
 	return std::shared_ptr<GuiComponent>();
 }
 
-void GuiComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
+void GuiManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	//Cast shouldn't be neccessary, but just for completeness.
 	if (comp == std::static_pointer_cast<Component>(currentHovered)) {
 		currentHovered = std::shared_ptr<GuiComponent>();

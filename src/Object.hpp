@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "Components/Component.hpp"
 #include "ObjectPhysicsInterface.hpp"

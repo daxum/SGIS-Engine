@@ -24,9 +24,9 @@
 #include "ComponentManager.hpp"
 #include "UpdateComponent.hpp"
 
-class UpdateComponentManager : public ComponentManager {
+class UpdateManager : public ComponentManager {
 public:
-	UpdateComponentManager() : ComponentManager(UPDATE_COMPONENT_NAME), currentTick(0) {}
+	UpdateManager() : ComponentManager(UPDATE_COMPONENT_NAME), currentTick(0) {}
 
 	/**
 	 * Updates all the update components. First does sequential updates,

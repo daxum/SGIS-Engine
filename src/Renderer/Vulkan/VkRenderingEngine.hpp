@@ -92,7 +92,7 @@ protected:
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
 	 * @param screen The screen to render.
 	 */
-	void renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
+	void renderObjects(RenderManager::RenderPassList sortedObjects, const Screen* screen) override;
 
 private:
 	//Interface with the window system.
@@ -123,7 +123,7 @@ private:
 	 * @param screenState The state of the current screen.
 	 * @return Whether something was drawn, used to shut up the validation layers until a better solution is found.
 	 */
-	bool renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
+	bool renderTransparencyPass(RenderPass pass, RenderManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState);
 
 	/**
 	 * Sets the push constant values for the provided object.

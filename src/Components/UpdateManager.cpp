@@ -18,10 +18,10 @@
 
 #include <algorithm>
 
-#include "UpdateComponentManager.hpp"
+#include "UpdateManager.hpp"
 #include "Engine.hpp"
 
-void UpdateComponentManager::update() {
+void UpdateManager::update() {
 	//Sequential updates
 	for (UpdateComponent* comp : sequentialComps) {
 		comp->update(screen);
@@ -49,14 +49,14 @@ void UpdateComponentManager::update() {
 	currentTick++;
 }
 
-void UpdateComponentManager::moveToState(UpdateComponent* comp, UpdateComponent::UpdateState state, size_t time) {
+void UpdateManager::moveToState(UpdateComponent* comp, UpdateComponent::UpdateState state, size_t time) {
 	removeInternal(comp);
 	comp->state = state;
 	comp->wakeTime = currentTick + time;
 	addInternal(comp);
 }
 
-void UpdateComponentManager::addInternal(UpdateComponent* comp) {
+void UpdateManager::addInternal(UpdateComponent* comp) {
 	switch (comp->state) {
 		//Inactive, don't add to any list
 		case UpdateComponent::UpdateState::INACTIVE: break;
@@ -82,7 +82,7 @@ void UpdateComponentManager::addInternal(UpdateComponent* comp) {
 	}
 }
 
-void UpdateComponentManager::removeInternal(UpdateComponent* comp) {
+void UpdateManager::removeInternal(UpdateComponent* comp) {
 	switch (comp->state) {
 		//Inactive, component wasn't in any lists
 		case UpdateComponent::UpdateState::INACTIVE: break;

@@ -19,7 +19,7 @@
 #include "Screen.hpp"
 #include "DisplayEngine.hpp"
 #include "Components/ComponentManager.hpp"
-#include "Components/RenderComponentManager.hpp"
+#include "Components/RenderManager.hpp"
 #include "DefaultCamera.hpp"
 
 Screen::Screen(DisplayEngine& display, bool hideMouse) :

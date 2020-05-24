@@ -26,7 +26,7 @@
 
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
-#include "Components/RenderComponentManager.hpp"
+#include "Components/RenderManager.hpp"
 #include "RendererMemoryManager.hpp"
 #include "Screen.hpp"
 #include "WindowSystemInterface.hpp"
@@ -173,7 +173,7 @@ protected:
 	 * @param sortedObjects All objects, sorted by buffer, then shader, then model.
 	 * @param screen The screen being rendered.
 	 */
-	virtual void renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) = 0;
+	virtual void renderObjects(RenderManager::RenderPassList sortedObjects, const Screen* screen) = 0;
 
 	/**
 	 * Sets the per-screen uniforms for set in the provided aligner using the values obtained from state and camera.

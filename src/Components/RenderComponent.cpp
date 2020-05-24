@@ -18,7 +18,7 @@
 
 #include "RenderComponent.hpp"
 #include "Engine.hpp"
-#include "RenderComponentManager.hpp"
+#include "RenderManager.hpp"
 
 RenderComponent::RenderComponent(const std::string& material, const std::string& mesh, glm::vec3 renderScale) :
 	model(Engine::instance->getModel(material, mesh)),

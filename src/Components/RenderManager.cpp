@@ -18,11 +18,11 @@
 
 #include <algorithm>
 
-#include "RenderComponentManager.hpp"
+#include "RenderManager.hpp"
 #include "Engine.hpp"
 #include "Models/ModelManager.hpp"
 
-void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
+void RenderManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	getComponentSet(renderComp->getModel()).push_back(renderComp.get());
@@ -30,7 +30,7 @@ void RenderComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	renderComp->setManager(this);
 }
 
-void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
+void RenderManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<RenderComponent> renderComp = std::static_pointer_cast<RenderComponent>(comp);
 
 	removeComponent(renderComp.get(), renderComp->getModel());
@@ -47,14 +47,14 @@ void RenderComponentManager::onComponentRemove(std::shared_ptr<Component> comp) 
 	renderComp->setManager(nullptr);
 }
 
-void RenderComponentManager::reloadComponent(const RenderComponent* renderComp, const Model& oldModel) {
+void RenderManager::reloadComponent(const RenderComponent* renderComp, const Model& oldModel) {
 	const Model& model = renderComp->getModel();
 
 	removeComponent(renderComp, oldModel);
 	getComponentSet(model).push_back(renderComp);
 }
 
-void RenderComponentManager::removeComponent(const RenderComponent* comp, const Model& oldModel) {
+void RenderManager::removeComponent(const RenderComponent* comp, const Model& oldModel) {
 	std::vector<const RenderComponent*>& compSet = getComponentSet(oldModel);
 
 	auto compLoc = std::find(compSet.begin(), compSet.end(), comp);
@@ -75,7 +75,7 @@ void RenderComponentManager::removeComponent(const RenderComponent* comp, const 
 	}
 }
 
-std::vector<const RenderComponent*>& RenderComponentManager::getComponentSet(const Model& model) {
+std::vector<const RenderComponent*>& RenderManager::getComponentSet(const Model& model) {
 	const Buffer* buffer = model.mesh->getBufferInfo().vertex;
 	const std::string& shader = model.material->shader;
 

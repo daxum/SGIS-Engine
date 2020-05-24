@@ -8,14 +8,14 @@ set(ENGINE_FILES
 	Screen.cpp
 	Components/RenderComponent.cpp
 	Components/ComponentManager.cpp
-	Components/AIComponentManager.cpp
-	Components/PhysicsComponentManager.cpp
+	Components/AIManager.cpp
+	Components/PhysicsManager.cpp
 	Renderer/MatrixStack.cpp
 	Components/PhysicsComponent.cpp
 	Object.cpp
-	Components/RenderComponentManager.cpp
+	Components/RenderManager.cpp
 	InputHandler.cpp
-	Components/GuiComponentManager.cpp
+	Components/GuiManager.cpp
 	FontManager.cpp
 	Components/TextComponent.cpp
 	SplineAnimation.cpp
@@ -28,7 +28,7 @@ set(ENGINE_FILES
 	Renderer/RenderingEngine.cpp
 	Renderer/Std140Aligner.cpp
 	Components/PhysicsObject.cpp
-	Components/UpdateComponentManager.cpp
+	Components/UpdateManager.cpp
 	Components/UpdateComponent.cpp
 	Models/VertexFormat.cpp
 	Renderer/Buffer.cpp

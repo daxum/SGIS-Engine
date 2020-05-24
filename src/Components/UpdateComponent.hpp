@@ -21,7 +21,7 @@
 #include "Component.hpp"
 #include "Screen.hpp"
 
-class UpdateComponentManager;
+class UpdateManager;
 
 class UpdateComponent : public Component {
 public:
@@ -94,11 +94,11 @@ public:
 	 * Sets the component's current manager. Only called from UpdateComponentManager.
 	 * @param newManager The new manager of the component.
 	 */
-	void setManager(UpdateComponentManager* newManager) { manager = newManager; }
+	void setManager(UpdateManager* newManager) { manager = newManager; }
 
 protected:
 	//The parent manager. Will be set once the component is added to the screen.
-	UpdateComponentManager* manager;
+	UpdateManager* manager;
 
 private:
 	//Whether the component can be updated concurrently.

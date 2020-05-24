@@ -245,7 +245,7 @@ void VkRenderingEngine::apiPresent() {
 	}
 }
 
-void VkRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) {
+void VkRenderingEngine::renderObjects(RenderManager::RenderPassList sortedObjects, const Screen* screen) {
 	const Camera* camera = screen->getCamera().get();
 	const ScreenState* state = screen->getState().get();
 
@@ -269,7 +269,7 @@ void VkRenderingEngine::renderObjects(RenderComponentManager::RenderPassList sor
 	}
 }
 
-bool VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderComponentManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
+bool VkRenderingEngine::renderTransparencyPass(RenderPass pass, RenderManager::RenderPassList sortedObjects, const Camera* camera, const ScreenState* screenState) {
 	//TODO: this needs to be made threadable, and just rewritten in general - it's currently just a direct port of the GlRenderingEngine's loop.
 	//Also, each loop should probably be its own function, this is getting ridiculous.
 

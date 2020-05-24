@@ -39,12 +39,12 @@
 
 //Component Managers
 
-#include "Components/AIComponentManager.hpp"
-#include "Components/AnimationComponentManager.hpp"
-#include "Components/GuiComponentManager.hpp"
-#include "Components/PhysicsComponentManager.hpp"
-#include "Components/RenderComponentManager.hpp"
-#include "Components/UpdateComponentManager.hpp"
+#include "Components/AIManager.hpp"
+#include "Components/AnimationManager.hpp"
+#include "Components/GuiManager.hpp"
+#include "Components/PhysicsManager.hpp"
+#include "Components/RenderManager.hpp"
+#include "Components/UpdateManager.hpp"
 
 //Other stuff
 

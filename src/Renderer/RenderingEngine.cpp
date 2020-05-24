@@ -23,7 +23,7 @@
 #include "ExtraMath.hpp"
 
 void RenderingEngine::render(const Screen* screen) {
-	std::shared_ptr<const RenderComponentManager> renderManager = screen->getRenderData();
+	std::shared_ptr<const RenderManager> renderManager = screen->getRenderData();
 
 	//Don't render without render component
 	if (!renderManager) {

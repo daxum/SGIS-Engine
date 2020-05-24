@@ -21,9 +21,9 @@
 #include "ComponentManager.hpp"
 #include "Component.hpp"
 
-class AIComponentManager : public ComponentManager {
+class AIManager : public ComponentManager {
 public:
-	AIComponentManager() : ComponentManager(AI_COMPONENT_NAME) {}
+	AIManager() : ComponentManager(AI_COMPONENT_NAME) {}
 
 	/**
 	 * Updates all ai components, by calling their update functions.

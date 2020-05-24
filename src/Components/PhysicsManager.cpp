@@ -19,17 +19,17 @@
 #include <thread>
 
 #include "LinearMath/btThreads.h"
-#include "PhysicsComponentManager.hpp"
+#include "PhysicsManager.hpp"
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Engine.hpp"
 #include "Camera.hpp"
 
-void PhysicsComponentManager::physicsTickCallback(btDynamicsWorld* world, btScalar timeStep) {
-	static_cast<PhysicsComponentManager*>(world->getWorldUserInfo())->tickCallback();
+void PhysicsManager::physicsTickCallback(btDynamicsWorld* world, btScalar timeStep) {
+	static_cast<PhysicsManager*>(world->getWorldUserInfo())->tickCallback();
 }
 
-PhysicsComponentManager::PhysicsComponentManager() :
+PhysicsManager::PhysicsManager() :
 	ComponentManager(PHYSICS_COMPONENT_NAME),
 	conf(new btDefaultCollisionConfiguration()),
 	broadphase(new btDbvtBroadphase()),
@@ -45,7 +45,7 @@ PhysicsComponentManager::PhysicsComponentManager() :
 	btSetTaskScheduler(btGetTBBTaskScheduler());
 }
 
-PhysicsComponentManager::~PhysicsComponentManager() {
+PhysicsManager::~PhysicsManager() {
 	delete world;
 	delete solver;
 	delete broadphase;
@@ -54,7 +54,7 @@ PhysicsComponentManager::~PhysicsComponentManager() {
 	delete solverPool;
 }
 
-void PhysicsComponentManager::update() {
+void PhysicsManager::update() {
 	for (std::shared_ptr<Component> comp : components) {
 		std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 		physics->update();
@@ -63,7 +63,7 @@ void PhysicsComponentManager::update() {
 	world->stepSimulation(Engine::instance->getConfig().timestep / 1000.0, 20, Engine::instance->getConfig().physicsTimestep);
 }
 
-RaytraceResult PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::vec3 end) {
+RaytraceResult PhysicsManager::raytraceSingle(glm::vec3 start, glm::vec3 end) {
 	btVector3 from(start.x, start.y, start.z);
 	btVector3 to(end.x, end.y, end.z);
 
@@ -85,7 +85,7 @@ RaytraceResult PhysicsComponentManager::raytraceSingle(glm::vec3 start, glm::vec
 	return out;
 }
 
-std::vector<RaytraceResult> PhysicsComponentManager::raytraceAll(glm::vec3 start, glm::vec3 end) {
+std::vector<RaytraceResult> PhysicsManager::raytraceAll(glm::vec3 start, glm::vec3 end) {
 	btVector3 from(start.x, start.y, start.z);
 	btVector3 to(end.x, end.y, end.z);
 
@@ -110,7 +110,7 @@ std::vector<RaytraceResult> PhysicsComponentManager::raytraceAll(glm::vec3 start
 	return out;
 }
 
-RaytraceResult PhysicsComponentManager::raytraceUnderMouse() {
+RaytraceResult PhysicsManager::raytraceUnderMouse() {
 	const WindowSystemInterface& interface = Engine::instance->getWindowInterface();
 
 	glm::mat4 projection = screen->getCamera()->getProjection();
@@ -130,7 +130,7 @@ RaytraceResult PhysicsComponentManager::raytraceUnderMouse() {
 	return raytraceSingle(nearFar.first, nearFar.second);
 }
 
-void PhysicsComponentManager::drawDebugLine(glm::vec3 from, glm::vec3 to, glm::vec3 color) {
+void PhysicsManager::drawDebugLine(glm::vec3 from, glm::vec3 to, glm::vec3 color) {
 	btVector3 start(from.x, from.y, from.z);
 	btVector3 end(to.x, to.y, to.z);
 
@@ -139,20 +139,20 @@ void PhysicsComponentManager::drawDebugLine(glm::vec3 from, glm::vec3 to, glm::v
 	}
 }
 
-void PhysicsComponentManager::onComponentAdd(std::shared_ptr<Component> comp) {
+void PhysicsManager::onComponentAdd(std::shared_ptr<Component> comp) {
 	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 
 	//Looks stupid, but works. Oh well.
 	world->addRigidBody(physics->getBody()->getBody());
 }
 
-void PhysicsComponentManager::onComponentRemove(std::shared_ptr<Component> comp) {
+void PhysicsManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 
 	world->removeRigidBody(physics->getBody()->getBody());
 }
 
-void PhysicsComponentManager::tickCallback() {
+void PhysicsManager::tickCallback() {
 	int manifoldCount = world->getDispatcher()->getNumManifolds();
 
 	Engine::instance->parallelFor(0, manifoldCount, [&](size_t i) {

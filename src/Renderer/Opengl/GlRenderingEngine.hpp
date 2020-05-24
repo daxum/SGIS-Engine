@@ -98,7 +98,7 @@ protected:
 	 * @param sortedObjects A sorted map of maps of maps of sets of all the possible objects to render.
 	 * @param screen The screen to render.
 	 */
-	void renderObjects(RenderComponentManager::RenderPassList sortedObjects, const Screen* screen) override;
+	void renderObjects(RenderManager::RenderPassList sortedObjects, const Screen* screen) override;
 
 private:
 	//A map to store texture data
@@ -117,7 +117,7 @@ private:
 	 * @param camera The camera to use when rendering.
 	 * @param state The screen state, passed to shaders when setting uniforms.
 	 */
-	void renderTransparencyPass(RenderPass pass, const RenderComponentManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
+	void renderTransparencyPass(RenderPass pass, const RenderManager::RenderPassList& objects, const Camera* camera, const ScreenState* state);
 
 	/**
 	 * Emulates push constants from Vulkan. Really, this just sets uniform locations in the provided
