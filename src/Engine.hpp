@@ -39,7 +39,7 @@ public:
 	//Minor indicates breaking changes.
 	//Patch is everything else (bugfixes, performance boosts, etc).
 	static constexpr uint32_t VERSION_MAJOR = 3;
-	static constexpr uint32_t VERSION_MINOR = 2;
+	static constexpr uint32_t VERSION_MINOR = 3;
 	static constexpr uint32_t VERSION_PATCH = 0;
 
 	//Global engine instance. Use sparingly!
