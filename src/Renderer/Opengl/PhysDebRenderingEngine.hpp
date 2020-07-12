@@ -84,7 +84,12 @@ public:
 	 * @param warning The message from bullet.
 	 */
 	void reportErrorWarning(const char* warning) override {
-		ENGINE_LOG_WARN(logger, std::string("Physics debug rendering warning: ") + warning);
+		std::string printString(warning);
+
+		if (printString.back() == '\n') {
+			printString.back() = '\0';
+		}
+		ENGINE_LOG_WARN(logger, std::string("Physics debug rendering warning: ") + printString);
 	}
 
 	/**
