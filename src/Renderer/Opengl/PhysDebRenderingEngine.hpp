@@ -89,6 +89,7 @@ public:
 		if (printString.back() == '\n') {
 			printString.back() = '\0';
 		}
+
 		ENGINE_LOG_WARN(logger, std::string("Physics debug rendering warning: ") + printString);
 	}
 
