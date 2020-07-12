@@ -21,16 +21,19 @@
 #include "InputEvent.hpp"
 
 class InputHandler;
+class Screen;
 
 class InputListener {
 public:
 	/**
 	 * Called from the event handler when an event happens.
+	 * @param screen The screen currently processing the event.
+	 * @param handler the input handler that recieved the event.
 	 * @param event The event.
 	 * @return Whether the event should be removed from the event queue.
 	 *     Will not prevent it from being sent to other listeners on the
 	 *     same screen, but will prevent it from being sent to screens
 	 *     below the current one.
 	 */
-	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) = 0;
+	virtual bool onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) = 0;
 };

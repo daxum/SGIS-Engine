@@ -23,7 +23,7 @@
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
 
-bool GuiManager::onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
+bool GuiManager::onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
 	if (event->type == EventType::KEY) {
 		std::shared_ptr<const KeyEvent> keyEvent = std::static_pointer_cast<const KeyEvent>(event);
 

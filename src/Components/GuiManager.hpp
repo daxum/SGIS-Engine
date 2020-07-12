@@ -40,7 +40,7 @@ public:
 	/**
 	 * See InputListener.hpp.
 	 */
-	bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override;
+	bool onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override;
 
 private:
 	//The component the mouse is currently over.

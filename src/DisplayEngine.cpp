@@ -87,7 +87,7 @@ void DisplayEngine::update() {
 		std::shared_ptr<Screen> current = screenStack.back()[i - 1];
 
 		//Might move into screen later.
-		current->getInputHandler().update(events);
+		current->getInputHandler().update(current.get(), events);
 		current->update();
 
 		//If the screen stack was popped in the last update, screenStack.top() now points

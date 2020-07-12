@@ -66,7 +66,7 @@ public:
 	/**
 	 * See InputListener.hpp.
 	 */
-	virtual bool onEvent(const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override { return false; }
+	virtual bool onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override { return false; }
 
 protected:
 	//The parent object.

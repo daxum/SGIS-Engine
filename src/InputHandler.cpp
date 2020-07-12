@@ -34,7 +34,7 @@ void InputHandler::removeListener(std::shared_ptr<InputListener> listener) {
 	listeners.erase(listener);
 }
 
-void InputHandler::update(std::vector<std::shared_ptr<InputEvent>>& events) {
+void InputHandler::update(Screen* screen, std::vector<std::shared_ptr<InputEvent>>& events) {
 	std::unordered_set<std::shared_ptr<InputEvent>> toRemove;
 	mouseDistance = glm::vec2(0.0, 0.0);
 
@@ -69,7 +69,7 @@ void InputHandler::update(std::vector<std::shared_ptr<InputEvent>>& events) {
 		bool remove = false;
 
 		for (std::shared_ptr<InputListener> listener : listeners) {
-			remove = listener->onEvent(this, event) || remove;
+			remove = listener->onEvent(screen, this, event) || remove;
 		}
 
 		//Mark handled events for removal, except key release events.

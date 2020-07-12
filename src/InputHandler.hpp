@@ -51,9 +51,10 @@ public:
 	 * Passes the events in the set to the event listeners in no defined order,
 	 * and then removes any handled events, except key release events.
 	 * Also updates the mouse position / distance and the key map.
+	 * @param screen The parent screen, for use by listeners.
 	 * @param events The list of events that happened this tick.
 	 */
-	void update(std::vector<std::shared_ptr<InputEvent>>& events);
+	void update(Screen* screen, std::vector<std::shared_ptr<InputEvent>>& events);
 
 	/**
 	 * Checks the key map for whether the given key is pressed.
