@@ -52,8 +52,10 @@ public:
 	 * @param startingTime The amount of time the component will start sleeping for
 	 *     when it is added.
 	 * @param concurrent Whether the component can update asynchronously.
+	 * @param events Whether the component should be subscribed to events.
 	 */
-	UpdateComponent(UpdateState startingState = UpdateState::ACTIVE, size_t startingTime = 0, bool concurrent = false) :
+	UpdateComponent(UpdateState startingState = UpdateState::ACTIVE, size_t startingTime = 0, bool concurrent = false, bool events = false) :
+		Component(events),
 		wakeTime(startingTime),
 		state(startingState),
 		manager(nullptr),
