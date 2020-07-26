@@ -24,6 +24,7 @@
 #include "ExtraMath.hpp"
 #include "Engine.hpp"
 #include "Camera.hpp"
+#include "TBBThreadHandlerBtCompat.hpp"
 
 void PhysicsManager::physicsTickCallback(btDynamicsWorld* world, btScalar timeStep) {
 	static_cast<PhysicsManager*>(world->getWorldUserInfo())->tickCallback();
@@ -36,6 +37,10 @@ PhysicsManager::PhysicsManager() :
 	solver(new btSequentialImpulseConstraintSolverMt()),
 	//Number of parallel solvers might need tweaking later, depending on other threads needed.
 	solverPool(new btConstraintSolverPoolMt(std::max(std::thread::hardware_concurrency(), 1u))) {
+
+	static TaskSchedulerTBB scheduler;
+
+	btSetTaskScheduler(&scheduler);
 
 	dispatcher = new btCollisionDispatcherMt(conf, 40);
 	world = new  btDiscreteDynamicsWorldMt(dispatcher, broadphase, solverPool, solver, conf);
