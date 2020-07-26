@@ -46,8 +46,6 @@ PhysicsManager::PhysicsManager() :
 	world = new  btDiscreteDynamicsWorldMt(dispatcher, broadphase, solverPool, solver, conf);
 	world->setGravity(btVector3(0.0, -9.80665, 0.0));
 	world->setInternalTickCallback(physicsTickCallback, this, false);
-
-	btSetTaskScheduler(btGetTBBTaskScheduler());
 }
 
 PhysicsManager::~PhysicsManager() {
