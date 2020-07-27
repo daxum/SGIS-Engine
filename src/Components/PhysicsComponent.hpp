@@ -25,6 +25,7 @@
 #include "PhysicsObject.hpp"
 #include "ObjectPhysicsInterface.hpp"
 #include "Screen.hpp"
+#include "PhysicsGhostObject.hpp"
 
 class PhysicsComponent;
 
@@ -89,6 +90,17 @@ public:
 	 * Returns the physics body associated with this component.
 	 */
 	std::shared_ptr<PhysicsObject> getBody() { return physics; }
+
+	/**
+	 * Adds the provided ghost object to the component. This should be called
+	 * before the parent object is added to the screen!
+	 * @param ghost The object to be added.
+	 * @return A unique identifier the can be used to reference the added ghost.
+	 */
+	uint64_t addGhost(const PhysicsGhostInfo& info) {
+		ghosts.push_back(std::make_shared<PhysicsGhostObject>(info));
+		return ghosts.size() - 1;
+	}
 
 	/**
 	 * Applies velocity changes and such to the internal object.
@@ -177,9 +189,19 @@ public:
 	 */
 	std::shared_ptr<Object> getParent() { return lockParent(); }
 
+	/**
+	 * Gets the components ghost object array. For use by PhysicsManager.
+	 * @return The array of ghost objects for this component.
+	 */
+	std::vector<std::shared_ptr<PhysicsGhostObject>>& getGhosts() { return ghosts; }
+
 private:
+	//Physics object used by this physics component.
 	std::shared_ptr<PhysicsObject> physics;
+	//Collision handler to be called when the component collides with another.
 	std::shared_ptr<CollisionHandler> collider;
+	//List of ghost objects associated to this component.
+	std::vector<std::shared_ptr<PhysicsGhostObject>> ghosts;
 
 	PhysicsControlMode currentMode;
 	bool linearBrakes;

@@ -147,12 +147,20 @@ void PhysicsManager::onComponentAdd(std::shared_ptr<Component> comp) {
 
 	//Looks stupid, but works. Oh well.
 	world->addRigidBody(physics->getBody()->getBody());
+
+	for (std::shared_ptr<PhysicsGhostObject> ghost : physics->getGhosts()) {
+		world->addCollisionObject(ghost->getObject());
+	}
 }
 
 void PhysicsManager::onComponentRemove(std::shared_ptr<Component> comp) {
 	std::shared_ptr<PhysicsComponent> physics = std::static_pointer_cast<PhysicsComponent>(comp);
 
 	world->removeRigidBody(physics->getBody()->getBody());
+
+	for (std::shared_ptr<PhysicsGhostObject> ghost : physics->getGhosts()) {
+		world->removeCollisionObject(ghost->getObject());
+	}
 }
 
 void PhysicsManager::tickCallback() {
@@ -164,7 +172,10 @@ void PhysicsManager::tickCallback() {
 		PhysicsComponent* object1 = static_cast<PhysicsComponent*>(manifold->getBody0()->getUserPointer());
 		PhysicsComponent* object2 = static_cast<PhysicsComponent*>(manifold->getBody1()->getUserPointer());
 
-		object1->onCollide(screen, object2);
-		object2->onCollide(screen, object1);
+		//Ghost objects don't have a user pointer
+		if (object1 != nullptr && object2 != nullptr) {
+			object1->onCollide(screen, object2);
+			object2->onCollide(screen, object1);
+		}
 	});
 }

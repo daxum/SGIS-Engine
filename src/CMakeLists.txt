@@ -34,6 +34,7 @@ set(ENGINE_FILES
 	Renderer/Buffer.cpp
 	Models/Mesh.cpp
 	Models/MeshBuilder.cpp
+	Components/PhysicsGhostObject.cpp
 )
 
 if (USE_OPENGL)

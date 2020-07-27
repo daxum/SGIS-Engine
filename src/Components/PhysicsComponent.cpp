@@ -97,6 +97,16 @@ void PhysicsComponent::update() {
 		case PhysicsControlMode::STATIC: break; //Noop
 		default: throw std::runtime_error("Missing physics control mode");
 	}
+
+	//Reposition ghosts
+	for (std::shared_ptr<PhysicsGhostObject> ghost : ghosts) {
+		glm::vec3 offset = ghost->getOffset();
+		btTransform ghostTransform(btQuaternion(1, 0, 0, 0), btVector3(offset.x, offset.y, offset.z));
+		btTransform objectTransform;
+		physics->getMotionState()->getWorldTransform(objectTransform);
+
+		ghost->getObject()->setWorldTransform(objectTransform * ghostTransform);
+	}
 }
 
 glm::vec3 PhysicsComponent::getTranslation() const {
