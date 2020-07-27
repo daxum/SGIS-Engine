@@ -24,6 +24,8 @@
 
 #include "PhysicsObject.hpp"
 
+class PhysicsComponent;
+
 struct PhysicsGhostInfo {
 	//The shape for the ghost.
 	PhysicsShape shape;
@@ -39,14 +41,16 @@ public:
 	/**
 	 * Constructor for the ghost.
 	 * @param info The physics info defining the object.
+	 * @param parent The physics component this ghost is a part of.
 	 */
-	PhysicsGhostObject(const PhysicsGhostInfo& info);
+	PhysicsGhostObject(const PhysicsGhostInfo& info, PhysicsComponent* parent);
 
 	/**
 	 * Destroys the ghost object.
 	 */
 	~PhysicsGhostObject() {
 		delete ghost;
+		delete shape;
 	}
 
 	/**
@@ -61,6 +65,13 @@ public:
 	 */
 	glm::vec3 getOffset() const { return posOffset; }
 
+	/**
+	 * Finds all the physics components that are currently colliding with
+	 * this ghost object, excluding the parent object.
+	 * @return A list of colliding physics components.
+	 */
+	std::vector<PhysicsComponent*> getCollisions();
+
 private:
 	//The object.
 	btGhostObject* ghost;
@@ -68,6 +79,8 @@ private:
 	btCollisionShape* shape;
 	//Relative position of the ghost from the parent object's center.
 	glm::vec3 posOffset;
+	//The parent of this ghost object.
+	PhysicsComponent* parent;
 
 	/**
 	 * Creates a box collision object.

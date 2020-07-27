@@ -104,6 +104,7 @@ private:
 	btBroadphaseInterface* broadphase;
 	btSequentialImpulseConstraintSolverMt* solver;
 	btConstraintSolverPoolMt* solverPool;
+	btGhostPairCallback* ghostCallback;
 
 	/**
 	 * Overridden from ComponentManager.

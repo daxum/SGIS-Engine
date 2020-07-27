@@ -98,8 +98,18 @@ public:
 	 * @return A unique identifier the can be used to reference the added ghost.
 	 */
 	uint64_t addGhost(const PhysicsGhostInfo& info) {
-		ghosts.push_back(std::make_shared<PhysicsGhostObject>(info));
+		ghosts.push_back(std::make_shared<PhysicsGhostObject>(info, this));
 		return ghosts.size() - 1;
+	}
+
+	/**
+	 * Fetches all the physics components intersecting with the provided
+	 * ghost object.
+	 * @param index The value returned from the call to addGhost for the desired ghost object.
+	 * @return A list of items colliding with the selected ghost.
+	 */
+	std::vector<PhysicsComponent*> getGhostCollisions(uint64_t index) {
+		return ghosts.at(index)->getCollisions();
 	}
 
 	/**

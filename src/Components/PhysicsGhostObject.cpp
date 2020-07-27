@@ -18,10 +18,11 @@
 
 #include "PhysicsGhostObject.hpp"
 
-PhysicsGhostObject::PhysicsGhostObject(const PhysicsGhostInfo& info) :
+PhysicsGhostObject::PhysicsGhostObject(const PhysicsGhostInfo& info, PhysicsComponent* parent) :
 	ghost(nullptr),
 	shape(nullptr),
-	posOffset(info.pos) {
+	posOffset(info.pos),
+	parent(parent) {
 
 	ghost = new btGhostObject;
 
@@ -39,8 +40,22 @@ PhysicsGhostObject::PhysicsGhostObject(const PhysicsGhostInfo& info) :
 
 	ghost->setWorldTransform(trans);
 
-	Aabb<float> box = info.box;
 	ghost->setCollisionShape(shape);
 	ghost->setCollisionFlags(ghost->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
 }
 
+std::vector<PhysicsComponent*> PhysicsGhostObject::getCollisions() {
+	uint64_t numCollisions = ghost->getNumOverlappingObjects();
+
+	std::vector<PhysicsComponent*> out;
+
+	for (uint64_t i = 0; i < numCollisions; i++) {
+		PhysicsComponent* comp = static_cast<PhysicsComponent*>(ghost->getOverlappingObject(i)->getUserPointer());
+
+		if (comp != nullptr && comp != parent) {
+			out.push_back(comp);
+		}
+	}
+
+	return out;
+}

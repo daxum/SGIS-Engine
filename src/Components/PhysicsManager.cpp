@@ -36,7 +36,8 @@ PhysicsManager::PhysicsManager() :
 	broadphase(new btDbvtBroadphase()),
 	solver(new btSequentialImpulseConstraintSolverMt()),
 	//Number of parallel solvers might need tweaking later, depending on other threads needed.
-	solverPool(new btConstraintSolverPoolMt(std::max(std::thread::hardware_concurrency(), 1u))) {
+	solverPool(new btConstraintSolverPoolMt(std::max(std::thread::hardware_concurrency(), 1u))),
+	ghostCallback(new btGhostPairCallback()) {
 
 	static TaskSchedulerTBB scheduler;
 
@@ -46,6 +47,7 @@ PhysicsManager::PhysicsManager() :
 	world = new  btDiscreteDynamicsWorldMt(dispatcher, broadphase, solverPool, solver, conf);
 	world->setGravity(btVector3(0.0, -9.80665, 0.0));
 	world->setInternalTickCallback(physicsTickCallback, this, false);
+	world->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(ghostCallback);
 }
 
 PhysicsManager::~PhysicsManager() {
@@ -55,6 +57,7 @@ PhysicsManager::~PhysicsManager() {
 	delete dispatcher;
 	delete conf;
 	delete solverPool;
+	delete ghostCallback;
 }
 
 void PhysicsManager::update() {
