@@ -80,6 +80,7 @@ void Screen::setCamera(std::shared_ptr<Camera> newCamera) {
 
 void Screen::deleteObject(std::shared_ptr<Object> object) {
 	objects.erase(object);
+	object->setScreen(nullptr);
 
 	//Remove components
 	for (std::shared_ptr<ComponentManager> manager : managers) {
@@ -99,6 +100,7 @@ void Screen::deleteObject(std::shared_ptr<Object> object) {
 void Screen::addObjectToList(std::shared_ptr<Object> object) {
 	//Add to main list
 	objects.insert(object);
+	object->setScreen(this);
 
 	//Add any components to managers
 	for (std::shared_ptr<ComponentManager> manager : managers) {

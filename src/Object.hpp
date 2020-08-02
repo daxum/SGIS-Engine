@@ -26,6 +26,8 @@
 #include "Components/Component.hpp"
 #include "ObjectPhysicsInterface.hpp"
 
+class Screen;
+
 struct ObjectState {
 	virtual ~ObjectState() {}
 
@@ -162,16 +164,27 @@ public:
 		return std::static_pointer_cast<T>(state);
 	}
 
+	/**
+	 * Sets the parent screen of the object. Should only be called by screen.
+	 * @param Screen The object's new parent screen.
+	 */
+	void setScreen(Screen* newScreen) { screen = newScreen; }
+
+	/**
+	 * Returns the screen the object was added to.
+	 * @return The object's parent screen.
+	 */
+	Screen* getScreen() { return screen; }
+
 private:
 	//Used by objects with no set physics interface. Completely stateless.
 	static ObjectPhysicsInterface defaultInterface;
-
+	//The parent screen of the object.
+	Screen* screen;
 	//The map of components for this object. Component names should be in Component.hpp.
 	std::unordered_map<std::string, std::shared_ptr<Component>> components;
-
 	//The physics interface for the object.
 	ObjectPhysicsInterface* physics;
-
 	//User-defined object state.
 	std::shared_ptr<ObjectState> state;
 };
