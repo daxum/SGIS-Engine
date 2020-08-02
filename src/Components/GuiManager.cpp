@@ -22,9 +22,10 @@
 #include "PhysicsManager.hpp"
 #include "ExtraMath.hpp"
 #include "Camera.hpp"
+#include "Input/InputMapSyncEvent.hpp"
 
-bool GuiManager::onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) {
-	if (event->type == EventType::KEY) {
+bool GuiManager::onEvent(const std::shared_ptr<const Event> event) {
+	if (event->type == KeyEvent::EVENT_TYPE) {
 		std::shared_ptr<const KeyEvent> keyEvent = std::static_pointer_cast<const KeyEvent>(event);
 
 		for (std::shared_ptr<Component> comp : components) {
@@ -35,16 +36,20 @@ bool GuiManager::onEvent(Screen* screen, const InputHandler* handler, const std:
 			}
 		}
 	}
-	//Mouse click events require raytracing, and therefore a physics component manager.
+	//Mouse click and position events require raytracing, and therefore a physics component manager.
 	else if (screen->getManager(PHYSICS_COMPONENT_NAME)) {
-		if (event->type == EventType::MOUSE_CLICK) {
-			return handleMouseClick(handler, std::static_pointer_cast<const MouseClickEvent>(event));
+		if (event->type == MouseClickEvent::EVENT_TYPE) {
+			return handleMouseClick(std::static_pointer_cast<const MouseClickEvent>(event));
 		}
-		else if (event->type == EventType::MOUSE_MOVE) {
-			return handleMouseMove(std::static_pointer_cast<const MouseMoveEvent>(event));
+		else if (event->type == MouseMoveEvent::EVENT_TYPE) {
+			handleMouseMove(std::static_pointer_cast<const MouseMoveEvent>(event));
+		}
+		else if (event->type == InputMapSyncEvent::EVENT_TYPE) {
+			glm::vec2 mousePos = Engine::instance->getWindowInterface().queryMousePos();
+			handleMouseMove(std::make_shared<MouseMoveEvent>(mousePos.x, mousePos.y));
 		}
 	}
-	else if (event->type == EventType::MOUSE_SCROLL) {
+	else if (event->type == MouseScrollEvent::EVENT_TYPE) {
 		std::shared_ptr<const MouseScrollEvent> scrollEvent = std::static_pointer_cast<const MouseScrollEvent>(event);
 
 		for (std::shared_ptr<Component> comp : components) {
@@ -52,15 +57,13 @@ bool GuiManager::onEvent(Screen* screen, const InputHandler* handler, const std:
 
 			element->onMouseScroll(screen, scrollEvent->x, scrollEvent->y);
 		}
-
-		return true;
 	}
 
 	return false;
 }
 
-bool GuiManager::handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event) {
-	std::shared_ptr<GuiComponent> element = getUnderMouse(handler->getMousePos());
+bool GuiManager::handleMouseClick(const std::shared_ptr<const MouseClickEvent> event) {
+	std::shared_ptr<GuiComponent> element = getUnderMouse(screen->getInputMap()->getMousePos());
 
 	if (element) {
 		element->onMouseClick(screen, event->button, event->action);
@@ -70,7 +73,7 @@ bool GuiManager::handleMouseClick(const InputHandler* handler, const std::shared
 	return false;
 }
 
-bool GuiManager::handleMouseMove(const std::shared_ptr<const MouseMoveEvent> event) {
+void GuiManager::handleMouseMove(const std::shared_ptr<const MouseMoveEvent> event) {
 	std::shared_ptr<GuiComponent> element = getUnderMouse(glm::vec2(event->x, event->y));
 
 	if (element != currentHovered) {
@@ -84,9 +87,6 @@ bool GuiManager::handleMouseMove(const std::shared_ptr<const MouseMoveEvent> eve
 
 		currentHovered = element;
 	}
-
-	//Return whether the mouse was over anything.
-	return !element;
 }
 
 std::shared_ptr<GuiComponent> GuiManager::getUnderMouse(const glm::vec2& mousePos) {

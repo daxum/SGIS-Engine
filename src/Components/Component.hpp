@@ -21,7 +21,7 @@
 #include <string>
 #include <memory>
 
-#include "InputListener.hpp"
+#include "Events/EventListener.hpp"
 
 class Object;
 
@@ -37,7 +37,7 @@ const std::string TEXT_COMPONENT_NAME = "txt";
 const std::string ANIMATION_COMPONENT_NAME = "anim";
 
 //A "piece" of an object. Used to implement rendering, physics, and other stuff.
-class Component : public InputListener {
+class Component : public EventListener {
 public:
 	const bool receiveEvents;
 
@@ -66,7 +66,7 @@ public:
 	/**
 	 * See InputListener.hpp.
 	 */
-	virtual bool onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override { return false; }
+	virtual bool onEvent(const std::shared_ptr<const Event> event) override { return false; }
 
 protected:
 	//The parent object.

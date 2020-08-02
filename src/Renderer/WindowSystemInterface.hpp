@@ -20,6 +20,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Input/KeyList.hpp"
+
 //An interface into the underlying windowing system,
 //for things like callbacks and queries. This allows
 //for better sharing of code between different
@@ -58,4 +60,11 @@ public:
 	 * Gets the mouse position from the system.
 	 */
 	virtual glm::vec2 queryMousePos() const = 0;
+
+	/**
+	 * Gets the state of a keyboard key from the system.
+	 * @param key The key to get the state of.
+	 * @return The state of the key.
+	 */
+	virtual KeyAction queryKey(Key::KeyEnum key) const = 0;
 };

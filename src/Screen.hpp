@@ -19,13 +19,14 @@
 #pragma once
 
 #include <unordered_set>
+#include <vector>
 
 #include <tbb/concurrent_queue.h>
 
-#include "KeyList.hpp"
 #include "Object.hpp"
-#include "InputHandler.hpp"
+#include "Input/InputMap.hpp"
 #include "Components/ComponentManager.hpp"
+#include "Events/EventQueue.hpp"
 
 class DisplayEngine;
 class RenderManager;
@@ -143,11 +144,17 @@ public:
 	bool mouseHidden() { return hideMouse; }
 
 	/**
-	 * Retreives the input handler for this screen.
-	 * @return The input handler, for getting the mouse/keyboard/etc. state
-	 *     and subscribing/removing input listeners.
+	 * Retreives the input map for this screen.
+	 * @return The input map, for getting the mouse/keyboard/etc. state.
 	 */
-	InputHandler& getInputHandler() { return inputHandler; }
+	std::shared_ptr<InputMap> getInputMap() { return inputMap; }
+
+	/**
+	 * Gets the event queue for this screen, either for sending events or
+	 * for subscribing it to another queue.
+	 * @return The event queue for this screen.
+	 */
+	std::shared_ptr<EventQueue> getEventQueue() { return eventQueue; }
 
 	/**
 	 * Returns the display engine for this screen, for modifying the screen stack.
@@ -166,34 +173,26 @@ public:
 protected:
 	//The display engine that manages this screen.
 	DisplayEngine& display;
-
 	//Handles the input for this screen.
-	InputHandler inputHandler;
-
+	std::shared_ptr<InputMap> inputMap;
+	//Handles events passed into the screen.
+	std::shared_ptr<EventQueue> eventQueue;
 	//The rendering manager for this screen.
 	std::shared_ptr<RenderManager> renderManager;
-
 	//Just the camera
 	std::shared_ptr<Camera> camera;
-
 	//The various managers for the components in this screen.
 	std::vector<std::shared_ptr<ComponentManager>> managers;
-
 	//All objects that have been added to the screen.
 	std::unordered_set<std::shared_ptr<Object>> objects;
-
 	//Objects to be removed at the end of the update.
 	tbb::concurrent_queue<std::shared_ptr<Object>> removalList;
-
 	//Objects to be added after an update.
 	tbb::concurrent_queue<std::shared_ptr<Object>> additionList;
-
 	//User-defined state for the screen.
 	std::shared_ptr<ScreenState> state;
-
 	//Whether the screen has been paused (all updates stopped, only rendering).
 	bool paused;
-
 	//Whether to hide the mouse when this screen has focus.
 	bool hideMouse;
 
@@ -221,7 +220,7 @@ void Screen::addComponentManager(std::shared_ptr<T> manager) {
 	//Subscribe manager to events if needed. It never needs to be unsubscribed, because it can't
 	//be removed and managers have the same lifetime as the input handler.
 	if (manager->receiveEvents) {
-		inputHandler.addListener(manager);
+		eventQueue->addListener(manager);
 	}
 
 	managers.push_back(manager);

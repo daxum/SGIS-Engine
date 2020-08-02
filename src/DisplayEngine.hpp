@@ -22,7 +22,8 @@
 #include <memory>
 #include <unordered_map>
 
-#include "InputEvent.hpp"
+#include "Events/EventQueue.hpp"
+#include "Input/InputEvent.hpp"
 
 class RenderingEngine;
 class Screen;
@@ -102,7 +103,7 @@ public:
 	 * @param key The key that was pressed.
 	 * @param action What the key did.
 	 */
-	void onKeyAction(Key key, KeyAction action);
+	void onKeyAction(Key::KeyEnum key, KeyAction action);
 
 	/**
 	 * Called by rendering engine when the mouse is moved.
@@ -126,9 +127,13 @@ public:
 	void onMouseScroll(float x, float y);
 
 	/**
-	 * Completely empties the screen stack.
+	 * Completely empties the screen stack, and anything else that might keep
+	 * mesh references alive.
 	 */
-	void clear() { std::vector<std::vector<std::shared_ptr<Screen>>>().swap(screenStack); }
+	void clear() {
+		std::vector<std::vector<std::shared_ptr<Screen>>>().swap(screenStack);
+		events.removeAllListeners();
+	}
 
 	/**
 	 * Updates the projection matrix for every screen's camera.
@@ -147,11 +152,8 @@ private:
 	//to avoid updating invalid screens.
 	bool popped;
 
-	//Used to send events like mouse position to the new top screen whenever the stack changes.
-	bool stackChanged;
-
-	//All input events for this display, dispatched to all screen's input handlers once per tick.
-	std::vector<std::shared_ptr<InputEvent>> events;
+	//Used to dispatch events to screens, and whatever else happens to sign up.
+	EventQueue events;
 
 	//Rendering engine, needed for mouse hiding.
 	std::shared_ptr<RenderingEngine> renderer;

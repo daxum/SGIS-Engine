@@ -21,11 +21,11 @@
 #include <unordered_set>
 
 #include "Component.hpp"
-#include "InputListener.hpp"
+#include "Events/EventListener.hpp"
 
 class Screen;
 
-class ComponentManager : public InputListener {
+class ComponentManager : public EventListener {
 public:
 	//The name of the components this manager manages (AIComponents would have name AI_COMPONENT_NAME, for example)
 	const std::string name;
@@ -64,7 +64,7 @@ public:
 	/**
 	 * See InputListener.hpp.
 	 */
-	virtual bool onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override { return false; }
+	virtual bool onEvent(const std::shared_ptr<const Event> event) override { return false; }
 
 	/**
 	 * Sets the parent screen. Only call from Screen.

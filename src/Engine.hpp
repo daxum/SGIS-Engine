@@ -39,8 +39,8 @@ public:
 	//Minor indicates breaking changes.
 	//Patch is everything else (bugfixes, performance boosts, etc).
 	static constexpr uint32_t VERSION_MAJOR = 3;
-	static constexpr uint32_t VERSION_MINOR = 4;
-	static constexpr uint32_t VERSION_PATCH = 2;
+	static constexpr uint32_t VERSION_MINOR = 5;
+	static constexpr uint32_t VERSION_PATCH = 0;
 
 	//Global engine instance. Use sparingly!
 	static Engine* instance;
@@ -141,11 +141,11 @@ private:
 	//The display manager. Handles rendering, updating, and input for multiple "screens" (game world, huds, menus, etc) at once.
 	//Name seems a bit misleading.
 	DisplayEngine display;
+	//Manages all models loaded by the game
+	ModelManager modelManager;
 	//The rendering engine. The graphics api to be used is set
 	//before run is called, during engine configuration.
 	std::shared_ptr<RenderingEngine> renderer;
-	//Manages all models loaded by the game
-	ModelManager modelManager;
 	//Loads static models for the game.
 	ModelLoader modelLoader;
 	//Manages all loaded fonts

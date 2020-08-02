@@ -18,7 +18,7 @@
 
 #include "GlfwInterface.hpp"
 #include "RenderingEngine.hpp"
-#include "GlfwKeyTranslator.hpp"
+#include "Input/GlfwKeyTranslator.hpp"
 
 GlfwInterface::GlfwInterface(DisplayEngine& display, RenderingEngine* renderer) :
 	display(display),
@@ -62,6 +62,17 @@ glm::vec2 GlfwInterface::queryMousePos() const {
 	return glm::vec2(x, y);
 }
 
+KeyAction GlfwInterface::queryKey(Key::KeyEnum key) const {
+	int keyCode = GLFWKeyTranslator::toGlfw(key);
+	int state = glfwGetKey(window, keyCode);
+
+	switch (state) {
+		case GLFW_PRESS: return KeyAction::PRESS;
+		case GLFW_RELEASE: return KeyAction::RELEASE;
+		default: throw std::runtime_error("GLFW returned something that wasn't press or release!");
+	}
+}
+
 void GlfwInterface::glfwError(int error, const char* description) {
 	throw std::runtime_error("GLFW error! " + std::to_string(error) + ": " + description);
 }
@@ -87,7 +98,7 @@ void GlfwInterface::keyPress(GLFWwindow* window, int key, int scancode, int acti
 		default: return;
 	}
 
-	interface->display.onKeyAction(GLFWKeyTranslator::translate(key), nativeAction);
+	interface->display.onKeyAction(GLFWKeyTranslator::fromGlfw(key), nativeAction);
 }
 
 void GlfwInterface::mouseMove(GLFWwindow* window, double x, double y) {

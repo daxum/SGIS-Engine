@@ -24,11 +24,14 @@
 
 Screen::Screen(DisplayEngine& display, bool hideMouse) :
 	display(display),
+	inputMap(std::make_shared<InputMap>()),
+	eventQueue(std::make_shared<EventQueue>()),
 	camera(std::make_shared<DefaultCamera>()),
 	paused(false),
 	hideMouse(hideMouse) {
 
 	camera->setProjection();
+	eventQueue->addListener(inputMap);
 }
 
 void Screen::update() {
@@ -87,7 +90,7 @@ void Screen::deleteObject(std::shared_ptr<Object> object) {
 
 			//Unsubscribe to prevent leakage.
 			if (comp->receiveEvents) {
-				inputHandler.removeListener(comp);
+				eventQueue->removeListener(comp);
 			}
 		}
 	}
@@ -106,7 +109,7 @@ void Screen::addObjectToList(std::shared_ptr<Object> object) {
 
 			//Subscribe to events if needed
 			if (comp->receiveEvents) {
-				inputHandler.addListener(comp);
+				eventQueue->addListener(comp);
 			}
 		}
 	}

@@ -21,6 +21,7 @@
 #include <glm/glm.hpp>
 
 #include "ComponentManager.hpp"
+#include "Input/InputEvent.hpp"
 
 class GuiComponent;
 
@@ -33,14 +34,13 @@ public:
 
 	/**
 	 * Does nothing at the moment, might change later to allow gui components to update themselves.
-	 * @param screen The parent screen of this gui.
 	 */
 	void update() override {}
 
 	/**
 	 * See InputListener.hpp.
 	 */
-	bool onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) override;
+	bool onEvent(const std::shared_ptr<const Event> event) override;
 
 private:
 	//The component the mouse is currently over.
@@ -49,12 +49,12 @@ private:
 	/**
 	 * Handles a mouse click.
 	 */
-	bool handleMouseClick(const InputHandler* handler, const std::shared_ptr<const MouseClickEvent> event);
+	bool handleMouseClick(const std::shared_ptr<const MouseClickEvent> event);
 
 	/**
 	 * Handles mouse movement.
 	 */
-	bool handleMouseMove(const std::shared_ptr<const MouseMoveEvent> event);
+	void handleMouseMove(const std::shared_ptr<const MouseMoveEvent> event);
 
 	/**
 	 * Performs a raytrace for the given mouse position and returns the object hit, if any.

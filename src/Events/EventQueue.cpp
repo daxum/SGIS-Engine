@@ -1,6 +1,6 @@
 /******************************************************************************
  * SGIS-Engine - the engine for SGIS
- * Copyright (C) 2018
+ * Copyright (C) 2020
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -16,24 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 
-#pragma once
+#include <algorithm>
+#include <stdexcept>
 
-#include "InputEvent.hpp"
+#include "EventQueue.hpp"
 
-class InputHandler;
-class Screen;
+void EventQueue::removeListener(std::shared_ptr<EventListener> listener) {
+	auto loc = std::find(listeners.begin(), listeners.end(), listener);
 
-class InputListener {
-public:
-	/**
-	 * Called from the event handler when an event happens.
-	 * @param screen The screen currently processing the event.
-	 * @param handler the input handler that recieved the event.
-	 * @param event The event.
-	 * @return Whether the event should be removed from the event queue.
-	 *     Will not prevent it from being sent to other listeners on the
-	 *     same screen, but will prevent it from being sent to screens
-	 *     below the current one.
-	 */
-	virtual bool onEvent(Screen* screen, const InputHandler* handler, const std::shared_ptr<const InputEvent> event) = 0;
-};
+	if (loc != listeners.end()) {
+		listeners.erase(loc);
+	}
+	else {
+		throw std::runtime_error("Attempt to remove nonexistant event listener");
+	}
+}
+
+bool EventQueue::onEvent(const std::shared_ptr<const Event> event) {
+	for (std::shared_ptr<EventListener> listener : listeners) {
+		if (listener->onEvent(event)) {
+			return true;
+		}
+	}
+
+	return false;
+}

@@ -21,26 +21,47 @@
 #include "Screen.hpp"
 #include "Camera.hpp"
 #include "Engine.hpp"
+#include "Input/InputMapSyncEvent.hpp"
 
 DisplayEngine::DisplayEngine() :
-	popped(false),
-	stackChanged(false) {
+	popped(false) {
 
 }
 
 void DisplayEngine::pushScreen(std::shared_ptr<Screen> screen) {
+	if (!screenStack.empty()) {
+		//Remove all of current screen stack from event queue
+		for (std::shared_ptr<Screen> screen : screenStack.back()) {
+			events.removeListener(screen->getEventQueue());
+		}
+	}
+
 	screenStack.emplace_back();
 	pushOverlay(screen);
 }
 
 void DisplayEngine::popScreen() {
+	if (!screenStack.empty()) {
+		//Remove all of current screen stack from event queue
+		for (std::shared_ptr<Screen> screen : screenStack.back()) {
+			events.removeListener(screen->getEventQueue());
+		}
+	}
+
 	screenStack.pop_back();
 
 	popped = true;
-	stackChanged = true;
 
 	if (!screenStack.empty() && !screenStack.back().empty()) {
 		renderer->getWindowInterface().captureMouse(getTop()->mouseHidden());
+
+		//Put the new top of the screen stack on the event queue
+		for (std::shared_ptr<Screen> screen : screenStack.back()) {
+			events.addListenerFirst(screen->getEventQueue());
+		}
+
+		//Sync input state
+		events.onEvent(std::make_shared<InputMapSyncEvent>());
 	}
 }
 
@@ -50,19 +71,26 @@ void DisplayEngine::pushOverlay(std::shared_ptr<Screen> overlay) {
 	}
 
 	screenStack.back().push_back(overlay);
-
 	renderer->getWindowInterface().captureMouse(overlay->mouseHidden());
-	stackChanged = true;
+	events.addListenerFirst(overlay->getEventQueue());
+
+	//Need an initial update here for new screens for GuiManager to update correctly
+	overlay->update();
+
+	//Sync input state
+	events.onEvent(std::make_shared<InputMapSyncEvent>());
 }
 
 void DisplayEngine::popOverlay() {
+	events.removeListener(screenStack.back().back()->getEventQueue());
 	screenStack.back().pop_back();
 
 	if (!screenStack.back().empty()) {
 		renderer->getWindowInterface().captureMouse(getTop()->mouseHidden());
-	}
 
-	stackChanged = true;
+		//Sync input state
+		events.onEvent(std::make_shared<InputMapSyncEvent>());
+	}
 }
 
 std::shared_ptr<Screen> DisplayEngine::getTop() {
@@ -85,9 +113,6 @@ void DisplayEngine::update() {
 		}
 
 		std::shared_ptr<Screen> current = screenStack.back()[i - 1];
-
-		//Might move into screen later.
-		current->getInputHandler().update(current.get(), events);
 		current->update();
 
 		//If the screen stack was popped in the last update, screenStack.top() now points
@@ -95,15 +120,6 @@ void DisplayEngine::update() {
 		if (popped) {
 			break;
 		}
-	}
-
-	events.clear();
-
-	if (stackChanged) {
-		//Update new top screen's mouse position by sending extra mouse move event.
-		glm::vec2 mousePos = renderer->getWindowInterface().queryMousePos();
-		onMouseMove(mousePos.x, mousePos.y);
-		stackChanged = false;
 	}
 
 	popped = false;
@@ -132,20 +148,20 @@ bool DisplayEngine::shouldExit() {
 	return screenStack.empty();
 }
 
-void DisplayEngine::onKeyAction(Key key, KeyAction action) {
-	events.push_back(std::make_shared<KeyEvent>(key, action));
+void DisplayEngine::onKeyAction(Key::KeyEnum key, KeyAction action) {
+	events.onEvent(std::make_shared<KeyEvent>(key, action));
 }
 
 void DisplayEngine::onMouseMove(float x, float y) {
-	events.push_back(std::make_shared<MouseMoveEvent>(x, y));
+	events.onEvent(std::make_shared<MouseMoveEvent>(x, y));
 }
 
 void DisplayEngine::onMouseClick(MouseButton button, MouseAction action) {
-	events.push_back(std::make_shared<MouseClickEvent>(button, action));
+	events.onEvent(std::make_shared<MouseClickEvent>(button, action));
 }
 
 void DisplayEngine::onMouseScroll(float x, float y) {
-	events.push_back(std::make_shared<MouseScrollEvent>(x, y));
+	events.onEvent(std::make_shared<MouseScrollEvent>(x, y));
 }
 
 void DisplayEngine::updateProjections() {

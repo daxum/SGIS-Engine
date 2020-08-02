@@ -20,6 +20,7 @@
 
 #include <set>
 #include <unordered_set>
+#include <vector>
 
 #include "ComponentManager.hpp"
 #include "UpdateComponent.hpp"

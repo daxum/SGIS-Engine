@@ -21,6 +21,7 @@
 #include "Component.hpp"
 #include "ObjectPhysicsInterface.hpp"
 #include "Screen.hpp"
+#include "Input/MouseList.hpp"
 
 class GuiComponent : public Component, ObjectPhysicsInterface {
 public:
@@ -57,7 +58,7 @@ public:
 	 * @param action Whether the action was a press, release, or repeat.
 	 * @return Whether the component handled the event.
 	 */
-	virtual bool onKeyPress(Screen* screen, Key key, KeyAction action) { return false; }
+	virtual bool onKeyPress(Screen* screen, Key::KeyEnum key, KeyAction action) { return false; }
 
 	/**
 	 * Called when the mouse is clicked when hovering over this component. The object must have a physics component for

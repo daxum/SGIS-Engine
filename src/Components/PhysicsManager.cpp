@@ -128,7 +128,7 @@ RaytraceResult PhysicsManager::raytraceUnderMouse() {
 	float near = nearFarPlanes.first;
 	float far = nearFarPlanes.second;
 
-	glm::vec2 mousePos = screen->getInputHandler().getMousePos();
+	glm::vec2 mousePos = screen->getInputMap()->getMousePos();
 
 	//Position of mouse on near and far plane.
 	std::pair<glm::vec3, glm::vec3> nearFar = ExMath::screenToWorld(mousePos, projection, view, width, height, near, far);

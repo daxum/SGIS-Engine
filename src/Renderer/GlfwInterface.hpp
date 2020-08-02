@@ -76,6 +76,13 @@ public:
 	glm::vec2 queryMousePos() const override;
 
 	/**
+	 * Gets the state of a keyboard key from the system.
+	 * @param key The key to get the state of.
+	 * @return The state of the key.
+	 */
+	KeyAction queryKey(Key::KeyEnum key) const override;
+
+	/**
 	 * Gets the internal window object.
 	 */
 	GLFWwindow* getWindow() { return window; }

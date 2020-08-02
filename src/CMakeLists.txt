@@ -14,7 +14,7 @@ set(ENGINE_FILES
 	Components/PhysicsComponent.cpp
 	Object.cpp
 	Components/RenderManager.cpp
-	InputHandler.cpp
+	Input/InputMap.cpp
 	Components/GuiManager.cpp
 	FontManager.cpp
 	Components/TextComponent.cpp
@@ -35,6 +35,8 @@ set(ENGINE_FILES
 	Models/Mesh.cpp
 	Models/MeshBuilder.cpp
 	Components/PhysicsGhostObject.cpp
+	Events/EventQueue.cpp
+	Input/GlfwKeyTranslator.cpp
 )
 
 if (USE_OPENGL)
