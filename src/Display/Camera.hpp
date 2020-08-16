@@ -21,7 +21,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class Camera {
+#include "Events/EventListener.hpp"
+
+class Camera : public EventListener {
 public:
 	virtual ~Camera() {}
 
@@ -36,11 +38,6 @@ public:
 	 * @return the projection matrix.
 	 */
 	virtual const glm::mat4 getProjection() const = 0;
-
-	/**
-	 * Called whenever the window changes to reset the projection matrix.
-	 */
-	virtual void setProjection() {}
 
 	/**
 	 * Retrieves the near and far plane.

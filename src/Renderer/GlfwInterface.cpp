@@ -19,6 +19,7 @@
 #include "GlfwInterface.hpp"
 #include "RenderingEngine.hpp"
 #include "Input/GlfwKeyTranslator.hpp"
+#include "Display/WindowSizeEvent.hpp"
 
 GlfwInterface::GlfwInterface(DisplayEngine& display, RenderingEngine* renderer) :
 	display(display),
@@ -84,7 +85,7 @@ void GlfwInterface::setViewport(GLFWwindow* window, int nWidth, int nHeight) {
 	interface->height = (float) nHeight;
 
 	interface->renderer->setViewport(nWidth, nHeight);
-	interface->display.updateProjections();
+	interface->display.getEventQueue().onEvent(std::make_shared<WindowSizeEvent>(nWidth, nHeight));
 }
 
 void GlfwInterface::keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {

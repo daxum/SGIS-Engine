@@ -108,11 +108,6 @@ public:
 	}
 
 	/**
-	 * Updates the projection matrix for every screen's camera.
-	 */
-	void updateProjections();
-
-	/**
 	 * Gets the top level event queue, so events can be sent to all active screens.
 	 * @return The display's event queue.
 	 */

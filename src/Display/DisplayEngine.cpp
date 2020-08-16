@@ -143,11 +143,3 @@ void DisplayEngine::setRenderer(std::shared_ptr<RenderingEngine> newRenderer) {
 bool DisplayEngine::shouldExit() {
 	return screenStack.empty();
 }
-
-void DisplayEngine::updateProjections() {
-	for (std::vector<std::shared_ptr<Screen>>& overlay : screenStack) {
-		for (std::shared_ptr<Screen>& screen : overlay) {
-			screen->getCamera()->setProjection();
-		}
-	}
-}

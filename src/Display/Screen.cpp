@@ -21,6 +21,7 @@
 #include "Components/ComponentManager.hpp"
 #include "Components/RenderManager.hpp"
 #include "DefaultCamera.hpp"
+#include "WindowSizeEvent.hpp"
 
 Screen::Screen(DisplayEngine& display, bool hideMouse) :
 	display(display),
@@ -30,8 +31,14 @@ Screen::Screen(DisplayEngine& display, bool hideMouse) :
 	paused(false),
 	hideMouse(hideMouse) {
 
-	camera->setProjection();
 	eventQueue->addListener(inputMap);
+	eventQueue->addListener(camera);
+
+	//Set default camera projection matrix
+	float windowWidth = Engine::instance->getWindowInterface().getWindowWidth();
+	float windowHeight = Engine::instance->getWindowInterface().getWindowHeight();
+
+	camera->onEvent(std::make_shared<WindowSizeEvent>(windowWidth, windowHeight));
 }
 
 void Screen::update() {
@@ -74,8 +81,15 @@ void Screen::removeObject(std::shared_ptr<Object> object) {
 }
 
 void Screen::setCamera(std::shared_ptr<Camera> newCamera) {
+	eventQueue->removeListener(camera);
 	camera = newCamera;
-	camera->setProjection();
+	eventQueue->addListener(camera);
+
+	//Set initial projection matrix
+	float windowWidth = Engine::instance->getWindowInterface().getWindowWidth();
+	float windowHeight = Engine::instance->getWindowInterface().getWindowHeight();
+
+	camera->onEvent(std::make_shared<WindowSizeEvent>(windowWidth, windowHeight));
 }
 
 void Screen::deleteObject(std::shared_ptr<Object> object) {

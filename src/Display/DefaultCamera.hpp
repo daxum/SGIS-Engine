@@ -21,6 +21,8 @@
 #include "Camera.hpp"
 #include "Engine.hpp"
 #include "ExtraMath.hpp"
+#include "WindowSizeEvent.hpp"
+#include "ScreenChangeEvent.hpp"
 
 class DefaultCamera : public Camera {
 public:
@@ -39,15 +41,22 @@ public:
 	const glm::mat4 getProjection() const override { return projection; }
 
 	/**
-	 * Sets the projection matrix.
+	 * Used to set the projection matrix.
 	 * This will be called before the parent screen is added to the
 	 * display, so be careful.
+	 * @param event The received event.
+	 * @return Whether to cancel the event.
 	 */
-	void setProjection() override {
-		float width = Engine::instance->getWindowInterface().getWindowWidth();
-		float height = Engine::instance->getWindowInterface().getWindowHeight();
+	bool onEvent(const std::shared_ptr<const Event> event) override {
+		if (event->type == WindowSizeEvent::EVENT_TYPE || event->type == ScreenChangeEvent::EVENT_TYPE) {
+			//Don't bother pulling the width and height from the event here, that just complicates things.
+			float width = Engine::instance->getWindowInterface().getWindowWidth();
+			float height = Engine::instance->getWindowInterface().getWindowHeight();
 
-		projection = glm::perspective(ExMath::PI / 4.0f, width / height, near, far);
+			projection = glm::perspective(ExMath::PI / 4.0f, width / height, near, far);
+		}
+
+		return false;
 	}
 
 	/**
