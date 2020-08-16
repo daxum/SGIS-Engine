@@ -99,34 +99,6 @@ public:
 	bool shouldExit();
 
 	/**
-	 * Called from the rendering engine's callback whenever a key is pressed.
-	 * @param key The key that was pressed.
-	 * @param action What the key did.
-	 */
-	void onKeyAction(Key::KeyEnum key, KeyAction action);
-
-	/**
-	 * Called by rendering engine when the mouse is moved.
-	 * @param x New mouse x.
-	 * @param y New mouse y.
-	 */
-	void onMouseMove(float x, float y);
-
-	/**
-	 * Called by rendering engine when mouse is clicked.
-	 * @param button Which button was clicked.
-	 * @param action Whether the button was pressed or released.
-	 */
-	void onMouseClick(MouseButton button, MouseAction action);
-
-	/**
-	 * Called by the rendering engine when the mouse wheel is scrolled.
-	 * @param x The x offset of the wheel.
-	 * @param y The y offset of the wheel.
-	 */
-	void onMouseScroll(float x, float y);
-
-	/**
 	 * Completely empties the screen stack, and anything else that might keep
 	 * mesh references alive.
 	 */
@@ -139,6 +111,12 @@ public:
 	 * Updates the projection matrix for every screen's camera.
 	 */
 	void updateProjections();
+
+	/**
+	 * Gets the top level event queue, so events can be sent to all active screens.
+	 * @return The display's event queue.
+	 */
+	EventQueue& getEventQueue() { return events; }
 
 private:
 	//Basically a stack of stacks, the first stack contains the actual screen stack,

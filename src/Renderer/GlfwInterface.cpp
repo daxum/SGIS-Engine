@@ -98,12 +98,12 @@ void GlfwInterface::keyPress(GLFWwindow* window, int key, int scancode, int acti
 		default: return;
 	}
 
-	interface->display.onKeyAction(GLFWKeyTranslator::fromGlfw(key), nativeAction);
+	interface->display.getEventQueue().onEvent(std::make_shared<KeyEvent>(GLFWKeyTranslator::fromGlfw(key), nativeAction));
 }
 
 void GlfwInterface::mouseMove(GLFWwindow* window, double x, double y) {
 	GlfwInterface* interface = (GlfwInterface*) glfwGetWindowUserPointer(window);
-	interface->display.onMouseMove((float)x, (float)y);
+	interface->display.getEventQueue().onEvent(std::make_shared<MouseMoveEvent>((float)x, (float)y));
 }
 
 void GlfwInterface::mouseClick(GLFWwindow* window, int button, int action, int mods) {
@@ -124,10 +124,10 @@ void GlfwInterface::mouseClick(GLFWwindow* window, int button, int action, int m
 		default: return;
 	}
 
-	interface->display.onMouseClick(pressed, mouseAction);
+	interface->display.getEventQueue().onEvent(std::make_shared<MouseClickEvent>(pressed, mouseAction));
 }
 
 void GlfwInterface::mouseScroll(GLFWwindow* window, double x, double y) {
 	GlfwInterface* interface = (GlfwInterface*) glfwGetWindowUserPointer(window);
-	interface->display.onMouseScroll((float)x, (float)y);
+	interface->display.getEventQueue().onEvent(std::make_shared<MouseScrollEvent>((float)x, (float)y));
 }

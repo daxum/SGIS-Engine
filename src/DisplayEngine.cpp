@@ -148,22 +148,6 @@ bool DisplayEngine::shouldExit() {
 	return screenStack.empty();
 }
 
-void DisplayEngine::onKeyAction(Key::KeyEnum key, KeyAction action) {
-	events.onEvent(std::make_shared<KeyEvent>(key, action));
-}
-
-void DisplayEngine::onMouseMove(float x, float y) {
-	events.onEvent(std::make_shared<MouseMoveEvent>(x, y));
-}
-
-void DisplayEngine::onMouseClick(MouseButton button, MouseAction action) {
-	events.onEvent(std::make_shared<MouseClickEvent>(button, action));
-}
-
-void DisplayEngine::onMouseScroll(float x, float y) {
-	events.onEvent(std::make_shared<MouseScrollEvent>(x, y));
-}
-
 void DisplayEngine::updateProjections() {
 	for (std::vector<std::shared_ptr<Screen>>& overlay : screenStack) {
 		for (std::shared_ptr<Screen>& screen : overlay) {
