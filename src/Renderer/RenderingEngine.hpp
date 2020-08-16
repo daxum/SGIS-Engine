@@ -28,9 +28,9 @@
 #include "ShaderLoader.hpp"
 #include "Components/RenderManager.hpp"
 #include "RendererMemoryManager.hpp"
-#include "Screen.hpp"
+#include "Display/Screen.hpp"
 #include "WindowSystemInterface.hpp"
-#include "Camera.hpp"
+#include "Display/Camera.hpp"
 #include "RenderInitializer.hpp"
 
 //A generic rendering engine. Provides the base interfaces, like resource loading

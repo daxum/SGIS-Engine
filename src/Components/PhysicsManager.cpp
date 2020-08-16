@@ -23,7 +23,7 @@
 #include "PhysicsComponent.hpp"
 #include "ExtraMath.hpp"
 #include "Engine.hpp"
-#include "Camera.hpp"
+#include "Display/Camera.hpp"
 #include "TBBThreadHandlerBtCompat.hpp"
 
 void PhysicsManager::physicsTickCallback(btDynamicsWorld* world, btScalar timeStep) {

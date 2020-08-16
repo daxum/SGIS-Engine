@@ -21,7 +21,7 @@
 #include <memory>
 #include <functional>
 
-#include "DisplayEngine.hpp"
+#include "Display/DisplayEngine.hpp"
 #include "EngineConfig.hpp"
 #include "Models/ModelManager.hpp"
 #include "Logger.hpp"

@@ -4,15 +4,15 @@ set(ENGINE_FILES
 	ExtraMath.cpp
 	Models/ModelLoader.cpp
 	Models/Material.cpp
-	DisplayEngine.cpp
-	Screen.cpp
+	Display/DisplayEngine.cpp
+	Display/Screen.cpp
 	Components/RenderComponent.cpp
 	Components/ComponentManager.cpp
 	Components/AIManager.cpp
 	Components/PhysicsManager.cpp
 	Renderer/MatrixStack.cpp
 	Components/PhysicsComponent.cpp
-	Object.cpp
+	Display/Object.cpp
 	Components/RenderManager.cpp
 	Input/InputMap.cpp
 	Components/GuiManager.cpp

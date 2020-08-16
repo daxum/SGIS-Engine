@@ -19,7 +19,7 @@
 #pragma once
 
 #include "Component.hpp"
-#include "Screen.hpp"
+#include "Display/Screen.hpp"
 
 class AIComponent : public Component {
 public:

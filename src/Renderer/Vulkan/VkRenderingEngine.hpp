@@ -24,7 +24,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Renderer/RenderingEngine.hpp"
-#include "DisplayEngine.hpp"
+#include "Display/DisplayEngine.hpp"
 #include "Renderer/GlfwInterface.hpp"
 #include "VkObjectHandler.hpp"
 #include "VkMemoryManager.hpp"

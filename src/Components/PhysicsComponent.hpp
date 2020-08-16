@@ -21,10 +21,10 @@
 #include <glm/glm.hpp>
 
 #include "Component.hpp"
-#include "Object.hpp"
+#include "Display/Object.hpp"
 #include "PhysicsObject.hpp"
-#include "ObjectPhysicsInterface.hpp"
-#include "Screen.hpp"
+#include "Display/ObjectPhysicsInterface.hpp"
+#include "Display/Screen.hpp"
 #include "PhysicsGhostObject.hpp"
 
 class PhysicsComponent;

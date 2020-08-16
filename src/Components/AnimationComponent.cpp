@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #include "AnimationComponent.hpp"
-#include "Object.hpp"
+#include "Display/Object.hpp"
 
 AnimationComponent::AnimationComponent(const std::vector<std::pair<glm::vec3, glm::quat>>& frames, const float time, const glm::vec3& offset, const glm::mat4& matrix) :
 	animation(frames, time, matrix),

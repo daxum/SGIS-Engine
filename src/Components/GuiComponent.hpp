@@ -19,8 +19,8 @@
 #pragma once
 
 #include "Component.hpp"
-#include "ObjectPhysicsInterface.hpp"
-#include "Screen.hpp"
+#include "Display/ObjectPhysicsInterface.hpp"
+#include "Display/Screen.hpp"
 #include "Input/MouseList.hpp"
 
 class GuiComponent : public Component, ObjectPhysicsInterface {

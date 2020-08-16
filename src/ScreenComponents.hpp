@@ -25,7 +25,7 @@
 
 //Screen
 
-#include "Screen.hpp"
+#include "Display/Screen.hpp"
 
 //Components
 
@@ -49,5 +49,5 @@
 //Other stuff
 
 #include "Engine.hpp"
-#include "DisplayEngine.hpp"
-#include "Camera.hpp"
+#include "Display/DisplayEngine.hpp"
+#include "Display/Camera.hpp"

@@ -22,7 +22,7 @@
 #include <GLFW/glfw3.h>
 
 #include "WindowSystemInterface.hpp"
-#include "DisplayEngine.hpp"
+#include "Display/DisplayEngine.hpp"
 
 //This class does not handle the initializing / destroying of glfw,
 //just the interface for callbacks and events.

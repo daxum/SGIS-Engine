@@ -27,7 +27,7 @@
 #include "Logger.hpp"
 #include "FontManager.hpp"
 #include "Engine.hpp"
-#include "Object.hpp"
+#include "Display/Object.hpp"
 #include "RenderComponent.hpp"
 
 class TextComponent : public Component {

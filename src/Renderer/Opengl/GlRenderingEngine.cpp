@@ -23,11 +23,11 @@
 
 #include "Engine.hpp"
 #include "EngineConfig.hpp"
-#include "DisplayEngine.hpp"
+#include "Display/DisplayEngine.hpp"
 #include "GlRenderingEngine.hpp"
 #include "GlShaderLoader.hpp"
 #include "ExtraMath.hpp"
-#include "Camera.hpp"
+#include "Display/Camera.hpp"
 
 GlRenderingEngine::GlRenderingEngine(DisplayEngine& display, const LogConfig& rendererLog) :
 	RenderingEngine(std::make_shared<GlTextureLoader>(textureMap),

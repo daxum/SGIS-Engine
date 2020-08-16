@@ -23,8 +23,8 @@
 #include "TextureLoader.hpp"
 #include "ShaderLoader.hpp"
 #include "Models/ModelLoader.hpp"
-#include "RenderInitializer.hpp"
-#include "DisplayEngine.hpp"
+#include "Renderer/RenderInitializer.hpp"
+#include "Display/DisplayEngine.hpp"
 
 //The engine uses the game interface for all communications
 //with the game, such as for loading resources.

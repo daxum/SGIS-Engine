@@ -21,7 +21,7 @@
 #include "Engine.hpp"
 #include "PhysicsManager.hpp"
 #include "ExtraMath.hpp"
-#include "Camera.hpp"
+#include "Display/Camera.hpp"
 #include "Input/InputMapSyncEvent.hpp"
 
 bool GuiManager::onEvent(const std::shared_ptr<const Event> event) {

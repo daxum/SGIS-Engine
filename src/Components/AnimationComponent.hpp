@@ -20,7 +20,7 @@
 
 #include "Component.hpp"
 #include "SplineAnimation.hpp"
-#include "ObjectPhysicsInterface.hpp"
+#include "Display/ObjectPhysicsInterface.hpp"
 
 class AnimationComponent : public Component, ObjectPhysicsInterface {
 public:
