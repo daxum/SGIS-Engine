@@ -21,7 +21,7 @@
 #include "Screen.hpp"
 #include "Camera.hpp"
 #include "Engine.hpp"
-#include "Input/InputMapSyncEvent.hpp"
+#include "ScreenChangeEvent.hpp"
 
 DisplayEngine::DisplayEngine() :
 	popped(false) {
@@ -60,8 +60,7 @@ void DisplayEngine::popScreen() {
 			events.addListenerFirst(screen->getEventQueue());
 		}
 
-		//Sync input state
-		events.onEvent(std::make_shared<InputMapSyncEvent>());
+		events.onEvent(std::make_shared<ScreenChangeEvent>());
 	}
 }
 
@@ -76,9 +75,7 @@ void DisplayEngine::pushOverlay(std::shared_ptr<Screen> overlay) {
 
 	//Need an initial update here for new screens for GuiManager to update correctly
 	overlay->update();
-
-	//Sync input state
-	events.onEvent(std::make_shared<InputMapSyncEvent>());
+	events.onEvent(std::make_shared<ScreenChangeEvent>());
 }
 
 void DisplayEngine::popOverlay() {
@@ -88,8 +85,7 @@ void DisplayEngine::popOverlay() {
 	if (!screenStack.back().empty()) {
 		renderer->getWindowInterface().captureMouse(getTop()->mouseHidden());
 
-		//Sync input state
-		events.onEvent(std::make_shared<InputMapSyncEvent>());
+		events.onEvent(std::make_shared<ScreenChangeEvent>());
 	}
 }
 

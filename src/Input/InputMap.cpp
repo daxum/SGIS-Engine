@@ -21,7 +21,7 @@
 #include "Engine.hpp"
 #include "InputMap.hpp"
 #include "InputEvent.hpp"
-#include "InputMapSyncEvent.hpp"
+#include "Display/ScreenChangeEvent.hpp"
 
 InputMap::InputMap() :
 	mousePos(0.0, 0.0) {
@@ -50,7 +50,7 @@ bool InputMap::onEvent(const std::shared_ptr<const Event> event) {
 			glm::vec2 newPos(mouseEvent->x, mouseEvent->y);
 			mousePos = newPos;
 		}; break;
-		case InputMapSyncEvent::EVENT_TYPE: {
+		case ScreenChangeEvent::EVENT_TYPE: {
 			syncInputState();
 		}; break;
 

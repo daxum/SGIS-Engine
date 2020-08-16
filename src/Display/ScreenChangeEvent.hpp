@@ -19,9 +19,9 @@
 
 #include "Events/Event.hpp"
 
-//Instructs every input map that recieves it to sync its state from the window interface.
-struct InputMapSyncEvent : public Event {
+//Sent out whenever the screen stack is changed.
+struct ScreenChangeEvent : public Event {
 	static constexpr uint64_t EVENT_TYPE = 4;
 
-	InputMapSyncEvent() : Event(EVENT_TYPE) {}
+	ScreenChangeEvent() : Event(EVENT_TYPE) {}
 };

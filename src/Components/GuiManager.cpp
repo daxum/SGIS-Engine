@@ -22,7 +22,7 @@
 #include "PhysicsManager.hpp"
 #include "ExtraMath.hpp"
 #include "Display/Camera.hpp"
-#include "Input/InputMapSyncEvent.hpp"
+#include "Display/ScreenChangeEvent.hpp"
 
 bool GuiManager::onEvent(const std::shared_ptr<const Event> event) {
 	if (event->type == KeyEvent::EVENT_TYPE) {
@@ -44,7 +44,7 @@ bool GuiManager::onEvent(const std::shared_ptr<const Event> event) {
 		else if (event->type == MouseMoveEvent::EVENT_TYPE) {
 			handleMouseMove(std::static_pointer_cast<const MouseMoveEvent>(event));
 		}
-		else if (event->type == InputMapSyncEvent::EVENT_TYPE) {
+		else if (event->type == ScreenChangeEvent::EVENT_TYPE) {
 			glm::vec2 mousePos = Engine::instance->getWindowInterface().queryMousePos();
 			handleMouseMove(std::make_shared<MouseMoveEvent>(mousePos.x, mousePos.y));
 		}
