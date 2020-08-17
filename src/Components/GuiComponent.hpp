@@ -90,6 +90,16 @@ public:
 	virtual void onHoverStop(Screen* screen) {}
 
 	/**
+	 * Called from the component manager when an event happens that isn't
+	 * covered by the above functions. Note that GuiComponents are not
+	 * subscribed to the screen event queue by default, and so don't get
+	 * events directly from there.
+	 * @param event The event.
+	 * @return Whether to cancel the event - to stop propagating it.
+	 */
+	virtual bool onEvent(const std::shared_ptr<const Event> event) override { return false; }
+
+	/**
 	 * Gets the translation of the object.
 	 * @return The translation of the object.
 	 */

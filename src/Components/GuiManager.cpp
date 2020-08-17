@@ -36,7 +36,7 @@ bool GuiManager::onEvent(const std::shared_ptr<const Event> event) {
 			}
 		}
 	}
-	//Mouse click and position events require raytracing, and therefore a physics component manager.
+	//Mouse click and position events require raytracing, and therefore a physics component manager
 	else if (screen->getManager(PHYSICS_COMPONENT_NAME)) {
 		if (event->type == MouseClickEvent::EVENT_TYPE) {
 			return handleMouseClick(std::static_pointer_cast<const MouseClickEvent>(event));
@@ -56,6 +56,15 @@ bool GuiManager::onEvent(const std::shared_ptr<const Event> event) {
 			std::shared_ptr<GuiComponent> element = std::static_pointer_cast<GuiComponent>(comp);
 
 			element->onMouseScroll(screen, scrollEvent->x, scrollEvent->y);
+		}
+	}
+	else {
+		//TODO: Subscribe GuiComponents to events directly, and send out
+		//additional events from GuiManager
+		for (std::shared_ptr<Component> comp : components) {
+			if (comp->onEvent(event)) {
+				return true;
+			}
 		}
 	}
 
@@ -100,7 +109,7 @@ std::shared_ptr<GuiComponent> GuiManager::getUnderMouse(const glm::vec2& mousePo
 }
 
 void GuiManager::onComponentRemove(std::shared_ptr<Component> comp) {
-	//Cast shouldn't be neccessary, but just for completeness.
+	//Cast shouldn't be neccessary, but just for completeness
 	if (comp == std::static_pointer_cast<Component>(currentHovered)) {
 		currentHovered = std::shared_ptr<GuiComponent>();
 	}
