@@ -233,13 +233,15 @@ bool TextureLoader::tryPositionGlyphs(std::vector<GlyphData*>& glyphs, const uns
 		return true;
 	}
 
-	unsigned int nextHeight = glyphs.at(0)->size.y;
+	unsigned int padding = 4;
+
+	unsigned int nextHeight = glyphs.at(0)->size.y + padding;
 	unsigned int currentHeight = 0;
 	unsigned int currentPos = 0;
 
 	for (GlyphData* glyph : glyphs) {
 		//TODO: calculate spacing based on font size.
-		glm::vec2 size(glyph->size.x + 4, glyph->size.y + 4);
+		glm::vec2 size(glyph->size.x + padding, glyph->size.y + padding);
 
 		//If glyph is too long, go to next row.
 		if (currentPos + size.x > texSize) {
