@@ -100,7 +100,20 @@ public:
 	virtual bool onEvent(const std::shared_ptr<const Event> event) override { return false; }
 
 	/**
+	 * Sets the position of the GUI component.
+	 * @param newPos The new position of the object.
+	 */
+	void setPosition(glm::vec3 newPos) { pos = newPos; }
+
+	/**
+	 * Gets the position of the GUI component.
+	 * @return The object's position.
+	 */
+	glm::vec3 getPosition() const { return pos; }
+
+	/**
 	 * Gets the translation of the object.
+	 * Equivalent to getPosition(), but needed for a superclass.
 	 * @return The translation of the object.
 	 */
 	glm::vec3 getTranslation() const override { return pos; }
