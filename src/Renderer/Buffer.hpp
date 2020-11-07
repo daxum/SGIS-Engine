@@ -109,6 +109,12 @@ public:
 	 */
 	virtual void write(size_t offset, size_t size, const unsigned char* data) = 0;
 
+	/**
+	 * Gets the size of the buffer.
+	 * @return The size of the buffer, in bytes.
+	 */
+	size_t getBufferSize() const { return bufferSize; }
+
 private:
 	//Size of the buffer.
 	size_t bufferSize;

@@ -103,8 +103,8 @@ public:
 	/**
 	 * Returns the camera associated with this screen.
 	 */
-	std::shared_ptr<Camera> getCamera() { return camera; }
-	std::shared_ptr<const Camera> getCamera() const { return camera; }
+	template<typename T = Camera> std::shared_ptr<T> getCamera();
+	template<typename T = Camera> std::shared_ptr<const T> getCamera() const;
 
 	/**
 	 * Sets the camera for this screen.
@@ -225,6 +225,18 @@ void Screen::addComponentManager(std::shared_ptr<T> manager) {
 
 	managers.push_back(manager);
 	manager->setScreen(this);
+}
+
+template<typename T>
+std::shared_ptr<T> Screen::getCamera() {
+	static_assert(std::is_base_of<Camera, T>::value, "Attempt to get non-camera camera!");
+	return std::static_pointer_cast<T>(camera);
+}
+
+template<typename T>
+std::shared_ptr<const T> Screen::getCamera() const {
+	static_assert(std::is_base_of<Camera, T>::value, "Attempt to get non-camera camera!");
+	return std::static_pointer_cast<const T>(camera);
 }
 
 template<typename T>

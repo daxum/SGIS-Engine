@@ -80,6 +80,11 @@ VkBufferContainer::VkBufferContainer(VkMemoryManager* memoryManager,VkObjectHand
 }
 
 void VkBufferContainer::write(size_t offset, size_t size, const unsigned char* data) {
+	if (offset + size > getBufferSize()) {
+		ENGINE_LOG_ERROR(logger, "Bad buffer write: offset=" + std::to_string(offset) + ", size=" + std::to_string(size) + ", bufferSize=" + std::to_string(getBufferSize()));
+		throw std::runtime_error("Attempt to write past end of buffer!");
+	}
+
 	if (mappedMem) {
 		memcpy(mappedMem + offset, data, size);
 	}

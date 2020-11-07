@@ -19,6 +19,8 @@
 #pragma once
 
 #include "Renderer/Buffer.hpp"
+#include "Engine.hpp"
+#include "Logger.hpp"
 
 class GlBuffer : public Buffer {
 public:
@@ -30,7 +32,8 @@ public:
 	 */
 	GlBuffer(uint32_t usage, BufferStorage storage, size_t size) :
 		Buffer(size),
-		bufferId(0) {
+		bufferId(0),
+		logger(Engine::instance->getConfig().rendererLog) {
 
 		glGenBuffers(1, &bufferId);
 
@@ -68,6 +71,11 @@ public:
 	 * @param data The data to write.
 	 */
 	void write(size_t offset, size_t size, const unsigned char* data) override {
+		if (offset + size > getBufferSize()) {
+			ENGINE_LOG_ERROR(logger, "Bad buffer write: offset=" + std::to_string(offset) + ", size=" + std::to_string(size) + ", bufferSize=" + std::to_string(getBufferSize()));
+			throw std::runtime_error("Attempt to write past end of buffer!");
+		}
+
 		//Just let the driver figure it out for now, this is legacy anyway.
 		glBindBuffer(GL_COPY_WRITE_BUFFER, bufferId);
 
@@ -79,4 +87,6 @@ public:
 private:
 	//Buffer object.
 	GLuint bufferId;
+	//Logger for the buffer.
+	Logger logger;
 };
