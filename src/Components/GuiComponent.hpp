@@ -35,7 +35,7 @@ public:
 	 * Creates a guicomponent for the given object.
 	 * @param position The position of this component, in world coordinates. Won't be used if the parent has a physics component.
 	 */
-	GuiComponent(glm::vec3 position = glm::vec3(0.0, 0.0, 0.0)) : pos(position) {}
+	GuiComponent(glm::vec3 position = glm::vec3(0.0, 0.0, 0.0)) : pos(position), rotation(1.0f, 0.0f, 0.0f, 0.0f) {}
 
 	/**
 	 * Sets this component as the physics provider if there isn't one already.
@@ -118,7 +118,21 @@ public:
 	 */
 	glm::vec3 getTranslation() const override { return pos; }
 
+	/**
+	 * Sets the rotation of the gui component.
+	 * @param rot The new rotation.
+	 */
+	void setRotation(glm::quat rot) { rotation = rot; }
+
+	/**
+	 * Gets the rotation of the gui component.
+	 * @return The rotation quaternion.
+	 */
+	glm::quat getRotation() const override { return rotation; }
+
 protected:
 	//The position of the object.
 	glm::vec3 pos;
+	//The rotation of the object.
+	glm::quat rotation;
 };
