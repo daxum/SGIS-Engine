@@ -52,6 +52,11 @@ public:
 	virtual ~GuiComponent() {}
 
 	/**
+	 * Updates the GuiComponent. Does nothing by default.
+	 */
+	virtual void update() {}
+
+	/**
 	 * Called by the GuiComponentManager when a key is pressed.
 	 * @param screen The parent screen.
 	 * @param key The key that was pressed.

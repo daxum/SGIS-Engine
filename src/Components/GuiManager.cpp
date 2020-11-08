@@ -24,6 +24,12 @@
 #include "Display/Camera.hpp"
 #include "Display/ScreenChangeEvent.hpp"
 
+void GuiManager::update() {
+	for (std::shared_ptr<Component> comp : components) {
+		std::static_pointer_cast<GuiComponent>(comp)->update();
+	}
+}
+
 bool GuiManager::onEvent(const std::shared_ptr<const Event> event) {
 	if (event->type == KeyEvent::EVENT_TYPE) {
 		std::shared_ptr<const KeyEvent> keyEvent = std::static_pointer_cast<const KeyEvent>(event);

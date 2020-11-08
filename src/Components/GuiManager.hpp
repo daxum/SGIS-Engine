@@ -33,9 +33,9 @@ public:
 	GuiManager() : ComponentManager(GUI_COMPONENT_NAME, true) {}
 
 	/**
-	 * Does nothing at the moment, might change later to allow gui components to update themselves.
+	 * Updates the gui components.
 	 */
-	void update() override {}
+	void update() override;
 
 	/**
 	 * See InputListener.hpp.
