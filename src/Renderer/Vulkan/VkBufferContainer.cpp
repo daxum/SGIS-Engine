@@ -1,6 +1,6 @@
 /******************************************************************************
  * SGIS-Engine - the engine for SGIS
- * Copyright (C) 2018
+ * Copyright (C) 2018, 2021
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,11 +20,10 @@
 #include "VkMemoryManager.hpp"
 #include "Engine.hpp"
 
-VkBufferContainer::VkBufferContainer(VkMemoryManager* memoryManager,VkObjectHandler& objects, VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size) :
+VkBufferContainer::VkBufferContainer(VkMemoryManager* memoryManager, VkObjectHandler& objects, VmaAllocator allocator, uint32_t usage, BufferStorage storage, size_t size) :
 	Buffer(size),
 	logger(Engine::instance->getConfig().rendererLog),
 	memoryManager(memoryManager),
-	objects(objects),
 	allocator(allocator),
 	buffer(VK_NULL_HANDLE),
 	allocation(VK_NULL_HANDLE),

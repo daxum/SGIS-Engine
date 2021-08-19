@@ -22,13 +22,10 @@
 #include "GlMemoryManager.hpp"
 
 GlMemoryManager::GlMemoryManager(const LogConfig& logConfig) :
-	RendererMemoryManager(logConfig),
-	transferBuffer(0),
-	transferSize(0) {
+	RendererMemoryManager(logConfig) {
 
 }
 
 void GlMemoryManager::deleteObjects() {
-	glDeleteBuffers(1, &transferBuffer);
 	deleteBuffers();
 }

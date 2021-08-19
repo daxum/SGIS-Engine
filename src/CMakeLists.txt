@@ -79,7 +79,7 @@ set_target_properties(Engine PROPERTIES
 )
 
 if ((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
-	target_compile_options(Engine PRIVATE "-Wall" "-Wignored-qualifiers")
+	target_compile_options(Engine PRIVATE "-Wall" "-Wignored-qualifiers" "-Wno-nullability-completeness")
 endif()
 
 target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${BULLET_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIR})

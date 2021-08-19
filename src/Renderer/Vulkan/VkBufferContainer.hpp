@@ -64,8 +64,6 @@ private:
 	Logger logger;
 	//Pointer to the memory manager, for transfers.
 	VkMemoryManager* memoryManager;
-	//Container of Vulkan objects.
-	VkObjectHandler& objects;
 	//The allocator the buffer was allocated from.
 	VmaAllocator allocator;
 	//The buffer object.

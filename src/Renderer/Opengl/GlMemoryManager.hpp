@@ -73,10 +73,4 @@ protected:
 	 * @param material The material to allocate a descriptor set for.
 	 */
 	void addMaterialDescriptors(const Material* material) override {}
-
-private:
-	//Transfer buffer for uploading mesh data to static buffers on the gpu.
-	GLuint transferBuffer;
-	//Current size of the transfer buffer, will grow for larger meshes.
-	size_t transferSize;
 };
